@@ -1,0 +1,5680 @@
+{
+  "schema_version": 2,
+  "target_profile": "mac-cpu",
+  "suite_id": "cpu/perf_issues",
+  "timestamp": "2026-11-04T18:20:38Z",
+  "tenferro_commit": "a000e5c4929d5bebb91e783c329b27106baed12e",
+  "hardware": {
+    "cpu": "arm",
+    "host": "sat12-bq165-60724c85-8f95-4f8f-a31a-4ca8fff3c199-C62EC05580DD.local",
+    "threads": [
+      1,
+      4
+    ]
+  },
+  "unit": "ns/op",
+  "rows": [
+    {
+      "case": "activation_erf_f32_eager-single-call_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "activation_erf_f32_eager-single-call_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "activation_erf_f32_pytorch_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "activation_erf_f32_pytorch_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "activation_erf_f32_session-single-call_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 407911.375,
+      "iqr": 6596.375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_erf_f32_session-single-call_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 408036.375,
+      "iqr": 1338.5625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_gelu_f32_eager-single-call_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 72873.6875,
+      "iqr": 1384.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_gelu_f32_eager-single-call_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 45687.5,
+      "iqr": 1073.890625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_gelu_f32_pytorch_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 78903.65625,
+      "iqr": 261.078125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_gelu_f32_pytorch_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 63243.5,
+      "iqr": 1695.3125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_gelu_f32_session-single-call_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 76634.125,
+      "iqr": 1666.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_gelu_f32_session-single-call_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 44863.28125,
+      "iqr": 407.5546875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_gelu_tanh_f32_eager-composed_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 285776.0,
+      "iqr": 17484.4375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_gelu_tanh_f32_eager-composed_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 293281.25,
+      "iqr": 1979.1875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_gelu_tanh_f32_eager-single-call_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "activation_gelu_tanh_f32_eager-single-call_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "activation_gelu_tanh_f32_pytorch_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "activation_gelu_tanh_f32_pytorch_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "activation_gelu_tanh_f32_session-single-call_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 242864.5,
+      "iqr": 1895.875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_gelu_tanh_f32_session-single-call_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 157651.0625,
+      "iqr": 9444.03125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_sigmoid_f32_eager-composed_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 65713.53125,
+      "iqr": 531.90625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_sigmoid_f32_eager-composed_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 72391.90625,
+      "iqr": 2100.90625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_sigmoid_f32_eager-single-call_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "activation_sigmoid_f32_eager-single-call_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "activation_sigmoid_f32_pytorch_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "activation_sigmoid_f32_pytorch_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "activation_sigmoid_f32_session-single-call_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 46843.09375,
+      "iqr": 1503.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_sigmoid_f32_session-single-call_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 29258.46875,
+      "iqr": 566.0703125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_silu_f32_eager-composed_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 76648.4375,
+      "iqr": 1977.859375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_silu_f32_eager-composed_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 75319.0,
+      "iqr": 617.828125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_silu_f32_eager-single-call_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "activation_silu_f32_eager-single-call_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "activation_silu_f32_pytorch_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "activation_silu_f32_pytorch_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "activation_silu_f32_session-single-call_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 46354.171875,
+      "iqr": 459.3125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_silu_f32_session-single-call_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 29397.125,
+      "iqr": 129.8828125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_softplus_f32_eager-composed_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 165200.5,
+      "iqr": 628.90625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_softplus_f32_eager-composed_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 179981.8125,
+      "iqr": 5210.9375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_softplus_f32_eager-single-call_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "activation_softplus_f32_eager-single-call_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "activation_softplus_f32_pytorch_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "activation_softplus_f32_pytorch_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "activation_softplus_f32_session-single-call_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 210885.4375,
+      "iqr": 11256.53125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_softplus_f32_session-single-call_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 128091.125,
+      "iqr": 7601.5625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "analytic_neg_f64_sweep_32MiB_t1",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1342666.5,
+      "iqr": 83521.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "analytic_neg_f64_sweep_32MiB_t1_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 1544041.5,
+      "iqr": 83635.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "analytic_neg_f64_sweep_8MiB_t1",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 213948.0,
+      "iqr": 27078.125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "analytic_neg_f64_sweep_8MiB_t1_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 257916.625,
+      "iqr": 51341.1875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "axpby_accum_strided_dest_f64_block",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 4239.6640625,
+      "iqr": 252.1572265625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "axpby_accum_strided_dest_f64_block_host",
+      "group": "threads=1 / steady_state",
+      "backend": "rust-loop",
+      "median": 4207.68359375,
+      "iqr": 156.1279296875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "axpby_contiguous_source_f64_1024x1024_t1",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 515640.625,
+      "iqr": 72398.4375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "axpby_contiguous_source_f64_1024x1024_t4",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 491208.25,
+      "iqr": 10515.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "axpby_strided_source_f64_1024x1024_host_t1",
+      "group": "threads=1 / steady_state",
+      "backend": "rust-loop",
+      "median": 1266645.5,
+      "iqr": 19177.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "axpby_strided_source_f64_1024x1024_host_t4",
+      "group": "threads=4 / steady_state",
+      "backend": "rust-loop",
+      "median": 1263541.5,
+      "iqr": 13646.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "axpby_strided_source_f64_1024x1024_t1",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1138521.0,
+      "iqr": 31468.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "axpby_strided_source_f64_1024x1024_t4",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1203604.5,
+      "iqr": 107333.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_c64_dot-general-rank1_len100",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1347.85986328125,
+      "iqr": 7.48681640625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_c64_dot-general-rank1_len100",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1863.1591796875,
+      "iqr": 50.985107421875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_c64_dot-general-rank1_len10000",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 78690.09375,
+      "iqr": 3276.703125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_c64_dot-general-rank1_len10000",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 81177.09375,
+      "iqr": 3874.984375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_c64_dot-general-rank1_len1000000",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 7785042.0,
+      "iqr": 92125.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_c64_dot-general-rank1_len1000000",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 8899083.0,
+      "iqr": 552375.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_c64_portable-loop_len100",
+      "group": "threads=1 / steady_state",
+      "backend": "rust-loop",
+      "median": 81.25177001953125,
+      "iqr": 0.27081298828125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_c64_portable-loop_len100",
+      "group": "threads=4 / steady_state",
+      "backend": "rust-loop",
+      "median": 81.24923706054688,
+      "iqr": 0.15069580078125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_c64_portable-loop_len10000",
+      "group": "threads=1 / steady_state",
+      "backend": "rust-loop",
+      "median": 9427.57421875,
+      "iqr": 65.265625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_c64_portable-loop_len10000",
+      "group": "threads=4 / steady_state",
+      "backend": "rust-loop",
+      "median": 10132.16015625,
+      "iqr": 132.568359375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_c64_portable-loop_len1000000",
+      "group": "threads=1 / steady_state",
+      "backend": "rust-loop",
+      "median": 1017750.0,
+      "iqr": 31979.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_c64_portable-loop_len1000000",
+      "group": "threads=4 / steady_state",
+      "backend": "rust-loop",
+      "median": 1155625.0,
+      "iqr": 57760.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_c64_pytorch-vdot_len100",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 554.06689453125,
+      "iqr": 12.92919921875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_c64_pytorch-vdot_len100",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 544.504638671875,
+      "iqr": 2.253173828125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_c64_pytorch-vdot_len10000",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 4508.056640625,
+      "iqr": 11.3125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_c64_pytorch-vdot_len10000",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 4803.79296875,
+      "iqr": 106.3232421875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_c64_pytorch-vdot_len1000000",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 526573.0,
+      "iqr": 6099.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_c64_pytorch-vdot_len1000000",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 527260.5,
+      "iqr": 2609.125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_f64_dot-general-rank1_len100",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 872.060302734375,
+      "iqr": 41.78369140625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_f64_dot-general-rank1_len100",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1308.04443359375,
+      "iqr": 41.626220703125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_f64_dot-general-rank1_len10000",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 13259.1171875,
+      "iqr": 141.029296875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_f64_dot-general-rank1_len10000",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 13992.0234375,
+      "iqr": 721.84375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_f64_dot-general-rank1_len1000000",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1254354.0,
+      "iqr": 4802.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_f64_dot-general-rank1_len1000000",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1408042.0,
+      "iqr": 53271.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_f64_portable-loop_len100",
+      "group": "threads=1 / steady_state",
+      "backend": "rust-loop",
+      "median": 51.424652099609375,
+      "iqr": 2.4785995483398438,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_f64_portable-loop_len100",
+      "group": "threads=4 / steady_state",
+      "backend": "rust-loop",
+      "median": 52.858978271484375,
+      "iqr": 2.3956222534179688,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_f64_portable-loop_len10000",
+      "group": "threads=1 / steady_state",
+      "backend": "rust-loop",
+      "median": 9742.67578125,
+      "iqr": 177.328125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_f64_portable-loop_len10000",
+      "group": "threads=4 / steady_state",
+      "backend": "rust-loop",
+      "median": 10356.93359375,
+      "iqr": 392.90234375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_f64_portable-loop_len1000000",
+      "group": "threads=1 / steady_state",
+      "backend": "rust-loop",
+      "median": 990687.5,
+      "iqr": 24260.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_f64_portable-loop_len1000000",
+      "group": "threads=4 / steady_state",
+      "backend": "rust-loop",
+      "median": 1036271.0,
+      "iqr": 29322.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_f64_pytorch-vdot_len100",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 535.603515625,
+      "iqr": 3.90625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_f64_pytorch-vdot_len100",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 579.2236328125,
+      "iqr": 0.48779296875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_f64_pytorch-vdot_len10000",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 2673.13671875,
+      "iqr": 16.27587890625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_f64_pytorch-vdot_len10000",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 3292.3984375,
+      "iqr": 100.6259765625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_f64_pytorch-vdot_len1000000",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 329177.0,
+      "iqr": 30380.1875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_f64_pytorch-vdot_len1000000",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 253781.25,
+      "iqr": 3929.6875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_contiguous_operand_f32_prepared_in1024_out1024_len8_t1",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 129324.21875,
+      "iqr": 12867.1875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_contiguous_operand_f32_prepared_in1024_out1024_len8_t4",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 124440.0625,
+      "iqr": 13296.90625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_eager-shared_in1024_out1024_len512",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1188854.5,
+      "iqr": 60489.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_eager-shared_in1024_out1024_len512",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 946958.0,
+      "iqr": 303052.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_eager-shared_in1024_out1024_len64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 183023.4375,
+      "iqr": 34951.84375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_eager-shared_in1024_out1024_len64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 193000.0,
+      "iqr": 18321.625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_eager-shared_in1024_out1024_len8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 110104.15625,
+      "iqr": 494.78125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_eager-shared_in1024_out1024_len8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 110937.5,
+      "iqr": 1853.515625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_eager-shared_in1024_out4096_len512",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 4476542.0,
+      "iqr": 814250.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_eager-shared_in1024_out4096_len512",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 4535000.0,
+      "iqr": 478521.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_eager-shared_in1024_out4096_len64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 909292.0,
+      "iqr": 10364.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_eager-shared_in1024_out4096_len64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 928375.0,
+      "iqr": 118968.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_eager-shared_in1024_out4096_len8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 687562.5,
+      "iqr": 16896.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_eager-shared_in1024_out4096_len8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 696604.25,
+      "iqr": 8854.125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_faer-direct_in1024_out1024_len512",
+      "group": "threads=1 / steady_state",
+      "backend": "faer-direct",
+      "median": 11542750.0,
+      "iqr": 790458.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_faer-direct_in1024_out1024_len512",
+      "group": "threads=4 / steady_state",
+      "backend": "faer-direct",
+      "median": 5900333.0,
+      "iqr": 237520.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_faer-direct_in1024_out1024_len64",
+      "group": "threads=1 / steady_state",
+      "backend": "faer-direct",
+      "median": 1608375.0,
+      "iqr": 196750.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_faer-direct_in1024_out1024_len64",
+      "group": "threads=4 / steady_state",
+      "backend": "faer-direct",
+      "median": 954125.0,
+      "iqr": 6146.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_faer-direct_in1024_out1024_len8",
+      "group": "threads=1 / steady_state",
+      "backend": "faer-direct",
+      "median": 367197.875,
+      "iqr": 10554.6875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_faer-direct_in1024_out1024_len8",
+      "group": "threads=4 / steady_state",
+      "backend": "faer-direct",
+      "median": 215419.3125,
+      "iqr": 6975.21875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_faer-direct_in1024_out4096_len512",
+      "group": "threads=1 / steady_state",
+      "backend": "faer-direct",
+      "median": 47251208.0,
+      "iqr": 1630124.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_faer-direct_in1024_out4096_len512",
+      "group": "threads=4 / steady_state",
+      "backend": "faer-direct",
+      "median": 22932417.0,
+      "iqr": 1915979.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_faer-direct_in1024_out4096_len64",
+      "group": "threads=1 / steady_state",
+      "backend": "faer-direct",
+      "median": 6839125.0,
+      "iqr": 227062.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_faer-direct_in1024_out4096_len64",
+      "group": "threads=4 / steady_state",
+      "backend": "faer-direct",
+      "median": 4573834.0,
+      "iqr": 108770.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_faer-direct_in1024_out4096_len8",
+      "group": "threads=1 / steady_state",
+      "backend": "faer-direct",
+      "median": 1942520.5,
+      "iqr": 85968.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_faer-direct_in1024_out4096_len8",
+      "group": "threads=4 / steady_state",
+      "backend": "faer-direct",
+      "median": 944656.25,
+      "iqr": 43859.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_host-sgemm_in1024_out1024_len512",
+      "group": "threads=1 / steady_state",
+      "backend": "matrixmultiply-sgemm",
+      "median": 11374708.0,
+      "iqr": 459249.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_host-sgemm_in1024_out1024_len512",
+      "group": "threads=4 / steady_state",
+      "backend": "matrixmultiply-sgemm",
+      "median": 4780916.0,
+      "iqr": 55583.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_host-sgemm_in1024_out1024_len64",
+      "group": "threads=1 / steady_state",
+      "backend": "matrixmultiply-sgemm",
+      "median": 1559104.0,
+      "iqr": 27708.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_host-sgemm_in1024_out1024_len64",
+      "group": "threads=4 / steady_state",
+      "backend": "matrixmultiply-sgemm",
+      "median": 1024104.5,
+      "iqr": 2291.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_host-sgemm_in1024_out1024_len8",
+      "group": "threads=1 / steady_state",
+      "backend": "matrixmultiply-sgemm",
+      "median": 345640.625,
+      "iqr": 1549.5625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_host-sgemm_in1024_out1024_len8",
+      "group": "threads=4 / steady_state",
+      "backend": "matrixmultiply-sgemm",
+      "median": 416932.375,
+      "iqr": 14921.8125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_host-sgemm_in1024_out4096_len512",
+      "group": "threads=1 / steady_state",
+      "backend": "matrixmultiply-sgemm",
+      "median": 46635833.0,
+      "iqr": 2682729.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_host-sgemm_in1024_out4096_len512",
+      "group": "threads=4 / steady_state",
+      "backend": "matrixmultiply-sgemm",
+      "median": 20085917.0,
+      "iqr": 431562.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_host-sgemm_in1024_out4096_len64",
+      "group": "threads=1 / steady_state",
+      "backend": "matrixmultiply-sgemm",
+      "median": 6914417.0,
+      "iqr": 851542.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_host-sgemm_in1024_out4096_len64",
+      "group": "threads=4 / steady_state",
+      "backend": "matrixmultiply-sgemm",
+      "median": 4230875.0,
+      "iqr": 27313.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_host-sgemm_in1024_out4096_len8",
+      "group": "threads=1 / steady_state",
+      "backend": "matrixmultiply-sgemm",
+      "median": 1481771.0,
+      "iqr": 99843.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_host-sgemm_in1024_out4096_len8",
+      "group": "threads=4 / steady_state",
+      "backend": "matrixmultiply-sgemm",
+      "median": 1626167.0,
+      "iqr": 34583.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_pytorch_in1024_out1024_len512",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 942312.5,
+      "iqr": 15573.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_pytorch_in1024_out1024_len512",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 1236041.5,
+      "iqr": 129728.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_pytorch_in1024_out1024_len64",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 159968.75,
+      "iqr": 29076.84375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_pytorch_in1024_out1024_len64",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 192018.25,
+      "iqr": 5843.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_pytorch_in1024_out1024_len8",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 105307.28125,
+      "iqr": 190.78125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_pytorch_in1024_out1024_len8",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 106136.71875,
+      "iqr": 545.5625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_pytorch_in1024_out4096_len512",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 5099958.0,
+      "iqr": 827833.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_pytorch_in1024_out4096_len512",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 4431041.0,
+      "iqr": 46333.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_pytorch_in1024_out4096_len64",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 909833.0,
+      "iqr": 28906.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_pytorch_in1024_out4096_len64",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 921989.75,
+      "iqr": 109286.375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_pytorch_in1024_out4096_len8",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 674458.25,
+      "iqr": 38869.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_pytorch_in1024_out4096_len8",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 1161166.5,
+      "iqr": 214468.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_view_operand_f32_prepared_in1024_out1024_len8_t1",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 139799.5,
+      "iqr": 587.28125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_view_operand_f32_prepared_in1024_out1024_len8_t4",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 152585.9375,
+      "iqr": 12846.34375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_view_operand_f32_pytorch_in1024_out1024_len8_t1",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 123177.0625,
+      "iqr": 12460.9375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_view_operand_f32_pytorch_in1024_out1024_len8_t4",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 123510.4375,
+      "iqr": 8878.90625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "degenerate_dot_hadamard_f64_dot-general-shared_n1024",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 589958.25,
+      "iqr": 67359.375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "degenerate_dot_hadamard_f64_dot-general-shared_n1024",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 412833.25,
+      "iqr": 7354.125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "degenerate_dot_hadamard_f64_pytorch_n1024",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 533208.0,
+      "iqr": 15583.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "degenerate_dot_hadamard_f64_pytorch_n1024",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 521968.75,
+      "iqr": 17182.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "degenerate_dot_outer_f64_dot-general-shared_n1024",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 315927.0,
+      "iqr": 24135.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "degenerate_dot_outer_f64_dot-general-shared_n1024",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 282291.625,
+      "iqr": 3260.4375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "degenerate_dot_outer_f64_pytorch_n1024",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 186947.75,
+      "iqr": 15390.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "degenerate_dot_outer_f64_pytorch_n1024",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 158333.375,
+      "iqr": 2440.1875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "degenerate_dot_rank0_f64_dot-general-shared_n1024",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 348916.5,
+      "iqr": 19646.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "degenerate_dot_rank0_f64_dot-general-shared_n1024",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 261088.5,
+      "iqr": 14010.375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "degenerate_dot_rank0_f64_pytorch_n1024",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 207260.25,
+      "iqr": 4270.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "degenerate_dot_rank0_f64_pytorch_n1024",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 226156.25,
+      "iqr": 9781.375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_small_add_f64_eager-held-session",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1175.69970703125,
+      "iqr": 26.346923828125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_small_add_f64_eager-held-session",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1609.4970703125,
+      "iqr": 25.594482421875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_small_add_f64_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 654.3681640625,
+      "iqr": 37.480712890625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_small_add_f64_pytorch",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 666.849853515625,
+      "iqr": 37.4857177734375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_small_gemm_f64_eager-held-session",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1704.87451171875,
+      "iqr": 28.0556640625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_small_gemm_f64_eager-held-session",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2316.69140625,
+      "iqr": 79.244140625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_small_gemm_f64_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 700.93798828125,
+      "iqr": 20.2686767578125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_small_gemm_f64_pytorch",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 855.28564453125,
+      "iqr": 210.4237060546875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_small_leaf_f64_eager-held-session",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1912.3935546875,
+      "iqr": 39.99853515625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_small_leaf_f64_eager-held-session",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1946.20703125,
+      "iqr": 394.673828125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_add_f64_pytorch_n1048576",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 404833.5,
+      "iqr": 9531.375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_add_f64_pytorch_n1048576",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 448052.0,
+      "iqr": 2125.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_add_f64_pytorch_n256",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 683.552978515625,
+      "iqr": 41.1070556640625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_add_f64_pytorch_n256",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 756.34765625,
+      "iqr": 65.032958984375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_add_f64_pytorch_n4096",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 1690.5107421875,
+      "iqr": 127.90966796875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_add_f64_pytorch_n4096",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 1418.498046875,
+      "iqr": 211.79150390625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_add_f64_session-add_n1048576",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 395250.0,
+      "iqr": 16885.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_add_f64_session-add_n1048576",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 487927.25,
+      "iqr": 79474.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_add_f64_session-add_n256",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 558.400390625,
+      "iqr": 3.5400390625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_add_f64_session-add_n256",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1041.50390625,
+      "iqr": 26.63134765625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_add_f64_session-add_n4096",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1400.634765625,
+      "iqr": 50.4951171875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_add_f64_session-add_n4096",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1778.564453125,
+      "iqr": 27.10009765625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_construct_f64_col_n4096",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 55.46820068359375,
+      "iqr": 2.196014404296875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_construct_f64_col_n4096",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 57.17718505859375,
+      "iqr": 3.445953369140625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_construct_f64_col_n65536",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 82.1533203125,
+      "iqr": 5.6962890625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_construct_f64_col_n65536",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 82.6015625,
+      "iqr": 3.90625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_construct_f64_col_n8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 56.25152587890625,
+      "iqr": 4.07855224609375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_construct_f64_col_n8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 56.549072265625,
+      "iqr": 1.5233306884765625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_construct_f64_row_n4096",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 12764.328125,
+      "iqr": 157.0625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_construct_f64_row_n4096",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 12782.06640625,
+      "iqr": 74.791015625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_construct_f64_row_n65536",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 216052.0625,
+      "iqr": 2990.90625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_construct_f64_row_n65536",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 204973.9375,
+      "iqr": 11656.21875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_construct_f64_row_n8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 131.21795654296875,
+      "iqr": 3.40142822265625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_construct_f64_row_n8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 129.12237548828125,
+      "iqr": 3.829925537109375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "fft_axis0_c64_fft-executor_n128",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 7123917.0,
+      "iqr": 419291.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "fft_axis0_c64_fft-executor_n128",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 4460792.0,
+      "iqr": 118291.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "fft_axis0_c64_pytorch_n128",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 17594208.0,
+      "iqr": 1228063.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "fft_axis0_c64_pytorch_n128",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 18035334.0,
+      "iqr": 1091729.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "followup_complex_exp_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_complex_exp_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_complex_exp_julia-base",
+      "group": "threads=1 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_complex_exp_julia-base",
+      "group": "threads=4 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_complex_norm_fro_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_complex_norm_fro_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_complex_norm_fro_jax",
+      "group": "threads=1 / steady_state",
+      "backend": "jax-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_complex_norm_fro_jax",
+      "group": "threads=4 / steady_state",
+      "backend": "jax-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_fft_fft_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_fft_fft_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_fft_fft_mkl-dfti",
+      "group": "threads=1 / steady_state",
+      "backend": "mkl-dfti",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_fft_fft_mkl-dfti",
+      "group": "threads=4 / steady_state",
+      "backend": "mkl-dfti",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_fft_ifft_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_fft_ifft_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_fft_ifft_mkl-dfti",
+      "group": "threads=1 / steady_state",
+      "backend": "mkl-dfti",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_fft_ifft_mkl-dfti",
+      "group": "threads=4 / steady_state",
+      "backend": "mkl-dfti",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_fft_irfft_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_fft_irfft_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_fft_irfft_mkl-dfti",
+      "group": "threads=1 / steady_state",
+      "backend": "mkl-dfti",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_fft_irfft_mkl-dfti",
+      "group": "threads=4 / steady_state",
+      "backend": "mkl-dfti",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_fft_rfft_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_fft_rfft_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_fft_rfft_mkl-dfti",
+      "group": "threads=1 / steady_state",
+      "backend": "mkl-dfti",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_fft_rfft_mkl-dfti",
+      "group": "threads=4 / steady_state",
+      "backend": "mkl-dfti",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_index_dynamic_update_slice_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_index_dynamic_update_slice_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_index_dynamic_update_slice_jax",
+      "group": "threads=1 / steady_state",
+      "backend": "jax-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_index_dynamic_update_slice_jax",
+      "group": "threads=4 / steady_state",
+      "backend": "jax-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_index_gather_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_index_gather_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_index_gather_jax",
+      "group": "threads=1 / steady_state",
+      "backend": "jax-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_index_gather_jax",
+      "group": "threads=4 / steady_state",
+      "backend": "jax-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_index_scatter_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_index_scatter_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_index_scatter_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_index_scatter_pytorch",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_metadata_reshape_view_julia-base",
+      "group": "threads=1 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_metadata_reshape_view_julia-base",
+      "group": "threads=4 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_metadata_reshape_view_metadata",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_metadata_reshape_view_metadata",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_metadata_reshape_view_metadata-host-dyn",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_metadata_reshape_view_metadata-host-dyn",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_metadata_reshape_view_metadata-host-static",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_metadata_reshape_view_metadata-host-static",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_metadata_slice_view_julia-base",
+      "group": "threads=1 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_metadata_slice_view_julia-base",
+      "group": "threads=4 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_metadata_slice_view_metadata",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_metadata_slice_view_metadata",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_metadata_slice_view_metadata-host-dyn",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_metadata_slice_view_metadata-host-dyn",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_metadata_slice_view_metadata-host-static",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_metadata_slice_view_metadata-host-static",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_metadata_transpose_view_julia-base",
+      "group": "threads=1 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_metadata_transpose_view_julia-base",
+      "group": "threads=4 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_metadata_transpose_view_metadata",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_metadata_transpose_view_metadata",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_metadata_transpose_view_metadata-host-dyn",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_metadata_transpose_view_metadata-host-dyn",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_metadata_transpose_view_metadata-host-static",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_metadata_transpose_view_metadata-host-static",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_perm_cyclic_15d_3_materialize",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_perm_cyclic_15d_3_materialize",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_perm_cyclic_15d_3_strided-rs",
+      "group": "threads=1 / steady_state",
+      "backend": "strided-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_perm_cyclic_15d_3_strided-rs",
+      "group": "threads=4 / steady_state",
+      "backend": "strided-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_perm_reverse_15d_3_materialize",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_perm_reverse_15d_3_materialize",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_perm_reverse_15d_3_strided-rs",
+      "group": "threads=1 / steady_state",
+      "backend": "strided-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_perm_reverse_15d_3_strided-rs",
+      "group": "threads=4 / steady_state",
+      "backend": "strided-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_perm_reverse_23d_2_materialize",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_perm_reverse_23d_2_materialize",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_perm_reverse_23d_2_strided-rs",
+      "group": "threads=1 / steady_state",
+      "backend": "strided-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_perm_reverse_23d_2_strided-rs",
+      "group": "threads=4 / steady_state",
+      "backend": "strided-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_perm_rotation_6d_32_32_32_32_16_16_materialize",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_perm_rotation_6d_32_32_32_32_16_16_materialize",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_perm_rotation_6d_32_32_32_32_16_16_strided-rs",
+      "group": "threads=1 / steady_state",
+      "backend": "strided-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_perm_rotation_6d_32_32_32_32_16_16_strided-rs",
+      "group": "threads=4 / steady_state",
+      "backend": "strided-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_perm_tn_light_415_24d_contiguous_same_perm_materialize",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_perm_tn_light_415_24d_contiguous_same_perm_materialize",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_perm_tn_light_415_24d_contiguous_same_perm_strided-rs",
+      "group": "threads=1 / steady_state",
+      "backend": "strided-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_perm_tn_light_415_24d_contiguous_same_perm_strided-rs",
+      "group": "threads=4 / steady_state",
+      "backend": "strided-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_perm_tn_light_415_24d_scattered_to_colmajor_materialize",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_perm_tn_light_415_24d_scattered_to_colmajor_materialize",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_perm_tn_light_415_24d_scattered_to_colmajor_strided-rs",
+      "group": "threads=1 / steady_state",
+      "backend": "strided-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_perm_tn_light_415_24d_scattered_to_colmajor_strided-rs",
+      "group": "threads=4 / steady_state",
+      "backend": "strided-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_perm_transpose_3d_256_102_materialize",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_perm_transpose_3d_256_102_materialize",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_perm_transpose_3d_256_102_strided-rs",
+      "group": "threads=1 / steady_state",
+      "backend": "strided-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_perm_transpose_3d_256_102_strided-rs",
+      "group": "threads=4 / steady_state",
+      "backend": "strided-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_perm_transpose_3d_256_201_materialize",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_perm_transpose_3d_256_201_materialize",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_perm_transpose_3d_256_201_strided-rs",
+      "group": "threads=1 / steady_state",
+      "backend": "strided-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_perm_transpose_3d_256_201_strided-rs",
+      "group": "threads=4 / steady_state",
+      "backend": "strided-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_cos_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_cos_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_cos_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_cos_pytorch",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_exp_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_exp_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_exp_jax",
+      "group": "threads=1 / steady_state",
+      "backend": "jax-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_exp_jax",
+      "group": "threads=4 / steady_state",
+      "backend": "jax-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_expm1_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_expm1_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_expm1_jax",
+      "group": "threads=1 / steady_state",
+      "backend": "jax-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_expm1_jax",
+      "group": "threads=4 / steady_state",
+      "backend": "jax-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_log1p_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_log1p_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_log1p_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_log1p_pytorch",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_log_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_log_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_log_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_log_pytorch",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_pow_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_pow_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_pow_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_pow_pytorch",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_reduce_max_all_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_reduce_max_all_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_reduce_max_all_julia-base",
+      "group": "threads=1 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_reduce_max_all_julia-base",
+      "group": "threads=4 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_reduce_max_axis0_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_reduce_max_axis0_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_reduce_max_axis0_julia-base",
+      "group": "threads=1 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_reduce_max_axis0_julia-base",
+      "group": "threads=4 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_reduce_max_axis1_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_reduce_max_axis1_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_reduce_max_axis1_julia-base",
+      "group": "threads=1 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_reduce_max_axis1_julia-base",
+      "group": "threads=4 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_reduce_min_all_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_reduce_min_all_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_reduce_min_all_julia-base",
+      "group": "threads=1 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_reduce_min_all_julia-base",
+      "group": "threads=4 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_reduce_min_axis0_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_reduce_min_axis0_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_reduce_min_axis0_julia-base",
+      "group": "threads=1 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_reduce_min_axis0_julia-base",
+      "group": "threads=4 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_reduce_min_axis1_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_reduce_min_axis1_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_reduce_min_axis1_julia-base",
+      "group": "threads=1 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_reduce_min_axis1_julia-base",
+      "group": "threads=4 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_reduce_prod_axis1_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_reduce_prod_axis1_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_reduce_prod_axis1_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_reduce_prod_axis1_pytorch",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_reduce_sum_axis1_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_reduce_sum_axis1_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_reduce_sum_axis1_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_reduce_sum_axis1_pytorch",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_sin_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_sin_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_sin_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_sin_pytorch",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_tanh_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_tanh_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_tanh_jax",
+      "group": "threads=1 / steady_state",
+      "backend": "jax-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_real_tanh_jax",
+      "group": "threads=4 / steady_state",
+      "backend": "jax-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_structural_broadcast_in_dim_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_structural_broadcast_in_dim_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_structural_broadcast_in_dim_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_structural_broadcast_in_dim_pytorch",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_structural_extract_diagonal_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_structural_extract_diagonal_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_structural_extract_diagonal_jax",
+      "group": "threads=1 / steady_state",
+      "backend": "jax-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_structural_extract_diagonal_jax",
+      "group": "threads=4 / steady_state",
+      "backend": "jax-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_structural_transpose_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_structural_transpose_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_structural_transpose_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "followup_structural_transpose_pytorch",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "cpu_followup MWE needs the Linux system-MKL build; skipped on darwin"
+    },
+    {
+      "case": "gemm_bound_f64_t1_t8_scaling",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 40245417.0,
+      "iqr": 2563062.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gemm_bound_f64_t1_t8_scaling_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 34817750.0,
+      "iqr": 5932104.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gemm_c64_mm256_t1",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 570802.25,
+      "iqr": 3875.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gemm_c64_mm256_t1",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 594750.0,
+      "iqr": 43776.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gemm_f64_mm256_t1",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 99906.25,
+      "iqr": 602.84375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gemm_f64_mm256_t1",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 100020.8125,
+      "iqr": 993.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_eager-composed_d1024_len64_b1",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 82687.5,
+      "iqr": 2923.1875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_eager-composed_d1024_len64_b1",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 79281.25,
+      "iqr": 500.640625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_eager-composed_d1024_len64_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 474416.75,
+      "iqr": 24750.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_eager-composed_d1024_len64_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 421791.75,
+      "iqr": 6359.375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_eager-composed_d1024_len8_b1",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 36902.984375,
+      "iqr": 276.046875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_eager-composed_d1024_len8_b1",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 47798.828125,
+      "iqr": 1523.109375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_eager-composed_d1024_len8_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 71930.96875,
+      "iqr": 1260.421875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_eager-composed_d1024_len8_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 79510.4375,
+      "iqr": 401.703125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_eager-single-call_d1024_len64_b1",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 86020.8125,
+      "iqr": 11263.03125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_eager-single-call_d1024_len64_b1",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 90740.875,
+      "iqr": 4086.609375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_eager-single-call_d1024_len64_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 437114.5,
+      "iqr": 24265.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_eager-single-call_d1024_len64_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 386468.75,
+      "iqr": 8250.125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_eager-single-call_d1024_len8_b1",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 45164.0625,
+      "iqr": 783.8515625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_eager-single-call_d1024_len8_b1",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 49597.0,
+      "iqr": 342.1171875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_eager-single-call_d1024_len8_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 81980.46875,
+      "iqr": 4278.015625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_eager-single-call_d1024_len8_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 89960.9375,
+      "iqr": 6397.78125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_pytorch-fused_d1024_len64_b1",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 31326.828125,
+      "iqr": 754.5546875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_pytorch-fused_d1024_len64_b1",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 50753.25,
+      "iqr": 6870.453125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_pytorch-fused_d1024_len64_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 227578.125,
+      "iqr": 7703.0625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_pytorch-fused_d1024_len64_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 147770.875,
+      "iqr": 5977.84375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_pytorch-fused_d1024_len8_b1",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 5522.8671875,
+      "iqr": 381.9580078125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_pytorch-fused_d1024_len8_b1",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 28710.28125,
+      "iqr": 5332.6796875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_pytorch-fused_d1024_len8_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 27420.578125,
+      "iqr": 329.7578125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_pytorch-fused_d1024_len8_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 51495.453125,
+      "iqr": 6162.4453125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "log_softmax_f32_eager-composed_len512_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2404416.0,
+      "iqr": 38145.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "log_softmax_f32_eager-composed_len512_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2644250.0,
+      "iqr": 120792.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "log_softmax_f32_eager-composed_len64_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 68394.53125,
+      "iqr": 2155.59375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "log_softmax_f32_eager-composed_len64_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 68712.25,
+      "iqr": 353.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "log_softmax_f32_eager-single-call_len512_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2392500.0,
+      "iqr": 34062.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "log_softmax_f32_eager-single-call_len512_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2160542.0,
+      "iqr": 488479.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "log_softmax_f32_eager-single-call_len64_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 77636.71875,
+      "iqr": 258.453125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "log_softmax_f32_eager-single-call_len64_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 88307.28125,
+      "iqr": 5418.609375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "log_softmax_f32_pytorch_len512_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 3030125.0,
+      "iqr": 288667.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "log_softmax_f32_pytorch_len512_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 1478062.5,
+      "iqr": 31917.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "log_softmax_f32_pytorch_len64_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 42989.59375,
+      "iqr": 2787.1171875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "log_softmax_f32_pytorch_len64_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 49902.34375,
+      "iqr": 6221.0234375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "log_softmax_f32_session-single-call_len512_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2687958.0,
+      "iqr": 89854.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "log_softmax_f32_session-single-call_len512_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2152208.0,
+      "iqr": 27438.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "log_softmax_f32_session-single-call_len64_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 59476.5625,
+      "iqr": 667.296875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "log_softmax_f32_session-single-call_len64_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 64876.28125,
+      "iqr": 632.171875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lstsq_f64_eager-shared_m768_n384_rhs16",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 7711167.0,
+      "iqr": 448708.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lstsq_f64_eager-shared_m768_n384_rhs16",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 10097167.0,
+      "iqr": 683437.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lstsq_f64_pytorch_m768_n384_rhs16",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 4304208.0,
+      "iqr": 71250.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lstsq_f64_pytorch_m768_n384_rhs16",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 5126958.0,
+      "iqr": 382125.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lu_batched_f64_factor_n16_b1024",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 718937.5,
+      "iqr": 42583.375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lu_batched_f64_factor_n16_b1024",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 719895.75,
+      "iqr": 17734.375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lu_batched_f64_factor_n16_b1024_host",
+      "group": "threads=1 / steady_state",
+      "backend": "rust-loop",
+      "median": 1055812.5,
+      "iqr": 42927.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lu_batched_f64_factor_n16_b1024_host",
+      "group": "threads=4 / steady_state",
+      "backend": "rust-loop",
+      "median": 978396.0,
+      "iqr": 6344.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lu_batched_f64_factor_n8_b1024",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 253078.125,
+      "iqr": 2075.5625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lu_batched_f64_factor_n8_b1024",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 266984.375,
+      "iqr": 17263.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lu_batched_f64_factor_n8_b1024_host",
+      "group": "threads=1 / steady_state",
+      "backend": "rust-loop",
+      "median": 215257.8125,
+      "iqr": 12005.21875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lu_batched_f64_factor_n8_b1024_host",
+      "group": "threads=4 / steady_state",
+      "backend": "rust-loop",
+      "median": 215487.0,
+      "iqr": 1511.71875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lu_batched_f64_solve_n16_b1024",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 194005.1875,
+      "iqr": 19751.3125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lu_batched_f64_solve_n16_b1024",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 203981.75,
+      "iqr": 9248.71875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lu_batched_f64_solve_n16_b1024_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 175411.5,
+      "iqr": 526.03125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lu_batched_f64_solve_n16_b1024_pytorch",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 175648.4375,
+      "iqr": 640.59375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lu_batched_f64_solve_n8_b1024",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 81924.5,
+      "iqr": 2031.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lu_batched_f64_solve_n8_b1024",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 78696.59375,
+      "iqr": 625.65625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lu_batched_f64_solve_n8_b1024_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 73928.375,
+      "iqr": 419.90625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lu_batched_f64_solve_n8_b1024_pytorch",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 79282.5625,
+      "iqr": 1719.40625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "masked_softmax_f32_eager-composed_len512_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 3362209.0,
+      "iqr": 68688.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "masked_softmax_f32_eager-composed_len512_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2747083.0,
+      "iqr": 20499.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "masked_softmax_f32_eager-composed_len64_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 69835.9375,
+      "iqr": 331.390625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "masked_softmax_f32_eager-composed_len64_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 79384.125,
+      "iqr": 2551.40625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "masked_softmax_f32_eager-single-call_len512_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 3777042.0,
+      "iqr": 186250.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "masked_softmax_f32_eager-single-call_len512_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 3160208.0,
+      "iqr": 137979.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "masked_softmax_f32_eager-single-call_len64_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 174898.4375,
+      "iqr": 98554.65625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "masked_softmax_f32_eager-single-call_len64_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 107518.25,
+      "iqr": 547.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "masked_softmax_f32_pytorch_len512_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 4231042.0,
+      "iqr": 28562.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "masked_softmax_f32_pytorch_len512_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 2655250.0,
+      "iqr": 130333.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "masked_softmax_f32_pytorch_len64_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 63739.59375,
+      "iqr": 425.796875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "masked_softmax_f32_pytorch_len64_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 77054.6875,
+      "iqr": 1334.65625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "masked_softmax_f32_session-single-call_len512_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 3377750.0,
+      "iqr": 33667.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "masked_softmax_f32_session-single-call_len512_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 3125083.0,
+      "iqr": 105396.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "masked_softmax_f32_session-single-call_len64_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 85294.28125,
+      "iqr": 2588.546875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "masked_softmax_f32_session-single-call_len64_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 85631.53125,
+      "iqr": 3909.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "metadata_transpose_view_f64_rank8_t1",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 50.671905517578125,
+      "iqr": 2.756744384765625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "metadata_transpose_view_f64_rank8_t1_julia-base",
+      "group": "threads=1 / steady_state",
+      "backend": "julia-base",
+      "median": 0.3127260208129883,
+      "iqr": 0.011622428894042969,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "metadata_transpose_view_f64_rank8_t4",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 54.650634765625,
+      "iqr": 1.076385498046875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "metadata_transpose_view_f64_rank8_t4_julia-base",
+      "group": "threads=4 / steady_state",
+      "backend": "julia-base",
+      "median": 0.3127260208129883,
+      "iqr": 0.016888141632080078,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_mean_f32_eager-composed_1024x64_axis0",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 11770.5078125,
+      "iqr": 108.55859375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_mean_f32_eager-composed_1024x64_axis0",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 13628.58203125,
+      "iqr": 325.92578125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_mean_f32_eager-single-call_1024x64_axis0",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 11781.578125,
+      "iqr": 114.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_mean_f32_eager-single-call_1024x64_axis0",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 14522.13671875,
+      "iqr": 1163.81640625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_mean_f32_pytorch_1024x64_axis0",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 5655.109375,
+      "iqr": 23.76171875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_mean_f32_pytorch_1024x64_axis0",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 34923.1875,
+      "iqr": 906.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_mean_f32_session-single-call_1024x64_axis0",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 6790.365234375,
+      "iqr": 228.7177734375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_mean_f32_session-single-call_1024x64_axis0",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 7993.98046875,
+      "iqr": 149.90234375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reshape_f64_concrete-shared_n33554432_to8192x4096",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 10619375.0,
+      "iqr": 1987625.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reshape_f64_concrete-shared_n33554432_to8192x4096",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 10322250.0,
+      "iqr": 562604.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reshape_f64_pytorch_n33554432_to8192x4096",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 9540792.0,
+      "iqr": 2703979.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reshape_f64_pytorch_n33554432_to8192x4096",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 10902042.0,
+      "iqr": 665603.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_eager-composed_d1024_len64_b1",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 41861.96875,
+      "iqr": 411.7890625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_eager-composed_d1024_len64_b1",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 41843.75,
+      "iqr": 472.3203125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_eager-composed_d1024_len64_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 180479.125,
+      "iqr": 5421.9375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_eager-composed_d1024_len64_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 271265.625,
+      "iqr": 11546.875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_eager-composed_d1024_len8_b1",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 23577.4765625,
+      "iqr": 440.26171875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_eager-composed_d1024_len8_b1",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 23974.28125,
+      "iqr": 113.44140625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_eager-composed_d1024_len8_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 44581.375,
+      "iqr": 1249.671875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_eager-composed_d1024_len8_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 42053.390625,
+      "iqr": 295.2421875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_eager-single-call_d1024_len64_b1",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 45528.65625,
+      "iqr": 1938.140625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_eager-single-call_d1024_len64_b1",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 51216.796875,
+      "iqr": 4915.359375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_eager-single-call_d1024_len64_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 214260.5,
+      "iqr": 9372.375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_eager-single-call_d1024_len64_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 276281.25,
+      "iqr": 14536.375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_eager-single-call_d1024_len8_b1",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 27555.34375,
+      "iqr": 661.78125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_eager-single-call_d1024_len8_b1",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 31385.40625,
+      "iqr": 2127.9296875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_eager-single-call_d1024_len8_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 47384.125,
+      "iqr": 2033.21875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_eager-single-call_d1024_len8_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 52345.703125,
+      "iqr": 1787.7578125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_pytorch-fused_d1024_len64_b1",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 29966.796875,
+      "iqr": 1172.1953125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_pytorch-fused_d1024_len64_b1",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 135252.5625,
+      "iqr": 1977.875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_pytorch-fused_d1024_len64_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 187260.375,
+      "iqr": 4328.0625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_pytorch-fused_d1024_len64_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 203182.375,
+      "iqr": 2859.375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_pytorch-fused_d1024_len8_b1",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 10113.4453125,
+      "iqr": 143.146484375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_pytorch-fused_d1024_len8_b1",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 10292.640625,
+      "iqr": 408.04296875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_pytorch-fused_d1024_len8_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 32755.203125,
+      "iqr": 1165.6953125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_pytorch-fused_d1024_len8_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 133135.375,
+      "iqr": 2164.0625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_contraction_abcd-dbef-acef_f64_shared-session-default-pool_d4",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2142.904296875,
+      "iqr": 11.5966796875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_contraction_abcd-dbef-acef_f64_shared-session-default-pool_d4",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2788.6552734375,
+      "iqr": 181.49853515625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_eigh_f64_pytorch_n16",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 57772.78125,
+      "iqr": 490.890625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_eigh_f64_pytorch_n16",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 59388.015625,
+      "iqr": 432.6171875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_eigh_f64_pytorch_n4",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 40665.359375,
+      "iqr": 1276.6875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_eigh_f64_pytorch_n4",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 42215.484375,
+      "iqr": 1129.2265625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_eigh_f64_trace-prepared_n16",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 49811.1875,
+      "iqr": 416.6796875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_eigh_f64_trace-prepared_n16",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 64597.65625,
+      "iqr": 398.4375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_eigh_f64_trace-prepared_n4",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 28317.3828125,
+      "iqr": 1084.63671875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_eigh_f64_trace-prepared_n4",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 43046.875,
+      "iqr": 2464.203125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_lu_f64_pytorch_n16",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 47850.265625,
+      "iqr": 3522.7890625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_lu_f64_pytorch_n16",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 141117.1875,
+      "iqr": 2945.3125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_lu_f64_pytorch_n4",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 40007.8125,
+      "iqr": 265.9453125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_lu_f64_pytorch_n4",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 160843.75,
+      "iqr": 25404.9375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_lu_f64_trace-prepared_n16",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 19657.2265625,
+      "iqr": 56.640625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_lu_f64_trace-prepared_n16",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 27574.5390625,
+      "iqr": 252.27734375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_lu_f64_trace-prepared_n4",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 15074.37890625,
+      "iqr": 277.345703125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_lu_f64_trace-prepared_n4",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 22007.484375,
+      "iqr": 636.87890625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_qr_f64_pytorch_n16",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 46309.90625,
+      "iqr": 297.84375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_qr_f64_pytorch_n16",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 83826.84375,
+      "iqr": 1571.609375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_qr_f64_pytorch_n4",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 40047.53125,
+      "iqr": 784.515625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_qr_f64_pytorch_n4",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 115994.8125,
+      "iqr": 16798.1875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_qr_f64_trace-prepared_n16",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 34932.953125,
+      "iqr": 2049.8046875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_qr_f64_trace-prepared_n16",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 48264.328125,
+      "iqr": 3244.796875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_qr_f64_trace-prepared_n4",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 23350.90625,
+      "iqr": 173.9921875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_qr_f64_trace-prepared_n4",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 34212.890625,
+      "iqr": 284.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_solve_f64_pytorch_n16",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 43082.03125,
+      "iqr": 1503.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_solve_f64_pytorch_n16",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 43481.78125,
+      "iqr": 2948.8984375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_solve_f64_pytorch_n4",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 33039.0625,
+      "iqr": 670.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_solve_f64_pytorch_n4",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 34254.546875,
+      "iqr": 234.375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_solve_f64_trace-prepared_n16",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 15594.56640625,
+      "iqr": 982.583984375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_solve_f64_trace-prepared_n16",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 20637.6953125,
+      "iqr": 164.55859375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_solve_f64_trace-prepared_n4",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 10808.7578125,
+      "iqr": 55.337890625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_solve_f64_trace-prepared_n4",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 16725.5859375,
+      "iqr": 987.95703125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_svd_f64_pytorch_n16",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 99941.40625,
+      "iqr": 4361.3125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_svd_f64_pytorch_n16",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 102501.3125,
+      "iqr": 2571.59375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_svd_f64_pytorch_n4",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 52611.328125,
+      "iqr": 314.453125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_svd_f64_pytorch_n4",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 55535.8125,
+      "iqr": 1536.78125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_svd_f64_trace-prepared_n16",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 91555.96875,
+      "iqr": 1029.953125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_svd_f64_trace-prepared_n16",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 113014.3125,
+      "iqr": 1413.40625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_svd_f64_trace-prepared_n4",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 46646.484375,
+      "iqr": 1028.984375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_svd_f64_trace-prepared_n4",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 71160.15625,
+      "iqr": 1597.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_pytorch-solve-batched_k16_b64",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 90825.5,
+      "iqr": 489.5625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_pytorch-solve-batched_k16_b64",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 114707.03125,
+      "iqr": 2007.171875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_pytorch-solve-batched_k64_b64",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 1513479.0,
+      "iqr": 271520.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_pytorch-solve-batched_k64_b64",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 1023041.5,
+      "iqr": 186276.125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_pytorch-solve-triangular-batched_k16_b64",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 23282.2265625,
+      "iqr": 2613.76953125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_pytorch-solve-triangular-batched_k16_b64",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 22833.984375,
+      "iqr": 747.078125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_pytorch-solve-triangular-batched_k64_b64",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 309328.125,
+      "iqr": 15341.125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_pytorch-solve-triangular-batched_k64_b64",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 277932.25,
+      "iqr": 3481.875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_solve-batched_k16_b64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 82598.96875,
+      "iqr": 1927.078125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_solve-batched_k16_b64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 83302.0625,
+      "iqr": 578.78125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_solve-batched_k64_b64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1688125.0,
+      "iqr": 77760.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_solve-batched_k64_b64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1709291.5,
+      "iqr": 37156.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_solve-loop_k16_b64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 121591.125,
+      "iqr": 533.84375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_solve-loop_k16_b64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 157710.9375,
+      "iqr": 12118.53125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_solve-loop_k64_b64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1541166.5,
+      "iqr": 77395.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_solve-loop_k64_b64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1557667.0,
+      "iqr": 14083.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_triangular-solve-loop_k16_b64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 47511.0625,
+      "iqr": 1847.3359375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_triangular-solve-loop_k16_b64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 76292.96875,
+      "iqr": 1971.359375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_triangular-solve-loop_k64_b64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 324447.875,
+      "iqr": 4039.0625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_triangular-solve-loop_k64_b64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 331510.25,
+      "iqr": 4031.375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_eager-composed_len512_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2683708.0,
+      "iqr": 378812.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_eager-composed_len512_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2281042.0,
+      "iqr": 439396.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_eager-composed_len64_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 62639.3125,
+      "iqr": 370.453125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_eager-composed_len64_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 66959.65625,
+      "iqr": 2356.109375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_eager-composed_len64_b8_t1",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 67250.0,
+      "iqr": 1420.578125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_eager-composed_len64_b8_t4",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 70001.3125,
+      "iqr": 4638.015625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_eager-single-call_len512_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2424709.0,
+      "iqr": 114229.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_eager-single-call_len512_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1343146.0,
+      "iqr": 24042.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_eager-single-call_len64_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 33694.015625,
+      "iqr": 830.3984375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_eager-single-call_len64_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 25300.78125,
+      "iqr": 120.1171875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_eager-single-call_len64_b8_t1",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 31731.125,
+      "iqr": 1395.171875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_eager-single-call_len64_b8_t4",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 25766.265625,
+      "iqr": 524.7421875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_pytorch_len512_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 3153792.0,
+      "iqr": 149354.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_pytorch_len512_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 1659021.0,
+      "iqr": 46395.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_pytorch_len64_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 45683.59375,
+      "iqr": 1545.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_pytorch_len64_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 50050.125,
+      "iqr": 473.3046875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_pytorch_len64_b8_t1",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 45725.90625,
+      "iqr": 3719.734375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_pytorch_len64_b8_t4",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 49179.03125,
+      "iqr": 3006.1875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_session-single-call_len512_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2371500.0,
+      "iqr": 8812.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_session-single-call_len512_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1282187.5,
+      "iqr": 19698.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_session-single-call_len64_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 31231.765625,
+      "iqr": 171.2265625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_session-single-call_len64_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 25657.2265625,
+      "iqr": 716.796875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f64_pool_pool4_1024x4096",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 7311125.0,
+      "iqr": 905458.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f64_pool_pytorch_t1_1024x4096",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 16199791.0,
+      "iqr": 706396.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f64_pool_pytorch_t4_1024x4096",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 8346709.0,
+      "iqr": 180813.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f64_pool_serial_1024x4096",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 13520458.0,
+      "iqr": 786646.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "take_along_axis_rows_f64_eager-gather-prebuilt_n64_b256",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 5332625.0,
+      "iqr": 31896.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "take_along_axis_rows_f64_eager-gather-prebuilt_n64_b256",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 3650334.0,
+      "iqr": 84959.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "take_along_axis_rows_f64_eager-single-call_n64_b256",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 5533333.0,
+      "iqr": 384375.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "take_along_axis_rows_f64_eager-single-call_n64_b256",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 3890583.0,
+      "iqr": 108416.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "take_along_axis_rows_f64_pytorch_n64_b256",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 1998646.0,
+      "iqr": 81833.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "take_along_axis_rows_f64_pytorch_n64_b256",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 1308292.0,
+      "iqr": 160708.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "take_along_axis_rows_f64_session-single-call_n64_b256",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 5737375.0,
+      "iqr": 422624.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "take_along_axis_rows_f64_session-single-call_n64_b256",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 3595541.0,
+      "iqr": 45104.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tanh_chain_f32_compiled-prepared_k100_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 21532541.0,
+      "iqr": 1297895.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tanh_chain_f32_compiled-prepared_k100_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 9622792.0,
+      "iqr": 230145.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tanh_chain_f32_compiled-prepared_k10_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2207542.0,
+      "iqr": 72958.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tanh_chain_f32_compiled-prepared_k10_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1122187.5,
+      "iqr": 39729.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tanh_chain_f32_compiled-prepared_k200_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 41960083.0,
+      "iqr": 1311624.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tanh_chain_f32_compiled-prepared_k200_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 15280875.0,
+      "iqr": 140791.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tanh_chain_f32_eager-shared_k100_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 20772625.0,
+      "iqr": 457396.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tanh_chain_f32_eager-shared_k100_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 20827375.0,
+      "iqr": 1022083.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tanh_chain_f32_eager-shared_k10_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2280959.0,
+      "iqr": 126312.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tanh_chain_f32_eager-shared_k10_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2183417.0,
+      "iqr": 54042.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tanh_chain_f32_eager-shared_k200_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 47486042.0,
+      "iqr": 1671854.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tanh_chain_f32_eager-shared_k200_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 41691625.0,
+      "iqr": 1604271.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tiny_matmul_2x2_typed_held",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 783.24365234375,
+      "iqr": 36.77880859375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tiny_matmul_2x2_typed_held_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 641.337158203125,
+      "iqr": 6.2864990234375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "trace_metadata_eager_f32_1024x64_k50",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1728333.0,
+      "iqr": 229541.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "trace_metadata_eager_f32_1024x64_k50",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1640354.5,
+      "iqr": 16010.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "trace_metadata_fixed_neg_f32_8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2025.2275390625,
+      "iqr": 93.68896484375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "trace_metadata_fixed_neg_f32_8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2705.810546875,
+      "iqr": 118.16455078125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "trace_metadata_pytorch_f32_1024x64_k50",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 1283354.0,
+      "iqr": 21322.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "trace_metadata_pytorch_f32_1024x64_k50",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 2175500.0,
+      "iqr": 146749.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "trace_metadata_trace-fold_f32_1024x64_k50",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1258270.5,
+      "iqr": 15458.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "trace_metadata_trace-fold_f32_1024x64_k50",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1294187.5,
+      "iqr": 70729.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "trace_metadata_trace-outputs_f32_1024x64_k50",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1455208.0,
+      "iqr": 26052.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "trace_metadata_trace-outputs_f32_1024x64_k50",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1811500.0,
+      "iqr": 317645.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "triangular_f64_concrete-shared_n4096_rhs64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 14104083.0,
+      "iqr": 2302833.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "triangular_f64_concrete-shared_n4096_rhs64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 14951833.0,
+      "iqr": 2203480.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "triangular_f64_pytorch_n4096_rhs64",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 11299333.0,
+      "iqr": 1566521.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "triangular_f64_pytorch_n4096_rhs64",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 11413542.0,
+      "iqr": 1699708.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "typed_elemwise_f64_add_held_len16",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 635.90478515625,
+      "iqr": 13.971923828125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "typed_elemwise_f64_add_held_len16_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 639.44482421875,
+      "iqr": 32.842041015625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "typed_elemwise_f64_add_held_len256",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 677.20556640625,
+      "iqr": 11.26611328125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "typed_elemwise_f64_add_held_len256_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 699.910400390625,
+      "iqr": 5.1676025390625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "typed_elemwise_f64_add_held_len4096",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1345.3369140625,
+      "iqr": 57.29150390625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "typed_elemwise_f64_add_held_len4096_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 1317.3828125,
+      "iqr": 18.107421875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "typed_elemwise_f64_add_into_held_len16",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 483.1339111328125,
+      "iqr": 26.92413330078125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "typed_elemwise_f64_add_into_held_len16_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 669.8505859375,
+      "iqr": 36.178466796875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "typed_elemwise_f64_add_into_held_len256",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 522.84765625,
+      "iqr": 12.074951171875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "typed_elemwise_f64_add_into_held_len256_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 693.949462890625,
+      "iqr": 34.2559814453125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "typed_elemwise_f64_add_into_held_len4096",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1090.75927734375,
+      "iqr": 15.248291015625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "typed_elemwise_f64_add_into_held_len4096_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 1391.74365234375,
+      "iqr": 48.970703125,
+      "status": "ok",
+      "verified": true
+    }
+  ],
+  "source_runs": [
+    {
+      "run": "data/results/mac-cpu/cpu/perf_issues/20261104_182038",
+      "threads": [
+        1
+      ],
+      "host": {
+        "cpu": "arm",
+        "logical_cpus": null,
+        "power": null,
+        "numa": null,
+        "smt_siblings": null,
+        "l3_domains": null
+      },
+      "toolchain": {
+        "rustc": "rustc 1.99.1 (58cf8f9c3 2026-10-13)\nbinary: rustc\ncommit-hash: 58cf8f9c35b355199727627d07ae34a4e2846d67\ncommit-date: 2026-10-13\nhost: aarch64-apple-darwin\nrelease: 1.99.1\nLLVM version: 23.1.1\n",
+        "rustc_release": "1.99.1",
+        "rustflags": null,
+        "target_cpu": null
+      },
+      "power": "unrecorded"
+    },
+    {
+      "run": "data/results/mac-cpu/cpu/perf_issues/20261104_182038",
+      "threads": [
+        4
+      ],
+      "host": {
+        "cpu": "arm",
+        "logical_cpus": null,
+        "power": null,
+        "numa": null,
+        "smt_siblings": null,
+        "l3_domains": null
+      },
+      "toolchain": {
+        "rustc": "rustc 1.99.1 (58cf8f9c3 2026-10-13)\nbinary: rustc\ncommit-hash: 58cf8f9c35b355199727627d07ae34a4e2846d67\ncommit-date: 2026-10-13\nhost: aarch64-apple-darwin\nrelease: 1.99.1\nLLVM version: 23.1.1\n",
+        "rustc_release": "1.99.1",
+        "rustflags": null,
+        "target_cpu": null
+      },
+      "power": "unrecorded"
+    }
+  ],
+  "timing_policy": {
+    "version": 2,
+    "scope": "operation execution and completion synchronization",
+    "setup": "inputs, transfers, runtime/session/handles, plans and compilation outside timer",
+    "cleanup": "returned outputs retained until after timer stops",
+    "minimum_untimed_priming_runs": 1,
+    "short_operation_sampling": "many operations per interval; shared session where supported; see docs/short-operation-sessions.md",
+    "trace_execution": "prepare_compiled and caller-held session entry outside timing; run_prepared_in inside",
+    "setup_diagnostics": false
+  },
+  "counts": {
+    "expected": 622,
+    "selected": 622,
+    "executed": 434,
+    "unsupported": 0,
+    "failed": 0,
+    "missing": 0,
+    "noisy": 41,
+    "skipped": 188
+  }
+}
