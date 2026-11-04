@@ -9,6 +9,29 @@ ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'mwe/cpu_followup'))
 from validation import verify
 
+# The collector and the builder must agree on one path: scripts/run_cpu_followup.sh
+# builds into $PWD/target/followup-current with this directory as its target dir.
+DEFAULT_MWE_BINARY=ROOT/'target/followup-current/release/cpu-followup-mwe'
+
+
+def mwe_binary():
+    """The Rust MWE binary, honoring the CPU_FOLLOWUP_BIN override."""
+    return Path(os.environ.get('CPU_FOLLOWUP_BIN',str(DEFAULT_MWE_BINARY)))
+
+
+def mwe_build_hint(binary):
+    return (f'CPU follow-up MWE binary is missing: {binary}. Build it with '
+            f'`./scripts/run_cpu_followup.sh --prepare-mwe` (or '
+            f'`CARGO_TARGET_DIR="$PWD/target/followup-current" cargo build --release '
+            f'--manifest-path mwe/cpu_followup/Cargo.toml`); the nightly path builds it '
+            f'through `./scripts/run_cpu_followup.sh --prepare-mwe`. '
+            f'`CPU_FOLLOWUP_BIN` overrides the location.')
+
+
+def followup_mwe_supported():
+    """mwe/cpu_followup's default feature is system-mkl, so it builds on Linux only."""
+    return sys.platform=='linux'
+
 
 def resolve_julia():
     """Honor an explicit JULIA; otherwise search PATH, then juliaup's default."""
@@ -33,13 +56,20 @@ def command(case_id, path, threads, runs):
                 str(ROOT/'mwe/cpu_followup/reference.jl'),case_id,str(threads),str(runs)]
     if path in ('pytorch','jax','mkl-dfti'):
         return [sys.executable,str(ROOT/'mwe/cpu_followup/reference.py'),case_id,path,str(threads),str(runs)]
-    return [os.environ.get('CPU_FOLLOWUP_BIN',str(ROOT/'target/followup-current/release/cpu-followup-mwe')),
-            case_id,path,str(threads),str(runs)]
+    return [str(mwe_binary()),case_id,path,str(threads),str(runs)]
 
 
 def execute(case_id,path,threads,runs,target_ns):
+    invocation=command(case_id,path,threads,runs)
     env=dict(os.environ,CPU_FOLLOWUP_TARGET_NS=str(target_ns))
-    result=subprocess.run(command(case_id,path,threads,runs),cwd=ROOT,env=env,capture_output=True,text=True)
+    try:
+        result=subprocess.run(invocation,cwd=ROOT,env=env,capture_output=True,text=True)
+    except FileNotFoundError as error:
+        # A bare FileNotFoundError once cost 94 rows x 2 thread counts of triage:
+        # name the missing artifact and the command that produces it.
+        if invocation[0]==str(mwe_binary()):
+            raise RuntimeError(mwe_build_hint(Path(invocation[0]))) from error
+        raise
     if result.returncode:
         raise RuntimeError(f'{path}: {result.stderr.strip()}')
     row=json.loads(result.stdout.strip().splitlines()[-1])
@@ -48,6 +78,12 @@ def execute(case_id,path,threads,runs,target_ns):
 
 
 def run(case,threads,config,correctness_only=False):
+    if not followup_mwe_supported():
+        # Both nightly profiles run this suite; only the Linux one can build the
+        # MWE, so the other records a skip instead of a failure.
+        return dict(correctness_status='skipped',samples=[],
+                    skip_reason='cpu_followup MWE needs the Linux system-MKL build; '
+                                f'skipped on {sys.platform}')
     p=case.get('followup_mwe',case['params']); cid=p['case_id'];path=p.get('path',case['arm']);target=int(config['min_runtime_ms']*1_000_000)
     # Two independent completed operations establish correctness before this
     # arm's collection. Fixture creation, validation and processes are untimed.
@@ -92,5 +128,6 @@ def main():
             stream.write(json.dumps(record)+'\n');stream.flush()
             print(c['id'],row['correctness_status'],flush=True)
     raise SystemExit(int(failed))
+
 
 if __name__=='__main__':main()
