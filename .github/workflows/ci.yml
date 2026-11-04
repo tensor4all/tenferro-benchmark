@@ -117,6 +117,9 @@ jobs:
             scripts/benchmark_gpu_python.py \
             scripts/gpu_framework_runner.py \
             scripts/gpu_public_api_ops.py \
+            scripts/gpu_case_traffic.py \
+            scripts/gpu_copy_calibration.py \
+            scripts/gpu_bandwidth_guard.py \
             scripts/format_gpu_public_api_results.py \
             scripts/public_api_candidates.py \
             scripts/format_results.py
@@ -164,7 +167,7 @@ jobs:
       - name: Validate GPU public API fixtures and timing contracts without a GPU
         run: |
           bash -n scripts/run_gpu_public_api.sh
-          uv run python -m unittest tests.test_gpu_public_api tests.test_normalize_gpu_records tests.test_gpu_framework_runner tests.test_gpu_linalg_ad_contracts tests.test_gpu_multi_output_verification tests.test_gpu_routine_selection tests.test_gpu_routine_weekly_run tests.test_gpu_routine_coverage_report tests.test_gpu_routine_controls tests.test_gpu_routine_wall tests.test_gpu_paired tests.test_gpu_vendor_sampling tests.test_gpu_permutation_sampled_verify tests.test_gpu_sparse_cache
+          uv run python -m unittest tests.test_gpu_public_api tests.test_gpu_bandwidth_guard tests.test_normalize_gpu_records tests.test_gpu_framework_runner tests.test_gpu_linalg_ad_contracts tests.test_gpu_multi_output_verification tests.test_gpu_routine_selection tests.test_gpu_routine_weekly_run tests.test_gpu_routine_coverage_report tests.test_gpu_routine_controls tests.test_gpu_routine_wall tests.test_gpu_paired tests.test_gpu_vendor_sampling tests.test_gpu_permutation_sampled_verify tests.test_gpu_sparse_cache
 
       - name: Validate host GPU preflight and recorded collection environment
         run: |

@@ -7,9 +7,18 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import sys
 import time
 
 import numpy as np
+
+# The sibling modules are imported by name because this file also runs as a script
+# from `scripts/`; the path insert keeps an importing test from failing on them.
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+
+from gpu_case_traffic import case_traffic  # noqa: E402
 
 DTYPES = {"bool": "|b1", "i32": "<i4", "i64": "<i8", "f32": "<f4", "f64": "<f8", "c32": "<c8", "c64": "<c16"}
 BACKENDS = ["tenferro-cuda-direct", "tenferro-cuda-eager", "pytorch-cuda", "jax-cuda", "jax-cuda-jit"]
@@ -39,7 +48,8 @@ def make_fixtures(root, suite):
             case.update(inputs=[save_array(root, f'{spec["id"]}_in{i}.bin', x) for i, x in enumerate(inputs)],
                         outputs=[save_array(root, f'{spec["id"]}_out{i}.bin', v) for i, v in enumerate(leaves(y))], reference="numpy/scipy double precision; all requested outputs",
                         rtol=5e-4 if spec["dtype"].endswith("32") else 1e-9,
-                        atol=5e-4 if spec["dtype"].endswith("32") else 1e-9)
+                        atol=5e-4 if spec["dtype"].endswith("32") else 1e-9,
+                        traffic=case_traffic(inputs, leaves(y), op=spec["op"]))
             if spec.get("full_reduction") and spec["op"] in {"reduce_sum", "reduce_prod"}:
                 # Parallel accumulation has an operation-size-dependent
                 # roundoff budget. Use exact fixture values, never measured
@@ -89,6 +99,7 @@ def make_fixtures(root, suite):
         fft_atol = max(1e-9, 32 * eps * np.ceil(np.log2(n)) * np.linalg.norm(reference_input) / scale)
         case.update(reference="numpy.fft", inputs=[save_array(root, f'{spec["id"]}_in.bin', x)],
                     outputs=[save_array(root, f'{spec["id"]}_out.bin', y)],
+                    traffic=case_traffic([x], [y], op=op),
                     rtol=5e-4 if dtype.endswith("32") else 1e-9,
                     atol=float(fft_atol),
                     tolerance_policy="atol=max(1e-9,32*eps*ceil(log2(n))*norm2(input)/normalization); rtol=5e-4(f32),1e-9(f64)")
@@ -240,6 +251,9 @@ def run_python(backend, root, output):
                    "gpu_role": os.environ.get("GPU_API_ROLE", "benchmark"),
                    "physical_device_index": int(os.environ.get("GPU_BENCH_PHYSICAL_DEVICE", str(device))),
                    "device_uuid": os.environ.get("GPU_BENCH_DEVICE_UUID"),
+                   "traffic": case.get("traffic") or {
+                       "bytes_per_operation": None,
+                       "unknown_reason": "fixture manifest carries no traffic model for this case"},
                    "setup_policy": "fixtures, H2D, library initialization, compilation and validation outside timing",
                    "session_policy": "backend process and device reused across samples"}
             row["precision_policy"] = "PyTorch TF32 disabled; JAX x64 enabled and matmul precision highest"

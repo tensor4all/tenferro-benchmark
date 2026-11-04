@@ -108,6 +108,10 @@ rows = []
 for case in suite["cases"]:
     rows.append({"schema_version": 1, "suite_id": suite["suite_id"], "case_id": case["id"],
                  "op": case["op"], "backend": backend, "status": "ok",
+                 "traffic": {"kind": "logical_traffic", "bytes_per_operation": 536870912,
+                             "reads_bytes": 268435456, "writes_bytes": 268435456,
+                             "destination_read_included": False, "basis": "fake manifest traffic",
+                             "unknown_reason": None},
                  "timing": {"operations_per_sample": 4, "batch_ms": [0.4, 0.5, 0.45], "warmups": 1},
                  "verification": {"max_error_over_tolerance": 1e-3, "reference": "numpy/scipy"}})
 Path(value("--output")).write_text("".join(json.dumps(row) + "\\n" for row in rows))
@@ -135,6 +139,26 @@ for pattern in suite["patterns"]:
                      "warmup": 1, "iters": 3, "median_ms": 0.01, "p25_ms": 0.009,
                      "p75_ms": 0.011, "bandwidth_gbs": 1.6, "notes": None})
 out.write_text("".join(json.dumps(row) + "\\n" for row in rows))
+'''
+
+# Stands in for scripts/gpu_copy_calibration.py: the harness has no device, so
+# the run metadata gets the same block a real device copy would record.
+FAKE_COPY_CALIBRATION = '''
+import sys
+from pathlib import Path
+import yaml
+
+args = sys.argv[1:]
+path = Path(args[args.index("--run-metadata") + 1])
+metadata = yaml.safe_load(path.read_text())
+metadata["gpu_memory_calibration"] = {
+    "kind": "device_copy", "method": "fake device copy for a harness without a device",
+    "device_ordinal": 0, "device_name": "fake GPU", "buffer_bytes": 67108864,
+    "traffic_bytes_per_copy": 134217728, "traffic_model": "one read plus one write of buffer_bytes per copy",
+    "warmups": 3, "sample_ms": [0.096], "median_ms": 0.096,
+    "bytes_per_second": 1398101333333.3333, "torch_version": "fake",
+    "cuda_version": "fake", "timestamp": "2000-01-01T00:00:00+00:00"}
+path.write_text(yaml.safe_dump(metadata, sort_keys=False))
 '''
 
 # Stands in for `cargo build --bin NAME`: the compiled artifact is a launcher for
@@ -174,6 +198,7 @@ class WeeklyRoutineRunTest(unittest.TestCase):
         (self.root / "scripts/benchmark_gpu_permutation_python.py").write_text(FAKE_PERMUTATION)
         (self.root / "scripts/verify_gpu_linalg_ad_rust.py").write_text(FAKE_VERIFY_AD)
         (self.root / "scripts/collect_run_metadata.py").write_text(FAKE_METADATA)
+        (self.root / "scripts/gpu_copy_calibration.py").write_text(FAKE_COPY_CALIBRATION)
         # Dependency checkout is not part of what this harness exercises.
         (self.root / "scripts/setup_extern_deps.sh").write_text("#!/bin/sh\nexit 0\n")
         # The collectors check for a CUDA toolkit instead of a container; this
@@ -244,6 +269,14 @@ class WeeklyRoutineRunTest(unittest.TestCase):
             self.assertTrue((run / "report.summary.json").is_file(), suite_id)
 
         self.assertEqual(len(timestamps), 1, timestamps)
+
+        # A public API row whose logical bytes per operation imply a rate above the
+        # run's measured copy rate is published with its number and its ratio, not
+        # withheld: the fake rows declare 512 MiB per operation against ~1.4 TB/s.
+        public_api_report = (self.root / f"data/results/nvidia-gpu/gpu/structural/{TIMESTAMP}/report.md").read_text()
+        self.assertIn("| 112.500 (", public_api_report)
+        self.assertIn("| 536870912 | 3.413 |", public_api_report)
+        self.assertNotIn("unmeasurable", public_api_report)
 
         coverage_report = self.root / "result/nvidia-gpu/gpu/routine_coverage.md"
         workflow_report = self.root / "result/nvidia-gpu/gpu/routine_workflow.md"

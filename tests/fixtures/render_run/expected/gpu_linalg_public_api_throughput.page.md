@@ -2,6 +2,8 @@
 
 Measured cells: **3**. Unsupported cells: **1**, including **1** numerically verified but timing-excluded cells. Unsupported cells do not count as measured coverage.
 
+This run metadata records no device copy rate, so the records carry the logical bytes without a copy ratio.
+
 Raw run: `tests/fixtures/render_run/gpu_linalg_public_api_throughput/20261102_210935/`.
 
 Large-shape view of the same CUDA public linalg surface. `large` is a shape class, not a measured classification: a memory-bound row takes the same time here as at a small shape.
@@ -19,12 +21,12 @@ All measured output elements are checked against independently generated NumPy/S
 
 ## Sampling
 
-| Case | Backend | Ops/sample | Samples | Median batch ms | Verification error/tolerance |
-| --- | --- | ---: | ---: | ---: | ---: |
-| cholesky_f32_512x512 | pytorch-cuda | 4 | 3 | 0.275 | 0.25 |
-| cholesky_f32_512x512 | tenferro-cuda-direct | 4 | 3 | 0.285 | 0.25 |
-| householder_r_default_f32_512x256 | pytorch-cuda | — | — | — | state projections need an extra uploaded operand; excluded from standard timing |
-| householder_r_default_f32_512x256 | tenferro-cuda-direct | 4 | 3 | 0.139 | 0.25 |
+| Case | Backend | Ops/sample | Samples | Median batch ms | Bytes/op | Copy ratio | Verification error/tolerance |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| cholesky_f32_512x512 | pytorch-cuda | 4 | 3 | 0.275 | unknown | unavailable | 0.25 |
+| cholesky_f32_512x512 | tenferro-cuda-direct | 4 | 3 | 0.285 | unknown | unavailable | 0.25 |
+| householder_r_default_f32_512x256 | pytorch-cuda | — | — | — | unknown | unavailable | state projections need an extra uploaded operand; excluded from standard timing |
+| householder_r_default_f32_512x256 | tenferro-cuda-direct | 4 | 3 | 0.139 | unknown | unavailable | 0.25 |
 
 ## Run metadata
 
