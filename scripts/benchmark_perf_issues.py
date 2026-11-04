@@ -790,10 +790,15 @@ def render_report(run_dir, target, suite_key="cpu"):
     # different boundaries (an upload and a download arm, an f64 and a c64 arm).
     scopes = {}
     for row in rows:
-        if row.get("scope"):
-            scope = row["scope"]
-            key = (row["kind"], row["arm"], tuple(scope["timer"]), tuple(scope["outside_timer"]))
-            scopes[key] = scope
+        scope = row.get("scope")
+        if not scope:
+            continue
+        # The cpu_followup MWE arms name the same two lists inside_timer /
+        # outside_timer; read either spelling rather than KeyError on the row.
+        timer = scope.get("timer") or scope.get("inside_timer") or []
+        outside = scope.get("outside_timer") or []
+        key = (row["kind"], row["arm"], tuple(timer), tuple(outside))
+        scopes[key] = {"timer": timer, "outside_timer": outside}
     for (kind, arm, _, _), scope in sorted(scopes.items()):
         lines.append(f"- **{kind} / {arm}** — inside: {', '.join(scope['timer']) or '—'}; "
                      f"outside: {', '.join(scope['outside_timer'])}.")

@@ -126,6 +126,22 @@ class PerfIssueSuiteTest(unittest.TestCase):
             self.assertTrue((run_dir / "report.md").is_file())
             self.assertEqual(latest.read_text(), "previous publication\n")
 
+    def test_followup_mwe_scope_renders_with_its_own_boundary_names(self):
+        """The cpu_followup MWE rows name the boundary inside_timer, not timer."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            run = root / "data/results/amd-cpu/cpu/perf_issues/probe"
+            run.mkdir(parents=True)
+            base = dict(gen.cpu_umbrella_cases()[0], case_id="followup-probe", threads=1,
+                        measurement_scope="steady_state", correctness_status="passed",
+                        samples=[dict(elapsed_ns=2000, iterations=8)])
+            row = dict(base, scope={"inside_timer": ["API execution"],
+                                    "outside_timer": ["fixtures", "validation"]})
+            (run / "samples_t1.jsonl").write_text(json.dumps(row) + "\n")
+            with patch.object(suite, "ROOT", root):
+                text = suite.render_report(run, "amd-cpu")
+            self.assertIn("inside: API execution; outside: fixtures, validation.", text)
+
     def test_generated_files_are_fresh(self):
         result = subprocess.run([sys.executable, str(ROOT / "scripts/generate_perf_issue_cases.py"), "--check"],
                                 capture_output=True, text=True)
