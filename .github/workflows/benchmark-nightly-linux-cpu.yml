@@ -40,6 +40,16 @@ jobs:
       - name: Create current MKL CPU devcontainer
         run: devcontainer up --workspace-folder . --remove-existing-container
 
+      - name: Assert the CPU environment carries no CUDA torch stack
+        run: |
+          devcontainer exec --workspace-folder . bash -lc '
+            set -euo pipefail
+            offenders=$(uv pip list --format=freeze | grep -icE "^(nvidia-|triton)" || true)
+            echo "CUDA-only packages installed: $offenders"
+            test "$offenders" -eq 0
+            .venv/bin/python -c "import torch, sys; print(\"torch\", torch.__version__); sys.exit(0 if torch.__version__.endswith(\"+cpu\") else 1)"
+          '
+
       - name: Run sequential Linux CPU suites in MKL devcontainer
         id: collect
         env:
@@ -57,7 +67,9 @@ jobs:
             export PUBLICATION_GATE_PROFILE=quick
             export BENCHMARK_ALLOW_BUSY_HOST=1
             export PERMUTATION_EXTRA_FEATURES=hptt
-            uv sync --frozen || uv sync
+            # CPU torch: the lockfile wheel is the CUDA build (#342).
+            source scripts/python_venv.sh
+            prepare_cpu_benchmark_python_venv "$PWD"
             TENFERRO_UPDATE=1 ./scripts/setup_extern_deps.sh
             export TENFERRO_REF="$(git -C extern/tenferro-rs rev-parse HEAD)"
             export TENFERRO_UPDATE=0

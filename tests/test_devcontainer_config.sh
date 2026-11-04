@@ -18,7 +18,9 @@ assert config["build"]["dockerfile"] == "Dockerfile"
 assert config["containerEnv"]["OPENBLAS_ROOT"] == "/opt/openblas"
 assert config["containerEnv"]["MKLROOT"] == "/opt/intel/oneapi/mkl/latest"
 assert config["containerEnv"]["USE_CUDA"] == "0"
-assert config["postCreateCommand"].startswith("uv sync")
+command = config["postCreateCommand"]
+assert "prepare_cpu_benchmark_python_venv" in command
+assert "uv sync" not in command
 
 mounts = "\n".join(config.get("mounts", []))
 assert "/home/vscode/.cargo/registry" in mounts

@@ -10,6 +10,21 @@ reset_benchmark_python_venv() {
     fi
 }
 
+# Print the torch version pinned in uv.lock (for example `2.12.0`).
+locked_torch_version() {
+    local project_dir="$1"
+
+    awk '
+        /^name = "torch"$/ { in_torch = 1; next }
+        in_torch && /^version = "/ {
+            gsub(/^version = "|"$/, "", $0)
+            print
+            exit
+        }
+        in_torch && /^\[\[package\]\]$/ { exit }
+    ' "$project_dir/uv.lock"
+}
+
 prepare_cpu_benchmark_python_venv() {
     local project_dir="$1"
 
@@ -47,8 +62,23 @@ prepare_cpu_benchmark_python_venv() {
             uv export --frozen --no-hashes --no-emit-project --prune torch |
                 uv pip install --reinstall-package torch -r - "$wheel" || exit 1
         else
-            UV_EXTRA_INDEX_URL="https://download.pytorch.org/whl/cpu" uv sync || exit 1
-            uv pip install --index-url "https://download.pytorch.org/whl/cpu" --force-reinstall "torch==2.12.0+cpu" || exit 1
+            # A plain `uv sync` resolves torch from PyPI, where the Linux wheel
+            # is the CUDA build and drags in roughly 2.5 GB of nvidia-* and
+            # triton packages that a CPU profile never loads, which is what
+            # filled the hosted runner's disk (#342).  Install the lockfile
+            # without torch, then the CPU wheel at the pinned version.
+            local torch_version
+            torch_version="$(locked_torch_version "$project_dir")"
+            if [[ -z "$torch_version" ]]; then
+                echo "cannot read the locked torch version from uv.lock" >&2
+                exit 1
+            fi
+            uv venv --allow-existing .venv || exit 1
+            set -o pipefail
+            uv export --frozen --no-hashes --no-emit-project --prune torch |
+                uv pip install -r - || exit 1
+            uv pip install --index-url "https://download.pytorch.org/whl/cpu" \
+                --force-reinstall "torch==${torch_version}+cpu" || exit 1
         fi
     ) || return 1
 
