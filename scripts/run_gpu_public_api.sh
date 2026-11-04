@@ -11,12 +11,12 @@ family="${1:-fft}"
 if [[ "$family" == all ]]; then
     case "${2:-}" in ''|--verify-only) ;; *) echo "Usage: $0 all [--verify-only]" >&2; exit 1;; esac
     [[ $# -le 2 ]] || { echo "Too many arguments" >&2; exit 1; }
-    for member in fft nn isolated_ops structural linalg_public_api reuse_contraction lstsq; do
+    for member in fft nn isolated_ops structural linalg_public_api_throughput linalg_public_api_latency reuse_contraction lstsq; do
         "$0" "$member" "${@:2}"
     done
     exit 0
 fi
-case "$family" in fft|nn|isolated_ops|structural|linalg_public_api|reuse_contraction|lstsq) ;; *) echo "Unknown family: $family" >&2; exit 1;; esac
+case "$family" in fft|nn|isolated_ops|structural|linalg_public_api_throughput|linalg_public_api_latency|reuse_contraction|lstsq) ;; *) echo "Unknown family: $family" >&2; exit 1;; esac
 export GPU_API_VERIFY_ONLY=0
 case "${2:-}" in
     '') default_device=0; export GPU_API_ROLE=benchmark ;;
@@ -53,9 +53,18 @@ else
     run_dir="data/results/nvidia-gpu/gpu/$family/$timestamp"
 fi
 mkdir -p "$run_dir"
-suite="${GPU_API_SUITE_FILE:-data/instances/gpu_$family.json}"
 declaration="${GPU_API_SUITE_DECL:-benchmarks/gpu/$family.yaml}"
 uv run python scripts/validate_benchmark_suite.py "$declaration"
+# A family's cases are its declaration's `problems.include` over its instance
+# document, so the document handed to the collectors is derived from the
+# declaration: one shape class per page cannot drift into measuring the other's
+# cases. The routine path already passes its own curated document.
+if [[ -n "${GPU_API_SUITE_FILE:-}" ]]; then
+    suite="$GPU_API_SUITE_FILE"
+else
+    suite="$run_dir/instances.json"
+    uv run python scripts/gpu_routine_selection.py --instances "$declaration" --output "$suite"
+fi
 if [[ "${GPU_BENCH_PREBUILT_RUST:-0}" == 1 ]]; then
     # The hosted build job ships this binary; the benchmark pod has no Rust toolchain.
     python3 scripts/ci/gpu_artifact.py "${CARGO_TARGET_DIR:-target}/release/benchmark_gpu_public_api"

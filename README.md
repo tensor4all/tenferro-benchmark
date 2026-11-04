@@ -25,6 +25,18 @@ Pages site.
   the table below is generated from them
   (`scripts/generate_readme_results.py`, checked by CI).
 
+The table is ordered by what each page measures, so the throughput pages come
+first:
+
+1. **Throughput and large-matrix pages** - steady-state operation cost of the
+   per-suite reports, including every suite that declares `regime: throughput`.
+2. **Per-call latency and overhead pages** - `regime: latency`. Small shapes whose
+   cost is dominated by launch and synchronization rather than by kernel work.
+   They are not the headline, and their numbers are never comparable with, or
+   averaged together with, the throughput rows of group 1.
+3. **Diagnostic and investigation reports** - pages without their own suite
+   declaration; they answer a specific question rather than measure a suite.
+
 <!-- results:begin -->
 | Target profile | Suite | Report |
 |---|---|---|
@@ -32,40 +44,41 @@ Pages site.
 | `zen5-cpu` | `cpu/einsum` | [result/zen5-cpu/cpu/einsum.md](result/zen5-cpu/cpu/einsum.md) |
 | `zen5-cpu` | `cpu/fft` | [result/zen5-cpu/cpu/fft.md](result/zen5-cpu/cpu/fft.md) |
 | `zen5-cpu` | `cpu/linalg_jvp_vjp` | [result/zen5-cpu/cpu/linalg_jvp_vjp.md](result/zen5-cpu/cpu/linalg_jvp_vjp.md) |
-| `zen5-cpu` | `cpu/overhead_smoke` | [result/zen5-cpu/cpu/overhead_smoke.md](result/zen5-cpu/cpu/overhead_smoke.md) |
 | `zen5-cpu` | `cpu/permutation` | [result/zen5-cpu/cpu/permutation.md](result/zen5-cpu/cpu/permutation.md) |
 | `zen5-cpu` | `cpu/public_api` | [result/zen5-cpu/cpu/public_api.md](result/zen5-cpu/cpu/public_api.md) |
+| `zen5-cpu` | `cpu/overhead_smoke` | [result/zen5-cpu/cpu/overhead_smoke.md](result/zen5-cpu/cpu/overhead_smoke.md) |
 | `zen5-cpu` | `cpu/session_matrix` | [result/zen5-cpu/cpu/session_matrix.md](result/zen5-cpu/cpu/session_matrix.md) |
 | `zen5-cpu` | `cpu/small_work` | [result/zen5-cpu/cpu/small_work.md](result/zen5-cpu/cpu/small_work.md) |
-| `nvidia-gpu` | `gpu/command_wall` | [result/nvidia-gpu/gpu/command_wall.md](result/nvidia-gpu/gpu/command_wall.md) |
-| `nvidia-gpu` | `gpu/compare_lifetime` | [result/nvidia-gpu/gpu/compare_lifetime.md](result/nvidia-gpu/gpu/compare_lifetime.md) |
-| `nvidia-gpu` | `gpu/compare_lifetime_counters` | [result/nvidia-gpu/gpu/compare_lifetime_counters.md](result/nvidia-gpu/gpu/compare_lifetime_counters.md) |
 | `nvidia-gpu` | `gpu/dense` | [result/nvidia-gpu/gpu/dense.md](result/nvidia-gpu/gpu/dense.md) |
 | `nvidia-gpu` | `gpu/dense_throughput` | [result/nvidia-gpu/gpu/dense_throughput.md](result/nvidia-gpu/gpu/dense_throughput.md) |
 | `nvidia-gpu` | `gpu/einsum` | [result/nvidia-gpu/gpu/einsum.md](result/nvidia-gpu/gpu/einsum.md) |
 | `nvidia-gpu` | `gpu/elementwise` | [result/nvidia-gpu/gpu/elementwise.md](result/nvidia-gpu/gpu/elementwise.md) |
 | `nvidia-gpu` | `gpu/fft` | [result/nvidia-gpu/gpu/fft.md](result/nvidia-gpu/gpu/fft.md) |
 | `nvidia-gpu` | `gpu/isolated_ops` | [result/nvidia-gpu/gpu/isolated_ops.md](result/nvidia-gpu/gpu/isolated_ops.md) |
-| `nvidia-gpu` | `gpu/linalg_ad_latency` | [result/nvidia-gpu/gpu/linalg_ad_latency.md](result/nvidia-gpu/gpu/linalg_ad_latency.md) |
 | `nvidia-gpu` | `gpu/linalg_ad_throughput` | [result/nvidia-gpu/gpu/linalg_ad_throughput.md](result/nvidia-gpu/gpu/linalg_ad_throughput.md) |
-| `nvidia-gpu` | `gpu/linalg_capability` | [result/nvidia-gpu/gpu/linalg_capability.md](result/nvidia-gpu/gpu/linalg_capability.md) |
 | `nvidia-gpu` | `gpu/linalg_jvp_vjp` | [result/nvidia-gpu/gpu/linalg_jvp_vjp.md](result/nvidia-gpu/gpu/linalg_jvp_vjp.md) |
-| `nvidia-gpu` | `gpu/linalg_public_api` | [result/nvidia-gpu/gpu/linalg_public_api.md](result/nvidia-gpu/gpu/linalg_public_api.md) |
+| `nvidia-gpu` | `gpu/linalg_public_api_throughput` | [result/nvidia-gpu/gpu/linalg_public_api_throughput.md](result/nvidia-gpu/gpu/linalg_public_api_throughput.md) |
 | `nvidia-gpu` | `gpu/lstsq` | [result/nvidia-gpu/gpu/lstsq.md](result/nvidia-gpu/gpu/lstsq.md) |
 | `nvidia-gpu` | `gpu/nn` | [result/nvidia-gpu/gpu/nn.md](result/nvidia-gpu/gpu/nn.md) |
-| `nvidia-gpu` | `gpu/perf_issues` | [result/nvidia-gpu/gpu/perf_issues.md](result/nvidia-gpu/gpu/perf_issues.md) |
-| `nvidia-gpu` | `gpu/perf_issues_aa` | [result/nvidia-gpu/gpu/perf_issues_aa.md](result/nvidia-gpu/gpu/perf_issues_aa.md) |
-| `nvidia-gpu` | `gpu/perf_issues_paired` | [result/nvidia-gpu/gpu/perf_issues_paired.md](result/nvidia-gpu/gpu/perf_issues_paired.md) |
 | `nvidia-gpu` | `gpu/permutation` | [result/nvidia-gpu/gpu/permutation.md](result/nvidia-gpu/gpu/permutation.md) |
 | `nvidia-gpu` | `gpu/reuse_contraction` | [result/nvidia-gpu/gpu/reuse_contraction.md](result/nvidia-gpu/gpu/reuse_contraction.md) |
+| `nvidia-gpu` | `gpu/sparse` | [result/nvidia-gpu/gpu/sparse.md](result/nvidia-gpu/gpu/sparse.md) |
+| `nvidia-gpu` | `gpu/structural` | [result/nvidia-gpu/gpu/structural.md](result/nvidia-gpu/gpu/structural.md) |
+| `nvidia-gpu` | `gpu/tensornetwork` | [result/nvidia-gpu/gpu/tensornetwork.md](result/nvidia-gpu/gpu/tensornetwork.md) |
+| `nvidia-gpu` | `gpu/linalg_ad_latency` | [result/nvidia-gpu/gpu/linalg_ad_latency.md](result/nvidia-gpu/gpu/linalg_ad_latency.md) |
+| `nvidia-gpu` | `gpu/linalg_public_api_latency` | [result/nvidia-gpu/gpu/linalg_public_api_latency.md](result/nvidia-gpu/gpu/linalg_public_api_latency.md) |
+| `nvidia-gpu` | `gpu/perf_issues` | [result/nvidia-gpu/gpu/perf_issues.md](result/nvidia-gpu/gpu/perf_issues.md) |
+| `nvidia-gpu` | `gpu/command_wall` | [result/nvidia-gpu/gpu/command_wall.md](result/nvidia-gpu/gpu/command_wall.md) |
+| `nvidia-gpu` | `gpu/compare_lifetime` | [result/nvidia-gpu/gpu/compare_lifetime.md](result/nvidia-gpu/gpu/compare_lifetime.md) |
+| `nvidia-gpu` | `gpu/compare_lifetime_counters` | [result/nvidia-gpu/gpu/compare_lifetime_counters.md](result/nvidia-gpu/gpu/compare_lifetime_counters.md) |
+| `nvidia-gpu` | `gpu/linalg_capability` | [result/nvidia-gpu/gpu/linalg_capability.md](result/nvidia-gpu/gpu/linalg_capability.md) |
+| `nvidia-gpu` | `gpu/perf_issues_aa` | [result/nvidia-gpu/gpu/perf_issues_aa.md](result/nvidia-gpu/gpu/perf_issues_aa.md) |
+| `nvidia-gpu` | `gpu/perf_issues_paired` | [result/nvidia-gpu/gpu/perf_issues_paired.md](result/nvidia-gpu/gpu/perf_issues_paired.md) |
 | `nvidia-gpu` | `gpu/routine_command_wall` | [result/nvidia-gpu/gpu/routine_command_wall.md](result/nvidia-gpu/gpu/routine_command_wall.md) |
 | `nvidia-gpu` | `gpu/routine_controls` | [result/nvidia-gpu/gpu/routine_controls.md](result/nvidia-gpu/gpu/routine_controls.md) |
 | `nvidia-gpu` | `gpu/routine_coverage` | [result/nvidia-gpu/gpu/routine_coverage.md](result/nvidia-gpu/gpu/routine_coverage.md) |
 | `nvidia-gpu` | `gpu/routine_workflow` | [result/nvidia-gpu/gpu/routine_workflow.md](result/nvidia-gpu/gpu/routine_workflow.md) |
 | `nvidia-gpu` | `gpu/shape_stream` | [result/nvidia-gpu/gpu/shape_stream.md](result/nvidia-gpu/gpu/shape_stream.md) |
-| `nvidia-gpu` | `gpu/sparse` | [result/nvidia-gpu/gpu/sparse.md](result/nvidia-gpu/gpu/sparse.md) |
-| `nvidia-gpu` | `gpu/structural` | [result/nvidia-gpu/gpu/structural.md](result/nvidia-gpu/gpu/structural.md) |
-| `nvidia-gpu` | `gpu/tensornetwork` | [result/nvidia-gpu/gpu/tensornetwork.md](result/nvidia-gpu/gpu/tensornetwork.md) |
 <!-- results:end -->
 
 The [CUDA public API suites](docs/gpu-public-api-suite.md) add FFT, NN, isolated

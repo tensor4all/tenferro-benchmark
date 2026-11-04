@@ -245,6 +245,26 @@ class PublicGpuContracts(unittest.TestCase):
                         np.testing.assert_array_equal(restored, a)
                         self.assertEqual(restored.shape, a.shape)
 
+    def test_the_linalg_shape_class_split_keeps_every_case_exactly_once(self):
+        """One case source, two pages: the include lists must partition it."""
+        import yaml
+
+        source = json.loads((ROOT / "data/instances/gpu_linalg_public_api.json").read_text())
+        shapes = {case["id"]: case["shape"] for case in source["cases"]}
+        pages = {}
+        for regime in ("throughput", "latency"):
+            declaration = yaml.safe_load(
+                (ROOT / f"benchmarks/gpu/linalg_public_api_{regime}.yaml").read_text())
+            self.assertEqual(declaration["suite_id"], f"gpu/linalg_public_api_{regime}")
+            self.assertEqual(declaration["defaults"]["regime"], regime)
+            self.assertEqual(declaration["problems"]["source"],
+                             "data/instances/gpu_linalg_public_api.json")
+            pages[regime] = set(declaration["problems"]["include"])
+        self.assertFalse(pages["throughput"] & pages["latency"], "a case is on both pages")
+        self.assertEqual(pages["throughput"] | pages["latency"], set(shapes), "a case is on neither page")
+        self.assertTrue(all(max(shapes[case]) >= 256 for case in pages["throughput"]))
+        self.assertTrue(all(max(shapes[case]) <= 128 for case in pages["latency"]))
+
     def test_fft_reference_precision_shape_and_roundtrip(self):
         suite = json.loads((ROOT / "data/instances/gpu_fft.json").read_text())
         suite["cases"] = [c for c in suite["cases"] if c["n"] == 1024]

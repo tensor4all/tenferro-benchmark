@@ -49,6 +49,30 @@ def suite_problems(root, spec):
     return source, cases, instances
 
 
+def instances_for(declaration, output):
+    """Write the instance document one suite declaration selects.
+
+    The routine selection materializes a document for its curated case set; the
+    per-family command needs the same document for the whole declaration.  Both
+    derive it from the declaration's ``problems.include`` over its instance
+    document, and both stamp the declaration's own identity on it.
+    """
+    source = yaml.safe_load(Path(declaration).read_text())
+    problems = source["problems"]
+    if not isinstance(problems, dict):
+        raise ValueError(f"{declaration}: problems is not an instance selection")
+    instances = yaml.safe_load(Path(problems["source"]).read_text())
+    key = "cases" if "cases" in instances else "patterns"
+    entries = {entry["id"]: entry for entry in instances[key]}
+    missing = [problem for problem in problems["include"] if problem not in entries]
+    if missing:
+        raise ValueError(f"{declaration}: cases absent from {problems['source']}: {missing}")
+    payload = dict(instances, suite_id=source["suite_id"], backends=source["backends"])
+    payload[key] = [copy.deepcopy(entries[problem]) for problem in problems["include"]]
+    Path(output).write_text(json.dumps(payload, indent=2) + "\n")
+    return payload
+
+
 def materialize(manifest_path, requested, output, backend_override="", problem="", effort="standard",
                 vendor_arms=False):
     manifest = yaml.safe_load(manifest_path.read_text())
@@ -92,10 +116,13 @@ def materialize(manifest_path, requested, output, backend_override="", problem="
                 item["run"] = run
         else:
             # Instance-driven suites read their cases from data/instances, so the
-            # selection hands the collector a materialized instance document.
+            # selection hands the collector a materialized instance document. It
+            # carries the selected suite's own identity, so the page and raw-run
+            # path name this suite rather than the instance file's origin.
             payload = dict(instances)
             key = "cases" if "cases" in instances else "patterns"
             payload[key] = [copy.deepcopy(problems[pid]) for pid in ids]
+            payload["suite_id"] = suite_id
             payload["backends"] = backends
             instances_path = output / (suite_id.replace("/", "_") + "_instances.json")
             instances_path.write_text(json.dumps(payload, indent=2) + "\n")
@@ -185,6 +212,8 @@ def main():
     parser.add_argument("--vendor-arms",action="store_true",
         help="add the opt-in vendor arms declared next to each routine suite")
     parser.add_argument("--records",type=Path,nargs="*")
+    parser.add_argument("--instances",type=Path,metavar="DECLARATION",
+        help="write the instance document this suite declaration selects, then exit")
     parser.add_argument("--defaults",action="store_true",
         help="print the manifest's suite files and backend arms instead of selecting")
     parser.add_argument("suites",nargs="*")
@@ -196,6 +225,9 @@ def main():
         return
     if args.output is None:
         parser.error("--output is required when --defaults is not used")
+    if args.instances is not None:
+        instances_for(args.instances, args.output)
+        return
     if args.records is not None:
         plan = json.loads((args.output/"selection.json").read_text())
         status = account(plan,args.records)

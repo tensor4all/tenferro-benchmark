@@ -9,6 +9,13 @@ The table is the link index of the maintained reports: one row per
 ``benchmarks/profiles.yaml`` plus the GPU profile.  It carries no measurements,
 so the report file stays the only place a number is published.
 
+Rows are ordered so a reader lands on what matters: per profile, throughput and
+large-matrix pages come first (``regime: throughput``, and the suites that leave
+the regime unset, which is the throughput default), then the ``regime: latency``
+pages, which measure per-call overhead, then diagnostic and investigation reports
+that have no suite declaration at all.  The regime is read from the declaration
+next to each page (``benchmarks/<device>/<suite>.yaml``), never transcribed here.
+
 Only the lines between ``<!-- results:begin -->`` and ``<!-- results:end -->``
 are generated; the rest of the README is written by hand.  ``--check`` prints the
 difference and exits 1 when the section is stale, and is the CI step that keeps
@@ -29,6 +36,11 @@ GPU_PROFILE = "nvidia-gpu"
 PROFILES_FILE = pathlib.Path("benchmarks/profiles.yaml")
 RESULT_DIR = pathlib.Path("result")
 DEVICES = ("cpu", "gpu")
+# Read order of the measurement regimes; a suite declaring neither is a
+# throughput measurement, and a page with no suite at all is a diagnostic report
+# unless `scripts/render_run.py` derives it from another suite's rows.
+REGIME_ORDER = ("throughput", "latency")
+DIAGNOSTIC = len(REGIME_ORDER)
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 
@@ -50,8 +62,38 @@ def published_profiles(root: pathlib.Path = ROOT) -> list[str]:
     return maintained + [profile for profile in (GPU_PROFILE,) if profile not in maintained]
 
 
+def regime_rank(root: pathlib.Path, device: str, suite: str) -> int:
+    """Where a page sorts: throughput, then per-call latency, then diagnostics.
+
+    A page reads its regime from the suite declaration next to it
+    (``benchmarks/<device>/<suite>.yaml``).  A suite that declares no regime is a
+    throughput measurement, as it is for the dashboard; a page with no suite
+    declaration at all is a diagnostic or investigation report and sorts last.
+    """
+    import yaml
+
+    path = pathlib.Path(root) / "benchmarks" / device / f"{suite}.yaml"
+    if not path.is_file():
+        # No declaration.  `scripts/render_run.py` derives a few measurement pages
+        # from another suite's rows, and the dashboard keeps the record of which:
+        # those are measurements, everything else here is a diagnostic report.
+        try:
+            from generate_dashboard import DERIVED_SUITE_ARMS
+        except ImportError:  # the index still renders without the dashboard's deps
+            DERIVED_SUITE_ARMS = {}
+        return 0 if f"{device}/{suite}" in DERIVED_SUITE_ARMS else DIAGNOSTIC
+    try:
+        document = yaml.safe_load(path.read_text(encoding="utf-8"))
+    except (OSError, yaml.YAMLError):
+        return DIAGNOSTIC
+    if not isinstance(document, dict):
+        return 0
+    regime = (document.get("defaults") or {}).get("regime")
+    return REGIME_ORDER.index(regime) if regime in REGIME_ORDER else 0
+
+
 def published_pages(root: pathlib.Path = ROOT) -> list[tuple[str, str, pathlib.Path]]:
-    """[(profile, suite id, page path)] of the listed profiles, in profile and suite order."""
+    """[(profile, suite id, page path)] in profile, regime, then suite order."""
     root = pathlib.Path(root)
     pages: list[tuple[str, str, pathlib.Path]] = []
     for profile in published_profiles(root):
@@ -59,7 +101,9 @@ def published_pages(root: pathlib.Path = ROOT) -> list[tuple[str, str, pathlib.P
             directory = root / RESULT_DIR / profile / device
             if not directory.is_dir():
                 continue
-            for page in sorted(directory.glob("*.md")):
+            ordered = sorted(directory.glob("*.md"),
+                             key=lambda page: (regime_rank(root, device, page.stem), page.stem))
+            for page in ordered:
                 pages.append((profile, f"{device}/{page.stem}", page))
     return pages
 

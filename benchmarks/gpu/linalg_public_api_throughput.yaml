@@ -1,31 +1,26 @@
 schema_version: 1
-suite_id: gpu/linalg_public_api
-title: CUDA public linalg_public_api APIs
-description: Isolated public APIs and explicit unsupported timing contracts. Issue 155.
+suite_id: gpu/linalg_public_api_throughput
+title: CUDA public linalg APIs, throughput view (read this one first)
+description: >-
+  Throughput view of the CUDA public linalg API surface: the 82 cases whose
+  largest matrix dimension is at least 256. These rows are throughput
+  measurements and are never comparable with, or averaged together with, the
+  per-call latency rows of `gpu/linalg_public_api_latency` (tenferro-rs #2087).
+  The same problems, protocol and backends are split by shape class between the
+  two suites. Issue 155.
 defaults:
+  # throughput: 256..512 matrices; kernel work dominates the per-call cost.
+  regime: throughput
   device: {kind: cuda, ordinal: 0}
   run: {warmups: 3, runs: 15, min_runtime_ms: 2, timing_scope: steady_state_host_api_plus_device_sync}
   verify: {reference: numpy/scipy double precision, rtol: 0.0005, atol: 0.0005}
 backends: [tenferro-cuda-direct, tenferro-cuda-eager, pytorch-cuda, jax-cuda, jax-cuda-jit]
 problems:
+  # One case source for both shape classes: the include list below is the only
+  # difference between this suite and its sibling, so the two pages hold the
+  # same problems, protocol and backends split by matrix size.
   source: data/instances/gpu_linalg_public_api.json
   include:
-    - cholesky_f32_32x32
-    - cholesky_f64_32x32
-    - svdvals_f32_32x32
-    - svdvals_f64_32x32
-    - eigvalsh_f32_32x32
-    - eigvalsh_f64_32x32
-    - pinv_f32_32x32
-    - pinv_f64_32x32
-    - inv_f32_32x32
-    - inv_f64_32x32
-    - det_f32_32x32
-    - det_f64_32x32
-    - norm_f32_32x32
-    - norm_f64_32x32
-    - triangular_solve_f32_32x32
-    - triangular_solve_f64_32x32
     - cholesky_f32_512x512
     - cholesky_f64_512x512
     - svdvals_f32_512x512
@@ -42,26 +37,6 @@ problems:
     - norm_f64_512x512
     - triangular_solve_f32_512x512
     - triangular_solve_f64_512x512
-    - svd_full_square_f32_32x32
-    - svd_full_tall_f32_64x32
-    - svd_full_wide_f32_32x64
-    - slogdet_positive_f32_32x32
-    - slogdet_negative_f32_32x32
-    - svd_full_square_f64_32x32
-    - svd_full_tall_f64_64x32
-    - svd_full_wide_f64_32x64
-    - slogdet_positive_f64_32x32
-    - slogdet_negative_f64_32x32
-    - svd_full_square_c32_32x32
-    - svd_full_tall_c32_64x32
-    - svd_full_wide_c32_32x64
-    - slogdet_positive_c32_32x32
-    - slogdet_negative_c32_32x32
-    - svd_full_square_c64_32x32
-    - svd_full_tall_c64_64x32
-    - svd_full_wide_c64_32x64
-    - slogdet_positive_c64_32x32
-    - slogdet_negative_c64_32x32
     - svd_full_square_f32_256x256
     - svd_full_tall_f32_512x256
     - svd_full_wide_f32_256x512
@@ -82,20 +57,6 @@ problems:
     - svd_full_wide_c64_256x512
     - slogdet_positive_c64_256x256
     - slogdet_negative_c64_256x256
-    - householder_qr_square_f32_32x32
-    - householder_qr_tall_f32_64x32
-    - householder_qr_wide_f32_32x64
-    - householder_qr_square_f64_32x32
-    - householder_qr_tall_f64_64x32
-    - householder_qr_wide_f64_32x64
-    - householder_qr_square_c32_32x32
-    - householder_qr_tall_c32_64x32
-    - householder_qr_wide_c32_32x64
-    - slogdet_phase_c32_32x32
-    - householder_qr_square_c64_32x32
-    - householder_qr_tall_c64_64x32
-    - householder_qr_wide_c64_32x64
-    - slogdet_phase_c64_32x32
     - householder_qr_square_f32_256x256
     - householder_qr_tall_f32_512x256
     - householder_qr_wide_f32_256x512
@@ -110,26 +71,6 @@ problems:
     - householder_qr_tall_c64_512x256
     - householder_qr_wide_c64_256x512
     - slogdet_phase_c64_256x256
-    - householder_from_factors_default_f32_64x32
-    - householder_append_default_f32_64x32
-    - householder_r_default_f32_64x32
-    - householder_q_columns_prefix_f32_64x32
-    - householder_q_columns_complement_f32_64x32
-    - householder_from_factors_default_f64_64x32
-    - householder_append_default_f64_64x32
-    - householder_r_default_f64_64x32
-    - householder_q_columns_prefix_f64_64x32
-    - householder_q_columns_complement_f64_64x32
-    - householder_from_factors_default_c32_64x32
-    - householder_append_default_c32_64x32
-    - householder_r_default_c32_64x32
-    - householder_q_columns_prefix_c32_64x32
-    - householder_q_columns_complement_c32_64x32
-    - householder_from_factors_default_c64_64x32
-    - householder_append_default_c64_64x32
-    - householder_r_default_c64_64x32
-    - householder_q_columns_prefix_c64_64x32
-    - householder_q_columns_complement_c64_64x32
     - householder_from_factors_default_f32_512x256
     - householder_append_default_f32_512x256
     - householder_r_default_f32_512x256
@@ -150,18 +91,6 @@ problems:
     - householder_r_default_c64_512x256
     - householder_q_columns_prefix_c64_512x256
     - householder_q_columns_complement_c64_512x256
-    - lu_square_f32_s32
-    - lu_square_f64_s32
-    - lu_square_c32_s32
-    - lu_square_c64_s32
-    - lu_tall_f32_s32
-    - lu_tall_f64_s32
-    - lu_tall_c32_s32
-    - lu_tall_c64_s32
-    - lu_wide_f32_s32
-    - lu_wide_f64_s32
-    - lu_wide_c32_s32
-    - lu_wide_c64_s32
     - lu_square_f32_s256
     - lu_square_f64_s256
     - lu_square_c32_s256

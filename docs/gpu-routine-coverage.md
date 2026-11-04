@@ -31,7 +31,7 @@ below and in `routine.yaml`, not in a code change.
 | `gpu/linalg_jvp_vjp` | `gpu_linalg_ad` | 10 | 3 | 30 |
 | `gpu/permutation` | `gpu_permutation` | 10 | 6 | 60 |
 | `gpu/lstsq` | `gpu_public_api` | 1 | 4 | 4 |
-| `gpu/linalg_public_api` | `gpu_public_api` | 16 | 4 | 64 |
+| `gpu/linalg_public_api_throughput` | `gpu_public_api` | 16 | 4 | 64 |
 | `gpu/fft` | `gpu_public_api` | 4 | 4 | 16 |
 | `gpu/nn` | `gpu_public_api` | 11 | 4 | 44 |
 | `gpu/structural` | `gpu_public_api` | 16 | 4 | 64 |
@@ -55,7 +55,7 @@ are declarations, and `perf_issues.yaml` is the routine control lane.
 |---|---|---|---:|
 | `gpu/fft` | (a) collected | own collector `run_gpu_public_api.sh`, fixtures in `data/instances/gpu_fft.json`, published page `result/nvidia-gpu/gpu/fft.md` | 16 |
 | `gpu/isolated_ops` | (a) collected | same collector, 33 isolated public operations, published page | 132 |
-| `gpu/linalg_public_api` | (a) collected | same collector; the surface where #299-class failures appear, published page | 64 |
+| `gpu/linalg_public_api_throughput` | (a) collected | same collector; the surface where #299-class failures appear, published page. The sibling `gpu/linalg_public_api_latency` is the per-call overhead page and has no weekly representative | 64 |
 | `gpu/lstsq` | (a) collected | same collector; carries the unresolved #299 least-squares failures, published page | 4 |
 | `gpu/nn` | (a) collected | same collector, 11 activation/normalization operations, published page | 44 |
 | `gpu/structural` | (a) collected | same collector, 16 structural operations, published page | 64 |
@@ -99,7 +99,7 @@ naming it there again.
 ### Collect order and the one-night budget
 
 The weekly run collects the manifest in order: the core five, both AD suites,
-`permutation`, `lstsq`, `linalg_public_api`, `fft`, `nn`, `structural`,
+`permutation`, `lstsq`, `linalg_public_api_throughput`, `fft`, `nn`, `structural`,
 `isolated_ops`, `reuse_contraction`. A night that runs out of budget therefore
 loses the cheapest-signal-per-row tail last. The 714-row set is 6.7x the previous
 routine matrix; it has not been measured on A100 yet. If the first complete
