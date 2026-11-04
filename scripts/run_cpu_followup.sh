@@ -6,6 +6,20 @@ cd "$(dirname "$0")/.."
 source scripts/tenferro_checkout.sh
 source scripts/thread_env.sh
 source scripts/benchmark_host_idle.sh
+# Build the independent Rust MWE into the directory the collector defaults to
+# ($PWD/target/followup-current, see DEFAULT_MWE_BINARY in
+# scripts/cpu_followup_cases.py). --prepare does the full environment setup and
+# then calls this; --prepare-mwe only builds, for callers that already prepared
+# the environment (the nightly perf_issues path).
+build_followup_mwe() {
+    : "${MKLROOT:?MKLROOT is required to build mwe/cpu_followup (system-mkl)}"
+    test -d "$MKLROOT/include"
+    export CARGO_TARGET_DIR="$PWD/target/followup-current"
+    cargo build --release --locked --manifest-path mwe/cpu_followup/Cargo.toml
+    # The binary just built is pinned to this revision, which the collection step
+    # may no longer see if the checkout moves before it runs.
+    tenferro_checkout_commit "$PWD/extern/tenferro-rs" > "$CARGO_TARGET_DIR/.tenferro-commit"
+}
 if [[ "${1:-}" == --prepare ]]; then
     source scripts/python_venv.sh
     export BENCHMARK_TARGET_PROFILE=amd-cpu
@@ -15,12 +29,12 @@ if [[ "${1:-}" == --prepare ]]; then
     reset_benchmark_python_venv "$PWD"
     prepare_cpu_benchmark_python_venv "$PWD"
     update_tenferro_checkout_if_main "$PWD/extern/tenferro-rs"
-    test -d "$MKLROOT/include"
-    export CARGO_TARGET_DIR="$PWD/target/followup-current"
-    cargo build --release --locked --manifest-path mwe/cpu_followup/Cargo.toml
-    # The binary just built is pinned to this revision, which the collection step
-    # may no longer see if the checkout moves before it runs.
-    tenferro_checkout_commit "$PWD/extern/tenferro-rs" > "$CARGO_TARGET_DIR/.tenferro-commit"
+    build_followup_mwe
+    exit 0
+fi
+if [[ "${1:-}" == --prepare-mwe ]]; then
+    export BENCHMARK_TARGET_PROFILE="${BENCHMARK_TARGET_PROFILE:-amd-cpu}"
+    build_followup_mwe
     exit 0
 fi
 THREADS="${1:?thread count required}"; shift

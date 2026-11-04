@@ -19,7 +19,7 @@ for name in scripts/run_cpu_followup.sh scripts/tenferro_checkout.sh \
             benchmarks/cpu_pinning_rows.tsv; do
     cp "$ROOT/$name" "$TMP/project/$name"
 done
-cp "$ROOT/schemas" -r "$TMP/project/schemas"
+cp -R "$ROOT/schemas" "$TMP/project/schemas"
 printf '%s\n' "unused" > "$TMP/project/pins/tenferro-rs.rev"
 
 # A real git checkout so the recorded commit is the one a run built from.

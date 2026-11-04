@@ -29,6 +29,16 @@ PYTHON="$PROJECT_DIR/.venv/bin/python"
 # Build once before sequential timing collection.
 cargo build --release --no-default-features --features "$TENFERRO_CPU_FEATURES" --bin perf_issue_case
 BINARY="${CARGO_TARGET_DIR:-$PROJECT_DIR/target}/release/perf_issue_case"
+# cpu_followup_mwe cases execute an independent Rust MWE that only
+# scripts/run_cpu_followup.sh builds (target/followup-current, the directory
+# scripts/cpu_followup_cases.py reads by default). Nothing else on this path
+# builds it, which left 94 rows failing per thread count (#329).
+if [[ "$(uname -s)" == Linux ]]; then
+    if [[ "$("$PYTHON" "$SCRIPT_DIR/perf_issues_needs_followup_mwe.py" "${THREAD_COUNTS[0]}")" == 1 ]]; then
+        echo "Building the cpu_followup MWE binary for the selected perf_issues cases..."
+        "$SCRIPT_DIR/run_cpu_followup.sh" --prepare-mwe
+    fi
+fi
 TIMESTAMP="${BENCHMARK_TIMESTAMP:-$(date -u +%Y%m%d_%H%M%S)}"
 "$PYTHON" -c 'from scripts.benchmark_layout import safe_target_profile; import sys; safe_target_profile(sys.argv[1])' "$BENCHMARK_TARGET_PROFILE"
 RUN_DIR="$PROJECT_DIR/data/results/$BENCHMARK_TARGET_PROFILE/cpu/perf_issues/$TIMESTAMP"

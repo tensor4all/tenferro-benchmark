@@ -20,7 +20,7 @@ class FollowupTest(unittest.TestCase):
         sig=dict(shape=[1],count=1,sum=[1.,0.],sum_abs=1.,sum_sq=1.,probes=[[0,1.,0.]])
         bad=dict(sig,sum=[9.,0.],probes=[[0,9.,0.]])
         case=next(c for c in generator.generate_cases() if c['kind']=='cpu_followup_mwe')
-        with patch.object(adapter,'execute',side_effect=[dict(status='ok',outputs=[sig]),dict(status='ok',outputs=[bad])]) as execute:
+        with patch.object(adapter,'followup_mwe_supported',return_value=True), patch.object(adapter,'execute',side_effect=[dict(status='ok',outputs=[sig]),dict(status='ok',outputs=[bad])]) as execute:
             result=adapter.run(case,1,dict(min_runtime_ms=10,runs=15))
         self.assertEqual(execute.call_count,2)
         self.assertEqual(result['correctness_status'],'failed')
@@ -29,7 +29,7 @@ class FollowupTest(unittest.TestCase):
     def test_skipped_reference_prevents_rust_and_sampling(self):
         case=next(c for c in generator.generate_cases() if c['kind']=='cpu_followup_mwe')
         skipped=dict(status='skipped',correctness_status='skipped',samples=[],skip_reason='no MKL runtime')
-        with patch.object(adapter,'execute',return_value=skipped) as execute:
+        with patch.object(adapter,'followup_mwe_supported',return_value=True), patch.object(adapter,'execute',return_value=skipped) as execute:
             result=adapter.run(case,1,dict(min_runtime_ms=10,runs=15))
         self.assertEqual(execute.call_count,1)
         self.assertEqual(result,dict(correctness_status='skipped',samples=[],skip_reason='no MKL runtime'))
@@ -39,7 +39,7 @@ class FollowupTest(unittest.TestCase):
         # The standalone Rust MWE emits this marker before the adapter verifies it.
         payload=dict(correctness_status='awaiting cross-implementation signature check',outputs=[sig],samples=[])
         case=next(c for c in generator.generate_cases() if c['kind']=='cpu_followup_mwe')
-        with patch.object(adapter.subprocess,'run',return_value=subprocess.CompletedProcess([],0,json.dumps(payload),'')):
+        with patch.object(adapter,'followup_mwe_supported',return_value=True), patch.object(adapter.subprocess,'run',return_value=subprocess.CompletedProcess([],0,json.dumps(payload),'')):
             self.assertEqual(adapter.execute('fft.fft','eager-shared',1,0,1)['status'],'ok')
             self.assertEqual(adapter.run(case,1,dict(min_runtime_ms=10,runs=0),True)['correctness_status'],'passed')
 
@@ -143,6 +143,62 @@ class MklDiscoveryTest(unittest.TestCase):
         with patch.object(mkl_fft,'load_runtime',return_value=(object(),'bad-library')):
             with self.assertRaises(AttributeError):
                 mkl_fft.prepared_fft(None,None,'fft',8,1)
+
+
+class MissingMweBinaryTest(unittest.TestCase):
+    """The binary that only run_cpu_followup.sh builds must be named when absent."""
+    def test_execute_names_the_build_command(self):
+        with patch.object(adapter.subprocess,'run',side_effect=FileNotFoundError(2,'No such file or directory')):
+            with self.assertRaisesRegex(RuntimeError,'run_cpu_followup.sh --prepare-mwe'):
+                adapter.execute('fft.fft','eager-shared',1,0,1)
+
+    def test_execute_reports_the_collector_default_path(self):
+        with patch.object(adapter.subprocess,'run',side_effect=FileNotFoundError(2,'No such file or directory')):
+            with self.assertRaisesRegex(RuntimeError,str(adapter.DEFAULT_MWE_BINARY)):
+                adapter.execute('fft.fft','eager-shared',1,0,1)
+
+    def test_run_surfaces_the_build_hint_for_the_rust_arm(self):
+        case=next(c for c in generator.generate_cases() if c['kind']=='cpu_followup_mwe')
+        sig=dict(shape=[1],count=1,sum=[1.,0.],sum_abs=1.,sum_sq=1.,probes=[[0,1.,0.]])
+        reference=subprocess.CompletedProcess([],0,json.dumps(dict(status='ok',outputs=[sig])),'')
+        missing=FileNotFoundError(2,'No such file or directory')
+        with patch.object(adapter,'followup_mwe_supported',return_value=True), patch.object(adapter.subprocess,'run',side_effect=[reference,missing]):
+            with self.assertRaisesRegex(RuntimeError,'run_cpu_followup.sh --prepare-mwe'):
+                adapter.run(case,1,dict(min_runtime_ms=10,runs=15))
+
+
+
+    def test_unsupported_host_skips_before_any_process(self):
+        case=next(c for c in generator.generate_cases() if c['kind']=='cpu_followup_mwe')
+        with patch.object(adapter,'followup_mwe_supported',return_value=False), patch.object(adapter,'execute') as execute:
+            result=adapter.run(case,1,dict(min_runtime_ms=10,runs=15))
+        execute.assert_not_called()
+        self.assertEqual(result['correctness_status'],'skipped')
+        self.assertIn('Linux',result['skip_reason'])
+
+
+class NightlyMwePathTest(unittest.TestCase):
+    """The nightly must build the binary the collector defaults to (#329)."""
+    def test_builder_target_dir_matches_the_collector_default(self):
+        script=(ROOT/'scripts/run_cpu_followup.sh').read_text()
+        self.assertIn('CARGO_TARGET_DIR="$PWD/target/followup-current"',script)
+        self.assertIn('--prepare-mwe',script)
+        self.assertEqual(str(adapter.DEFAULT_MWE_BINARY),
+                         str(ROOT/'target/followup-current/release/cpu-followup-mwe'))
+
+    def test_perf_issues_builds_the_mwe_before_collection(self):
+        script=(ROOT/'scripts/run_perf_issues.sh').read_text()
+        self.assertIn('perf_issues_needs_followup_mwe.py',script)
+        self.assertIn('run_cpu_followup.sh" --prepare-mwe',script)
+        self.assertLess(script.index('perf_issues_needs_followup_mwe.py'),
+                        script.index('benchmark_perf_issues.py'))
+
+    def test_needs_helper_follows_the_selection(self):
+        import perf_issues_needs_followup_mwe as needs
+        with patch.dict(os.environ,{'BENCH_INSTANCE':''}):
+            self.assertTrue(needs.needs_followup_mwe(1))
+        with patch.dict(os.environ,{'BENCH_INSTANCE':'decode_proj_f32_eager-shared_in1024_out1024_len8'}):
+            self.assertFalse(needs.needs_followup_mwe(1))
 
 
 if __name__=='__main__':unittest.main()
