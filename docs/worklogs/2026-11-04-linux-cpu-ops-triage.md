@@ -71,13 +71,14 @@ FileNotFoundError(2, 'No such file or directory')
 
 ### Why the reference arms fail too
 
-`run()` in `cpu_followup_cases.py` executes the *Rust* arm first
-(`rust_path`) and only then the arm under collection. For every one of these
-cases `rust_path` is `eager-shared` or `direct-shared`, both of which resolve to
-the missing binary. The reference arm's own runner is never reached, so the
-`pytorch`, `jax`, `julia-base` and `mkl-dfti` rows fail with the Rust arm's
-error. That is why the failing set spans all arms, and it is *not* evidence that
-PyTorch/JAX/Julia are broken.
+`run()` in `cpu_followup_cases.py` executes the reference arm
+(`reference_path`) first, then the Rust arm (`rust_path`), then the arm under
+collection. For every one of these cases `rust_path` is `eager-shared` or
+`direct-shared`, both of which resolve to the missing binary, so the row records
+that error. On a host where the reference arm cannot run either, its own error is
+what the row records instead (verified on a host without numpy: the `jax`
+reference fails first with `ModuleNotFoundError`). That is why the failing set
+spans all arms, and it is *not* evidence that PyTorch/JAX/Julia are broken.
 
 Verified separately: the PyTorch reference runs fine on this machine.
 
