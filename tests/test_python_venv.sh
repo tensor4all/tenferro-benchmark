@@ -4,6 +4,12 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 mkdir -p "$TMP/bin" "$TMP/project/.venv" "$TMP/wheels"
+cat > "$TMP/project/uv.lock" <<'LOCK'
+[[package]]
+name = "torch"
+version = "2.12.0"
+source = { registry = "https://pypi.org/simple" }
+LOCK
 export UV_TEST_LOG="$TMP/uv.log"
 cat > "$TMP/bin/uv" <<'SH'
 #!/usr/bin/env bash
@@ -20,11 +26,26 @@ export PATH="$TMP/bin:$PATH"
 unset BENCHMARK_TORCH_WHEEL BENCHMARK_TARGET_PROFILE UV_NO_SYNC UV_TEST_FAIL
 source "$ROOT/scripts/python_venv.sh"
 
-# Preserve the ordinary CPU wheel baseline.
+# The ordinary CPU baseline installs the lockfile without torch and then the
+# CPU wheel at the pinned version, so the CUDA wheel is never downloaded (#342).
 prepare_cpu_benchmark_python_venv "$TMP/project"
-grep -qx 'sync' "$UV_TEST_LOG"
+grep -qx 'venv --allow-existing .venv' "$UV_TEST_LOG"
+grep -qx 'export --frozen --no-hashes --no-emit-project --prune torch' "$UV_TEST_LOG"
+grep -qx 'pip install -r -' "$UV_TEST_LOG"
 grep -qx 'pip install --index-url https://download.pytorch.org/whl/cpu --force-reinstall torch==2.12.0+cpu' "$UV_TEST_LOG"
+! grep -q '^sync' "$UV_TEST_LOG"
 test "$UV_NO_SYNC" = 1
+
+# A lockfile without a readable torch pin must fail instead of guessing.
+cp "$TMP/project/uv.lock" "$TMP/uv.lock.bak"
+: > "$TMP/project/uv.lock"
+: > "$UV_TEST_LOG"
+unset UV_NO_SYNC
+if prepare_cpu_benchmark_python_venv "$TMP/project"; then
+    echo "missing locked torch version must fail" >&2
+    exit 1
+fi
+mv "$TMP/uv.lock.bak" "$TMP/project/uv.lock"
 
 # Source wheel survives a runner reset; resolve the image's symlink to its
 # actual wheel filename (uv rejects a basename without PEP 427 wheel tags).

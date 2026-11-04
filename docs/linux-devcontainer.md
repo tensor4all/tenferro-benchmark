@@ -22,6 +22,10 @@ BLAS/provider policy:
 - OpenBLAS remains available for alternate-provider experiments. On x86_64,
   its common code builds for CORE2 so CPU detection in the pinned release
   cannot fail on newer hosts; dynamic runtime kernel dispatch remains enabled.
+- The CPU Python environment installs the lockfile without torch and then the
+  CPU wheel (`torch==<locked version>+cpu`) from the PyTorch CPU index, so the
+  CUDA torch wheel and its `nvidia-*` dependencies are never downloaded
+  (tensor4all/tenferro-benchmark#342). The GPU containers keep the CUDA wheel.
 - PyTorch Python uses the installed wheel provider. The benchmark records
   `BLAS_INFO`, `LAPACK_INFO`, and linked BLAS/LAPACK libraries in `run.yaml`.
 - The default image does not source-build PyTorch. For a provider-matched

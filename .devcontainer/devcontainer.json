@@ -21,7 +21,7 @@
     "source=tenferro-benchmark-cargo-git,target=/home/vscode/.cargo/git,type=volume",
     "source=tenferro-benchmark-uv-cache,target=/home/vscode/.cache/uv,type=volume"
   ],
-  "postCreateCommand": "uv sync --frozen || uv sync",
+  "postCreateCommand": "bash -c 'source scripts/python_venv.sh; prepare_cpu_benchmark_python_venv \"$PWD\"'",
   "customizations": {
     "vscode": {
       "extensions": [
