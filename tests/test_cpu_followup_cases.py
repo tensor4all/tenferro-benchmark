@@ -190,6 +190,7 @@ class NightlyMwePathTest(unittest.TestCase):
         script=(ROOT/'scripts/run_perf_issues.sh').read_text()
         self.assertIn('perf_issues_needs_followup_mwe.py',script)
         self.assertIn('run_cpu_followup.sh" --prepare-mwe',script)
+        self.assertIn('MKLROOT is unset',script)
         self.assertLess(script.index('perf_issues_needs_followup_mwe.py'),
                         script.index('benchmark_perf_issues.py'))
 

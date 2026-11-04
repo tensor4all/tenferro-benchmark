@@ -35,8 +35,14 @@ BINARY="${CARGO_TARGET_DIR:-$PROJECT_DIR/target}/release/perf_issue_case"
 # builds it, which left 94 rows failing per thread count (#329).
 if [[ "$(uname -s)" == Linux ]]; then
     if [[ "$("$PYTHON" "$SCRIPT_DIR/perf_issues_needs_followup_mwe.py" "${THREAD_COUNTS[0]}")" == 1 ]]; then
-        echo "Building the cpu_followup MWE binary for the selected perf_issues cases..."
-        "$SCRIPT_DIR/run_cpu_followup.sh" --prepare-mwe
+        if [[ -d "${MKLROOT:-}/include" ]]; then
+            echo "Building the cpu_followup MWE binary for the selected perf_issues cases..."
+            "$SCRIPT_DIR/run_cpu_followup.sh" --prepare-mwe
+        else
+            # Without MKL these cases report skipped from their reference arms
+            # before the Rust arm runs, so a build is neither possible nor needed.
+            echo "MKLROOT is unset: not building the cpu_followup MWE (its cases cannot run without MKL)." >&2
+        fi
     fi
 fi
 TIMESTAMP="${BENCHMARK_TIMESTAMP:-$(date -u +%Y%m%d_%H%M%S)}"
