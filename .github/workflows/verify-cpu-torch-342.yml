@@ -4,6 +4,7 @@ name: verify-cpu-torch-342
 # carries no CUDA-only packages. Deleted before the change is merged.
 on:
   workflow_dispatch:
+  pull_request:
 
 permissions:
   contents: read
