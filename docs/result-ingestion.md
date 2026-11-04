@@ -259,11 +259,29 @@ row counts and SHA-256 of sorted `[case, group, backend]` identities encoded
 with JSON separators `(',', ':')`; no timings/statuses influence it. Collection
 and ingestion check it independently of artifact-supplied expected rows, so
 removing both raw and summary rows cannot silently redefine completeness.
-Update this inventory deliberately when the suite's selected workloads change,
-with fixture evidence for the intended selection. Custom CPU filters or thread
-counts are diagnostic and cannot replace these standard nightly reports.
-Selected complete suites may be ingested independently; a missing workload
-inside a produced suite is rejected.
+
+The file is generated, never transcribed:
+
+```bash
+# after an intended collection change: one reviewed command against a
+# packaged run tree (a diagnostics artifact of the failing run is enough)
+uv run python scripts/ci/generate_cpu_ingestion_selection.py --profile mac-cpu \
+  --run-root <extracted run tree> --harness-commit <run head sha> \
+  --started-at <collection start, ISO> --check   # then --write
+```
+
+`--check` exits nonzero and names each suite with both counts and digests when
+the ledger and the collection disagree; `--write` merges the suites the
+collection produced and leaves suites it did not produce as declared. The
+regeneration packages with the same code path that gates ingestion and skips
+only the inventory comparison itself, so there is no second fingerprint
+implementation. The nightly still rejects an accidental row change: the ledger
+has to be regenerated and reviewed in its own commit. `perf_issues` keeps its
+own declaration from the case manifest and does not enter this file.
+
+Custom CPU filters or thread counts are diagnostic and cannot replace these
+standard nightly reports. Selected complete suites may be ingested
+independently; a missing workload inside a produced suite is rejected.
 
 Only explicit source paths named by a report are selected. Permutation's ISO
 timestamp identifies exactly one metadata-matching run when its report does

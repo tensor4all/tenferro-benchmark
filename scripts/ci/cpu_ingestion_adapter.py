@@ -27,12 +27,17 @@ import report_summary
 SELECTION_PATH = Path(__file__).resolve().parents[2] / 'benchmarks/cpu/ingestion-selection.json'
 
 
+def identity_fingerprint(rows):
+    """Digest of sorted [case, group, backend] identities, as the inventory stores it."""
+    return hashlib.sha256(json.dumps(sorted(rows), separators=(',', ':')).encode()).hexdigest()
+
+
 def validate_selection(document):
     plan = json.loads(SELECTION_PATH.read_text())
     if plan['schema_version'] != 1:
         raise ValueError('Unsupported CPU workload inventory')
     rows = sorted(identities(document))
-    fingerprint = hashlib.sha256(json.dumps(rows, separators=(',', ':')).encode()).hexdigest()
+    fingerprint = identity_fingerprint(rows)
     if document['suite_id'] == 'cpu/perf_issues':
         import benchmark_perf_issues
         suite_path, manifest_path, _ = benchmark_perf_issues.SUITES['cpu']
@@ -49,7 +54,10 @@ def validate_selection(document):
         return
     expected = plan['suites'].get(document['suite_id'])
     if expected != {'row_count': len(rows), 'identities_sha256': fingerprint}:
-        raise ValueError(f"CPU workload selection does not match declared nightly inventory: {document['suite_id']}")
+        declared = 'no declaration' if expected is None else f"{expected['row_count']} identities"
+        raise ValueError(f"CPU workload selection does not match declared nightly inventory: {document['suite_id']} "
+                         f"(declared {declared}, collected {len(rows)}); if the change is intended, regenerate "
+                         f"benchmarks/cpu/ingestion-selection.json with scripts/ci/generate_cpu_ingestion_selection.py")
     expected_threads = plan.get('suite_threads', {}).get(document['suite_id'], plan['threads'])
     if document['hardware'].get('threads') != expected_threads:
         raise ValueError('CPU nightly thread selection mismatch')
@@ -252,7 +260,8 @@ def build_source(bundle: Path, descriptor: dict, suite: str, profile: str, sourc
     return document
 
 
-def rebuild_cpu(bundle: Path, entry: dict, profile: str, source: dict) -> dict:
+def rebuild_cpu(bundle: Path, entry: dict, profile: str, source: dict, *, enforce_inventory=True) -> dict:
+    """Rebuild a CPU suite from raw inputs. Only the inventory generator skips the check."""
     descriptors = entry.get('sources')
     if not descriptors:
         raise ValueError('CPU manifest must declare raw sources')
@@ -276,5 +285,6 @@ def rebuild_cpu(bundle: Path, entry: dict, profile: str, source: dict) -> dict:
     if set(document['hardware'].get('threads', [])) != set(entry['threads']):
         raise ValueError('CPU thread coverage differs from declared selection')
     document['suite_id'] = entry['suite_id']
-    validate_selection(document)
+    if enforce_inventory:
+        validate_selection(document)
     return document
