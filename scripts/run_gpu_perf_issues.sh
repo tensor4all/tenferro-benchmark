@@ -134,7 +134,7 @@ fi
 failed=0
 CUBECL_DEBUG_LOG=0 LD_LIBRARY_PATH="${CUDA_HOME:-/usr/local/cuda}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
     "$PYTHON" "$SCRIPT_DIR/benchmark_perf_issues.py" --suite gpu --device "$DEVICE_ORDINAL" \
-    --binary "$BINARY" --threads 1 --output "$RUN_DIR/samples_t1.jsonl" "${EXTRA[@]}" || failed=1
+    --binary "$BINARY" --threads 1 --output "$RUN_DIR/samples_t1.jsonl" "${EXTRA[@]+"${EXTRA[@]}"}" || failed=1
 # Record the device state after the measurement and refuse to pass off a run
 # that shared the device with another process. The recorded and the enforced
 # list are the same reading, and the start snapshot is enforced too.

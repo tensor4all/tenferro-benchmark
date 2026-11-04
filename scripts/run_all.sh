@@ -456,7 +456,7 @@ echo "============================================"
 echo " Benchmark complete"
 echo "============================================"
 echo "Results:"
-for log in "${LOGS[@]}"; do
+for log in "${LOGS[@]+"${LOGS[@]}"}"; do
     echo "  $log"
 done
 [ -f "$CPU_RUN_YAML" ] && echo "  Run YAML: $CPU_RUN_YAML"

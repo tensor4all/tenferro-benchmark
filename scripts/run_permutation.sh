@@ -257,7 +257,7 @@ publish_cpu_runs "$PROJECT_DIR" "$RUN_DIR"
 echo ""
 echo "CPU permutation benchmark suite complete: $SUITE_ID"
 echo "Run YAML:  ${RUN_YAML#$PROJECT_DIR/}"
-for path in "${INPUTS[@]}"; do
+for path in "${INPUTS[@]+"${INPUTS[@]}"}"; do
     echo "JSONL:     ${path#$PROJECT_DIR/}"
 done
 echo "Report:    ${LATEST_REPORT#$PROJECT_DIR/}"

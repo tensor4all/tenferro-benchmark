@@ -43,7 +43,7 @@ extra=()
 if [[ ",${GPU_BENCH_RUNTIME_BACKENDS:-}," == *,jax-cuda,* ]]; then
   extra=(--extra gpu)
 fi
-uv sync --project scripts/ci/runpod_runtime --python 3.12.12 --managed-python --frozen --no-dev "${extra[@]}"
+uv sync --project scripts/ci/runpod_runtime --python 3.12.12 --managed-python --frozen --no-dev "${extra[@]+"${extra[@]}"}"
 "$runtime_root/venv/bin/python" - <<'PY'
 import importlib.metadata as m
 import json, pathlib, sys

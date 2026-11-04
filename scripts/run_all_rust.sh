@@ -78,6 +78,6 @@ echo "============================================"
 echo " Rust benchmark complete"
 echo "============================================"
 echo "Results:"
-for log in "${RUST_LOGS[@]}"; do
+for log in "${RUST_LOGS[@]+"${RUST_LOGS[@]}"}"; do
     echo "  $log"
 done

@@ -107,15 +107,15 @@ done
 if [[ "$GPU_API_VERIFY_ONLY" == 1 ]]; then
     uv run python scripts/format_gpu_public_api_results.py --suite "$suite" \
         --run-metadata "$run_dir/run.yaml" --verify-only \
-        --output "$run_dir/verification.json" "${outputs[@]}"
+        --output "$run_dir/verification.json" "${outputs[@]+"${outputs[@]}"}"
     exit 0
 fi
 # The routine path reads one record contract: fold this family's rows and build
 # its summary from them, then publish the family page next to those artifacts.
 uv run python scripts/normalize_gpu_records.py --output "$run_dir/records.jsonl" \
-    --summary "$run_dir/report.summary.json" --run-metadata "$run_dir/run.yaml" "${outputs[@]}"
+    --summary "$run_dir/report.summary.json" --run-metadata "$run_dir/run.yaml" "${outputs[@]+"${outputs[@]}"}"
 uv run python scripts/format_gpu_public_api_results.py --suite "$suite" \
-    --run-metadata "$run_dir/run.yaml" --output "$run_dir/report.md" "${outputs[@]}"
+    --run-metadata "$run_dir/run.yaml" --output "$run_dir/report.md" "${outputs[@]+"${outputs[@]}"}"
 if [[ "${GPU_BENCH_SKIP_LATEST:-0}" != 1 ]]; then
     mkdir -p result/nvidia-gpu/gpu
     cp "$run_dir/report.md" "result/nvidia-gpu/gpu/$family.md"

@@ -42,7 +42,7 @@ for lane in timing state; do
 done
 EXTRA=()
 [[ "$VERIFY_ONLY" != 1 ]] || EXTRA+=(--verify-only)
-"$PYTHON" scripts/gpu_routine_controls.py --output "$RUN_DIR" --records "${RECORDS[@]}" "${EXTRA[@]}"
+"$PYTHON" scripts/gpu_routine_controls.py --output "$RUN_DIR" --records "${RECORDS[@]+"${RECORDS[@]}"}" "${EXTRA[@]+"${EXTRA[@]}"}"
 if [[ "$VERIFY_ONLY" != 1 && "${GPU_BENCH_SKIP_LATEST:-0}" != 1 ]]; then
     mkdir -p "$PROJECT_DIR/result/nvidia-gpu/gpu"
     cp "$RUN_DIR/report.md" "$PROJECT_DIR/result/nvidia-gpu/gpu/routine_controls.md"

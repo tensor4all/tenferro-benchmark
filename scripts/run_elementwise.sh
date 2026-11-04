@@ -197,7 +197,7 @@ else
     echo "Formatting cpu/elementwise results as markdown..."
     mkdir -p "$(dirname "$LATEST_REPORT")"
     "${PYTHON[@]}" "$SCRIPT_DIR/format_elementwise_results.py" \
-        "${INPUTS[@]}" \
+        "${INPUTS[@]+"${INPUTS[@]}"}" \
         --run-metadata "$RUN_YAML" \
         --output "$LATEST_REPORT"
 fi
@@ -205,7 +205,7 @@ fi
 echo ""
 echo "CPU elementwise benchmark suite complete: $SUITE_ID"
 echo "Run YAML:  ${RUN_YAML#$PROJECT_DIR/}"
-for path in "${INPUTS[@]}"; do
+for path in "${INPUTS[@]+"${INPUTS[@]}"}"; do
     echo "CSV:       ${path#$PROJECT_DIR/}"
 done
 echo "Report:    ${LATEST_REPORT#$PROJECT_DIR/}"
