@@ -5,7 +5,7 @@ effort: standard
 script_seconds: 3967.3
 scope: core suites through accounting/reporting; routine controls not selected in the reference run; devcontainer CLI startup and final wall metadata/report formatting excluded
 reference_run: data/results/nvidia-gpu/gpu/routine_selection/20261105_0820
-cache_conditions: cache=none: persistent CUDA artifact cache disabled, so every arm compiled cold in-process; mandatory Rust binary rebuilds included
+cache_conditions: 'cache=none: persistent CUDA artifact cache disabled, so every arm compiled cold in-process; mandatory Rust binary rebuilds included'
 policy: descriptive observation only; never a functional failure or a regression conclusion
 # Measured from the first complete run of the single routine set on the
 # maintained device (nvidia-gpu = A100). script_seconds is the sum of the
