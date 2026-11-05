@@ -12,7 +12,7 @@ trap 'rm -rf "$TMP"' EXIT
 # a host that has them (this repository's Linux devcontainers do) cannot leak in.
 FARM="$TMP/farm"
 mkdir -p "$FARM"
-for tool in bash dirname readlink cat; do ln -sf "$(command -v "$tool")" "$FARM/$tool"; done
+for tool in bash dirname readlink cat tr head sort tail ls; do ln -sf "$(command -v "$tool")" "$FARM/$tool"; done
 
 SMITOOL="$TMP/smitool"
 mkdir -p "$SMITOOL"

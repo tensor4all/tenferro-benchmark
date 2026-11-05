@@ -74,6 +74,37 @@ a run with the 16 structural permutation rows absent exits non-zero from the
 coverage accounting before `wall_command_complete.json` is written, so the script
 clock cannot be read from the run directory.
 
+Per suite, the same two runs:
+
+| Suite | cold (`none`) | warm | saved |
+|---|---:|---:|---:|
+| dense | 653.5 | 71.5 | 582.0 |
+| einsum | 69.1 | 23.0 | 46.1 |
+| elementwise | 203.9 | 15.1 | 188.8 |
+| fft | 74.8 | 24.9 | 49.9 |
+| isolated_ops | 215.2 | 104.3 | 110.9 |
+| linalg_ad_latency | 648.8 | 30.4 | 618.4 |
+| linalg_jvp_vjp | 642.1 | 36.2 | 605.9 |
+| linalg_public_api_throughput | 196.4 | 39.2 | 157.2 |
+| lstsq | 71.4 | 12.6 | 58.8 |
+| nn | 156.6 | 46.3 | 110.3 |
+| permutation | 262.4 | 154.2 | 108.2 |
+| reuse_contraction | 230.6 | 128.6 | 102.0 |
+| sparse | 74.2 | 71.5 | 2.7 |
+| structural | 291.6 | 61.3 | 230.3 |
+| tensornetwork | 176.5 | 78.8 | 97.7 |
+| **Total** | **3967.3** | **897.9** | **3069.4** |
+
+Arithmetic, because this field has been misread twice: every cell is that
+suite's own
+`collection_seconds_including_build_and_backend_release_delays` from its
+`wall_command.json`, which measures one suite's window inside one suite's loop
+iteration, and each column is the sum of the 15 values. It is never a difference
+of `command_seconds_through_this_suite`, which is cumulative from the start of the
+script that produced it and means nothing across an invocation boundary. The cold
+column is summed across the three invocations that stamp needed; the warm column
+is a single invocation.
+
 The two figures are not interchangeable. The budget keeps `script_seconds` at
 **3967.3 s** because that is the cache-free reference — what a fresh pod pays on
 its first suite, and the only regime reproducible on an empty cache. The warm

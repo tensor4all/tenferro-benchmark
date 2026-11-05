@@ -62,9 +62,15 @@ export XLA_PYTHON_CLIENT_PREALLOCATE=false
 PROBLEM_FILTER="${GPU_BENCH_PROBLEM:-}"
 RUST_MIN_STACK="${RUST_MIN_STACK:-67108864}"
 
+# Every suite starts its own backend processes, and each case inside them builds
+# its own engine or traced runtime, so without a persistent artifact cache each
+# case recompiles kernels an earlier case already compiled. The suite order then
+# pays that compile again in every suite instead of once per run.
+# shellcheck source=scripts/gpu_preflight.sh
+source "$SCRIPT_DIR/gpu_preflight.sh"
+configure_cuda_artifact_cache "$PHYSICAL_DEVICE_ORDINAL"
+
 cd "$PROJECT_DIR"
-# shellcheck source=scripts/tenferro_checkout.sh
-source "$SCRIPT_DIR/tenferro_checkout.sh"
 update_tenferro_checkout_if_main "$PROJECT_DIR/extern/tenferro-rs"
 
 mkdir -p "$RESULTS_ROOT" "$REPORTS_DIR"
