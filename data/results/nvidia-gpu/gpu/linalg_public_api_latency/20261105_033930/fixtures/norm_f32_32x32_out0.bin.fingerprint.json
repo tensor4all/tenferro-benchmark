@@ -1,0 +1,18 @@
+{
+ "schema_version": 1,
+ "case_id": "norm_f32_32x32",
+ "output": 0,
+ "dtype": "f32",
+ "shape": [],
+ "fingerprint": {
+  "sum_re": 9.241044998168945,
+  "sum_im": 0.0,
+  "sum_abs": 9.241044998168945,
+  "sum_squares": 85.39691265818328,
+  "max_abs": 9.241044998168945,
+  "dot_seeded_re": 7.084384853973556,
+  "dot_seeded_im": 0.0,
+  "elements": 1
+ },
+ "unavailable_reason": null
+}

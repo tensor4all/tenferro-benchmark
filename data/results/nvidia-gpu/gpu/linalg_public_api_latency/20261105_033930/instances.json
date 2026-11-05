@@ -1,0 +1,1218 @@
+{
+  "schema_version": 1,
+  "suite_id": "gpu/linalg_public_api_latency",
+  "backends": [
+    "tenferro-cuda-direct",
+    "tenferro-cuda-eager",
+    "pytorch-cuda",
+    "jax-cuda",
+    "jax-cuda-jit"
+  ],
+  "cases": [
+    {
+      "id": "cholesky_f32_32x32",
+      "op": "cholesky",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "cholesky_f64_32x32",
+      "op": "cholesky",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "svdvals_f32_32x32",
+      "op": "svdvals",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {
+        "tenferro-cuda-eager": "EagerSessionLinalgExt has no values-only svdvals entry point; returning and discarding singular vectors is not equivalent."
+      }
+    },
+    {
+      "id": "svdvals_f64_32x32",
+      "op": "svdvals",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {
+        "tenferro-cuda-eager": "EagerSessionLinalgExt has no values-only svdvals entry point; returning and discarding singular vectors is not equivalent."
+      }
+    },
+    {
+      "id": "eigvalsh_f32_32x32",
+      "op": "eigvalsh",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "eigvalsh_f64_32x32",
+      "op": "eigvalsh",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "pinv_f32_32x32",
+      "op": "pinv",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-eager": "Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer."
+      },
+      "unavailable": {
+        "tenferro-cuda-direct": "CUDA concrete route fails at revision 8b13220c: pinv_from_svd passes a host threshold scalar to mul_read. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906."
+      }
+    },
+    {
+      "id": "pinv_f64_32x32",
+      "op": "pinv",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-eager": "Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer."
+      },
+      "unavailable": {
+        "tenferro-cuda-direct": "CUDA concrete route fails at revision 8b13220c: pinv_from_svd passes a host threshold scalar to mul_read. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906."
+      }
+    },
+    {
+      "id": "inv_f32_32x32",
+      "op": "inv",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-eager": "Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer."
+      },
+      "unavailable": {
+        "tenferro-cuda-direct": "CUDA concrete route fails at revision 8b13220c: inv_owned/eye_like passes a host scalar to broadcast_in_dim. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906."
+      }
+    },
+    {
+      "id": "inv_f64_32x32",
+      "op": "inv",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-eager": "Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer."
+      },
+      "unavailable": {
+        "tenferro-cuda-direct": "CUDA concrete route fails at revision 8b13220c: inv_owned/eye_like passes a host scalar to broadcast_in_dim. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906."
+      }
+    },
+    {
+      "id": "det_f32_32x32",
+      "op": "det",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "det_f64_32x32",
+      "op": "det",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "norm_f32_32x32",
+      "op": "norm",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "norm_f64_32x32",
+      "op": "norm",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "triangular_solve_f32_32x32",
+      "op": "triangular_solve",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "triangular_solve_f64_32x32",
+      "op": "triangular_solve",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "svd_full_square_f32_32x32",
+      "op": "svd_full",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "square",
+      "issue": 155
+    },
+    {
+      "id": "svd_full_tall_f32_64x32",
+      "op": "svd_full",
+      "dtype": "f32",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "tall",
+      "issue": 155
+    },
+    {
+      "id": "svd_full_wide_f32_32x64",
+      "op": "svd_full",
+      "dtype": "f32",
+      "n": 2048,
+      "shape": [
+        32,
+        64
+      ],
+      "variant": "wide",
+      "issue": 155
+    },
+    {
+      "id": "slogdet_positive_f32_32x32",
+      "op": "slogdet",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "positive",
+      "issue": 155
+    },
+    {
+      "id": "slogdet_negative_f32_32x32",
+      "op": "slogdet",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "negative",
+      "issue": 155
+    },
+    {
+      "id": "svd_full_square_f64_32x32",
+      "op": "svd_full",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "square",
+      "issue": 155
+    },
+    {
+      "id": "svd_full_tall_f64_64x32",
+      "op": "svd_full",
+      "dtype": "f64",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "tall",
+      "issue": 155
+    },
+    {
+      "id": "svd_full_wide_f64_32x64",
+      "op": "svd_full",
+      "dtype": "f64",
+      "n": 2048,
+      "shape": [
+        32,
+        64
+      ],
+      "variant": "wide",
+      "issue": 155
+    },
+    {
+      "id": "slogdet_positive_f64_32x32",
+      "op": "slogdet",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "positive",
+      "issue": 155
+    },
+    {
+      "id": "slogdet_negative_f64_32x32",
+      "op": "slogdet",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "negative",
+      "issue": 155
+    },
+    {
+      "id": "svd_full_square_c32_32x32",
+      "op": "svd_full",
+      "dtype": "c32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "square",
+      "issue": 155
+    },
+    {
+      "id": "svd_full_tall_c32_64x32",
+      "op": "svd_full",
+      "dtype": "c32",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "tall",
+      "issue": 155
+    },
+    {
+      "id": "svd_full_wide_c32_32x64",
+      "op": "svd_full",
+      "dtype": "c32",
+      "n": 2048,
+      "shape": [
+        32,
+        64
+      ],
+      "variant": "wide",
+      "issue": 155
+    },
+    {
+      "id": "slogdet_positive_c32_32x32",
+      "op": "slogdet",
+      "dtype": "c32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "positive",
+      "issue": 155
+    },
+    {
+      "id": "slogdet_negative_c32_32x32",
+      "op": "slogdet",
+      "dtype": "c32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "negative",
+      "issue": 155
+    },
+    {
+      "id": "svd_full_square_c64_32x32",
+      "op": "svd_full",
+      "dtype": "c64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "square",
+      "issue": 155
+    },
+    {
+      "id": "svd_full_tall_c64_64x32",
+      "op": "svd_full",
+      "dtype": "c64",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "tall",
+      "issue": 155
+    },
+    {
+      "id": "svd_full_wide_c64_32x64",
+      "op": "svd_full",
+      "dtype": "c64",
+      "n": 2048,
+      "shape": [
+        32,
+        64
+      ],
+      "variant": "wide",
+      "issue": 155
+    },
+    {
+      "id": "slogdet_positive_c64_32x32",
+      "op": "slogdet",
+      "dtype": "c64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "positive",
+      "issue": 155
+    },
+    {
+      "id": "slogdet_negative_c64_32x32",
+      "op": "slogdet",
+      "dtype": "c64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "negative",
+      "issue": 155
+    },
+    {
+      "id": "householder_qr_square_f32_32x32",
+      "op": "householder_qr",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "square",
+      "issue": 155
+    },
+    {
+      "id": "householder_qr_tall_f32_64x32",
+      "op": "householder_qr",
+      "dtype": "f32",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "tall",
+      "issue": 155
+    },
+    {
+      "id": "householder_qr_wide_f32_32x64",
+      "op": "householder_qr",
+      "dtype": "f32",
+      "n": 2048,
+      "shape": [
+        32,
+        64
+      ],
+      "variant": "wide",
+      "issue": 155
+    },
+    {
+      "id": "householder_qr_square_f64_32x32",
+      "op": "householder_qr",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "square",
+      "issue": 155
+    },
+    {
+      "id": "householder_qr_tall_f64_64x32",
+      "op": "householder_qr",
+      "dtype": "f64",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "tall",
+      "issue": 155
+    },
+    {
+      "id": "householder_qr_wide_f64_32x64",
+      "op": "householder_qr",
+      "dtype": "f64",
+      "n": 2048,
+      "shape": [
+        32,
+        64
+      ],
+      "variant": "wide",
+      "issue": 155
+    },
+    {
+      "id": "householder_qr_square_c32_32x32",
+      "op": "householder_qr",
+      "dtype": "c32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "square",
+      "issue": 155
+    },
+    {
+      "id": "householder_qr_tall_c32_64x32",
+      "op": "householder_qr",
+      "dtype": "c32",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "tall",
+      "issue": 155
+    },
+    {
+      "id": "householder_qr_wide_c32_32x64",
+      "op": "householder_qr",
+      "dtype": "c32",
+      "n": 2048,
+      "shape": [
+        32,
+        64
+      ],
+      "variant": "wide",
+      "issue": 155
+    },
+    {
+      "id": "slogdet_phase_c32_32x32",
+      "op": "slogdet",
+      "dtype": "c32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "phase",
+      "issue": 155
+    },
+    {
+      "id": "householder_qr_square_c64_32x32",
+      "op": "householder_qr",
+      "dtype": "c64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "square",
+      "issue": 155
+    },
+    {
+      "id": "householder_qr_tall_c64_64x32",
+      "op": "householder_qr",
+      "dtype": "c64",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "tall",
+      "issue": 155
+    },
+    {
+      "id": "householder_qr_wide_c64_32x64",
+      "op": "householder_qr",
+      "dtype": "c64",
+      "n": 2048,
+      "shape": [
+        32,
+        64
+      ],
+      "variant": "wide",
+      "issue": 155
+    },
+    {
+      "id": "slogdet_phase_c64_32x32",
+      "op": "slogdet",
+      "dtype": "c64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "phase",
+      "issue": 155
+    },
+    {
+      "id": "householder_from_factors_default_f32_64x32",
+      "op": "householder_from_factors",
+      "dtype": "f32",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "default",
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda-jit": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
+      }
+    },
+    {
+      "id": "householder_append_default_f32_64x32",
+      "op": "householder_append",
+      "dtype": "f32",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+      },
+      "unavailable": {
+        "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda-jit": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
+      }
+    },
+    {
+      "id": "householder_r_default_f32_64x32",
+      "op": "householder_r",
+      "dtype": "f32",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "default",
+      "issue": 155
+    },
+    {
+      "id": "householder_q_columns_prefix_f32_64x32",
+      "op": "householder_q_columns",
+      "dtype": "f32",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "prefix",
+      "issue": 155,
+      "column_range": [
+        0,
+        8
+      ],
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+      }
+    },
+    {
+      "id": "householder_q_columns_complement_f32_64x32",
+      "op": "householder_q_columns",
+      "dtype": "f32",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "complement",
+      "issue": 155,
+      "column_range": [
+        32,
+        64
+      ],
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+      },
+      "unavailable": {
+        "jax-cuda": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs.",
+        "jax-cuda-jit": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs."
+      }
+    },
+    {
+      "id": "householder_from_factors_default_f64_64x32",
+      "op": "householder_from_factors",
+      "dtype": "f64",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "default",
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda-jit": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
+      }
+    },
+    {
+      "id": "householder_append_default_f64_64x32",
+      "op": "householder_append",
+      "dtype": "f64",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+      },
+      "unavailable": {
+        "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda-jit": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
+      }
+    },
+    {
+      "id": "householder_r_default_f64_64x32",
+      "op": "householder_r",
+      "dtype": "f64",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "default",
+      "issue": 155
+    },
+    {
+      "id": "householder_q_columns_prefix_f64_64x32",
+      "op": "householder_q_columns",
+      "dtype": "f64",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "prefix",
+      "issue": 155,
+      "column_range": [
+        0,
+        8
+      ],
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+      }
+    },
+    {
+      "id": "householder_q_columns_complement_f64_64x32",
+      "op": "householder_q_columns",
+      "dtype": "f64",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "complement",
+      "issue": 155,
+      "column_range": [
+        32,
+        64
+      ],
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+      },
+      "unavailable": {
+        "jax-cuda": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs.",
+        "jax-cuda-jit": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs."
+      }
+    },
+    {
+      "id": "householder_from_factors_default_c32_64x32",
+      "op": "householder_from_factors",
+      "dtype": "c32",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "default",
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda-jit": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
+      }
+    },
+    {
+      "id": "householder_append_default_c32_64x32",
+      "op": "householder_append",
+      "dtype": "c32",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+      },
+      "unavailable": {
+        "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda-jit": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
+      }
+    },
+    {
+      "id": "householder_r_default_c32_64x32",
+      "op": "householder_r",
+      "dtype": "c32",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "default",
+      "issue": 155
+    },
+    {
+      "id": "householder_q_columns_prefix_c32_64x32",
+      "op": "householder_q_columns",
+      "dtype": "c32",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "prefix",
+      "issue": 155,
+      "column_range": [
+        0,
+        8
+      ],
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+      }
+    },
+    {
+      "id": "householder_q_columns_complement_c32_64x32",
+      "op": "householder_q_columns",
+      "dtype": "c32",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "complement",
+      "issue": 155,
+      "column_range": [
+        32,
+        64
+      ],
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+      },
+      "unavailable": {
+        "jax-cuda": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs.",
+        "jax-cuda-jit": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs."
+      }
+    },
+    {
+      "id": "householder_from_factors_default_c64_64x32",
+      "op": "householder_from_factors",
+      "dtype": "c64",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "default",
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda-jit": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
+      }
+    },
+    {
+      "id": "householder_append_default_c64_64x32",
+      "op": "householder_append",
+      "dtype": "c64",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+      },
+      "unavailable": {
+        "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda-jit": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
+      }
+    },
+    {
+      "id": "householder_r_default_c64_64x32",
+      "op": "householder_r",
+      "dtype": "c64",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "default",
+      "issue": 155
+    },
+    {
+      "id": "householder_q_columns_prefix_c64_64x32",
+      "op": "householder_q_columns",
+      "dtype": "c64",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "prefix",
+      "issue": 155,
+      "column_range": [
+        0,
+        8
+      ],
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+      }
+    },
+    {
+      "id": "householder_q_columns_complement_c64_64x32",
+      "op": "householder_q_columns",
+      "dtype": "c64",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "complement",
+      "issue": 155,
+      "column_range": [
+        32,
+        64
+      ],
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+      },
+      "unavailable": {
+        "jax-cuda": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs.",
+        "jax-cuda-jit": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs."
+      }
+    },
+    {
+      "id": "lu_square_f32_s32",
+      "op": "lu",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+      }
+    },
+    {
+      "id": "lu_square_f64_s32",
+      "op": "lu",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+      }
+    },
+    {
+      "id": "lu_square_c32_s32",
+      "op": "lu",
+      "dtype": "c32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+      }
+    },
+    {
+      "id": "lu_square_c64_s32",
+      "op": "lu",
+      "dtype": "c64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+      }
+    },
+    {
+      "id": "lu_tall_f32_s32",
+      "op": "lu",
+      "dtype": "f32",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+      }
+    },
+    {
+      "id": "lu_tall_f64_s32",
+      "op": "lu",
+      "dtype": "f64",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+      }
+    },
+    {
+      "id": "lu_tall_c32_s32",
+      "op": "lu",
+      "dtype": "c32",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+      }
+    },
+    {
+      "id": "lu_tall_c64_s32",
+      "op": "lu",
+      "dtype": "c64",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+      }
+    },
+    {
+      "id": "lu_wide_f32_s32",
+      "op": "lu",
+      "dtype": "f32",
+      "n": 2048,
+      "shape": [
+        32,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+      }
+    },
+    {
+      "id": "lu_wide_f64_s32",
+      "op": "lu",
+      "dtype": "f64",
+      "n": 2048,
+      "shape": [
+        32,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+      }
+    },
+    {
+      "id": "lu_wide_c32_s32",
+      "op": "lu",
+      "dtype": "c32",
+      "n": 2048,
+      "shape": [
+        32,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+      }
+    },
+    {
+      "id": "lu_wide_c64_s32",
+      "op": "lu",
+      "dtype": "c64",
+      "n": 2048,
+      "shape": [
+        32,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+      }
+    }
+  ],
+  "description": "Small-shape view of the same CUDA public linalg API surface: the 82 cases whose largest matrix dimension is at most 128. `small` is a shape class, not a measured classification: device kernel time is a small fraction of each measurement here, so these rows are per-call launch and synchronization overhead diagnostics rather than GPU throughput. They are never comparable with, or averaged together with, the large-shape rows of `gpu/linalg_public_api_throughput` (tenferro-rs #2087). Issue 155. Rows here are lower than on pages published before this harness change because the harness used to open the CUDA engine once per case inside the timed region and now opens it once per arm, so the difference is removed harness cost and not a change in the kernels."
+}

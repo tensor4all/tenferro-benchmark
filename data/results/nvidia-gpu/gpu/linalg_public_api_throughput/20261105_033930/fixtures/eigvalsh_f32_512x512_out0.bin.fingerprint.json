@@ -1,0 +1,20 @@
+{
+ "schema_version": 1,
+ "case_id": "eigvalsh_f32_512x512",
+ "output": 0,
+ "dtype": "f32",
+ "shape": [
+  512
+ ],
+ "fingerprint": {
+  "sum_re": 554.7093230485916,
+  "sum_im": 0.0,
+  "sum_abs": 554.7093230485916,
+  "sum_squares": 962.3910533675455,
+  "max_abs": 14.00482177734375,
+  "dot_seeded_re": -21.886800453566025,
+  "dot_seeded_im": 0.0,
+  "elements": 512
+ },
+ "unavailable_reason": null
+}

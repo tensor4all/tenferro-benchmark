@@ -1,0 +1,21 @@
+{
+ "schema_version": 1,
+ "case_id": "lu_tall_c32_s32",
+ "output": 2,
+ "dtype": "c32",
+ "shape": [
+  32,
+  32
+ ],
+ "fingerprint": {
+  "sum_re": 32.10113678689231,
+  "sum_im": -0.400984179093939,
+  "sum_abs": 41.506222779058,
+  "sum_squares": 32.22603011034981,
+  "max_abs": 1.0231750368121224,
+  "dot_seeded_re": 2.553481825839205,
+  "dot_seeded_im": 0.2194862614133896,
+  "elements": 1024
+ },
+ "unavailable_reason": null
+}

@@ -1,0 +1,21 @@
+{
+ "schema_version": 1,
+ "case_id": "householder_q_columns_prefix_f32_512x256",
+ "output": 0,
+ "dtype": "f32",
+ "shape": [
+  512,
+  8
+ ],
+ "fingerprint": {
+  "sum_re": -7.847685609623113,
+  "sum_im": 0.0,
+  "sum_abs": 54.25261183685234,
+  "sum_squares": 8.000000096291998,
+  "max_abs": 0.9553359150886536,
+  "dot_seeded_re": 0.29776446578359006,
+  "dot_seeded_im": 0.0,
+  "elements": 4096
+ },
+ "unavailable_reason": null
+}

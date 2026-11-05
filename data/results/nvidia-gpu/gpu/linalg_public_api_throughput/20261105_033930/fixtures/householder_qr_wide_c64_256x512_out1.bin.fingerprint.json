@@ -1,0 +1,20 @@
+{
+ "schema_version": 1,
+ "case_id": "householder_qr_wide_c64_256x512",
+ "output": 1,
+ "dtype": "c64",
+ "shape": [
+  256
+ ],
+ "fingerprint": {
+  "sum_re": 507.37161455585385,
+  "sum_im": 0.003088450554440722,
+  "sum_abs": 507.3800429015628,
+  "sum_squares": 1005.6345527430399,
+  "max_abs": 1.9999189102534602,
+  "dot_seeded_re": 7.973387461611898,
+  "dot_seeded_im": 0.059546593682899655,
+  "elements": 256
+ },
+ "unavailable_reason": null
+}

@@ -1,0 +1,21 @@
+{
+ "schema_version": 1,
+ "case_id": "lu_tall_c32_s256",
+ "output": 1,
+ "dtype": "c32",
+ "shape": [
+  512,
+  256
+ ],
+ "fingerprint": {
+  "sum_re": 255.8472896570329,
+  "sum_im": -0.018578993364002372,
+  "sum_abs": 2105.4343363082953,
+  "sum_squares": 296.0943282268763,
+  "max_abs": 1.0,
+  "dot_seeded_re": -14.671923069828903,
+  "dot_seeded_im": -4.761774754192768,
+  "elements": 131072
+ },
+ "unavailable_reason": null
+}

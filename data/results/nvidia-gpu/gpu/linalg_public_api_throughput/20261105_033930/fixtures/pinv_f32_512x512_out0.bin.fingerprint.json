@@ -1,0 +1,21 @@
+{
+ "schema_version": 1,
+ "case_id": "pinv_f32_512x512",
+ "output": 0,
+ "dtype": "f32",
+ "shape": [
+  512,
+  512
+ ],
+ "fingerprint": {
+  "sum_re": 511.75730485001174,
+  "sum_im": 0.0,
+  "sum_abs": 1205.2681417763313,
+  "sum_squares": 496.0719312815995,
+  "max_abs": 0.980351448059082,
+  "dot_seeded_re": -0.006866929960104073,
+  "dot_seeded_im": 0.0,
+  "elements": 262144
+ },
+ "unavailable_reason": null
+}
