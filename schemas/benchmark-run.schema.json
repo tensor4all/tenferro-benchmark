@@ -82,7 +82,19 @@
         "selected_cases": { "type": "integer" },
         "suite_started_at": { "type": "string", "format": "date-time" },
         "suite_finished_at": { "type": "string", "format": "date-time" },
-        "suite_seconds": { "type": "number", "exclusiveMinimum": 0 }
+        "suite_seconds": { "type": "number", "exclusiveMinimum": 0 },
+        "compile": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["case_wall_seconds", "compiling_processes", "modules_compiled", "compile_time_ms"],
+          "description": "The run's own wall clock and NVRTC compile totals, folded back from the arm files by normalize_gpu_records. \"case_wall_seconds\" sums each record's own case wall clock, so the compile it carries is a share of that same denominator. A run whose artifact cache was warm records zeros rather than omitting the block.",
+          "properties": {
+            "case_wall_seconds": { "type": "number", "minimum": 0 },
+            "compiling_processes": { "type": "integer", "minimum": 0 },
+            "modules_compiled": { "type": "integer", "minimum": 0 },
+            "compile_time_ms": { "type": "number", "minimum": 0 }
+          }
+        }
       }
     },
     "environment": { "$ref": "#/$defs/environment" },

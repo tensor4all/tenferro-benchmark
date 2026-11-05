@@ -409,5 +409,52 @@ class OverheadBudgetDiagnostic(unittest.TestCase):
                     self.assertIn("does not change a cell", report)
 
 
+class CompileNoteTest(unittest.TestCase):
+    """The page says what this run compiled, and which regime produced it."""
+
+    def test_a_cold_run_quotes_its_own_recorded_totals(self):
+        note = formatter.compile_note({"case_wall_seconds": 228.4, "compiling_processes": 2,
+                                       "modules_compiled": 8, "compile_time_ms": 69014.2},
+                                      "gpu/linalg_public_api_throughput")
+        # Sourced from the accounting, never from the fixed cold reference.
+        self.assertIn("**8 NVRTC modules**", note)
+        self.assertIn("2 of its arms", note)
+        self.assertIn("**69.0 s**", note)
+        self.assertIn("228.4 s", note)
+        self.assertIn("started cold", note)
+        self.assertNotIn("warm**", note)
+
+    def test_a_warm_run_says_warm_and_names_the_cold_reference(self):
+        note = formatter.compile_note({"case_wall_seconds": 45.8, "compiling_processes": 0,
+                                       "modules_compiled": 0, "compile_time_ms": 0.0},
+                                      "gpu/linalg_public_api_latency")
+        self.assertIn("**warm**", note)
+        self.assertIn("compiled nothing", note)
+        # The cold reference is attributed, not presented as this run's own measurement.
+        self.assertIn("94.1 s against 28.1 s warm", note)
+        self.assertIn(formatter.COLD_REFERENCE["provenance"], note)
+
+    def test_a_warm_run_of_another_family_gets_no_cold_reference(self):
+        # The recorded cold measurement is the linalg pair's, so an fft page must not
+        # borrow it as if it described fft.
+        note = formatter.compile_note({"case_wall_seconds": 5.0, "compiling_processes": 0,
+                                       "modules_compiled": 0, "compile_time_ms": 0.0},
+                                      "gpu/fft")
+        self.assertIn("**warm**", note)
+        self.assertNotIn("cold measurement", note)
+        self.assertNotIn("94.1", note)
+
+    def test_a_run_without_accounting_adds_no_sentence(self):
+        suite = {"suite_id": "gpu/one", "backends": ["b"], "description": "d",
+                 "cases": [{"id": "one", "op": "add", "dtype": "f32", "shape": [4]}]}
+        row = {"case_id": "one", "op": "add", "backend": "b", "status": "ok",
+               "timing": {"operations_per_sample": 1, "batch_ms": [0.05]},
+               "verification": {"max_error_over_tolerance": 0.0}}
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "rows.jsonl"
+            path.write_text(json.dumps(row) + "\n")
+            self.assertNotIn("NVRTC", formatter.render(suite, [path], {}, "test"))
+
+
 if __name__ == "__main__":
     unittest.main()

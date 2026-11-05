@@ -117,7 +117,7 @@ def fold(row, suite_id=None):
     iqr = timing.get("iqr_ms_recorded", _spread(values))
     if status not in {"ok", "unsupported", "skipped", "not_configured", "verification_only"}:
         median = None
-    return {
+    record = {
         "schema_version": 1,
         "suite_id": suite_id,
         "problem_id": problem,
@@ -148,6 +148,45 @@ def fold(row, suite_id=None):
                                               "batch_ms": values}}),
         },
     }
+    # The compile accounting only exists on the arms that compile NVRTC modules, so a
+    # family that does not carry it keeps byte-identical records.
+    if "compile_modules" in row:
+        record["timing"]["compile_cache"] = row.get("compile_cache")
+        record["timing"]["compile_modules"] = row.get("compile_modules")
+    return record
+
+
+def nvrtc_compile_time_ms(row):
+    """The NVRTC compile time one row recorded.
+
+    A case that compiled but recorded no sampling keeps its time at the top level, because
+    a null timing block has nowhere else to put it. Only rows that carry
+    ``compile_modules`` are NVRTC rows; a Python arm's compile is a different measurement
+    and is not summed into this total.
+    """
+    recorded = (row.get("timing") or {}).get("compile_time_ms")
+    return recorded if recorded is not None else (row.get("compile_time_ms") or 0.0)
+
+
+def compile_accounting(raw):
+    """The run's own wall clock and compile totals, from what its arm files recorded.
+
+    ``case_wall_seconds`` sums every record's own case wall clock, so the compile it
+    carries is a share of that same denominator. ``compiling_processes`` counts the arm
+    processes that compiled at least one module, not the modules. The three compile
+    numbers are read from the NVRTC arms only.
+    """
+    nvrtc = [row for row in raw if "compile_modules" in row]
+    if not nvrtc:
+        return None
+    return {
+        "case_wall_seconds": round(sum((row.get("overhead") or {}).get("case_wall_ms") or 0.0
+                                      for row in raw) / 1e3, 3),
+        "compiling_processes": len({row.get("backend") for row in nvrtc
+                                    if (row.get("compile_modules") or 0) > 0}),
+        "modules_compiled": sum(row.get("compile_modules") or 0 for row in nvrtc),
+        "compile_time_ms": round(sum(nvrtc_compile_time_ms(row) for row in nvrtc), 3),
+    }
 
 
 def main():
@@ -159,14 +198,26 @@ def main():
     args = parser.parse_args()
     metadata = yaml.safe_load(args.run_metadata.read_text()) if args.run_metadata else None
     suite_id = (metadata or {}).get("suite_id")
-    rows = [fold(json.loads(line), suite_id) for path in args.inputs
-            for line in path.read_text().splitlines() if line.strip()]
+    raw = [json.loads(line) for path in args.inputs
+           for line in path.read_text().splitlines() if line.strip()]
+    rows = [fold(row, suite_id) for row in raw]
     if not rows:
         raise SystemExit("no raw rows to normalize")
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text("".join(json.dumps(row, sort_keys=True) + "\n" for row in rows))
     if args.summary:
         report_summary.write_document(args.summary, build_summary(rows, metadata))
+    # The arm files are the only place the compile totals exist, and they are written
+    # after the run metadata is, so the totals are folded back into the run metadata
+    # here. A run whose cache was warm records zeros rather than omitting the block.
+    accounting = compile_accounting(raw)
+    if accounting is not None and args.run_metadata is not None:
+        metadata.setdefault("collection", {})["compile"] = accounting
+        # Replace rather than truncate: an interrupted write would otherwise destroy
+        # collected provenance that nothing can regenerate.
+        staged = args.run_metadata.with_name(args.run_metadata.name + ".tmp")
+        staged.write_text(yaml.safe_dump(metadata, sort_keys=False))
+        staged.replace(args.run_metadata)
 
 
 if __name__ == "__main__":
