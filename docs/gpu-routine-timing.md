@@ -53,6 +53,63 @@ unavailable (16:14-16:43) and command/report overhead outside the suite clocks.
 | tensornetwork | 176.540 | 4 / 4 |
 | **Total** | **3967.285** | **698 / 714** |
 
+## The same set with the artifact cache warm
+
+`script_seconds` above is the cache-free path: with
+`TENFERRO_CUDA_ARTIFACT_CACHE=none` every arm compiled its modules in process,
+which is what a machine with an empty cache pays. The persistent artifact cache is
+merged now (#350), and the same set on the same device measured:
+
+| Regime | Run | Summed suite clocks | Enclosing command | Rows |
+|---|---|---:|---:|---:|
+| cache disabled (`none`) | `20261105_0820` | 3967.3 s | not recorded as one clock | 698 / 714 |
+| cache warm, first pass partly cold | `20261105_0920` | 1010.6 s | 1044 s | 698 / 714 |
+| cache warm, fully warm | `20261105_0940` | 897.9 s | 930 s | 698 / 714 |
+
+Device, effort, arms, rows and tenferro-rs `a000e5c4` are the same in all three.
+The cold run ran at harness `18ae0c5`; the warm runs at `9517d09`, the same tree
+plus a guard for an unset `HOME` in the cache discovery, so the pair differs only
+in whether the discovery runs. The enclosing command is the launcher's own clock:
+a run with the 16 structural permutation rows absent exits non-zero from the
+coverage accounting before `wall_command_complete.json` is written, so the script
+clock cannot be read from the run directory.
+
+The two figures are not interchangeable. The budget keeps `script_seconds` at
+**3967.3 s** because that is the cache-free reference — what a fresh pod pays on
+its first suite, and the only regime reproducible on an empty cache. The warm
+figure, **897.9 s** of summed suite clocks (930 s enclosing), is what the
+persistent cache buys every later invocation; the budget states it in
+`cache_conditions`, which the generated workflow report prints. The published
+`routine_workflow.md` for this run predates the cache and will carry the second
+regime from the next collection.
+
+Of the two warm passes, the fully warm 897.9 s is the one to quote as the steady
+state. The 1010.6 s pass was partly cold only because three earlier probe runs had
+already compiled a few dense modules, so it is neither the cold reference nor the
+steady state; a scheduled run that follows any earlier run on the same cache sees
+the `20261105_0940` shape.
+
+## What the two regimes explain
+
+Warm minus cold is **3069.4 s** (3967.3 - 897.9), or 2956.7 s against the partly
+cold first pass. The recorded case-phase fields for the cold run total 1067 s —
+preparation 618.5, probe/init 384.8, `compile` 44.8, validation 18.9 — so most of
+the ~2900 s that the phase accounting did not explain is per-process compilation
+and lazy initialization that a warm cache removes, not fixture generation or
+process startup. The largest single block is not in the phase fields at all: the
+two AD suites record no case phases and fall from 1290.9 s to 66.6 s. Per case the
+same effect: `dense_batched_matmul_f64_b16_32` eager preparation 40.06 s to
+0.02 s, `dense_matmul_f64_3072` 39.86 s to 0.37 s, `dense_qr_f64_1536` traced
+probe/init 53.58 s to 7.57 s.
+
+What does not move between the regimes: per-suite fixture generation and copy
+calibration (117.8 s cold, 114.7 s warm, each measured per suite from its fixture
+manifest timestamp), the 34 s of backend-release sleeps, and the delegated suites'
+process startup and report glue (~34 s cold, ~29 s warm). There is therefore
+little left to optimize in fixtures or process startup: the warm run is the timed
+regions, one fixture generation per suite, JAX's per-case jit, and the harness's
+own clock-ramp and calibration margins.
+
 ## Coverage
 
 The 714 planned rows split into 698 recorded rows and 16 structurally absent
@@ -82,6 +139,11 @@ rows. The run's own phase accounting records 44.799 s in the `compile` phase.
 The arms' `compile_time_ms` values sum to 623.845 s, but that field is the
 untimed case wall of the case that compiled (fixtures and verification
 excluded), not NVRTC time alone.
+
+With the cache warm the same phase field measures 45.1 s, so what it records is
+JAX's per-case jit, which no artifact cache can remove; the NVRTC compile appears
+in `preparation` (618.5 s cold, 86.3 s warm) and `probe/init` (384.8 s cold, 3.9 s
+warm) instead. This field is not where the cache's effect becomes visible.
 
 ## Reconstruction note
 
