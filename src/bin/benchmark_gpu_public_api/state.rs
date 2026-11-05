@@ -2,7 +2,7 @@ use super::{Case, EngineScope, Result, Settings};
 use serde_json::Value;
 use std::path::Path;
 use tenferro_ad::{EagerRuntime, EagerSession, EagerTensor};
-use tenferro_gpu::cuda::{upload_tensor, CudaDeviceId, CudaEngine, CudaRuntime};
+use tenferro_gpu::cuda::{upload_tensor, CudaEngine, CudaRuntime};
 use tenferro_linalg::{EagerSessionLinalgExt, HouseholderQr, QrOptions, TensorLinalgExt};
 use tenferro_tensor::{DType, Engine, Tensor};
 
@@ -120,7 +120,7 @@ pub(super) fn run(
     case: &Case,
     mode: &str,
     settings: &Settings,
-    device: usize,
+    backend: &mut CudaEngine,
 ) -> Result<(Option<Value>, f64)> {
     let hosts = case
         .inputs
@@ -143,7 +143,6 @@ pub(super) fn run(
                 }
         })
         .sum();
-    let mut backend = CudaEngine::open(CudaDeviceId::from_ordinal(device.try_into()?))?;
     let rt = backend.runtime().clone();
     let inputs = hosts
         .iter()
@@ -186,7 +185,7 @@ pub(super) fn run(
         // The runtime stores no engine (tenferro-rs #2206).
         let runtime = EagerRuntime::new()?;
         let _guard = runtime.no_grad();
-        runtime.with_eager_session(&mut backend, |s| {
+        runtime.with_eager_session(backend, |s| {
             let inputs = inputs
                 .into_iter()
                 .map(|t| Ok(s.constant_from(t)?))

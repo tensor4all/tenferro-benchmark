@@ -548,10 +548,10 @@ fn run(
     case: &Case,
     mode: &str,
     settings: &Settings,
-    device: usize,
+    backend: &mut CudaEngine,
 ) -> Result<(Option<Value>, f64, PhaseTimings)> {
     if case.op.starts_with("einsum_plan") {
-        return plan::run(root, case, settings, device)
+        return plan::run(root, case, settings, backend)
             .map(|(timing, error)| (timing, error, PhaseTimings::default()));
     }
     if matches!(
@@ -561,14 +561,14 @@ fn run(
             | "householder_r"
             | "householder_q_columns"
     ) {
-        return state::run(root, case, mode, settings, device)
+        return state::run(root, case, mode, settings, backend)
             .map(|(timing, error)| (timing, error, PhaseTimings::default()));
     }
     if matches!(
         case.op.as_str(),
         "svd_full" | "slogdet" | "householder_qr" | "lu"
     ) {
-        return multi::run(root, case, mode, settings, device)
+        return multi::run(root, case, mode, settings, backend)
             .map(|(timing, error)| (timing, error, PhaseTimings::default()));
     }
     let fixtures_started = Instant::now();
@@ -579,7 +579,6 @@ fn run(
         .collect::<Result<Vec<_>>>()?;
     let mut expected = Expected::new(root, case, 0)?;
     let fixture_ms = fixtures_started.elapsed().as_secs_f64() * 1e3;
-    let mut backend = CudaEngine::open(CudaDeviceId::from_ordinal(device.try_into()?))?;
     let rt = backend.runtime().clone();
     let input = input_host
         .iter()
@@ -665,7 +664,7 @@ fn run(
         // borrows the caller-held CUDA engine.
         let runtime = EagerRuntime::new()?;
         let _guard = runtime.no_grad();
-        runtime.with_eager_session(&mut backend, |session| {
+        runtime.with_eager_session(backend, |session| {
             let input = input
                 .into_iter()
                 .map(|a| Ok(session.constant_from(a)?))
@@ -760,6 +759,11 @@ fn main() -> Result<()> {
         .create_new(true)
         .write(true)
         .open(output)?;
+    // One engine for the whole process: the platform context, its stream and pool,
+    // the module and artifact caches and the vendor handles are setup, not
+    // measurement, and opening them once per case put them inside every case's
+    // untimed wall clock.
+    let mut backend = CudaEngine::open(CudaDeviceId::from_ordinal(device.try_into()?))?;
     let overhead_budget = std::env::var("GPU_API_OVERHEAD_BUDGET")
         .ok()
         .map(|value| value.parse::<f64>())
@@ -812,7 +816,7 @@ fn main() -> Result<()> {
             writeln!(file, "{}", row)?;
             continue;
         }
-        let outcome = run(root, &case, &mode, &settings, device);
+        let outcome = run(root, &case, &mode, &settings, &mut backend);
         let case_wall_ms = case_started.elapsed().as_secs_f64() * 1e3;
         match outcome {
             Ok((timing, error, phases)) => {

@@ -8,7 +8,11 @@ description: >-
   measurement here, so these rows are per-call launch and synchronization
   overhead diagnostics rather than GPU throughput. They are never comparable
   with, or averaged together with, the large-shape rows of
-  `gpu/linalg_public_api_throughput` (tenferro-rs #2087). Issue 155.
+  `gpu/linalg_public_api_throughput` (tenferro-rs #2087). Issue 155. Rows here
+  are lower than on pages published before this harness change because the
+  harness used to open the CUDA engine once per case inside the timed region and
+  now opens it once per arm, so the difference is removed harness cost and not a
+  change in the kernels.
 defaults:
   # latency: the 32x32..64x32 shape class.
   regime: latency
