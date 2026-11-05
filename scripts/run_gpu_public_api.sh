@@ -32,15 +32,19 @@ echo "$GPU_API_ROLE: physical GPU $GPU_BENCH_PHYSICAL_DEVICE ($GPU_BENCH_DEVICE_
 # first time a process compiles it. A persistent artifact directory outside the
 # repository lets the later families read the cubins back instead of compiling them
 # again. It is keyed by the NVRTC version and the device's compute capability, so a
-# toolkit upgrade or another card cannot read a stale entry.
-gpu_arch=unknown
-if command -v nvidia-smi >/dev/null 2>&1; then
-    capability="$(nvidia-smi -i "$GPU_BENCH_PHYSICAL_DEVICE" --query-gpu=compute_cap --format=csv,noheader 2>/dev/null | tr -d '. \n' | head -1)"
-    [[ -n "$capability" ]] && gpu_arch="sm_$capability"
+# toolkit upgrade or another card cannot read a stale entry. An explicit value,
+# including `none`, wins and skips the discovery below.
+if [[ -z "${TENFERRO_CUDA_ARTIFACT_CACHE:-}" ]]; then
+    gpu_arch=unknown
+    if command -v nvidia-smi >/dev/null 2>&1; then
+        # A driver that does not know compute_cap must not take the runner down.
+        capability="$(nvidia-smi -i "$GPU_BENCH_PHYSICAL_DEVICE" --query-gpu=compute_cap --format=csv,noheader 2>/dev/null | tr -d '. \n' | head -1 || true)"
+        if [[ -n "$capability" ]]; then gpu_arch="sm_$capability"; fi
+    fi
+    nvrtc_lib="$(ls "${CUDA_HOME:-/usr/local/cuda}"/lib64/libnvrtc.so.* 2>/dev/null | sort -V | tail -1 || true)"
+    nvrtc_version="${nvrtc_lib##*/libnvrtc.so.}"
+    export TENFERRO_CUDA_ARTIFACT_CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/tenferro-benchmark/cuda-artifacts/${nvrtc_version:-unknown}/$gpu_arch"
 fi
-nvrtc_lib="$(ls "${CUDA_HOME:-/usr/local/cuda}"/lib64/libnvrtc.so.* 2>/dev/null | sort -V | tail -1)"
-nvrtc_version="${nvrtc_lib##*/libnvrtc.so.}"
-export TENFERRO_CUDA_ARTIFACT_CACHE="${TENFERRO_CUDA_ARTIFACT_CACHE:-${XDG_CACHE_HOME:-$HOME/.cache}/tenferro-benchmark/cuda-artifacts/${nvrtc_version:-unknown}/$gpu_arch}"
 echo "CUDA artifacts: $TENFERRO_CUDA_ARTIFACT_CACHE"
 export BENCH_RUNS="${BENCH_RUNS:-15}" BENCH_WARMUPS="${BENCH_WARMUPS:-3}"
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 RAYON_NUM_THREADS=1

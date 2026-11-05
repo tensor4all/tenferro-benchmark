@@ -366,7 +366,16 @@
         "toolkit_root": { "type": ["string", "null"], "description": "Selected CUDA toolkit root: CUDA_HOME, CUDA_PATH, or the nvcc on PATH." },
         "cutensor_version": { "type": ["string", "null"], "description": "Version from the public cutensorGetVersion symbol of the library the pinned tenferro loader resolves; null when unknown." },
         "cusolver_version": { "type": ["string", "null"], "description": "Version from the public cusolverGetProperty API of the library the pinned tenferro loader resolves; null when unknown." },
-        "cudnn_version": { "type": ["string", "null"] }
+        "cudnn_version": { "type": ["string", "null"] },
+        "artifact_cache": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "The persistent NVRTC artifact cache this run opened. A warm run reads its cubins back instead of compiling them.",
+          "properties": {
+            "path": { "type": ["string", "null"], "description": "Directory named by TENFERRO_CUDA_ARTIFACT_CACHE, or null when the runtime kept artifacts in memory only." },
+            "regime": { "enum": ["cold", "warm", "off"], "description": "cold: the directory held no cubin when the run started and the first process compiled them; warm: it held them already; off: memory only." }
+          }
+        }
       }
     },
     "gpu_memory_calibration": {

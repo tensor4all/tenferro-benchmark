@@ -849,16 +849,22 @@ fn main() -> Result<()> {
                     "warning": warning,
                     "scope": "case wall clock outside the timed region: fixtures, H2D, handles, plan initialization, validation, output destruction",
                 });
-                // The module a case compiles is the whole of its untimed setup in
-                // practice. The flag says whether this process read the cubin from the
-                // persistent artifact cache instead, so a warm run cannot hide the
-                // compile it skipped.
+                // miss means this case compiled a module and hit means it did not, so a
+                // warm run cannot hide the compile it skipped. The scope says what
+                // compile_time_ms covers, because a Rust arm cannot time NVRTC alone and
+                // reports the untimed part of the case that compiled.
                 row["compile_cache"] = json!(if compiled > 0 { "miss" } else { "hit" });
                 row["compile_modules"] = json!(compiled);
+                row["compile_time_scope"] = json!(
+                    "untimed case wall of the case that compiled; fixtures and verification excluded"
+                );
                 row["timing"] = match timing {
                     Some(mut timing) => {
-                        timing["compile_time_ms"] =
-                            json!(if compiled > 0 { untimed_ms.unwrap_or(0.0) } else { 0.0 });
+                        timing["compile_time_ms"] = json!(if compiled > 0 {
+                            untimed_ms.unwrap_or(0.0)
+                        } else {
+                            0.0
+                        });
                         json!(timing)
                     }
                     None => json!(null),
