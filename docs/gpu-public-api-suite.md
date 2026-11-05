@@ -91,6 +91,20 @@ batch durations and counts make this visible. `BENCH_WARMUPS=0` still performs
 explicit initialization before calibration/sampling. Each backend runs in its
 own process and completes before the next starts.
 
+Before any arm runs, the family script times one plain device copy of a known
+size on the same GPU and records the traffic rate it reached in `run.yaml` under
+`gpu_memory_calibration`. Each record also carries the logical bytes the case
+must move per operation, sized once from the fixture arrays by
+`scripts/gpu_case_traffic.py`: one read of every declared input plus one write
+of every declared output. Both are diagnostics. The bytes are logical interface
+bytes, not device DRAM traffic — a contraction whose operands stay resident in
+cache moves far less DRAM than its arrays suggest — so a cell whose implied
+rate exceeds the measured copy rate is recorded with its ratio and published
+like any other cell, never withheld or rejected. The sampling table carries
+`Bytes/op` and `Copy ratio` so a reader can see both next to the timing. A case
+whose declared arrays do not determine the traffic is recorded with an explicit
+unknown reason instead of a guessed number.
+
 Raw runs live in `data/results/nvidia-gpu/gpu/<family>/<timestamp>/`. They contain
 `run.yaml`, `instances.json` (the case selection the declaration materialized),
 per-backend JSONL, the folded `records.jsonl`, `report.md` and

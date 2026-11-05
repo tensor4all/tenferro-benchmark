@@ -8,6 +8,10 @@ from pathlib import Path
 import numpy as np
 import yaml
 
+import gpu_bandwidth_guard as guard
+
+GIGABYTE = 1e9
+
 
 def load_rows(suite, paths, *, verify_only=False):
     wanted = {(c["id"], b) for c in suite["cases"] for b in suite["backends"]}
@@ -49,6 +53,10 @@ def load_rows(suite, paths, *, verify_only=False):
 
 def render(suite, paths, metadata, timestamp, run_path=None):
     rows = load_rows(suite, paths)
+    calibration = guard.calibration_of(metadata)
+    for row in rows.values():
+        if row["status"] != "ok":
+            row.pop("samples_us", None)
     backends = suite["backends"]
     measured = sum(row["status"] == "ok" for row in rows.values())
     excluded_verified = sum(row["status"] == "unsupported" and bool(row.get("cuda_implementation_verified")) for row in rows.values())
@@ -59,8 +67,12 @@ def render(suite, paths, metadata, timestamp, run_path=None):
         raise ValueError("suite selection records no 'description'; the page note "
                          "that says what its shape class means cannot be written")
     text = [f'# {suite["suite_id"]}: CUDA public API benchmark', "",
-            f'Measured cells: **{measured}**. Unsupported cells: **{len(rows)-measured}**, including **{excluded_verified}** numerically verified but timing-excluded cells. Unsupported cells do not count as measured coverage.', "",
-            f'Raw run: `{raw_run}/`.', "",
+            f'Measured cells: **{measured}**. Unsupported cells: **{len(rows)-measured}**, including **{excluded_verified}** numerically verified but timing-excluded cells. Unsupported cells do not count as measured coverage.', ""]
+    if calibration:
+        text += [f'Logical traffic: this run measured a plain device copy of {calibration["buffer_bytes"]} bytes at **{calibration["bytes_per_second"] / GIGABYTE:.1f} GB/s** on this device. Every record carries the logical bytes the case must move per operation and the ratio of the case\'s implied rate to that copy rate, in the sampling table below. Logical bytes are the declared array sizes, not device DRAM traffic: a case whose operands stay in cache moves less DRAM than its arrays suggest, so a ratio above 1 is recorded, not rejected.', ""]
+    else:
+        text += ['This run metadata records no device copy rate, so the records carry the logical bytes without a copy ratio.', ""]
+    text += [f'Raw run: `{raw_run}/`.', "",
             " ".join(str(suite["description"]).split()), "",
             'Values are median (IQR) **µs per operation**. Samples time batches of declared operations plus device synchronization; retained output memory is limited to 256 MiB. Batch counts and raw durations are preserved in JSONL.', "",
             'Setup, input transfers, library/plan initialization, JIT compilation, validation downloads and output destruction are outside timing. Intrinsic output allocation is inside timing; output-reuse rows instead use preallocated destinations across samples. Accumulating destinations are restored from prepared GPU seeds and synchronized before every batch clock, including initialization and calibration. Direct and eager each use one entered session across samples; direct FFT uses cached `FftExecutor`. JAX eager and compiled JIT are separate arms.', "",
@@ -98,15 +110,19 @@ def render(suite, paths, metadata, timestamp, run_path=None):
                 v = row["samples_us"]
                 cells.append(f'{np.median(v):.3f} ({np.percentile(v, 75)-np.percentile(v, 25):.3f})')
         text.append('| ' + case["id"] + ' | ' + ' | '.join(cells) + ' |')
-    text += ["", "## Sampling", "", "| Case | Backend | Ops/sample | Samples | Median batch ms | Verification error/tolerance |", "| --- | --- | ---: | ---: | ---: | ---: |"]
+    text += ["", "## Sampling", "", "| Case | Backend | Ops/sample | Samples | Median batch ms | Bytes/op | Copy ratio | Verification error/tolerance |", "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |"]
     # Sorted, so the page does not depend on the order the backends' files were
     # passed in (the collector starts Rust arms before Python arms).
     for key, row in sorted(rows.items()):
+        traffic = (row.get("traffic") or {}).get("bytes_per_operation")
+        traffic_cell = str(traffic) if isinstance(traffic, int) else "unknown"
+        ratio = (row.get("bandwidth_guard") or {}).get("copy_rate_ratio")
+        ratio_cell = f"{ratio:.3f}" if isinstance(ratio, (int, float)) else "unavailable"
         if row["status"] == "ok":
             t = row["timing"]
-            text.append(f'| {key[0]} | {key[1]} | {t["operations_per_sample"]} | {len(t["batch_ms"])} | {np.median(t["batch_ms"]):.3f} | {row["verification"]["max_error_over_tolerance"]:.4g} |')
+            text.append(f'| {key[0]} | {key[1]} | {t["operations_per_sample"]} | {len(t["batch_ms"])} | {np.median(t["batch_ms"]):.3f} | {traffic_cell} | {ratio_cell} | {row["verification"]["max_error_over_tolerance"]:.4g} |')
         else:
-            text.append(f'| {key[0]} | {key[1]} | — | — | — | {row["reason"].replace("|", "/")} |')
+            text.append(f'| {key[0]} | {key[1]} | — | — | — | {traffic_cell} | {ratio_cell} | {row["reason"].replace("|", "/")} |')
     text += ["", "## Run metadata", "", "```yaml", yaml.safe_dump(metadata, sort_keys=False).rstrip(), "```", ""]
     return "\n".join(text)
 

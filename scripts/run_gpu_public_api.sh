@@ -84,6 +84,15 @@ uv run python scripts/collect_run_metadata.py \
     --tenferro-dir "$tenferro_dir" \
     --features cuda --blas none --cuda-device-ordinal "$GPU_BENCH_PHYSICAL_DEVICE" \
     --output "$run_dir/run.yaml"
+# Record this run's own copy rate: time one plain device copy of a known size on
+# this device and put the traffic rate it reached in run.yaml. Every record below
+# carries its logical bytes against that rate as a diagnostic. A failed or skipped
+# calibration costs the ratio, never the run.
+if [[ "$GPU_API_VERIFY_ONLY" != 1 ]]; then
+    uv run python scripts/gpu_copy_calibration.py --run-metadata "$run_dir/run.yaml" \
+        --device "$GPU_BENCH_DEVICE" \
+        || echo "device copy calibration failed; the records will carry no copy ratio" >&2
+fi
 uv run python scripts/benchmark_gpu_public_api.py --suite "$suite" \
     --fixtures "$run_dir/fixtures" --backend prepare
 # The routine run names the arms; without a filter the family's own arms all run.
@@ -124,6 +133,14 @@ if [[ "$GPU_API_VERIFY_ONLY" == 1 ]]; then
         --output "$run_dir/verification.json" "${outputs[@]+"${outputs[@]}"}"
     exit 0
 fi
+# Record the diagnostic block on every record of the family: the logical bytes the
+# case must move per operation and the ratio of its implied rate to this run's
+# measured device copy rate. Recording never changes a status, a timing or the exit
+# code, and a ratio above the copy rate is legitimate for a cache-resident case.
+for output in "${outputs[@]}"; do
+    uv run python scripts/gpu_bandwidth_guard.py --run-metadata "$run_dir/run.yaml" "$output" \
+        || echo "could not record the copy ratio for $output" >&2
+done
 # The routine path reads one record contract: fold this family's rows and build
 # its summary from them, then publish the family page next to those artifacts.
 uv run python scripts/normalize_gpu_records.py --output "$run_dir/records.jsonl" \

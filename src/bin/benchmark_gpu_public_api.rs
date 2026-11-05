@@ -110,6 +110,11 @@ struct Case {
     excluded: HashMap<String, String>,
     #[serde(default)]
     unavailable: HashMap<String, String>,
+    /// Compulsory per operation traffic of the case, sized once by the fixture
+    /// step from the suite shapes and dtype. It is a property of the case, not
+    /// of the arm, so every arm copies the same block into its record.
+    #[serde(default)]
+    traffic: Option<Value>,
 }
 struct Settings {
     verify_only: bool,
@@ -535,6 +540,9 @@ fn main() -> Result<()> {
             "gpu_role":std::env::var("GPU_API_ROLE").unwrap_or_else(|_| "benchmark".into()),
             "physical_device_index":env_usize("GPU_BENCH_PHYSICAL_DEVICE", device)?,
             "device_uuid":std::env::var("GPU_BENCH_DEVICE_UUID").ok(),
+            "traffic": case.traffic.clone().unwrap_or_else(|| json!({
+                "bytes_per_operation": null,
+                "unknown_reason": "fixture manifest carries no traffic model for this case"})),
             "device_ordinal":device,"session_policy":"one entered session for initialization, calibration and samples",
             "setup_policy":"fixtures, H2D, handles, plan initialization and output validation outside timing",
             "synchronization":"CudaRuntime::synchronize; no D2H in timed region"});

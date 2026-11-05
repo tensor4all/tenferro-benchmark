@@ -96,7 +96,8 @@
     "python_backends": { "$ref": "#/$defs/python_backends" },
     "julia": { "$ref": "#/$defs/julia_backend" },
     "cuda": { "$ref": "#/$defs/cuda" },
-    "metal": { "$ref": "#/$defs/metal" }
+    "metal": { "$ref": "#/$defs/metal" },
+    "gpu_memory_calibration": { "$ref": "#/$defs/gpu_memory_calibration" }
   },
   "$defs": {
     "host": {
@@ -366,6 +367,36 @@
         "cutensor_version": { "type": ["string", "null"], "description": "Version from the public cutensorGetVersion symbol of the library the pinned tenferro loader resolves; null when unknown." },
         "cusolver_version": { "type": ["string", "null"], "description": "Version from the public cusolverGetProperty API of the library the pinned tenferro loader resolves; null when unknown." },
         "cudnn_version": { "type": ["string", "null"] }
+      }
+    },
+    "gpu_memory_calibration": {
+      "type": "object",
+      "description": "Measured device copy rate of this run: the traffic rate one plain device copy of a known size reached on the benchmark GPU. Records divide their logical per operation bytes by their own time and record the ratio to this rate as a diagnostic; the rate is not a limit.",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "method",
+        "device_ordinal",
+        "buffer_bytes",
+        "traffic_bytes_per_copy",
+        "median_ms",
+        "bytes_per_second"
+      ],
+      "properties": {
+        "kind": { "const": "device_copy" },
+        "method": { "type": "string", "minLength": 1 },
+        "device_ordinal": { "type": "integer", "minimum": 0 },
+        "device_name": { "type": ["string", "null"] },
+        "buffer_bytes": { "type": "integer", "minimum": 1 },
+        "traffic_bytes_per_copy": { "type": "integer", "minimum": 2 },
+        "traffic_model": { "type": "string" },
+        "warmups": { "type": "integer", "minimum": 0 },
+        "sample_ms": { "type": "array", "items": { "type": "number", "minimum": 0 } },
+        "median_ms": { "type": "number", "exclusiveMinimum": 0 },
+        "bytes_per_second": { "type": "number", "exclusiveMinimum": 0 },
+        "torch_version": { "type": ["string", "null"] },
+        "cuda_version": { "type": ["string", "null"] },
+        "timestamp": { "type": "string", "format": "date-time" }
       }
     }
   }
