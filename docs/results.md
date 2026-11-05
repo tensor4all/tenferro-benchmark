@@ -139,11 +139,22 @@ uv run python scripts/regenerate_report_summaries.py --check
 ```
 
 `--publish` renders the selected runs with `scripts/render_run.py` and writes
-`result/<profile>/cpu/<suite>.md` plus its `.summary.json`; the summary names the
-source runs and their recorded conditions. `--check` re-renders every page of the
-maintained profiles from those sources and fails on a byte difference; pages
-whose raw records are not in git yet are listed in
-`benchmarks/unverified-pages.txt` and reported as UNVERIFIED.
+`result/<profile>/<group>/<suite>.md` plus its `.summary.json`, where `<group>`
+is the one the suite declares (`cpu` or `gpu`); the summary names the source runs
+and their recorded conditions. GPU public-API pages are published from the run
+directory the same way:
+
+```bash
+uv run python scripts/regenerate_report_summaries.py --publish \
+    data/results/nvidia-gpu/gpu/linalg_public_api_throughput/20261102_210935
+```
+
+`--check` re-renders every `cpu` page of the maintained profiles from those
+sources and fails on a byte difference; pages whose raw records are not in git
+yet are listed in `benchmarks/unverified-pages.txt` and reported as UNVERIFIED.
+GPU pages are published from their run the same way, but no `nvidia-gpu` profile
+is maintained yet and their raw runs are gitignored, so `--check` does not cover
+them.
 
 GPU sidecars are rebuilt from the local raw runs (gitignored) with:
 
@@ -153,8 +164,14 @@ uv run python scripts/regenerate_report_summaries.py --profile nvidia-gpu
 uv run python scripts/regenerate_report_summaries.py --dry-run
 ```
 
-Reports whose raw run is not available locally keep the Markdown report and are
-listed without a summary; the dashboard shows a report link only.
+A page names the run it was rendered from, and that run is the only source: a
+run directory spelled with the suite name the page's suite had at collection time
+(for example `gpu/linalg_public_api`, before it was split into
+`gpu/linalg_public_api_throughput` and `gpu/linalg_public_api_latency`) is used
+as named. A named run that is not available locally, or a record that no longer
+carries a field the page needs, fails the regeneration with the run and the
+missing field named. It never falls back to the newest local run, and a page it
+cannot verify is not reported as regenerated.
 
 ## Dashboard
 

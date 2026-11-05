@@ -2,14 +2,17 @@ schema_version: 1
 suite_id: gpu/linalg_public_api_throughput
 title: CUDA public linalg APIs, throughput view (read this one first)
 description: >-
-  Throughput view of the CUDA public linalg API surface: the 82 cases whose
-  largest matrix dimension is at least 256. These rows are throughput
-  measurements and are never comparable with, or averaged together with, the
-  per-call latency rows of `gpu/linalg_public_api_latency` (tenferro-rs #2087).
+  Large-shape view of the CUDA public linalg API surface: the 82 cases whose
+  largest matrix dimension is at least 256. `large` is a shape class, not a
+  measured classification: no row is asserted to be compute- or bandwidth-bound,
+  and a memory-bound row takes the same time here as at a small shape
+  (`householder_r_default_f32` measured 34.698 µs at 512x256 and 35.223 µs at
+  64x32). These rows are never comparable with, or averaged together with, the
+  per-call overhead rows of `gpu/linalg_public_api_latency` (tenferro-rs #2087).
   The same problems, protocol and backends are split by shape class between the
   two suites. Issue 155.
 defaults:
-  # throughput: 256..512 matrices; kernel work dominates the per-call cost.
+  # throughput: the 256..512 shape class.
   regime: throughput
   device: {kind: cuda, ordinal: 0}
   run: {warmups: 3, runs: 15, min_runtime_ms: 2, timing_scope: steady_state_host_api_plus_device_sync}

@@ -504,7 +504,8 @@ class DashboardTests(unittest.TestCase):
         self.assertIn("not by device compute", latency)
 
         suite = (output / "nvidia-gpu/gpu/dense.html").read_text()
-        self.assertIn("Compute-bound cases", suite)
+        self.assertIn("Throughput-regime cases", suite)
+        self.assertIn("not a measured compute- or bandwidth-bound classification", suite)
         self.assertIn("Latency and per-call overhead", suite)
         self.assertIn("<svg", suite)
         self.assertIn("Original report", suite)
@@ -582,34 +583,45 @@ class RegenerateSummariesTests(unittest.TestCase):
         )
         return run
 
-    def test_regenerates_matching_run_and_skips_missing_raw(self):
-        import regenerate_report_summaries as regenerate
-
-        record = {
+    def record(self):
+        return {
             "problem_id": "dense_matmul_f64_16",
             "backend": "tenferro-cuda-eager",
             "status": "ok",
             "timing": {"median_ms": 1.25, "iqr_ms": 0.1},
             "verification": {"status": "passed"},
         }
-        self.write_run("nvidia-gpu", "gpu/dense", "20261016_235116", [record])
+
+    def test_regenerates_matching_run(self):
+        import regenerate_report_summaries as regenerate
+
+        self.write_run("nvidia-gpu", "gpu/dense", "20261016_235116", [self.record()])
         (self.result / "nvidia-gpu/gpu").mkdir(parents=True)
         (self.result / "nvidia-gpu/gpu/dense.md").write_text(
             "# GPU Dense\n\n- Timestamp: `2026-10-16T23:51:16+00:00`\n"
         )
-        # Declares a run that is not present; must not fall back to a stale run.
-        self.write_run("mac-cpu", "cpu/permutation", "20260913_143137", [])
-        (self.result / "mac-cpu/cpu").mkdir(parents=True)
-        (self.result / "mac-cpu/cpu/permutation.md").write_text(
-            "# CPU Permutation\n\n- Timestamp: `2026-09-23T12:05:30+00:00`\n"
-        )
 
-        written = regenerate.regenerate(self.result, self.data)
+        written = regenerate.regenerate(self.result, self.data, suites={"gpu/dense"})
         self.assertEqual(written, [self.result / "nvidia-gpu/gpu/dense.summary.json"])
         document = json.loads(written[0].read_text())
         self.assertEqual(document["hardware"]["gpu"], "NVIDIA A100 80GB PCIe")
         self.assertEqual(document["rows"][0]["case"], "dense_matmul_f64_16")
-        self.assertFalse((self.result / "mac-cpu/cpu/permutation.summary.json").exists())
+
+    def test_missing_declared_raw_run_fails_instead_of_skipping_the_page(self):
+        import regenerate_report_summaries as regenerate
+
+        # The page declares a run that is not present; the older run recorded
+        # under the page's suite directory must not be substituted for it.
+        self.write_run("nvidia-gpu", "gpu/dense", "20260913_143137", [self.record()])
+        (self.result / "nvidia-gpu/gpu").mkdir(parents=True)
+        (self.result / "nvidia-gpu/gpu/dense.md").write_text(
+            "# GPU Dense\n\n- Timestamp: `2026-09-23T12:05:30+00:00`\n"
+        )
+
+        with self.assertRaises(regenerate.RegenerateError) as raised:
+            regenerate.regenerate(self.result, self.data, suites={"gpu/dense"})
+        self.assertIn("20260923_120530", str(raised.exception))
+        self.assertFalse((self.result / "nvidia-gpu/gpu/dense.summary.json").exists())
 
     def test_missing_declared_raw_run_never_falls_back_to_a_newer_run(self):
         import regenerate_report_summaries as regenerate
@@ -627,8 +639,9 @@ class RegenerateSummariesTests(unittest.TestCase):
         (self.result / "nvidia-gpu/gpu/dense.md").write_text(
             "# GPU Dense\n\n- Raw run: `data/results/nvidia-gpu/gpu/dense/20261016_235116`\n"
         )
-        written = regenerate.regenerate(self.result, self.data)
-        self.assertEqual(written, [])
+        with self.assertRaises(regenerate.RegenerateError) as raised:
+            regenerate.regenerate(self.result, self.data, suites={"gpu/dense"})
+        self.assertIn("20261016_235116", str(raised.exception))
         self.assertFalse((self.result / "nvidia-gpu/gpu/dense.summary.json").exists())
 
 

@@ -767,6 +767,102 @@ def write_outputs(
     )
 
 
+def render_gpu_public_api(run_dir: Path, out_dir: Path) -> list[Path]:
+    """Render one public-API GPU run from the record it kept.
+
+    The run directory holds the case selection the collector materialized
+    (``instances.json``), one JSONL per backend and the folded
+    ``records.jsonl``; the page and its sidecar derive from those alone.  A run
+    that lost one of them, or a backend row without a field the page prints, is
+    an error naming the run and the field, never a page rendered from a
+    different selection or from the rendering host.
+    """
+    import format_gpu_public_api_results as producer
+    import format_gpu_results
+
+    run_dir = Path(run_dir)
+    metadata, _ = load_metadata(run_dir)
+    suite = _gpu_selection(run_dir)
+    backends = list(suite["backends"])
+    raw = [path for path in sorted(run_dir.glob("*.jsonl")) if path.stem in backends]
+    absent = [backend for backend in backends if backend not in {path.stem for path in raw}]
+    if absent:
+        raise RenderError(f"{run_dir}: no result file for backends {', '.join(absent)}")
+    if not ((metadata.get("cuda") or {}).get("device_name")):
+        raise RenderError(
+            f"{run_dir}: run.yaml records no cuda.device_name; the GPU the page "
+            "names would otherwise come from whichever host renders it"
+        )
+    name = str(suite["suite_id"]).split("/")[-1]
+    try:
+        records = _gpu_records(run_dir, suite)
+        markdown = producer.render(
+            suite, raw, metadata, run_dir.name, report_summary.repo_relative(run_dir)
+        )
+        summary = format_gpu_results.build_summary(records, metadata)
+    except KeyError as error:
+        raise RenderError(
+            f"{run_dir}: a result row has no {error.args[0]!r} field; the {name} "
+            "page cannot be rendered from this run"
+        ) from None
+    except ValueError as error:
+        raise RenderError(f"{run_dir}: {error}") from None
+    return write_outputs(run_dir, out_dir, "report.md", name, summary, markdown.splitlines())
+
+
+def _gpu_records(run_dir: Path, suite: dict[str, Any]) -> list[dict[str, Any]]:
+    """The folded records of the run's declared selection.
+
+    The page and the sidecar are one rendering, so the sidecar may only hold the
+    cells the selection declares: a record outside it belongs to another page.
+    """
+    folded = Path(run_dir) / "records.jsonl"
+    if not folded.is_file():
+        raise RenderError(f"{run_dir}: no records.jsonl")
+    declared = {
+        (case["id"], backend) for case in suite["cases"] for backend in suite["backends"]
+    }
+    selected: list[dict[str, Any]] = []
+    for line in folded.read_text().splitlines():
+        if not line.strip():
+            continue
+        record = json.loads(line)
+        for field in ("problem_id", "backend"):
+            if field not in record:
+                raise RenderError(f"{run_dir}: a records.jsonl row has no {field!r} field")
+        key = (record["problem_id"], record["backend"])
+        if key not in declared:
+            continue
+        if record.get("status") == "ok" and not isinstance(
+            (record.get("timing") or {}).get("median_ms"), (int, float)
+        ):
+            raise RenderError(
+                f"{run_dir}: {key[0]} / {key[1]} is an ok record without "
+                "timing.median_ms; its summary row would carry no number"
+            )
+        selected.append(record)
+    missing = declared - {(record["problem_id"], record["backend"]) for record in selected}
+    if missing:
+        cells = ", ".join(f"{case}/{backend}" for case, backend in sorted(missing)[:5])
+        raise RenderError(f"{run_dir}: records.jsonl holds no record for {cells}")
+    return selected
+
+
+def _gpu_selection(run_dir: Path) -> dict[str, Any]:
+    """The case selection a public-API run recorded, with its required fields."""
+    selection = Path(run_dir) / "instances.json"
+    if not selection.is_file():
+        raise RenderError(
+            f"{run_dir}: no instances.json recording the selected cases; a page "
+            "cannot be rendered without the selection it measured"
+        )
+    suite = json.loads(selection.read_text())
+    for field in ("suite_id", "backends", "description"):
+        if not suite.get(field):
+            raise RenderError(f"{run_dir}: instances.json records no {field!r}")
+    return suite
+
+
 RENDERERS = {
     "cpu/einsum": render_einsum,
     "cpu/public_api": render_public_api,
@@ -776,13 +872,23 @@ RENDERERS = {
     "cpu/small_work": render_small_work,
     "cpu/session_matrix": render_session_matrix,
     "cpu/perf_issues": render_perf_issues,
+    # GPU suites collected by scripts/run_gpu_public_api.sh; their page producer
+    # is the one collection publishes with, so a rendered page and a published
+    # page come from the same code.
+    "gpu/fft": render_gpu_public_api,
+    "gpu/isolated_ops": render_gpu_public_api,
+    "gpu/linalg_public_api_latency": render_gpu_public_api,
+    "gpu/linalg_public_api_throughput": render_gpu_public_api,
+    "gpu/lstsq": render_gpu_public_api,
+    "gpu/nn": render_gpu_public_api,
+    "gpu/reuse_contraction": render_gpu_public_api,
+    "gpu/structural": render_gpu_public_api,
 }
 
 # Suites whose run directory holds more than one report.
 EXTRA_RENDERERS = {
     "cpu/einsum": (render_cpu_ops, render_linalg_jvp_vjp),
 }
-
 
 def detect_suite(run_dir: Path, metadata: dict[str, Any]) -> str:
     suite_id = metadata.get("suite_id") or ""
@@ -798,6 +904,12 @@ def detect_suite(run_dir: Path, metadata: dict[str, Any]) -> str:
             return candidate
         if candidate.startswith("cpu/public_api"):
             return "cpu/public_api"
+    if suite_id:
+        raise RenderError(f"{run_dir}: suite {suite_id!r} is not a renderable suite")
+    # A GPU run is collected with the selection it measured; without its
+    # recorded identity there is no page it can be published as.
+    if "gpu" in Path(run_dir).resolve().parts:
+        raise RenderError(f"{run_dir}: records no suite_id; cannot tell which page to publish")
     raise RenderError(f"{run_dir}: cannot determine the suite to render")
 
 

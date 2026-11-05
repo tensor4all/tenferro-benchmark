@@ -72,18 +72,19 @@ MAINTAINED: dict[tuple[str, str], str] = {
     ("nvidia-gpu", "gpu/linalg_jvp_vjp"): "gpu_records",
     ("nvidia-gpu", "gpu/linalg_ad_latency"): "gpu_records",
     ("nvidia-gpu", "gpu/perf_issues"): "perf_issues",
-    # The routine collection folds the fixture-driven families into the shared
-    # GPU record contract (scripts/normalize_gpu_records.py), so their summaries
-    # come from the shared builder too.
+    # The public-API families publish a page and a summary from one rendering of
+    # the run's recorded case selection (scripts/run_gpu_public_api.sh), so their
+    # sidecar is that rendering; the routine record families use the shared
+    # builder over scripts/normalize_gpu_records.py output.
     ("nvidia-gpu", "gpu/permutation"): "gpu_records",
-    ("nvidia-gpu", "gpu/fft"): "gpu_records",
-    ("nvidia-gpu", "gpu/isolated_ops"): "gpu_records",
-    ("nvidia-gpu", "gpu/linalg_public_api_throughput"): "gpu_records",
-    ("nvidia-gpu", "gpu/linalg_public_api_latency"): "gpu_records",
-    ("nvidia-gpu", "gpu/lstsq"): "gpu_records",
-    ("nvidia-gpu", "gpu/nn"): "gpu_records",
-    ("nvidia-gpu", "gpu/reuse_contraction"): "gpu_records",
-    ("nvidia-gpu", "gpu/structural"): "gpu_records",
+    ("nvidia-gpu", "gpu/fft"): "gpu_page",
+    ("nvidia-gpu", "gpu/isolated_ops"): "gpu_page",
+    ("nvidia-gpu", "gpu/linalg_public_api_throughput"): "gpu_page",
+    ("nvidia-gpu", "gpu/linalg_public_api_latency"): "gpu_page",
+    ("nvidia-gpu", "gpu/lstsq"): "gpu_page",
+    ("nvidia-gpu", "gpu/nn"): "gpu_page",
+    ("nvidia-gpu", "gpu/reuse_contraction"): "gpu_page",
+    ("nvidia-gpu", "gpu/structural"): "gpu_page",
 }
 
 
@@ -108,6 +109,15 @@ def run_dir_from_report(report: Path, suite_dir: Path) -> Path | None:
     was not published.  ``None`` means the report does not name a run (the
     caller may fall back to the newest local run); a missing declared run
     raises ``FileNotFoundError``.
+
+    The declared run is authoritative, and its suite directory is spelled the
+    way the page spells it: a page whose suite was renamed after collection
+    (``gpu/linalg_public_api`` became ``gpu/linalg_public_api_throughput`` and
+    ``_latency``) still names the run it was rendered from.  Only the profile
+    and the group (``cpu``/``gpu``) are required to match, so a page cannot
+    silently render a run of another hardware profile.  A declared run that is
+    not available locally is an error rather than a fallback: publishing the
+    newest local run instead would put a run on the page that it does not name.
     """
     if not report.exists():
         return None
@@ -117,13 +127,13 @@ def run_dir_from_report(report: Path, suite_dir: Path) -> Path | None:
         candidate = Path(match.rstrip(".,;"))
         if not RUN_DIR_RE.fullmatch(candidate.name):
             continue
-        same_suite = (
-            candidate.parent.name == suite_dir.name
-            and candidate.parent.parent.name == suite_dir.parent.name
+        same_profile_and_group = (
+            candidate.parent.parent.name == suite_dir.parent.name
+            and candidate.parent.parent.parent.name == suite_dir.parent.parent.name
         )
-        if not same_suite:
+        if not same_profile_and_group:
             continue
-        declared = suite_dir / candidate.name
+        declared = suite_dir.parent / candidate.parent.name / candidate.name
         if declared.is_dir():
             return declared
         raise FileNotFoundError(
@@ -155,6 +165,25 @@ def _load_gpu_records(run_dir: Path) -> tuple[list[dict[str, Any]], dict[str, An
             records.append(json.loads(line))
     metadata = report_summary.load_run_metadata(run_dir / "run.yaml")
     return records, metadata
+
+
+def _summary_gpu_page(run_dir: Path) -> dict[str, Any]:
+    """The sidecar a public-API GPU page publishes, rendered from the same run.
+
+    The page and its summary are one rendering, so the summary cannot hold rows
+    the page's declared case selection excludes.
+    """
+    import render_run
+
+    with tempfile.TemporaryDirectory(prefix="page-run-") as work:
+        try:
+            written = render_run.render_gpu_public_api(run_dir, Path(work))
+        except render_run.RenderError as error:
+            raise ValueError(str(error)) from None
+        for path in written:
+            if path.name.endswith(".summary.json"):
+                return json.loads(path.read_text())
+    raise ValueError(f"{run_dir}: rendering published no summary sidecar")
 
 
 def _summary_gpu_records(run_dir: Path) -> dict[str, Any]:
@@ -199,6 +228,7 @@ def _summary_perf_issues(run_dir: Path) -> dict[str, Any]:
 
 BUILDERS: dict[str, Callable[[Path], dict[str, Any]]] = {
     "gpu_records": _summary_gpu_records,
+    "gpu_page": _summary_gpu_page,
     "gpu_permutation": _summary_gpu_permutation,
     "perf_issues": _summary_perf_issues,
 }
@@ -217,23 +247,32 @@ def regenerate(
             continue
         if suites and suite_id not in suites:
             continue
-        report = result_dir / profile / f"{suite_id}.md"
+        # A suite is spelled `<group>/<family>`; its page lives under that group
+        # (`result/<profile>/cpu/<family>.md`, `result/<profile>/gpu/<family>.md`).
+        group, family = suite_id.split("/", 1)
+        report = result_dir / profile / group / f"{family}.md"
         suite_dir = data_dir / profile / suite_id
         try:
             run_dir = run_dir_from_report(report, suite_dir)
         except FileNotFoundError as error:
-            print(f"skip {profile} {suite_id}: {error}", file=sys.stderr)
-            continue
+            raise RegenerateError(f"{profile} {suite_id}: {error}") from None
         if run_dir is None:
             run_dir = latest_run_dir(suite_dir)
         if run_dir is None:
-            print(f"skip {profile} {suite_id}: no local raw run under {suite_dir}", file=sys.stderr)
-            continue
+            raise RegenerateError(
+                f"{profile} {suite_id}: {report} names no run and {suite_dir} holds none"
+            )
         try:
             document = BUILDERS[kind](run_dir)
-        except (FileNotFoundError, ValueError) as error:
-            print(f"skip {profile} {suite_id}: {error}", file=sys.stderr)
-            continue
+        except KeyError as error:
+            raise RegenerateError(
+                f"{run_dir}: record has no {error.args[0]!r} field; "
+                f"{report} cannot be regenerated from this run"
+            ) from None
+        except FileNotFoundError as error:
+            raise RegenerateError(f"{run_dir}: missing {error.filename or error}") from None
+        except ValueError as error:
+            raise RegenerateError(f"{run_dir}: {error}") from None
         out = report_summary.summary_path_for_report(report)
         if dry_run:
             print(f"would write {out} from {run_dir}")
@@ -253,11 +292,16 @@ class PublishError(RuntimeError):
     """The selected run directories cannot be rendered as a published page."""
 
 
+class RegenerateError(RuntimeError):
+    """A maintained report cannot be regenerated from the run it names."""
+
+
 @dataclass(frozen=True)
 class Page:
     """One published page and the summary sidecar next to it."""
 
     profile: str
+    group: str
     name: str
     markdown: bytes
     summary: bytes
@@ -323,14 +367,14 @@ def _suite_of(run_dir: Path) -> str:
         raise PublishError(str(error)) from None
 
 
-def _page(directory: Path, name: str, report: str, profile: str) -> Page | None:
+def _page(directory: Path, name: str, report: str, profile: str, group: str) -> Page | None:
     markdown = directory / report
     if not markdown.is_file():
         return None
     summary = directory / f"{name}.summary.json"
     if not summary.is_file():
         raise PublishError(f"{markdown}: rendered without {summary.name}")
-    return Page(profile, name, markdown.read_bytes(), summary.read_bytes())
+    return Page(profile, group, name, markdown.read_bytes(), summary.read_bytes())
 
 
 def render_pages(run_dirs: Iterable[Path], work: Path, root: Path = ROOT) -> dict[str, Page]:
@@ -360,6 +404,9 @@ def render_pages(run_dirs: Iterable[Path], work: Path, root: Path = ROOT) -> dic
             "select runs of one suite; got " + ", ".join(sorted(suites))
         )
     suite = suites.pop()
+    # A suite is spelled `<group>/<family>`; the page is published under the
+    # group its own suite declaration names (`result/<profile>/cpu|gpu/`).
+    group = suite.split("/")[0]
     metadata, _ = render_run.load_metadata(selected[0])
     profile = str(metadata.get("target_profile") or "")
     if not profile:
@@ -380,7 +427,7 @@ def render_pages(run_dirs: Iterable[Path], work: Path, root: Path = ROOT) -> dic
         format_cpu_thread_reports.combine(rendered, work)
         destination = work / "result" / profile / "cpu"
         for name in EINSUM_PAGES:
-            page = _page(destination, name, f"{name}.md", profile)
+            page = _page(destination, name, f"{name}.md", profile, group)
             if page is not None:
                 pages[name] = page
         return pages
@@ -388,7 +435,7 @@ def render_pages(run_dirs: Iterable[Path], work: Path, root: Path = ROOT) -> dic
     if len(rendered) != 1:
         raise PublishError(f"{suite}: publishes exactly one run directory")
     name = str(metadata.get("suite_id") or suite).split("/")[-1]
-    page = _page(rendered[0], name, "report.md", profile)
+    page = _page(rendered[0], name, "report.md", profile, group)
     if page is None:
         raise PublishError(f"{selected[0]}: rendered no {name} page")
     pages[name] = page
@@ -403,7 +450,7 @@ def publish(
     with tempfile.TemporaryDirectory(prefix="publish-run-") as work:
         pages = render_pages(run_dirs, Path(work), root)
         for page in pages.values():
-            destination = Path(result_dir) / page.profile / "cpu"
+            destination = Path(result_dir) / page.profile / page.group
             destination.mkdir(parents=True, exist_ok=True)
             markdown = destination / f"{page.name}.md"
             markdown.write_bytes(page.markdown)

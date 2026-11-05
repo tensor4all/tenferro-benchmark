@@ -1,0 +1,2 @@
+{"case_id": "cholesky_f32_512x512", "backend": "tenferro-cuda-direct", "status": "ok", "verification": {"max_error_over_tolerance": 0.25}, "timing": {"operations_per_sample": 4, "batch_ms": [0.285362, 0.285479, 0.286358]}}
+{"case_id": "householder_r_default_f32_512x256", "backend": "tenferro-cuda-direct", "status": "ok", "verification": {"max_error_over_tolerance": 0.25}, "timing": {"operations_per_sample": 4, "batch_ms": [0.138792, 0.138792, 0.138792]}}
