@@ -4,12 +4,16 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT))
 
-from normalize_gpu_records import fold
+import yaml
+
+import normalize_gpu_records as normalize
+from normalize_gpu_records import compile_accounting, fold
 from scripts.ci.check_gpu_run import validate_records
 import gpu_routine_selection as selection
 
@@ -106,6 +110,91 @@ class NormalizeTest(unittest.TestCase):
         self.assertEqual(fold(family_row(), "gpu/isolated_ops")["suite_id"], "gpu/lstsq")
         with self.assertRaisesRegex(ValueError, "without a suite identity"):
             fold(row)
+
+    def test_a_python_arms_compile_is_not_summed_into_the_nvrtc_total(self):
+        # jax-cuda-jit records a real compile interval but no NVRTC module, so a warm
+        # CUDA cache must not be reported as having paid NVRTC time.
+        raw = [
+            {"backend": "direct", "compile_modules": 1, "overhead": {"case_wall_ms": 1000.0},
+             "timing": {"compile_time_ms": 700.0}},
+            {"backend": "jax-cuda-jit", "overhead": {"case_wall_ms": 1000.0},
+             "timing": {"compile_time_ms": 2000.0}},
+        ]
+        self.assertEqual(compile_accounting(raw)["compile_time_ms"], 700.0)
+        self.assertEqual(compile_accounting(raw)["modules_compiled"], 1)
+
+    def test_a_compiling_case_without_sampling_still_contributes(self):
+        # An excluded or failed case that compiled keeps its time at the top level because
+        # a null timing block has nowhere else to put it.
+        raw = [{"backend": "direct", "compile_modules": 3, "compile_time_ms": 5000.0,
+                "timing": None, "overhead": {"case_wall_ms": 5000.0}}]
+        accounting = compile_accounting(raw)
+        self.assertEqual(accounting["modules_compiled"], 3)
+        self.assertEqual(accounting["compile_time_ms"], 5000.0)
+
+    def test_normalizing_records_the_totals_and_keeps_the_rest_of_the_metadata(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            run = tmp / "run.yaml"
+            run.write_text("suite_id: gpu/linalg_public_api_throughput\n"
+                           "cuda:\n  artifact_cache:\n    regime: cold\n")
+            arm = tmp / "direct.jsonl"
+            arm.write_text(json.dumps(family_row(
+                backend="direct", compile_cache="miss", compile_modules=2,
+                overhead={"case_wall_ms": 4000.0},
+                timing={"operations_per_sample": 1, "batch_ms": [2.0],
+                        "compile_time_ms": 3000.0})) + "\n")
+            out = tmp / "records.jsonl"
+            argv = ["normalize_gpu_records.py", "--output", str(out),
+                    "--run-metadata", str(run), str(arm)]
+            with patch.object(sys, "argv", argv):
+                normalize.main()
+            metadata = yaml.safe_load(run.read_text())
+            self.assertEqual(metadata["collection"]["compile"],
+                             {"case_wall_seconds": 4.0, "compiling_processes": 1,
+                              "modules_compiled": 2, "compile_time_ms": 3000.0})
+            # Everything the collector wrote is still there.
+            self.assertEqual(metadata["cuda"]["artifact_cache"]["regime"], "cold")
+            once = run.read_text()
+            with patch.object(sys, "argv", argv):
+                normalize.main()
+            self.assertEqual(run.read_text(), once)
+            record = json.loads(out.read_text().splitlines()[0])
+            self.assertEqual(record["timing"]["compile_cache"], "miss")
+            self.assertEqual(record["timing"]["compile_modules"], 2)
+
+    def test_compile_accounting_reaches_the_record(self):
+        folded = fold(family_row(compile_cache="miss", compile_modules=2,
+                                 timing={"operations_per_sample": 4, "batch_ms": [0.4],
+                                         "compile_time_ms": 69014.2}), "gpu/linalg_public_api_throughput")
+        self.assertEqual(folded["timing"]["compile_cache"], "miss")
+        self.assertEqual(folded["timing"]["compile_modules"], 2)
+        self.assertEqual(folded["timing"]["compile_time_ms"], 69014.2)
+        # A family that does not compile keeps records without the fields.
+        self.assertNotIn("compile_cache", fold(family_row())["timing"])
+
+    def test_compile_accounting_sums_what_the_arm_files_recorded(self):
+        raw = [
+            {"backend": "direct", "compile_modules": 3, "overhead": {"case_wall_ms": 4000.0},
+             "timing": {"compile_time_ms": 2000.0}},
+            {"backend": "direct", "compile_modules": 0, "overhead": {"case_wall_ms": 1000.0},
+             "timing": {"compile_time_ms": 0.0}},
+            {"backend": "eager", "compile_modules": 1, "overhead": {"case_wall_ms": 2200.4},
+             "timing": {"compile_time_ms": 2000.7}},
+        ]
+        self.assertEqual(compile_accounting(raw), {
+            "case_wall_seconds": 7.2, "compiling_processes": 2,
+            "modules_compiled": 4, "compile_time_ms": 4000.7})
+
+    def test_a_warm_run_records_zeros_rather_than_no_block(self):
+        raw = [{"backend": "direct", "compile_modules": 0,
+                "overhead": {"case_wall_ms": 500.0}, "timing": {"compile_time_ms": 0.0}}]
+        self.assertEqual(compile_accounting(raw), {
+            "case_wall_seconds": 0.5, "compiling_processes": 0,
+            "modules_compiled": 0, "compile_time_ms": 0.0})
+
+    def test_a_family_that_does_not_compile_records_nothing(self):
+        self.assertIsNone(compile_accounting([family_row()]))
 
 
 if __name__ == "__main__":

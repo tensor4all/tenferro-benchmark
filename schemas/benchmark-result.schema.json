@@ -71,6 +71,15 @@
         "warmup_runs": { "type": "integer", "minimum": 0 },
         "timed_runs": { "type": "integer", "minimum": 0 },
         "compile_time_ms": { "type": ["number", "null"], "minimum": 0 },
+        "compile_cache": {
+          "enum": ["hit", "miss", null],
+          "description": "miss when this case compiled an NVRTC module, hit when it did not. Only the arms that compile NVRTC modules carry it."
+        },
+        "compile_modules": {
+          "type": ["integer", "null"],
+          "minimum": 0,
+          "description": "NVRTC modules this case compiled; 0 on a warm run."
+        },
         "first_run_ms": { "type": ["number", "null"], "minimum": 0 },
         "median_ms": { "type": ["number", "null"], "minimum": 0 },
         "min_ms": { "type": ["number", "null"], "minimum": 0 },

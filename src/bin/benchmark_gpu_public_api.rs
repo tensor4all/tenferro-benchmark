@@ -856,15 +856,22 @@ fn main() -> Result<()> {
                 row["compile_cache"] = json!(if compiled > 0 { "miss" } else { "hit" });
                 row["compile_modules"] = json!(compiled);
                 row["compile_time_scope"] = json!(
-                    "untimed case wall of the case that compiled; fixtures and verification excluded"
+                    "untimed case wall of the case that compiled, including that case's fixture read, transfers and verification"
                 );
+                let compile_ms = if compiled > 0 {
+                    untimed_ms.unwrap_or(case_wall_ms)
+                } else {
+                    0.0
+                };
+                // An excluded or verify-only case still paid for its module, and a null
+                // timing block has nowhere to put that time, so it goes at the top level
+                // rather than being dropped from the run's totals.
+                if timing.is_none() {
+                    row["compile_time_ms"] = json!(compile_ms);
+                }
                 row["timing"] = match timing {
                     Some(mut timing) => {
-                        timing["compile_time_ms"] = json!(if compiled > 0 {
-                            untimed_ms.unwrap_or(0.0)
-                        } else {
-                            0.0
-                        });
+                        timing["compile_time_ms"] = json!(compile_ms);
                         json!(timing)
                     }
                     None => json!(null),
@@ -883,6 +890,12 @@ fn main() -> Result<()> {
                     "runtime_failed"
                 });
                 row["reason"] = json!(e.to_string());
+                // A case that failed after compiling still cost the run that module.
+                if compiled > 0 {
+                    row["compile_cache"] = json!("miss");
+                    row["compile_modules"] = json!(compiled);
+                    row["compile_time_ms"] = json!(case_wall_ms);
+                }
             }
         }
         writeln!(file, "{}", row)?;
