@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import sys
@@ -33,6 +34,83 @@ def save_array(root, name, array):
 
 def load_array(root, spec):
     return np.fromfile(root / spec["file"], dtype=DTYPES[spec["dtype"]]).reshape(spec["shape"], order="F")
+
+
+FINGERPRINT_SCHEMA_VERSION = 1
+# The seeded weight vector's splitmix64 constants, shared with `src/fingerprint.rs`;
+# `scripts/ci/tests/test_fingerprint_parity.py` pins both to one reference array.
+FINGERPRINT_SEED = 0x9E3779B97F4A7C15
+_U64 = (1 << 64) - 1
+
+
+def seeded_weights(count):
+    """The fixed weight vector in [-1, 1), one weight per element in file order.
+
+    Real weights, not `±1` signs: two elements that share a weight cannot be told
+    apart by the weighted dot product, and a sign vector gives half of all pairs the
+    same weight. With `±1` signs the first four weights were [-1, +1, +1, -1], so
+    [1, 2, 3, 4] and [1, 3, 2, 4] had the same dot product.
+    """
+    state = 0
+    out = np.empty(count, dtype=np.float64)
+    for index in range(count):
+        state = (state + FINGERPRINT_SEED) & _U64
+        z = state
+        z = ((z ^ (z >> 30)) * 0xBF58476D1CE4E5B9) & _U64
+        z = ((z ^ (z >> 27)) * 0x94D049BB133111EB) & _U64
+        z ^= z >> 31
+        # 53 bits scaled into [-1, 1): exact in f64, matching the Rust step for step.
+        out[index] = (z >> 11) / (1 << 52) - 1.0
+    return out
+
+
+def fingerprint(array):
+    """Five invariants of one expected output, in the harness's document shape."""
+    flat = np.asarray(array).ravel(order="F")
+    if np.iscomplexobj(flat):
+        real = flat.real.astype(np.float64)
+        imaginary = flat.imag.astype(np.float64)
+    else:
+        real = flat.astype(np.float64)
+        imaginary = None
+    magnitude = np.hypot(real, imaginary) if imaginary is not None else np.abs(real)
+    weights = seeded_weights(real.size)
+    return {
+        "sum_re": float(real.sum()),
+        "sum_im": float(imaginary.sum()) if imaginary is not None else 0.0,
+        "sum_abs": float(magnitude.sum()),
+        "sum_squares": float(np.dot(real, real) + (np.dot(imaginary, imaginary) if imaginary is not None else 0.0)),
+        "max_abs": float(magnitude.max()) if magnitude.size else 0.0,
+        "dot_seeded_re": float(np.dot(weights, real)),
+        "dot_seeded_im": float(np.dot(weights, imaginary)) if imaginary is not None else 0.0,
+        "elements": int(real.size),
+    }
+
+
+FINGERPRINT_UNAVAILABLE = ("the expected values are not all finite, so the invariants are not "
+                           "representable in JSON")
+
+
+def save_fingerprint(root, spec, index, case_id):
+    """Store one output's invariants next to its fixture.
+
+    `masked_log_softmax` writes `-inf` for a masked element, and its invariants are then
+    infinite or NaN. JSON cannot carry those, so the document records that it has no
+    invariants and why; the arm then runs no fingerprint diagnostic for that output
+    instead of failing to parse the document.
+    """
+    block = fingerprint(load_array(root, spec))
+    available = all(math.isfinite(value) for value in block.values())
+    document = {
+        "schema_version": FINGERPRINT_SCHEMA_VERSION,
+        "case_id": case_id,
+        "output": index,
+        "dtype": spec["dtype"],
+        "shape": list(spec["shape"]),
+        "fingerprint": block if available else None,
+        "unavailable_reason": None if available else FINGERPRINT_UNAVAILABLE,
+    }
+    (root / f'{spec["file"]}.fingerprint.json').write_text(json.dumps(document, indent=1) + "\n")
 
 
 def make_fixtures(root, suite):
@@ -73,6 +151,8 @@ def make_fixtures(root, suite):
             if spec["dtype"] in {"i32", "i64"}:
                 case.update(rtol=0.0, atol=0.0, tolerance_policy="exact integer equality; no floating conversion",
                             reference="NumPy exact integer arithmetic; truncating div/rem; all requested outputs")
+            for index, saved in enumerate(case["outputs"]):
+                save_fingerprint(root, saved, index, spec["id"])
             cases.append(case)
             continue
         op, dtype, n = spec["op"], spec["dtype"], spec["n"]
@@ -103,6 +183,8 @@ def make_fixtures(root, suite):
                     rtol=5e-4 if dtype.endswith("32") else 1e-9,
                     atol=float(fft_atol),
                     tolerance_policy="atol=max(1e-9,32*eps*ceil(log2(n))*norm2(input)/normalization); rtol=5e-4(f32),1e-9(f64)")
+        for index, saved in enumerate(case["outputs"]):
+            save_fingerprint(root, saved, index, spec["id"])
         cases.append(case)
     (root / "manifest.json").write_text(json.dumps(cases, indent=2) + "\n")
     metadata_path = root.parent / "run.yaml"
@@ -156,6 +238,56 @@ def verify(actual, expected, case):
     if not np.isfinite(worst) or worst > 1:
         raise ValueError(f"verification error / tolerance = {worst}")
     return worst
+
+
+def load_fingerprint(root, spec):
+    path = root / f'{spec["file"]}.fingerprint.json'
+    if not path.exists():
+        return None
+    document = json.loads(path.read_text())
+    if document.get("schema_version") != FINGERPRINT_SCHEMA_VERSION:
+        return None
+    return document["fingerprint"]
+
+
+def fingerprint_matches(actual, stored, case):
+    """Whether `actual` agrees with a stored fingerprint, in the Rust module's bounds.
+
+    A diagnostic agreement test, never an acceptance test: `verify_outputs` below
+    compares every element whatever this returns, because one large element can pay
+    the whole allowance a sum is compared with.
+    """
+    live = fingerprint(actual)
+    if live["elements"] != stored["elements"]:
+        return False
+    count = float(live["elements"])
+    absolute = case["atol"] * count
+    mass = absolute + case["rtol"] * stored["sum_abs"]
+    peaks = 2.0 * stored["max_abs"] * mass
+
+    def close(live_value, stored_value, scale):
+        return abs(live_value - stored_value) <= scale
+
+    return (close(live["sum_re"], stored["sum_re"], mass)
+            and close(live["sum_im"], stored["sum_im"], mass)
+            and close(live["sum_abs"], stored["sum_abs"], mass)
+            and close(live["sum_squares"], stored["sum_squares"],
+                       absolute + case["rtol"] * stored["sum_squares"] + peaks)
+            and close(live["max_abs"], stored["max_abs"], case["atol"] + case["rtol"] * stored["max_abs"])
+            and close(live["dot_seeded_re"], stored["dot_seeded_re"], mass)
+            and close(live["dot_seeded_im"], stored["dot_seeded_im"], mass))
+
+
+def fingerprint_diagnostic(values, stored_fingerprints, case):
+    """How the recorded fingerprint compares, as (compares, disagreements)."""
+    compares = disagreements = 0
+    for actual, stored in zip(values, stored_fingerprints):
+        if stored is None:
+            continue
+        compares += 1
+        if not fingerprint_matches(actual, stored, case):
+            disagreements += 1
+    return compares, disagreements
 
 
 def measure(op, sync, ready, nbytes, warmups, runs, reuse=False, *, synchronize_each_operation=False):
@@ -219,6 +351,28 @@ def verify_device(outputs, backend, device):
             raise RuntimeError("CPU fallback or wrong JAX GPU")
 
 
+OVERHEAD_BUDGET = float(os.environ.get("GPU_API_OVERHEAD_BUDGET", "0.2"))
+
+
+def overhead_warning(case_id, timed_ms, case_wall_ms, budget):
+    """The overhead line a case records when it spent more than `budget` outside its
+    timed region, or None when it did not.
+
+    The budget has no measured basis: it labels the untimed split for the report. It
+    is recorded in the row and printed, and nothing reads it back into a status or an
+    exit code, because a case that spends a long time setting up is still a
+    measurement.
+    """
+    if not timed_ms or timed_ms <= 0:
+        return None
+    untimed = max(0.0, case_wall_ms - timed_ms)
+    if untimed <= budget * timed_ms:
+        return None
+    return (f'{case_id} untimed {untimed:.1f} ms is '
+            f'{100 * untimed / timed_ms:.0f}% of the {timed_ms:.1f} ms '
+            f'timed region (budget {100 * budget:.0f}%)')
+
+
 def run_python(backend, root, output):
     device = int(os.environ.get("GPU_BENCH_DEVICE", "0"))
     verify_only = os.environ.get("GPU_API_VERIFY_ONLY") == "1"
@@ -243,6 +397,7 @@ def run_python(backend, root, output):
         jax.config.update("jax_default_matmul_precision", "highest")
         gpu = jax.devices("gpu")[device]
         version = jax.__version__
+    overhead_budget = OVERHEAD_BUDGET
     with output.open("x") as f:
         for case in json.loads((root / "manifest.json").read_text()):
             print(backend, case["id"], flush=True)
@@ -279,11 +434,15 @@ def run_python(backend, root, output):
                 row.update(status="unsupported", reason=unavailable[backend])
                 f.write(json.dumps(row) + "\n")
                 continue
+            case_started = time.monotonic()
+            fixture_started = time.monotonic()
             try:
                 hosts = [load_array(root, a) for a in case["inputs"]]
                 is_fft = case["op"] in {"fft", "ifft", "rfft", "irfft"}
                 x_host = load_array(root, case["inputs"][0])
+                stored_fingerprints = [load_fingerprint(root, a) for a in case["outputs"]]
                 expected = [load_array(root, a) for a in case["outputs"]]
+                fixture_ms = (time.monotonic() - fixture_started) * 1e3
                 from gpu_multi_output_verification import leaves, verify_outputs, normalized_outputs
                 if backend == "pytorch-cuda":
                     inputs = [torch.from_numpy(np.ascontiguousarray(a) if a.ndim else a).to(f"cuda:{device}") for a in hosts]
@@ -332,8 +491,16 @@ def run_python(backend, root, output):
                     probe = op.inspect(probe)  # snapshot only for untimed verification
                 verify_device(probe, backend, device if backend == "pytorch-cuda" else gpu)
                 (jax.block_until_ready if backend != "pytorch-cuda" and hasattr(op, "inspect") else ready)([probe])
-                error = verify_outputs(normalized_outputs([download(v) for v in leaves(probe)], case, backend), expected, case, hosts, verify)
-                del probe
+                verify_started = time.monotonic()
+                inspected = normalized_outputs([download(v) for v in leaves(probe)], case, backend)
+                # The fingerprint is a recorded diagnostic and never the decision: an
+                # output can agree with every stored invariant and still be elementwise
+                # wrong, so every element is compared whatever it says.
+                fingerprint_compares, fingerprint_disagreements = fingerprint_diagnostic(
+                    inspected, stored_fingerprints, case)
+                error = verify_outputs(inspected, expected, case, hosts, verify)
+                del probe, inspected
+                verify_ms = (time.monotonic() - verify_started) * 1e3
                 timing = None
                 if not verify_only and not numerical_exclusion:
                     timing = measure(op, sync, ready, sum(v.nbytes for v in expected), warmups, runs, reuse=reuse)
@@ -346,8 +513,36 @@ def run_python(backend, root, output):
                         probe = op.inspect(probe)
                     verify_device(probe, backend, device if backend == "pytorch-cuda" else gpu)
                     (jax.block_until_ready if backend != "pytorch-cuda" and hasattr(op, "inspect") else ready)([probe])
-                    error = max(error, verify_outputs(normalized_outputs([download(v) for v in leaves(probe)], case, backend), expected, case, hosts, verify))
+                    verify_started = time.monotonic()
+                    inspected = normalized_outputs([download(v) for v in leaves(probe)], case, backend)
+                    more_compares, more_disagreements = fingerprint_diagnostic(
+                        inspected, stored_fingerprints, case)
+                    fingerprint_compares += more_compares
+                    fingerprint_disagreements += more_disagreements
+                    error = max(error, verify_outputs(inspected, expected, case, hosts, verify))
+                    verify_ms += (time.monotonic() - verify_started) * 1e3
+                    del inspected
                     del probe
+                timed_ms = sum(timing["batch_ms"]) if timing else None
+                case_wall_ms = (time.monotonic() - case_started) * 1e3
+                untimed_ms = None if timed_ms is None else max(0.0, case_wall_ms - timed_ms)
+                warning = overhead_warning(case["id"], timed_ms, case_wall_ms, overhead_budget)
+                if warning:
+                    print(f"overhead budget: {warning}", file=sys.stderr)
+                row["overhead"] = {
+                    "timed_ms": timed_ms,
+                    "case_wall_ms": case_wall_ms,
+                    "untimed_ms": untimed_ms,
+                    "fixture_ms": fixture_ms,
+                    "verify_ms": verify_ms,
+                    "fingerprints_stored": sum(stored is not None for stored in stored_fingerprints),
+                    "fingerprint_compares": fingerprint_compares,
+                    "fingerprint_disagreements": fingerprint_disagreements,
+                    "budget_ratio": overhead_budget,
+                    "over_budget": warning is not None,
+                    "warning": warning,
+                    "scope": "case wall clock outside the timed region: fixtures, H2D, library initialization, compilation, validation, output destruction",
+                }
                 row.update(status="unsupported" if numerical_exclusion else ("verification_only" if verify_only else "ok"), timing=timing,
                            verification={"max_error_over_tolerance": error, "reference": case["reference"]})
                 if numerical_exclusion:
