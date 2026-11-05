@@ -42,6 +42,40 @@ EOF
     return 1
 }
 
+# Export the persistent NVRTC artifact cache every Rust arm shares.
+#
+# A NVRTC-compiled module costs about 48 s the first time a process compiles it,
+# and the collectors start one process per backend per suite while each case
+# builds its own engine or traced runtime. A persistent directory outside the
+# repository lets a later process read the cubins back instead of compiling them
+# again. It is keyed by the NVRTC version and the device's compute capability, so
+# a toolkit upgrade or another card cannot read a stale entry. An explicit value,
+# including `none`, wins and skips the discovery.
+# Usage: configure_cuda_artifact_cache [physical nvidia-smi index]
+configure_cuda_artifact_cache() {
+    local physical_device="${1:-${GPU_BENCH_PHYSICAL_DEVICE:-0}}"
+    local gpu_arch=unknown capability nvrtc_lib nvrtc_version
+    if [[ -n "${TENFERRO_CUDA_ARTIFACT_CACHE:-}" ]]; then
+        echo "CUDA artifacts: $TENFERRO_CUDA_ARTIFACT_CACHE"
+        return 0
+    fi
+    if command -v nvidia-smi >/dev/null 2>&1; then
+        # A driver that does not know compute_cap must not take the runner down.
+        capability="$(nvidia-smi -i "$physical_device" --query-gpu=compute_cap --format=csv,noheader 2>/dev/null | tr -d '. \n' | head -1 || true)"
+        if [[ -n "$capability" ]]; then gpu_arch="sm_$capability"; fi
+    fi
+    nvrtc_lib="$(ls "${CUDA_HOME:-/usr/local/cuda}"/lib64/libnvrtc.so.* 2>/dev/null | sort -V | tail -1 || true)"
+    nvrtc_version="${nvrtc_lib##*/libnvrtc.so.}"
+    # No cache root to name means the memory-only behaviour, not an abort: HOME is
+    # unset in some batch environments and this runs under `set -u`.
+    local cache_root="${XDG_CACHE_HOME:-${HOME:+$HOME/.cache}}"
+    if [[ -z "$cache_root" ]]; then
+        return 0
+    fi
+    export TENFERRO_CUDA_ARTIFACT_CACHE="$cache_root/tenferro-benchmark/cuda-artifacts/${nvrtc_version:-unknown}/$gpu_arch"
+    echo "CUDA artifacts: $TENFERRO_CUDA_ARTIFACT_CACHE"
+}
+
 # Export one toolkit root for builds, runtimes and metadata, then expose exactly
 # the selected physical GPU as process-local CUDA ordinal zero.
 # Usage: configure_gpu_bench_env [default physical nvidia-smi index]
@@ -71,4 +105,5 @@ configure_gpu_bench_env() {
     export GPU_BENCH_DEVICE_UUID="$uuid"
     export CUDA_VISIBLE_DEVICES="$uuid"
     export GPU_BENCH_DEVICE=0
+    configure_cuda_artifact_cache "$GPU_BENCH_PHYSICAL_DEVICE"
 }
