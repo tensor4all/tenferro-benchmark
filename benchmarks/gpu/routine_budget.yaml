@@ -5,11 +5,19 @@ effort: standard
 script_seconds: 3967.3
 scope: core suites through accounting/reporting; routine controls not selected in the reference run; devcontainer CLI startup and final wall metadata/report formatting excluded
 reference_run: data/results/nvidia-gpu/gpu/routine_selection/20261105_0820
-cache_conditions: 'cache=none: persistent CUDA artifact cache disabled, so every arm compiled cold in-process; mandatory Rust binary rebuilds included'
+cache_conditions: 'cache=none: persistent CUDA artifact cache disabled, so every arm compiled cold in-process; this is what a fresh pod pays on its first suite. With the cache warm the same set, device and rows measured 897.9 s of summed suite clocks (930 s enclosing), so every later invocation costs about a quarter of this reference; see docs/gpu-routine-timing.md'
 policy: descriptive observation only; never a functional failure or a regression conclusion
 # Measured from the first complete run of the single routine set on the
 # maintained device (nvidia-gpu = A100). script_seconds is the sum of the
 # suites' own collection clocks (3967.285 s), not the enclosing command elapsed:
 # that 107-minute interval includes a 29-minute interpreter-availability stall.
 # The earlier 300 s value described the retired RTX 3060 quick selection.
+# script_seconds and the warm figure are different regimes, not two estimates of
+# one: this value is the cold-cache reference (an empty cache, every arm
+# compiling in process), and it is dominated by that compilation. With the
+# merged persistent artifact cache a run reads the cubins back: the same set on
+# the same device measured 897.9 s of summed suite clocks (930 s enclosing, run
+# 20261105_0940, whose raw data stays on the collection host).
+# Keep this field at the cold value — it is the reproducible one on a fresh pod —
+# and read cache_conditions for the warm steady state.
 # Per-suite detail: docs/gpu-routine-timing.md.
