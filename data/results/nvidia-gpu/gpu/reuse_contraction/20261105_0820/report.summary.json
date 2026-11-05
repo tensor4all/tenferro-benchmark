@@ -1,0 +1,2031 @@
+{
+  "schema_version": 1,
+  "target_profile": "nvidia-gpu",
+  "suite_id": "gpu/reuse_contraction",
+  "timestamp": "2026-11-05T08:02:00+00:00",
+  "tenferro_commit": "a000e5c4929d5bebb91e783c329b27106baed12e",
+  "hardware": {
+    "gpu": "NVIDIA A100 80GB PCIe",
+    "cpu": "AMD EPYC 7713P 64-Core Processor",
+    "host": "primerose"
+  },
+  "unit": "ms",
+  "rows": [
+    {
+      "case": "abs_strided_read_f64_n1048576",
+      "group": "abs_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.0508125,
+      "iqr": 0.0006101875000000048,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "abs_strided_read_f64_n1048576",
+      "group": "abs_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.007888,
+      "iqr": 6.999999999999888e-05,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "abs_strided_read_f64_n1048576",
+      "group": "abs_strided_read",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.06191040625,
+      "iqr": 0.00019579687499999415,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "abs_strided_read_f64_n1048576",
+      "group": "abs_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+    },
+    {
+      "case": "add_into_f64_n1048576",
+      "group": "add_into",
+      "backend": "jax-cuda",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+    },
+    {
+      "case": "add_into_f64_n1048576",
+      "group": "add_into",
+      "backend": "pytorch-cuda",
+      "median": 0.01260496875,
+      "iqr": 0.00012576562499999958,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "add_into_f64_n1048576",
+      "group": "add_into",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.021677625,
+      "iqr": 0.0002498437499999992,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "add_into_f64_n1048576",
+      "group": "add_into",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+    },
+    {
+      "case": "add_read_into_f64_n1048576",
+      "group": "add_read_into",
+      "backend": "jax-cuda",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+    },
+    {
+      "case": "add_read_into_f64_n1048576",
+      "group": "add_read_into",
+      "backend": "pytorch-cuda",
+      "median": 0.01259934375,
+      "iqr": 0.00012018749999999877,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "add_read_into_f64_n1048576",
+      "group": "add_read_into",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.021766375,
+      "iqr": 0.00021345312500000227,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "add_read_into_f64_n1048576",
+      "group": "add_read_into",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+    },
+    {
+      "case": "add_strided_read_f64_n1048576",
+      "group": "add_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.06468875,
+      "iqr": 0.0017462968749999974,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "add_strided_read_f64_n1048576",
+      "group": "add_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.0126315625,
+      "iqr": 8.640625000000055e-05,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "add_strided_read_f64_n1048576",
+      "group": "add_strided_read",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.1065841875,
+      "iqr": 0.0010551718749999967,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "add_strided_read_f64_n1048576",
+      "group": "add_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+    },
+    {
+      "case": "axpby_read_into_accum_f64_n1048576",
+      "group": "axpby_read_into_accum",
+      "backend": "jax-cuda",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No verified single-call scaled Ref update for alpha=0.5/beta=1; public Ref.addupdate has no alpha parameter."
+    },
+    {
+      "case": "axpby_read_into_accum_f64_n1048576",
+      "group": "axpby_read_into_accum",
+      "backend": "pytorch-cuda",
+      "median": 0.0163063125,
+      "iqr": 0.0002211249999999991,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "axpby_read_into_accum_f64_n1048576",
+      "group": "axpby_read_into_accum",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.0313600625,
+      "iqr": 0.00013953124999999816,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "axpby_read_into_accum_f64_n1048576",
+      "group": "axpby_read_into_accum",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No matching public caller-owned accumulating output API; donation is not output reuse."
+    },
+    {
+      "case": "conj_into_c64_n1048576",
+      "group": "conj_into",
+      "backend": "jax-cuda",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+    },
+    {
+      "case": "conj_into_c64_n1048576",
+      "group": "conj_into",
+      "backend": "pytorch-cuda",
+      "median": 0.0253211875,
+      "iqr": 0.00033343750000000213,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_into_c64_n1048576",
+      "group": "conj_into",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.0334800625,
+      "iqr": 0.00024593750000000136,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_into_c64_n1048576",
+      "group": "conj_into",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+    },
+    {
+      "case": "conj_read_into_c64_n1048576",
+      "group": "conj_read_into",
+      "backend": "jax-cuda",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+    },
+    {
+      "case": "conj_read_into_c64_n1048576",
+      "group": "conj_read_into",
+      "backend": "pytorch-cuda",
+      "median": 0.02531375,
+      "iqr": 0.0002794062499999993,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_read_into_c64_n1048576",
+      "group": "conj_read_into",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.0335469375,
+      "iqr": 0.00012937499999999408,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_read_into_c64_n1048576",
+      "group": "conj_read_into",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+    },
+    {
+      "case": "conj_strided_read_c64_n1048576",
+      "group": "conj_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.0515918125,
+      "iqr": 0.000895312500000002,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_strided_read_c64_n1048576",
+      "group": "conj_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.0254068125,
+      "iqr": 0.0001815625000000029,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_strided_read_c64_n1048576",
+      "group": "conj_strided_read",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.09141825,
+      "iqr": 0.0006103437500000058,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_strided_read_c64_n1048576",
+      "group": "conj_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+    },
+    {
+      "case": "cos_strided_read_f64_n1048576",
+      "group": "cos_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.0479811875,
+      "iqr": 0.0038165000000000004,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "cos_strided_read_f64_n1048576",
+      "group": "cos_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.01014525,
+      "iqr": 6.281249999999863e-05,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "cos_strided_read_f64_n1048576",
+      "group": "cos_strided_read",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.0657689375,
+      "iqr": 0.0005309531249999971,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "cos_strided_read_f64_n1048576",
+      "group": "cos_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+    },
+    {
+      "case": "div_into_f64_n1048576",
+      "group": "div_into",
+      "backend": "jax-cuda",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+    },
+    {
+      "case": "div_into_f64_n1048576",
+      "group": "div_into",
+      "backend": "pytorch-cuda",
+      "median": 0.0133684375,
+      "iqr": 0.00011953125000000071,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "div_into_f64_n1048576",
+      "group": "div_into",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.021425125,
+      "iqr": 0.0001770312499999975,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "div_into_f64_n1048576",
+      "group": "div_into",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+    },
+    {
+      "case": "div_read_into_f64_n1048576",
+      "group": "div_read_into",
+      "backend": "jax-cuda",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+    },
+    {
+      "case": "div_read_into_f64_n1048576",
+      "group": "div_read_into",
+      "backend": "pytorch-cuda",
+      "median": 0.01330875,
+      "iqr": 0.00017935937500000027,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "div_read_into_f64_n1048576",
+      "group": "div_read_into",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.0213716875,
+      "iqr": 0.00021423437500000392,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "div_read_into_f64_n1048576",
+      "group": "div_read_into",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+    },
+    {
+      "case": "div_strided_read_f64_n1048576",
+      "group": "div_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.05370346875,
+      "iqr": 0.00090284375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "div_strided_read_f64_n1048576",
+      "group": "div_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.0132771875,
+      "iqr": 0.00021093749999999932,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "div_strided_read_f64_n1048576",
+      "group": "div_strided_read",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.10451821875,
+      "iqr": 0.0003114062499999931,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "div_strided_read_f64_n1048576",
+      "group": "div_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+    },
+    {
+      "case": "dot_conj_l0r0_c64_n262144",
+      "group": "dot_general_conj",
+      "backend": "jax-cuda",
+      "median": 0.056201203125,
+      "iqr": 0.0009958906249999955,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "dot_conj_l0r0_c64_n262144",
+      "group": "dot_general_conj",
+      "backend": "pytorch-cuda",
+      "median": 0.012941203125,
+      "iqr": 1.181835937500049e-05,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "dot_conj_l0r0_c64_n262144",
+      "group": "dot_general_conj",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.03613015625,
+      "iqr": 0.0008203281249999986,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "dot_conj_l0r0_c64_n262144",
+      "group": "dot_general_conj",
+      "backend": "tenferro-cuda-eager",
+      "median": 0.036496625,
+      "iqr": 0.00016109375000000065,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "dot_general_batch_f64_s256",
+      "group": "dot_general_axes",
+      "backend": "jax-cuda",
+      "median": 0.08983559375,
+      "iqr": 0.002165374999999997,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "dot_general_batch_f64_s256",
+      "group": "dot_general_axes",
+      "backend": "pytorch-cuda",
+      "median": 0.020913140625,
+      "iqr": 0.00020313671875000355,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "dot_general_batch_f64_s256",
+      "group": "dot_general_axes",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.02636784375,
+      "iqr": 0.00022441796874999795,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "dot_general_batch_f64_s256",
+      "group": "dot_general_axes",
+      "backend": "tenferro-cuda-eager",
+      "median": 0.0288740234375,
+      "iqr": 8.402343750000055e-05,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "dot_general_read_into_accum_cached_f64_s256",
+      "group": "dot_general_read_into_accum_cached",
+      "backend": "jax-cuda",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts."
+    },
+    {
+      "case": "dot_general_read_into_accum_cached_f64_s256",
+      "group": "dot_general_read_into_accum_cached",
+      "backend": "pytorch-cuda",
+      "median": 0.0110459609375,
+      "iqr": 6.840234374999934e-05,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "dot_general_read_into_accum_cached_f64_s256",
+      "group": "dot_general_read_into_accum_cached",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.0202989609375,
+      "iqr": 0.0012467070312500023,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "dot_general_read_into_accum_cached_f64_s256",
+      "group": "dot_general_read_into_accum_cached",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts."
+    },
+    {
+      "case": "dot_general_read_into_accum_f64_s256",
+      "group": "dot_general_read_into_accum",
+      "backend": "jax-cuda",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts."
+    },
+    {
+      "case": "dot_general_read_into_accum_f64_s256",
+      "group": "dot_general_read_into_accum",
+      "backend": "pytorch-cuda",
+      "median": 0.01095345703125,
+      "iqr": 0.00017789648437500048,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "dot_general_read_into_accum_f64_s256",
+      "group": "dot_general_read_into_accum",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.01939596875,
+      "iqr": 0.0003322343750000005,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "dot_general_read_into_accum_f64_s256",
+      "group": "dot_general_read_into_accum",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts."
+    },
+    {
+      "case": "dot_general_read_into_f64_s256",
+      "group": "dot_general_read_into",
+      "backend": "jax-cuda",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts."
+    },
+    {
+      "case": "dot_general_read_into_f64_s256",
+      "group": "dot_general_read_into",
+      "backend": "pytorch-cuda",
+      "median": 0.009785265625,
+      "iqr": 5.3712890624999995e-05,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "dot_general_read_into_f64_s256",
+      "group": "dot_general_read_into",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.0174139765625,
+      "iqr": 0.00025738281250000175,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "dot_general_read_into_f64_s256",
+      "group": "dot_general_read_into",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts."
+    },
+    {
+      "case": "einsum_plan_into_f64_s256",
+      "group": "einsum_plan_into",
+      "backend": "jax-cuda",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+    },
+    {
+      "case": "einsum_plan_into_f64_s256",
+      "group": "einsum_plan_into",
+      "backend": "pytorch-cuda",
+      "median": 0.00880341015625,
+      "iqr": 0.00017369726562499986,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_plan_into_f64_s256",
+      "group": "einsum_plan_into",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.0161703515625,
+      "iqr": 0.00020816796874999904,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_plan_into_f64_s256",
+      "group": "einsum_plan_into",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
+    },
+    {
+      "case": "einsum_plan_owned_f64_s256",
+      "group": "einsum_plan_owned",
+      "backend": "jax-cuda",
+      "median": 0.05443709375,
+      "iqr": 0.000707132812499997,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_plan_owned_f64_s256",
+      "group": "einsum_plan_owned",
+      "backend": "pytorch-cuda",
+      "median": 0.01023055078125,
+      "iqr": 0.00013240625000000145,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_plan_owned_f64_s256",
+      "group": "einsum_plan_owned",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.0234991015625,
+      "iqr": 0.00033758593749999566,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_plan_owned_f64_s256",
+      "group": "einsum_plan_owned",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
+    },
+    {
+      "case": "einsum_plan_read_f64_s256",
+      "group": "einsum_plan_read",
+      "backend": "jax-cuda",
+      "median": 0.05416834375,
+      "iqr": 0.0009984453125000056,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_plan_read_f64_s256",
+      "group": "einsum_plan_read",
+      "backend": "pytorch-cuda",
+      "median": 0.01017031640625,
+      "iqr": 6.476953124999983e-05,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_plan_read_f64_s256",
+      "group": "einsum_plan_read",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.0233001953125,
+      "iqr": 0.00017223437500000008,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_plan_read_f64_s256",
+      "group": "einsum_plan_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
+    },
+    {
+      "case": "einsum_plan_read_into_accum_f64_s256",
+      "group": "einsum_plan_read_into_accum",
+      "backend": "jax-cuda",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+    },
+    {
+      "case": "einsum_plan_read_into_accum_f64_s256",
+      "group": "einsum_plan_read_into_accum",
+      "backend": "pytorch-cuda",
+      "median": 0.0109161171875,
+      "iqr": 5.0140625000002007e-05,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_plan_read_into_accum_f64_s256",
+      "group": "einsum_plan_read_into_accum",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.017909765625,
+      "iqr": 0.00010281250000000047,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_plan_read_into_accum_f64_s256",
+      "group": "einsum_plan_read_into_accum",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
+    },
+    {
+      "case": "einsum_plan_read_into_f64_s256",
+      "group": "einsum_plan_read_into",
+      "backend": "jax-cuda",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+    },
+    {
+      "case": "einsum_plan_read_into_f64_s256",
+      "group": "einsum_plan_read_into",
+      "backend": "pytorch-cuda",
+      "median": 0.0086945390625,
+      "iqr": 0.00022198046875000071,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_plan_read_into_f64_s256",
+      "group": "einsum_plan_read_into",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.0159446484375,
+      "iqr": 0.00039774218749999424,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_plan_read_into_f64_s256",
+      "group": "einsum_plan_read_into",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
+    },
+    {
+      "case": "einsum_plan_strided_read_f64_s256",
+      "group": "einsum_plan_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.054678671875,
+      "iqr": 0.00048564843749999975,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_plan_strided_read_f64_s256",
+      "group": "einsum_plan_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.01031980859375,
+      "iqr": 8.138867187500003e-05,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_plan_strided_read_f64_s256",
+      "group": "einsum_plan_strided_read",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.06813240625,
+      "iqr": 0.0005386093749999987,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_plan_strided_read_f64_s256",
+      "group": "einsum_plan_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
+    },
+    {
+      "case": "einsum_plan_strided_read_into_accum_f64_s256",
+      "group": "einsum_plan_strided_read_into_accum",
+      "backend": "jax-cuda",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+    },
+    {
+      "case": "einsum_plan_strided_read_into_accum_f64_s256",
+      "group": "einsum_plan_strided_read_into_accum",
+      "backend": "pytorch-cuda",
+      "median": 0.01109670703125,
+      "iqr": 4.6287109375001134e-05,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_plan_strided_read_into_accum_f64_s256",
+      "group": "einsum_plan_strided_read_into_accum",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.062063875,
+      "iqr": 0.0004427968749999983,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_plan_strided_read_into_accum_f64_s256",
+      "group": "einsum_plan_strided_read_into_accum",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
+    },
+    {
+      "case": "einsum_plan_strided_read_into_f64_s256",
+      "group": "einsum_plan_strided_read_into",
+      "backend": "jax-cuda",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+    },
+    {
+      "case": "einsum_plan_strided_read_into_f64_s256",
+      "group": "einsum_plan_strided_read_into",
+      "backend": "pytorch-cuda",
+      "median": 0.0088865,
+      "iqr": 8.935742187500192e-05,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_plan_strided_read_into_f64_s256",
+      "group": "einsum_plan_strided_read_into",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.0605406875,
+      "iqr": 0.0008439218750000005,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_plan_strided_read_into_f64_s256",
+      "group": "einsum_plan_strided_read_into",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
+    },
+    {
+      "case": "erf_strided_read_f64_n1048576",
+      "group": "erf_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.06997328125,
+      "iqr": 0.0005698749999999975,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erf_strided_read_f64_n1048576",
+      "group": "erf_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.01434690625,
+      "iqr": 6.218749999999974e-05,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erf_strided_read_f64_n1048576",
+      "group": "erf_strided_read",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.06882025,
+      "iqr": 0.0003102968750000046,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erf_strided_read_f64_n1048576",
+      "group": "erf_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+    },
+    {
+      "case": "exp_strided_read_f64_n1048576",
+      "group": "exp_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.0469755,
+      "iqr": 0.0005287500000000084,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "exp_strided_read_f64_n1048576",
+      "group": "exp_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.0083570625,
+      "iqr": 4.110937500000078e-05,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "exp_strided_read_f64_n1048576",
+      "group": "exp_strided_read",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.0631323125,
+      "iqr": 0.00020046875000000186,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "exp_strided_read_f64_n1048576",
+      "group": "exp_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+    },
+    {
+      "case": "expm1_strided_read_f64_n1048576",
+      "group": "expm1_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.05311909375,
+      "iqr": 0.0004421874999999964,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "expm1_strided_read_f64_n1048576",
+      "group": "expm1_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.00990803125,
+      "iqr": 4.9687499999999385e-05,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "expm1_strided_read_f64_n1048576",
+      "group": "expm1_strided_read",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.06411359375,
+      "iqr": 0.00038564062499998886,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "expm1_strided_read_f64_n1048576",
+      "group": "expm1_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+    },
+    {
+      "case": "log1p_strided_read_f64_n1048576",
+      "group": "log1p_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.05038528125,
+      "iqr": 0.0007079687500000029,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "log1p_strided_read_f64_n1048576",
+      "group": "log1p_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.01306125,
+      "iqr": 4.15624999999982e-05,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "log1p_strided_read_f64_n1048576",
+      "group": "log1p_strided_read",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.06653175,
+      "iqr": 0.0002930000000000016,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "log1p_strided_read_f64_n1048576",
+      "group": "log1p_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+    },
+    {
+      "case": "log_strided_read_f64_n1048576",
+      "group": "log_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.05348159375,
+      "iqr": 0.0009539375000000017,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "log_strided_read_f64_n1048576",
+      "group": "log_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.01261246875,
+      "iqr": 4.3265625000000335e-05,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "log_strided_read_f64_n1048576",
+      "group": "log_strided_read",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.06650303125,
+      "iqr": 0.0002217031250000001,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "log_strided_read_f64_n1048576",
+      "group": "log_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+    },
+    {
+      "case": "maximum_strided_read_f64_n1048576",
+      "group": "maximum_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.0601083125,
+      "iqr": 0.0008960937499999932,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "maximum_strided_read_f64_n1048576",
+      "group": "maximum_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.01216184375,
+      "iqr": 0.00020093749999999973,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "maximum_strided_read_f64_n1048576",
+      "group": "maximum_strided_read",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.11811509375,
+      "iqr": 0.0010623749999999904,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "maximum_strided_read_f64_n1048576",
+      "group": "maximum_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+    },
+    {
+      "case": "minimum_strided_read_f64_n1048576",
+      "group": "minimum_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.05984740625,
+      "iqr": 0.0006822031250000027,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "minimum_strided_read_f64_n1048576",
+      "group": "minimum_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.01212684375,
+      "iqr": 0.00014626562499999926,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "minimum_strided_read_f64_n1048576",
+      "group": "minimum_strided_read",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.11844759375,
+      "iqr": 0.0006345625000000049,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "minimum_strided_read_f64_n1048576",
+      "group": "minimum_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+    },
+    {
+      "case": "mul_into_f64_n1048576",
+      "group": "mul_into",
+      "backend": "jax-cuda",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+    },
+    {
+      "case": "mul_into_f64_n1048576",
+      "group": "mul_into",
+      "backend": "pytorch-cuda",
+      "median": 0.01283184375,
+      "iqr": 0.00010204687499999927,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "mul_into_f64_n1048576",
+      "group": "mul_into",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.021552625,
+      "iqr": 0.0001570468750000005,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "mul_into_f64_n1048576",
+      "group": "mul_into",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+    },
+    {
+      "case": "mul_read_into_f64_n1048576",
+      "group": "mul_read_into",
+      "backend": "jax-cuda",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+    },
+    {
+      "case": "mul_read_into_f64_n1048576",
+      "group": "mul_read_into",
+      "backend": "pytorch-cuda",
+      "median": 0.01279528125,
+      "iqr": 8.860937499999971e-05,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "mul_read_into_f64_n1048576",
+      "group": "mul_read_into",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.0214923125,
+      "iqr": 0.00015187499999999923,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "mul_read_into_f64_n1048576",
+      "group": "mul_read_into",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+    },
+    {
+      "case": "mul_strided_read_f64_n1048576",
+      "group": "mul_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.0597045625,
+      "iqr": 0.0006243750000000034,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "mul_strided_read_f64_n1048576",
+      "group": "mul_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.01278371875,
+      "iqr": 6.0124999999999415e-05,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "mul_strided_read_f64_n1048576",
+      "group": "mul_strided_read",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.1072635625,
+      "iqr": 0.0037234999999999907,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "mul_strided_read_f64_n1048576",
+      "group": "mul_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+    },
+    {
+      "case": "neg_into_f64_n1048576",
+      "group": "neg_into",
+      "backend": "jax-cuda",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+    },
+    {
+      "case": "neg_into_f64_n1048576",
+      "group": "neg_into",
+      "backend": "pytorch-cuda",
+      "median": 0.0078351875,
+      "iqr": 5.5312499999999806e-05,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "neg_into_f64_n1048576",
+      "group": "neg_into",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.0175519375,
+      "iqr": 0.00015046875000000043,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "neg_into_f64_n1048576",
+      "group": "neg_into",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+    },
+    {
+      "case": "neg_read_into_f64_n1048576",
+      "group": "neg_read_into",
+      "backend": "jax-cuda",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+    },
+    {
+      "case": "neg_read_into_f64_n1048576",
+      "group": "neg_read_into",
+      "backend": "pytorch-cuda",
+      "median": 0.007859875,
+      "iqr": 3.0609374999998953e-05,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "neg_read_into_f64_n1048576",
+      "group": "neg_read_into",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.017616,
+      "iqr": 0.00012064062500000139,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "neg_read_into_f64_n1048576",
+      "group": "neg_read_into",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+    },
+    {
+      "case": "neg_strided_read_f64_n1048576",
+      "group": "neg_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.05838890625,
+      "iqr": 0.0009070625000000068,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "neg_strided_read_f64_n1048576",
+      "group": "neg_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.0079155,
+      "iqr": 8.189062499999906e-05,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "neg_strided_read_f64_n1048576",
+      "group": "neg_strided_read",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.06388859375,
+      "iqr": 0.0038683906249999955,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "neg_strided_read_f64_n1048576",
+      "group": "neg_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+    },
+    {
+      "case": "norm_squared_read_f64_n262144",
+      "group": "norm_squared_read",
+      "backend": "jax-cuda",
+      "median": 0.06139678125,
+      "iqr": 0.0030846093749999914,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "norm_squared_read_f64_n262144",
+      "group": "norm_squared_read",
+      "backend": "pytorch-cuda",
+      "median": 0.0095338515625,
+      "iqr": 1.2406250000001132e-05,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "norm_squared_read_f64_n262144",
+      "group": "norm_squared_read",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.04886059375,
+      "iqr": 0.0005778281249999989,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "norm_squared_read_f64_n262144",
+      "group": "norm_squared_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No matching immediate EagerSession reduction method; the direct BackendSession API is measured separately."
+    },
+    {
+      "case": "pow_strided_read_f64_n1048576",
+      "group": "pow_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.063154625,
+      "iqr": 0.0008344062500000027,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "pow_strided_read_f64_n1048576",
+      "group": "pow_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.029079125,
+      "iqr": 3.249999999999781e-05,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "pow_strided_read_f64_n1048576",
+      "group": "pow_strided_read",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.131876625,
+      "iqr": 0.0009150312499999758,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "pow_strided_read_f64_n1048576",
+      "group": "pow_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+    },
+    {
+      "case": "reduce_max_strided_read_f64_n1048576",
+      "group": "reduce_max_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.051644703125,
+      "iqr": 0.0015658124999999995,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_max_strided_read_f64_n1048576",
+      "group": "reduce_max_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.013390203125,
+      "iqr": 1.0355468750000707e-05,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_max_strided_read_f64_n1048576",
+      "group": "reduce_max_strided_read",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.0997325,
+      "iqr": 0.0009408281249999872,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_max_strided_read_f64_n1048576",
+      "group": "reduce_max_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+    },
+    {
+      "case": "reduce_min_strided_read_f64_n1048576",
+      "group": "reduce_min_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.04705490625,
+      "iqr": 0.0007764374999999976,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_min_strided_read_f64_n1048576",
+      "group": "reduce_min_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.01343121875,
+      "iqr": 1.0312499999999905e-05,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_min_strided_read_f64_n1048576",
+      "group": "reduce_min_strided_read",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.1002071875,
+      "iqr": 0.0004468749999999855,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_min_strided_read_f64_n1048576",
+      "group": "reduce_min_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+    },
+    {
+      "case": "reduce_prod_strided_read_f64_n1048576",
+      "group": "reduce_prod_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.05210159375,
+      "iqr": 0.0007563437499999992,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_prod_strided_read_f64_n1048576",
+      "group": "reduce_prod_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.01332394921875,
+      "iqr": 1.513867187499969e-05,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_prod_strided_read_f64_n1048576",
+      "group": "reduce_prod_strided_read",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.09852559375,
+      "iqr": 0.0007342187499999875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_prod_strided_read_f64_n1048576",
+      "group": "reduce_prod_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+    },
+    {
+      "case": "reduce_sum_squares_strided_read_f64_n1048576",
+      "group": "reduce_sum_squares_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.84552825,
+      "iqr": 0.0058451250000000066,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_sum_squares_strided_read_f64_n1048576",
+      "group": "reduce_sum_squares_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.0216368359375,
+      "iqr": 2.6484374999996563e-05,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_sum_squares_strided_read_f64_n1048576",
+      "group": "reduce_sum_squares_strided_read",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.09889965625,
+      "iqr": 0.0004446874999999989,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_sum_squares_strided_read_f64_n1048576",
+      "group": "reduce_sum_squares_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+    },
+    {
+      "case": "reduce_sum_strided_read_f64_n1048576",
+      "group": "reduce_sum_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.05311409375,
+      "iqr": 0.014752546874999994,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_sum_strided_read_f64_n1048576",
+      "group": "reduce_sum_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.0133075,
+      "iqr": 1.4548828124998775e-05,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_sum_strided_read_f64_n1048576",
+      "group": "reduce_sum_strided_read",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.1007053125,
+      "iqr": 0.0010692343750000055,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_sum_strided_read_f64_n1048576",
+      "group": "reduce_sum_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+    },
+    {
+      "case": "rem_strided_read_f64_n1048576",
+      "group": "rem_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.05279628125,
+      "iqr": 0.0007261093750000058,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rem_strided_read_f64_n1048576",
+      "group": "rem_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.01230559375,
+      "iqr": 0.00015592187499999938,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rem_strided_read_f64_n1048576",
+      "group": "rem_strided_read",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.1287934375,
+      "iqr": 0.002367218750000011,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rem_strided_read_f64_n1048576",
+      "group": "rem_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+    },
+    {
+      "case": "rsqrt_strided_read_f64_n1048576",
+      "group": "rsqrt_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.07324615625,
+      "iqr": 0.0010673750000000093,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rsqrt_strided_read_f64_n1048576",
+      "group": "rsqrt_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.007882375,
+      "iqr": 4.656249999999973e-05,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rsqrt_strided_read_f64_n1048576",
+      "group": "rsqrt_strided_read",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.06269321875,
+      "iqr": 0.0003753281249999907,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rsqrt_strided_read_f64_n1048576",
+      "group": "rsqrt_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+    },
+    {
+      "case": "sign_strided_read_f64_n1048576",
+      "group": "sign_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.0525940625,
+      "iqr": 0.0005451718750000001,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "sign_strided_read_f64_n1048576",
+      "group": "sign_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.007802375,
+      "iqr": 5.720312500000126e-05,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "sign_strided_read_f64_n1048576",
+      "group": "sign_strided_read",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.062203875,
+      "iqr": 0.00015826562499999391,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "sign_strided_read_f64_n1048576",
+      "group": "sign_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+    },
+    {
+      "case": "sin_strided_read_f64_n1048576",
+      "group": "sin_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.0514078125,
+      "iqr": 0.0002948906250000022,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "sin_strided_read_f64_n1048576",
+      "group": "sin_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.01007525,
+      "iqr": 3.717187500000205e-05,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "sin_strided_read_f64_n1048576",
+      "group": "sin_strided_read",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.0654055,
+      "iqr": 0.0002859531250000019,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "sin_strided_read_f64_n1048576",
+      "group": "sin_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+    },
+    {
+      "case": "sqrt_strided_read_f64_n1048576",
+      "group": "sqrt_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.04741553125,
+      "iqr": 0.000501890625000001,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "sqrt_strided_read_f64_n1048576",
+      "group": "sqrt_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.0078758125,
+      "iqr": 5.7968750000001595e-05,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "sqrt_strided_read_f64_n1048576",
+      "group": "sqrt_strided_read",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.06263075,
+      "iqr": 0.00025795312500001555,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "sqrt_strided_read_f64_n1048576",
+      "group": "sqrt_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+    },
+    {
+      "case": "sub_into_f64_n1048576",
+      "group": "sub_into",
+      "backend": "jax-cuda",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+    },
+    {
+      "case": "sub_into_f64_n1048576",
+      "group": "sub_into",
+      "backend": "pytorch-cuda",
+      "median": 0.01264496875,
+      "iqr": 0.0001401562499999988,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "sub_into_f64_n1048576",
+      "group": "sub_into",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.0215835625,
+      "iqr": 0.00018312499999999926,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "sub_into_f64_n1048576",
+      "group": "sub_into",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+    },
+    {
+      "case": "sub_read_into_f64_n1048576",
+      "group": "sub_read_into",
+      "backend": "jax-cuda",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+    },
+    {
+      "case": "sub_read_into_f64_n1048576",
+      "group": "sub_read_into",
+      "backend": "pytorch-cuda",
+      "median": 0.012673125,
+      "iqr": 6.20468750000009e-05,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "sub_read_into_f64_n1048576",
+      "group": "sub_read_into",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.0216848125,
+      "iqr": 0.0001378281249999995,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "sub_read_into_f64_n1048576",
+      "group": "sub_read_into",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+    },
+    {
+      "case": "sub_strided_read_f64_n1048576",
+      "group": "sub_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.06289590625,
+      "iqr": 0.001056124999999998,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "sub_strided_read_f64_n1048576",
+      "group": "sub_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.012786875,
+      "iqr": 0.0001551562499999999,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "sub_strided_read_f64_n1048576",
+      "group": "sub_strided_read",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.10526165625,
+      "iqr": 0.000383578124999992,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "sub_strided_read_f64_n1048576",
+      "group": "sub_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+    },
+    {
+      "case": "tanh_strided_read_f64_n1048576",
+      "group": "tanh_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.05117434375,
+      "iqr": 0.0007153437500000068,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tanh_strided_read_f64_n1048576",
+      "group": "tanh_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.0081951875,
+      "iqr": 5.703125000000066e-05,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tanh_strided_read_f64_n1048576",
+      "group": "tanh_strided_read",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.06497265625,
+      "iqr": 0.0035266406249999938,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tanh_strided_read_f64_n1048576",
+      "group": "tanh_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+    },
+    {
+      "case": "tensordot_f64_n262144",
+      "group": "tensordot",
+      "backend": "jax-cuda",
+      "median": 0.19417775,
+      "iqr": 0.020496750000000008,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tensordot_f64_n262144",
+      "group": "tensordot",
+      "backend": "pytorch-cuda",
+      "median": 0.0251907421875,
+      "iqr": 0.0003047773437499998,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tensordot_f64_n262144",
+      "group": "tensordot",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.041787734375,
+      "iqr": 0.0003647812500000014,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tensordot_f64_n262144",
+      "group": "tensordot",
+      "backend": "tenferro-cuda-eager",
+      "median": 0.045511203125,
+      "iqr": 0.0002185234374999928,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "vdot_read_f64_n262144",
+      "group": "vdot_read",
+      "backend": "jax-cuda",
+      "median": 0.070117625,
+      "iqr": 0.010156812500000001,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "vdot_read_f64_n262144",
+      "group": "vdot_read",
+      "backend": "pytorch-cuda",
+      "median": 0.0098067109375,
+      "iqr": 1.5214843749999929e-05,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "vdot_read_f64_n262144",
+      "group": "vdot_read",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.08798440625,
+      "iqr": 0.0007162656250000177,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "vdot_read_f64_n262144",
+      "group": "vdot_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No matching immediate EagerSession reduction method; the direct BackendSession API is measured separately."
+    }
+  ]
+}

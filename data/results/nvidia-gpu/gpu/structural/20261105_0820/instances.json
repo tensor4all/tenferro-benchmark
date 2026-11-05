@@ -1,0 +1,250 @@
+{
+  "schema_version": 1,
+  "suite_id": "gpu/structural",
+  "backends": [
+    "tenferro-cuda-direct",
+    "tenferro-cuda-eager",
+    "pytorch-cuda",
+    "jax-cuda"
+  ],
+  "cases": [
+    {
+      "id": "pad_default_f64_n1048576",
+      "op": "pad",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "slice_default_f64_n1048576",
+      "op": "slice",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {
+        "tenferro-cuda-eager": "EagerSession::slice returns a lazy metadata view; it is not equivalent to the materializing direct slice / torch.slice_copy / JAX slice contract. No copy is added inside its timer."
+      }
+    },
+    {
+      "id": "reverse_default_f64_n1048576",
+      "op": "reverse",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "concatenate_default_f64_n1048576",
+      "op": "concatenate",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "extract_diag_default_f64_n1048576",
+      "op": "extract_diag",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "embed_diag_default_f64_n1024",
+      "op": "embed_diag",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "tril_default_f64_n1048576",
+      "op": "tril",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "triu_default_f64_n1048576",
+      "op": "triu",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "take_along_axis_broadcast_indices_f64_n1048576",
+      "op": "take_along_axis",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "variant": "broadcast_indices",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "scatter_default_f64_n1048576",
+      "op": "scatter",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {},
+      "notes": "Additive scatter into a copy of the operand, matching torch.scatter_add and jax.lax.scatter_add; unique in-bounds indices."
+    },
+    {
+      "id": "cast_default_f64_n1048576",
+      "op": "cast",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "broadcast_in_dim_f64_n1048576",
+      "op": "broadcast_in_dim",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024,
+        1
+      ],
+      "output_shape": [
+        1024,
+        1024
+      ],
+      "broadcast_dims": [
+        0,
+        1
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "Eager broadcast returns a lazy broadcast view, not the materialized full output required by this case."
+      }
+    },
+    {
+      "id": "dynamic_slice_in_bounds_f64_n1048576",
+      "op": "dynamic_slice",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "slice_sizes": [
+        512,
+        512
+      ],
+      "starts": [
+        256,
+        341
+      ],
+      "variant": "in_bounds",
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No matched single materializing multidimensional slice API with CUDA-resident start indices and clamping; index construction/composed slicing is not substituted."
+      }
+    },
+    {
+      "id": "gather_axis0_f64_n1048576",
+      "op": "gather",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "gather_axis": 0,
+      "issue": 155
+    },
+    {
+      "id": "reshape_copy_f64_n1048576",
+      "op": "reshape",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "output_shape": [
+        1,
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {
+        "jax-cuda": "No established single-call JAX reshape API that guarantees owned output materialization; native reshape may alias input. Reshape plus copy is a different composed contract.",
+        "jax-cuda-jit": "No established single-call JAX reshape API that guarantees owned output materialization; native reshape may alias input. Reshape plus copy is a different composed contract."
+      },
+      "materialization": "Full owned output copy with leading singleton dimension; metadata-only reshape excluded."
+    },
+    {
+      "id": "stack_axis0_f64_n1048576",
+      "op": "stack",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "axis": 0,
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    }
+  ],
+  "description": "Isolated public APIs and explicit unsupported timing contracts. Issue 155."
+}

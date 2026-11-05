@@ -1,0 +1,159 @@
+{
+  "schema_version": 1,
+  "target_profile": "nvidia-gpu",
+  "suite_id": "gpu/fft",
+  "timestamp": "2026-11-05T08:02:00+00:00",
+  "tenferro_commit": "a000e5c4929d5bebb91e783c329b27106baed12e",
+  "hardware": {
+    "gpu": "NVIDIA A100 80GB PCIe",
+    "cpu": "AMD EPYC 7713P 64-Core Processor",
+    "host": "primerose"
+  },
+  "unit": "ms",
+  "rows": [
+    {
+      "case": "fft_c64_n1048576",
+      "group": "fft",
+      "backend": "jax-cuda",
+      "median": 0.81496525,
+      "iqr": 0.026927374999999976,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "fft_c64_n1048576",
+      "group": "fft",
+      "backend": "pytorch-cuda",
+      "median": 0.100251875,
+      "iqr": 0.000267812499999992,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "fft_c64_n1048576",
+      "group": "fft",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.1325649375,
+      "iqr": 0.0003512499999999974,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "fft_c64_n1048576",
+      "group": "fft",
+      "backend": "tenferro-cuda-eager",
+      "median": 0.183658125,
+      "iqr": 0.0005440937500000298,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "ifft_c64_n1048576",
+      "group": "ifft",
+      "backend": "jax-cuda",
+      "median": 0.79975975,
+      "iqr": 0.00700024999999993,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "ifft_c64_n1048576",
+      "group": "ifft",
+      "backend": "pytorch-cuda",
+      "median": 0.1113654375,
+      "iqr": 0.00017971875000000193,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "ifft_c64_n1048576",
+      "group": "ifft",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.172337125,
+      "iqr": 0.000626562499999983,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "ifft_c64_n1048576",
+      "group": "ifft",
+      "backend": "tenferro-cuda-eager",
+      "median": 0.224609,
+      "iqr": 0.0012010000000000354,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "irfft_c64_n1048576",
+      "group": "irfft",
+      "backend": "jax-cuda",
+      "median": 0.812653,
+      "iqr": 0.004856500000000041,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "irfft_c64_n1048576",
+      "group": "irfft",
+      "backend": "pytorch-cuda",
+      "median": 0.07108890625,
+      "iqr": 9.98437499999949e-05,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "irfft_c64_n1048576",
+      "group": "irfft",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.11411115625,
+      "iqr": 0.0005297031250000028,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "irfft_c64_n1048576",
+      "group": "irfft",
+      "backend": "tenferro-cuda-eager",
+      "median": 0.153666375,
+      "iqr": 0.0003684374999999851,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rfft_f64_n1048576",
+      "group": "rfft",
+      "backend": "jax-cuda",
+      "median": 0.7952745,
+      "iqr": 0.01961962499999992,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rfft_f64_n1048576",
+      "group": "rfft",
+      "backend": "pytorch-cuda",
+      "median": 0.05010251612903226,
+      "iqr": 6.596774193549232e-05,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rfft_f64_n1048576",
+      "group": "rfft",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.0797752258064516,
+      "iqr": 0.00025001612903227666,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rfft_f64_n1048576",
+      "group": "rfft",
+      "backend": "tenferro-cuda-eager",
+      "median": 0.11569625806451614,
+      "iqr": 0.00029469354838711215,
+      "status": "ok",
+      "verified": true
+    }
+  ]
+}

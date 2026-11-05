@@ -1,0 +1,411 @@
+{
+  "schema_version": 1,
+  "target_profile": "nvidia-gpu",
+  "suite_id": "gpu/permutation",
+  "timestamp": "2026-11-05T08:02:00+00:00",
+  "tenferro_commit": "a000e5c4929d5bebb91e783c329b27106baed12e",
+  "hardware": {
+    "gpu": "NVIDIA A100 80GB PCIe",
+    "cpu": "AMD EPYC 7713P 64-Core Processor",
+    "host": "primerose"
+  },
+  "unit": "ms",
+  "rows": [
+    {
+      "case": "cyclic_18d_3",
+      "group": "permutation",
+      "backend": "cutensor",
+      "median": 4.778049,
+      "iqr": 0.21902800000000067,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "cyclic_18d_3",
+      "group": "permutation",
+      "backend": "pytorch-cuda",
+      "median": 7.356977090239525,
+      "iqr": 0.005931127816438675,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "cyclic_18d_3",
+      "group": "permutation",
+      "backend": "tenferro-cuda-destination-reuse",
+      "median": 38.548399999999994,
+      "iqr": 0.0014789999999962333,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "cyclic_18d_3",
+      "group": "permutation",
+      "backend": "tenferro-cuda-to-contiguous",
+      "median": 22.1722,
+      "iqr": 0.005590000000001538,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "cyclic_18d_3",
+      "group": "permutation",
+      "backend": "tenferro-cuda-transpose",
+      "median": 22.181841000000002,
+      "iqr": 0.008710999999998137,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "memcpy_24d_64x2",
+      "group": "permutation",
+      "backend": "memcpy-d2d",
+      "median": 5.1347099943086505,
+      "iqr": 0.0036510173231363297,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reverse_18d_3",
+      "group": "permutation",
+      "backend": "cutensor",
+      "median": 5.027628999999999,
+      "iqr": 0.013260000000000716,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reverse_18d_3",
+      "group": "permutation",
+      "backend": "pytorch-cuda",
+      "median": 33.194844028912485,
+      "iqr": 0.012350967153906822,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reverse_18d_3",
+      "group": "permutation",
+      "backend": "tenferro-cuda-destination-reuse",
+      "median": 61.120169000000004,
+      "iqr": 0.15008600000000172,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reverse_18d_3",
+      "group": "permutation",
+      "backend": "tenferro-cuda-to-contiguous",
+      "median": 30.155628,
+      "iqr": 0.01753100000000174,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reverse_18d_3",
+      "group": "permutation",
+      "backend": "tenferro-cuda-transpose",
+      "median": 30.180149,
+      "iqr": 0.012581999999998317,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reverse_23d_128x2",
+      "group": "permutation",
+      "backend": "cutensor",
+      "median": 5.646824,
+      "iqr": 0.007189999999999586,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reverse_23d_128x2",
+      "group": "permutation",
+      "backend": "pytorch-cuda",
+      "median": 45.75127607677132,
+      "iqr": 0.005929963663220406,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reverse_23d_128x2",
+      "group": "permutation",
+      "backend": "tenferro-cuda-destination-reuse",
+      "median": 84.838898,
+      "iqr": 0.14077599999998824,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reverse_23d_128x2",
+      "group": "permutation",
+      "backend": "tenferro-cuda-to-contiguous",
+      "median": 41.94112,
+      "iqr": 0.020570999999996786,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reverse_23d_128x2",
+      "group": "permutation",
+      "backend": "tenferro-cuda-transpose",
+      "median": 41.960362,
+      "iqr": 0.010170999999992603,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rotation_6d_64_32_32_32_16_16",
+      "group": "permutation",
+      "backend": "cutensor",
+      "median": 5.401425,
+      "iqr": 0.009330999999999534,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rotation_6d_64_32_32_32_16_16",
+      "group": "permutation",
+      "backend": "pytorch-cuda",
+      "median": 5.937362089753151,
+      "iqr": 0.016131089068949223,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rotation_6d_64_32_32_32_16_16",
+      "group": "permutation",
+      "backend": "tenferro-cuda-destination-reuse",
+      "median": 64.68551000000001,
+      "iqr": 0.5553639999999973,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rotation_6d_64_32_32_32_16_16",
+      "group": "permutation",
+      "backend": "tenferro-cuda-to-contiguous",
+      "median": 9.533190000000001,
+      "iqr": 0.09473500000000179,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rotation_6d_64_32_32_32_16_16",
+      "group": "permutation",
+      "backend": "tenferro-cuda-transpose",
+      "median": 9.446527,
+      "iqr": 0.08089299999999966,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tn_light_415_24d_contiguous_same_perm_gpu",
+      "group": "permutation",
+      "backend": "cutensor",
+      "median": 5.205506000000001,
+      "iqr": 0.00835000000000008,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tn_light_415_24d_contiguous_same_perm_gpu",
+      "group": "permutation",
+      "backend": "pytorch-cuda",
+      "median": 5.259035038761795,
+      "iqr": 0.003411085344851017,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tn_light_415_24d_contiguous_same_perm_gpu",
+      "group": "permutation",
+      "backend": "tenferro-cuda-destination-reuse",
+      "median": 70.021141,
+      "iqr": 0.006068999999996549,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tn_light_415_24d_contiguous_same_perm_gpu",
+      "group": "permutation",
+      "backend": "tenferro-cuda-to-contiguous",
+      "median": 38.886469,
+      "iqr": 0.003771000000000413,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tn_light_415_24d_contiguous_same_perm_gpu",
+      "group": "permutation",
+      "backend": "tenferro-cuda-transpose",
+      "median": 38.90561,
+      "iqr": 0.013580000000004588,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tn_light_415_24d_scattered_to_colmajor_gpu",
+      "group": "permutation",
+      "backend": "cutensor",
+      "median": 5.475017,
+      "iqr": 0.008760999999999797,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tn_light_415_24d_scattered_to_colmajor_gpu",
+      "group": "permutation",
+      "backend": "pytorch-cuda",
+      "median": 5.398089997470379,
+      "iqr": 0.006200047209858894,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tn_light_415_24d_scattered_to_colmajor_gpu",
+      "group": "permutation",
+      "backend": "tenferro-cuda-to-contiguous",
+      "median": 38.878041,
+      "iqr": 0.011760000000002435,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_2d_32768_16384",
+      "group": "permutation",
+      "backend": "cutensor",
+      "median": 5.397965999999999,
+      "iqr": 0.004410000000000025,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_2d_32768_16384",
+      "group": "permutation",
+      "backend": "pytorch-cuda",
+      "median": 20.758752012625337,
+      "iqr": 0.004128902219235897,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_2d_32768_16384",
+      "group": "permutation",
+      "backend": "tenferro-cuda-destination-reuse",
+      "median": 25.584166,
+      "iqr": 0.030121000000001175,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_2d_32768_16384",
+      "group": "permutation",
+      "backend": "tenferro-cuda-to-contiguous",
+      "median": 23.006433,
+      "iqr": 0.007770000000000721,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_2d_32768_16384",
+      "group": "permutation",
+      "backend": "tenferro-cuda-transpose",
+      "median": 23.033965,
+      "iqr": 0.008220000000001448,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_3d_1024_1024_512_102",
+      "group": "permutation",
+      "backend": "cutensor",
+      "median": 5.310762,
+      "iqr": 0.006329999999999281,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_3d_1024_1024_512_102",
+      "group": "permutation",
+      "backend": "pytorch-cuda",
+      "median": 7.435641018673778,
+      "iqr": 0.00654999166727066,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_3d_1024_1024_512_102",
+      "group": "permutation",
+      "backend": "tenferro-cuda-destination-reuse",
+      "median": 17.767569,
+      "iqr": 0.01782100000000142,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_3d_1024_1024_512_102",
+      "group": "permutation",
+      "backend": "tenferro-cuda-to-contiguous",
+      "median": 10.073652000000001,
+      "iqr": 0.21136899999999947,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_3d_1024_1024_512_102",
+      "group": "permutation",
+      "backend": "tenferro-cuda-transpose",
+      "median": 10.109064,
+      "iqr": 0.013949999999999463,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_3d_1024_1024_512_201",
+      "group": "permutation",
+      "backend": "cutensor",
+      "median": 5.337133,
+      "iqr": 0.007990000000000386,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_3d_1024_1024_512_201",
+      "group": "permutation",
+      "backend": "pytorch-cuda",
+      "median": 27.395101031288505,
+      "iqr": 0.003850087523460388,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_3d_1024_1024_512_201",
+      "group": "permutation",
+      "backend": "tenferro-cuda-destination-reuse",
+      "median": 84.986912,
+      "iqr": 0.22878900000000613,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_3d_1024_1024_512_201",
+      "group": "permutation",
+      "backend": "tenferro-cuda-to-contiguous",
+      "median": 29.748531000000003,
+      "iqr": 0.007220000000000226,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_3d_1024_1024_512_201",
+      "group": "permutation",
+      "backend": "tenferro-cuda-transpose",
+      "median": 29.771632999999998,
+      "iqr": 0.007131000000001109,
+      "status": "ok",
+      "verified": true
+    }
+  ]
+}

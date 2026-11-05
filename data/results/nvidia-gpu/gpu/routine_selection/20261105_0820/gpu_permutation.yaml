@@ -1,0 +1,38 @@
+schema_version: 1
+suite_id: gpu/permutation
+title: GPU Permutation / Materialize Benchmarks
+description: Materialize-kernel benchmark comparing tenferro-rs CUDA transpose/materialize paths against
+  cuTENSOR, PyTorch CUDA, and a device-to-device memcpy baseline on identical permutation semantics. Ports
+  docs/permutation-suite.md (cpu/permutation) to CUDA; see docs/gpu-permutation-suite.md.
+defaults:
+  device:
+    kind: cuda
+    ordinal: 0
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: naive
+    rtol: 0
+    atol: 0
+backends:
+- tenferro-cuda-transpose
+- tenferro-cuda-to-contiguous
+- tenferro-cuda-destination-reuse
+- cutensor
+- pytorch-cuda
+- memcpy-d2d
+problems:
+  source: /home/shinaoka/work/wallclock/data/results/nvidia-gpu/gpu/routine_selection/20261105_0820/gpu_permutation_instances.json
+  include:
+  - memcpy_24d_64x2
+  - transpose_2d_32768_16384
+  - transpose_3d_1024_1024_512_201
+  - transpose_3d_1024_1024_512_102
+  - rotation_6d_64_32_32_32_16_16
+  - reverse_23d_128x2
+  - reverse_18d_3
+  - cyclic_18d_3
+  - tn_light_415_24d_scattered_to_colmajor_gpu
+  - tn_light_415_24d_contiguous_same_perm_gpu

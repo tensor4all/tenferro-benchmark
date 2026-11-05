@@ -1,0 +1,81 @@
+schema_version: 1
+suite_id: gpu/reuse_contraction
+title: CUDA public reuse_contraction APIs
+description: Isolated public APIs and explicit unsupported timing contracts. Issue 155.
+defaults:
+  device:
+    kind: cuda
+    ordinal: 0
+  run:
+    warmups: 3
+    runs: 15
+    min_runtime_ms: 2
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: numpy/scipy double precision
+    rtol: 0.0005
+    atol: 0.0005
+backends:
+- tenferro-cuda-direct
+- tenferro-cuda-eager
+- pytorch-cuda
+- jax-cuda
+problems:
+  source: /home/shinaoka/work/wallclock/data/results/nvidia-gpu/gpu/routine_selection/20261105_0820/gpu_reuse_contraction_instances.json
+  include:
+  - add_into_f64_n1048576
+  - add_read_into_f64_n1048576
+  - sub_into_f64_n1048576
+  - sub_read_into_f64_n1048576
+  - mul_into_f64_n1048576
+  - mul_read_into_f64_n1048576
+  - div_into_f64_n1048576
+  - div_read_into_f64_n1048576
+  - neg_into_f64_n1048576
+  - neg_read_into_f64_n1048576
+  - conj_into_c64_n1048576
+  - conj_read_into_c64_n1048576
+  - tensordot_f64_n262144
+  - vdot_read_f64_n262144
+  - norm_squared_read_f64_n262144
+  - axpby_read_into_accum_f64_n1048576
+  - dot_general_read_into_f64_s256
+  - dot_general_read_into_accum_f64_s256
+  - dot_general_read_into_accum_cached_f64_s256
+  - add_strided_read_f64_n1048576
+  - mul_strided_read_f64_n1048576
+  - neg_strided_read_f64_n1048576
+  - exp_strided_read_f64_n1048576
+  - tanh_strided_read_f64_n1048576
+  - reduce_sum_strided_read_f64_n1048576
+  - conj_strided_read_c64_n1048576
+  - dot_general_batch_f64_s256
+  - dot_conj_l0r0_c64_n262144
+  - einsum_plan_owned_f64_s256
+  - einsum_plan_read_f64_s256
+  - einsum_plan_strided_read_f64_s256
+  - einsum_plan_into_f64_s256
+  - einsum_plan_read_into_f64_s256
+  - einsum_plan_read_into_accum_f64_s256
+  - einsum_plan_strided_read_into_f64_s256
+  - einsum_plan_strided_read_into_accum_f64_s256
+  - sub_strided_read_f64_n1048576
+  - div_strided_read_f64_n1048576
+  - rem_strided_read_f64_n1048576
+  - pow_strided_read_f64_n1048576
+  - maximum_strided_read_f64_n1048576
+  - minimum_strided_read_f64_n1048576
+  - abs_strided_read_f64_n1048576
+  - sign_strided_read_f64_n1048576
+  - expm1_strided_read_f64_n1048576
+  - log_strided_read_f64_n1048576
+  - log1p_strided_read_f64_n1048576
+  - erf_strided_read_f64_n1048576
+  - sin_strided_read_f64_n1048576
+  - cos_strided_read_f64_n1048576
+  - sqrt_strided_read_f64_n1048576
+  - rsqrt_strided_read_f64_n1048576
+  - reduce_prod_strided_read_f64_n1048576
+  - reduce_max_strided_read_f64_n1048576
+  - reduce_min_strided_read_f64_n1048576
+  - reduce_sum_squares_strided_read_f64_n1048576

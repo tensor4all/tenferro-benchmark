@@ -1,12 +1,15 @@
 schema_version: 1
 target_profile: nvidia-gpu
-device_name: NVIDIA GeForce RTX 3060
+device_name: NVIDIA A100 80GB PCIe
 effort: standard
-script_seconds: 300
-scope: core and routine controls through accounting/reporting; devcontainer CLI startup and final wall metadata/report formatting excluded
-reference_run: data/results/nvidia-gpu/gpu/routine_selection/20261013_234113
-cache_conditions: existing CUDA devcontainer and dependency cache; mandatory Rust binary rebuilds included
+script_seconds: 3967.3
+scope: core suites through accounting/reporting; routine controls not selected in the reference run; devcontainer CLI startup and final wall metadata/report formatting excluded
+reference_run: data/results/nvidia-gpu/gpu/routine_selection/20261105_0820
+cache_conditions: cache=none: persistent CUDA artifact cache disabled, so every arm compiled cold in-process; mandatory Rust binary rebuilds included
 policy: descriptive observation only; never a functional failure or a regression conclusion
-# Re-characterize this budget from the first complete run of the single routine
-# set on the maintained device (nvidia-gpu = A100); the RTX 3060 value below is
-# the historical reference of the earlier quick selection.
+# Measured from the first complete run of the single routine set on the
+# maintained device (nvidia-gpu = A100). script_seconds is the sum of the
+# suites' own collection clocks (3967.285 s), not the enclosing command elapsed:
+# that 107-minute interval includes a 29-minute interpreter-availability stall.
+# The earlier 300 s value described the retired RTX 3060 quick selection.
+# Per-suite detail: docs/gpu-routine-timing.md.

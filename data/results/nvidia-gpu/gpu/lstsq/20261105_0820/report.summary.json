@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "target_profile": "nvidia-gpu",
+  "suite_id": "gpu/lstsq",
+  "timestamp": "2026-11-05T08:02:00+00:00",
+  "tenferro_commit": "a000e5c4929d5bebb91e783c329b27106baed12e",
+  "hardware": {
+    "gpu": "NVIDIA A100 80GB PCIe",
+    "cpu": "AMD EPYC 7713P 64-Core Processor",
+    "host": "primerose"
+  },
+  "unit": "ms",
+  "rows": [
+    {
+      "case": "lstsq_tall_f64_s256_rhs8",
+      "group": "lstsq",
+      "backend": "jax-cuda",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No verified single public solution-only least-squares API with the same requested outputs; native candidate APIs also return residual/rank/singular-value outputs."
+    },
+    {
+      "case": "lstsq_tall_f64_s256_rhs8",
+      "group": "lstsq",
+      "backend": "pytorch-cuda",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No verified single public solution-only least-squares API with the same requested outputs; native candidate APIs also return residual/rank/singular-value outputs."
+    },
+    {
+      "case": "lstsq_tall_f64_s256_rhs8",
+      "group": "lstsq",
+      "backend": "tenferro-cuda-direct",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "Current TensorLinalgExt has no direct lstsq operation; only the public eager composite is available."
+    },
+    {
+      "case": "lstsq_tall_f64_s256_rhs8",
+      "group": "lstsq",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": true,
+      "reason": "Public EagerSession lstsq invokes QR whose CUDA Q application uploads scalar operands internally; no public interface can hoist this input preparation out of standard operation timing."
+    }
+  ]
+}

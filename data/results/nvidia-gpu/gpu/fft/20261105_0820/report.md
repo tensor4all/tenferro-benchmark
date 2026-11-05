@@ -1,0 +1,391 @@
+# gpu/fft: CUDA public API benchmark
+
+Measured cells: **16**. Unsupported cells: **0**, including **0** numerically verified but timing-excluded cells. Unsupported cells do not count as measured coverage.
+
+Logical traffic: this run measured a plain device copy of 67108864 bytes at **1406.0 GB/s** on this device. Every record carries the logical bytes the case must move per operation and the ratio of the case's implied rate to that copy rate, in the sampling table below. Logical bytes are the declared array sizes, not device DRAM traffic: a case whose operands stay in cache moves less DRAM than its arrays suggest, so a ratio above 1 is recorded, not rejected.
+
+Raw run: `data/results/nvidia-gpu/gpu/fft/20261105_0820/`.
+
+FftExecutor and borrowed eager sessions, PyTorch, JAX eager and JAX JIT. Issue 155.
+
+Values are median (IQR) **µs per operation**. Samples time batches of declared operations plus device synchronization; retained output memory is limited to 256 MiB. Batch counts and raw durations are preserved in JSONL.
+
+Setup, input transfers, library/plan initialization, JIT compilation, validation downloads and output destruction are outside timing. Intrinsic output allocation is inside timing; output-reuse rows instead use preallocated destinations across samples. Accumulating destinations are restored from prepared GPU seeds and synchronized before every batch clock, including initialization and calibration. Direct and eager each use one entered session across samples; direct FFT uses cached `FftExecutor`. JAX eager and compiled JIT are separate arms.
+
+All measured output elements are checked against independently generated NumPy/SciPy reference results before and after sampling. Unsupported rows include unavailable APIs and APIs whose internal setup cannot be excluded; these are not performance measurements. Short batches limited by output memory remain identifiable in the sampling table.
+
+| Case | tenferro-cuda-direct | tenferro-cuda-eager | pytorch-cuda | jax-cuda |
+| --- | ---: | ---: | ---: | ---: |
+| fft_c64_n1048576 | 132.565 (0.351) | 183.658 (0.544) | 100.252 (0.268) | 814.965 (26.927) |
+| ifft_c64_n1048576 | 172.337 (0.627) | 224.609 (1.201) | 111.365 (0.180) | 799.760 (7.000) |
+| rfft_f64_n1048576 | 79.775 (0.250) | 115.696 (0.295) | 50.103 (0.066) | 795.274 (19.620) |
+| irfft_c64_n1048576 | 114.111 (0.530) | 153.666 (0.368) | 71.089 (0.100) | 812.653 (4.856) |
+
+## Sampling
+
+| Case | Backend | Ops/sample | Samples | Median batch ms | Bytes/op | Copy ratio | Verification error/tolerance |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| fft_c64_n1048576 | jax-cuda | 4 | 15 | 3.260 | 33554432 | 0.029 | 0.01641 |
+| fft_c64_n1048576 | pytorch-cuda | 16 | 15 | 1.604 | 33554432 | 0.238 | 0.01641 |
+| fft_c64_n1048576 | tenferro-cuda-direct | 16 | 15 | 2.121 | 33554432 | 0.180 | 0.01641 |
+| fft_c64_n1048576 | tenferro-cuda-eager | 16 | 15 | 2.939 | 33554432 | 0.130 | 0.01641 |
+| ifft_c64_n1048576 | jax-cuda | 4 | 15 | 3.199 | 33554432 | 0.030 | 4.754e-08 |
+| ifft_c64_n1048576 | pytorch-cuda | 16 | 15 | 1.782 | 33554432 | 0.214 | 4.754e-08 |
+| ifft_c64_n1048576 | tenferro-cuda-direct | 16 | 15 | 2.757 | 33554432 | 0.138 | 4.754e-08 |
+| ifft_c64_n1048576 | tenferro-cuda-eager | 16 | 15 | 3.594 | 33554432 | 0.106 | 4.754e-08 |
+| irfft_c64_n1048576 | jax-cuda | 4 | 15 | 3.251 | 16777232 | 0.015 | 6.867e-08 |
+| irfft_c64_n1048576 | pytorch-cuda | 32 | 15 | 2.275 | 16777232 | 0.168 | 6.867e-08 |
+| irfft_c64_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.652 | 16777232 | 0.105 | 6.867e-08 |
+| irfft_c64_n1048576 | tenferro-cuda-eager | 16 | 15 | 2.459 | 16777232 | 0.078 | 6.867e-08 |
+| rfft_f64_n1048576 | jax-cuda | 4 | 15 | 3.181 | 16777232 | 0.015 | 0.01077 |
+| rfft_f64_n1048576 | pytorch-cuda | 31 | 15 | 1.553 | 16777232 | 0.238 | 0.01077 |
+| rfft_f64_n1048576 | tenferro-cuda-direct | 31 | 15 | 2.473 | 16777232 | 0.150 | 0.01077 |
+| rfft_f64_n1048576 | tenferro-cuda-eager | 31 | 15 | 3.587 | 16777232 | 0.103 | 0.01077 |
+
+## Run metadata
+
+```yaml
+schema_version: 1
+target_profile: nvidia-gpu
+suite_id: gpu/fft
+suite_file: /home/shinaoka/work/wallclock/data/results/nvidia-gpu/gpu/routine_selection/20261105_0820/gpu_fft.yaml
+timestamp: '2026-11-05T08:02:00+00:00'
+tenferro_rs:
+  path: /home/shinaoka/work/wallclock/extern/tenferro-rs
+  commit: a000e5c4929d5bebb91e783c329b27106baed12e
+  dirty: false
+  features:
+  - cuda
+  resolved_path: /home/shinaoka/work/wallclock/extern/tenferro-rs
+harness:
+  path: /home/shinaoka/work/wallclock
+  commit: 18ae0c54c3f6cc4493988efe87a65148334a5c77
+  dirty: false
+resolved_deps:
+  strided-perm:
+  - 0.8.0
+  - 0.10.0
+  strided-view:
+  - 0.7.0
+  threadteam:
+  - 0.1.0
+  - 0.3.0
+host:
+  cpu: AMD EPYC 7713P 64-Core Processor
+  logical_cpus: 64
+  power:
+    cpufreq_boost: '1'
+    governor: schedutil
+    scaling_max_freq_khz: '2000000'
+    smt:
+      active: '0'
+      control: notsupported
+  numa:
+    nodes: 1
+    cpulists:
+      '0': 0-63
+  smt_siblings:
+  - '0'
+  - '1'
+  - '2'
+  - '3'
+  - '4'
+  - '5'
+  - '6'
+  - '7'
+  - '8'
+  - '9'
+  - '10'
+  - '11'
+  - '12'
+  - '13'
+  - '14'
+  - '15'
+  - '16'
+  - '17'
+  - '18'
+  - '19'
+  - '20'
+  - '21'
+  - '22'
+  - '23'
+  - '24'
+  - '25'
+  - '26'
+  - '27'
+  - '28'
+  - '29'
+  - '30'
+  - '31'
+  - '32'
+  - '33'
+  - '34'
+  - '35'
+  - '36'
+  - '37'
+  - '38'
+  - '39'
+  - '40'
+  - '41'
+  - '42'
+  - '43'
+  - '44'
+  - '45'
+  - '46'
+  - '47'
+  - '48'
+  - '49'
+  - '50'
+  - '51'
+  - '52'
+  - '53'
+  - '54'
+  - '55'
+  - '56'
+  - '57'
+  - '58'
+  - '59'
+  - '60'
+  - '61'
+  - '62'
+  - '63'
+  l3_domains:
+  - 0-7
+  - 8-15
+  - 16-23
+  - 24-31
+  - 32-39
+  - 40-47
+  - 48-55
+  - 56-63
+build:
+  toolchain:
+    rustc: 'rustc 1.99.1 (58cf8f9c3 2026-10-13)
+
+      binary: rustc
+
+      commit-hash: 58cf8f9c35b355199727627d07ae34a4e2846d67
+
+      commit-date: 2026-10-13
+
+      host: x86_64-unknown-linux-gnu
+
+      release: 1.99.1
+
+      LLVM version: 23.1.1
+
+      '
+    rustc_release: 1.99.1
+    rustflags: null
+    target_cpu: null
+environment:
+  container: none
+  hostname: primerose
+  os: Linux-6.8.0-147-generic-x86_64-with-glibc2.39
+  arch: x86_64
+  cpu: x86_64
+  affinity:
+    pinning: none
+    requested_measured_cpus: null
+    observer_cpus: null
+    override_of: null
+    thread_budget: '1'
+    measured_cpus: 0-63
+    l3_domains:
+    - 0-7
+    - 8-15
+    - 16-23
+    - 24-31
+    - 32-39
+    - 40-47
+    - 48-55
+    - 56-63
+    cpu_boost: enabled
+    scaling_governor: schedutil
+    scaling_driver: acpi-cpufreq
+  env:
+    OMP_NUM_THREADS: '1'
+    RAYON_NUM_THREADS: '1'
+    BENCHMARK_TARGET_PROFILE: nvidia-gpu
+    OPENBLAS_NUM_THREADS: '1'
+    MATMUL_NUM_THREADS: '1'
+    CUDA_HOME: /usr/local/cuda-12.6
+    CUDA_PATH: /usr/local/cuda-12.6
+    TENFERRO_CUTENSOR_PATH: /usr/lib/x86_64-linux-gnu/libcutensor/12/libcutensor.so.2
+    UV_PROJECT_ENVIRONMENT: /home/shinaoka/tensor4all/tenferro-benchmark-gpuq/.venv
+    BENCH_RUNS: '15'
+    BENCH_WARMUPS: '3'
+timing_policy:
+  version: 2
+  scope: operation execution and completion synchronization
+  setup: fixtures, H2D, runtime/session/handles, plans and compilation outside every
+    timer
+  cleanup: returned outputs retained until after timer stops
+  minimum_untimed_priming_runs: 1
+  short_operation_sampling: adaptive batches target 2 ms, at most 4096 operations
+    and 256 MiB retained output; output-reuse destinations prepared before timing
+  trace_execution: 'tenferro trace excluded: this suite compares immediate per-op
+    calls, while trace executes a prepared graph in one caller-held session (run_prepared_in);
+    JAX JIT compilation outside timing'
+  setup_diagnostics: false
+blas:
+  implementation: none
+python_backends:
+  pytorch:
+    available: true
+    version: 2.12.0+cu130
+    file: /home/shinaoka/tensor4all/tenferro-benchmark-gpuq/.venv/lib/python3.14/site-packages/torch/__init__.py
+    provider: mkl
+    blas_info: mkl
+    lapack_info: mkl
+    config: "PyTorch built with:\n  - GCC 13.3\n  - C++ Version: 202002\n  - Intel(R)\
+      \ oneAPI Math Kernel Library Version 2024.2-Product Build 20240605 for Intel(R)\
+      \ 64 architecture applications\n  - Intel(R) MKL-DNN v3.11.2 (Git Hash 03c022d3ffdcee958cfacbe720048e725fdf644c)\n\
+      \  - OpenMP 201511 (a.k.a. OpenMP 4.5)\n  - LAPACK is enabled (usually provided\
+      \ by MKL)\n  - NNPACK is enabled\n  - CPU capability usage: AVX2\n  - CUDA Runtime\
+      \ 13.0\n  - NVCC architecture flags: -gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_86,code=sm_86;-gencode;arch=compute_90,code=sm_90;-gencode;arch=compute_100,code=sm_100;-gencode;arch=compute_120,code=sm_120\n\
+      \  - CuDNN 92.7  (built against CUDA 12.9)\n    - Built with CuDNN 92.0\n  -\
+      \ Magma 2.6.1\n  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, COMMIT_SHA=7661cd9c6b841b62b7f411aa52ec51f05457263b,\
+      \ CUDA_FLAGS= -DLIBCUDACXX_ENABLE_SIMPLIFIED_COMPLEX_OPERATIONS -Xfatbin -compress-all\
+      \ -DONNX_NAMESPACE=onnx_torch -gencode arch=compute_75,code=sm_75 -gencode arch=compute_80,code=sm_80\
+      \ -gencode arch=compute_86,code=sm_86 -gencode arch=compute_90,code=sm_90 -gencode\
+      \ arch=compute_100,code=sm_100 -gencode arch=compute_120,code=sm_120 -Xcudafe\
+      \ --diag_suppress=cc_clobber_ignored,--diag_suppress=field_without_dll_interface,--diag_suppress=base_class_has_different_dll_interface,--diag_suppress=dll_interface_conflict_none_assumed,--diag_suppress=dll_interface_conflict_dllexport_assumed,--diag_suppress=bad_friend_decl\
+      \ --expt-relaxed-constexpr --expt-extended-lambda -Xfatbin -compress-all --threads\
+      \ 2 -compress-mode=size -Wno-deprecated-gpu-targets --expt-extended-lambda -DCUB_WRAPPED_NAMESPACE=at_cuda_detail\
+      \ -DDISABLE_CUSPARSE_DEPRECATED -DCUDA_HAS_FP16=1 -D__CUDA_NO_HALF_OPERATORS__\
+      \ -D__CUDA_NO_HALF_CONVERSIONS__ -D__CUDA_NO_HALF2_OPERATORS__ -D__CUDA_NO_BFLOAT16_CONVERSIONS__\
+      \ -DC10_NODEPRECATED, CUDA_VERSION=13.0, CUDNN_VERSION=9.20.0, CXX_COMPILER=/opt/rh/gcc-toolset-13/root/usr/bin/c++,\
+      \ CXX_FLAGS= -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -DNDEBUG -DUSE_KINETO\
+      \ -DLIBKINETO_NOROCTRACER -DLIBKINETO_NOXPUPTI=ON -DUSE_FBGEMM -DUSE_MSLK -DUSE_PYTORCH_QNNPACK\
+      \ -DUSE_XNNPACK -DSYMBOLICATE_MOBILE_DEBUG_HANDLE -O2 -fPIC -DC10_NODEPRECATED\
+      \ -Wall -Wextra -Werror=return-type -Werror=non-virtual-dtor -Werror=range-loop-construct\
+      \ -Werror=bool-operation -Wnarrowing -Wno-missing-field-initializers -Wno-unknown-pragmas\
+      \ -Wno-unused-parameter -Wno-strict-overflow -Wno-strict-aliasing -Wno-stringop-overflow\
+      \ -Wsuggest-override -Wno-psabi -Wno-error=old-style-cast -faligned-new -Wno-maybe-uninitialized\
+      \ -fno-math-errno -fno-trapping-math -Werror=format -Wno-dangling-reference\
+      \ -Wno-error=dangling-reference -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1,\
+      \ PERF_WITH_AVX2=1, TORCH_VERSION=2.12.0, USE_CUDA=ON, USE_CUDNN=ON, USE_CUSPARSELT=1,\
+      \ USE_GFLAGS=OFF, USE_GLOG=OFF, USE_GLOO=ON, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=OFF,\
+      \ USE_NCCL=1, USE_NNPACK=ON, USE_OPENMP=ON, USE_ROCM=OFF, USE_ROCM_KERNEL_ASSERT=OFF,\
+      \ USE_XCCL=OFF, USE_XPU=OFF, \n"
+    library: /home/shinaoka/tensor4all/tenferro-benchmark-gpuq/.venv/lib/python3.14/site-packages/torch/lib/libtorch_cpu.so
+    linked_libraries:
+    - /home/shinaoka/tensor4all/tenferro-benchmark-gpuq/.venv/lib/python3.14/site-packages/torch/lib/libgomp.so.1
+  jax:
+    available: true
+    version: 0.10.1
+    jaxlib_version: 0.10.1
+    backend: gpu
+    file: /home/shinaoka/tensor4all/tenferro-benchmark-gpuq/.venv/lib/python3.14/site-packages/jaxlib/__init__.py
+    provider: xla_gpu
+    dot_backend: xla_gpu
+    lapack_provider: none_detected
+    library: /home/shinaoka/tensor4all/tenferro-benchmark-gpuq/.venv/lib/python3.14/site-packages/jaxlib/_ifrt_proxy.so
+    linked_libraries: []
+julia:
+  available: false
+  reason: julia not found on PATH
+cuda:
+  device_ordinal: 0
+  device_name: NVIDIA A100 80GB PCIe
+  device_uuid: GPU-530977e1-4968-9283-4129-9fbec3e66542
+  device_memory_bytes: 85899345920
+  driver_version: 580.178.04
+  runtime_version: '12.6'
+  cuda_version: '13.0'
+  toolkit_version: '12.6'
+  toolkit_root: /usr/local/cuda-12.6
+  cutensor_version: 2.8.0
+  cusolver_version: 11.7.1
+  cudnn_version: '92700'
+  artifact_cache:
+    path: null
+    regime: 'off'
+gpu_memory_calibration:
+  kind: device_copy
+  method: torch.Tensor.copy_ between two contiguous device buffers, one copy per sample,
+    device synchronized before and after the clock
+  device_ordinal: 0
+  device_name: NVIDIA A100 80GB PCIe
+  buffer_bytes: 67108864
+  traffic_bytes_per_copy: 134217728
+  traffic_model: one read plus one write of buffer_bytes per copy
+  warmups: 3
+  sample_ms:
+  - 0.093614
+  - 0.094654
+  - 0.097653
+  - 0.093963
+  - 0.092624
+  - 0.097303
+  - 0.094564
+  - 0.092364
+  - 0.095753
+  - 0.096734
+  - 0.094394
+  - 0.095463
+  - 0.096874
+  - 0.096154
+  - 0.095763
+  median_ms: 0.095463
+  bytes_per_second: 1405965955396.3315
+  torch_version: 2.12.0+cu130
+  cuda_version: '13.0'
+  timestamp: '2026-11-05T07:51:01.610883+00:00'
+gpu_assignment:
+  role: benchmark
+  physical_device_index: 0
+  device_uuid: GPU-530977e1-4968-9283-4129-9fbec3e66542
+  cuda_visible_devices: GPU-530977e1-4968-9283-4129-9fbec3e66542
+  process_device_ordinal: 0
+  verification_only: false
+collection:
+  command: BENCHMARK_TARGET_PROFILE=nvidia-gpu GPU_BENCH_DEVICE=0 BENCH_RUNS=15 BENCH_WARMUPS=3
+    ./scripts/run_gpu_public_api.sh fft
+  devcontainer_config: .devcontainer/cuda/devcontainer.json
+  expected_cases: 4
+  selected_cases: 4
+  sha256:
+    .devcontainer/cuda/devcontainer.json: 0bf1465bbd1a4c9f896d5320838f2d5a488632a59af7f9b59cc050e95e0b8e09
+    .devcontainer/cuda/Dockerfile: 578d9815e5145aa1651ac7e93833468c345ee8bf5e95bfa7717551580ae9feca
+    src/bin/benchmark_gpu_public_api.rs: 4e8f3c519e9210dbc8725dac34da23e543bf462d10c4a202c61e80b59ed108dd
+    src/bin/benchmark_gpu_public_api/lifetime.rs: 34be366f56aac88f5f3b86ade8018a15dad2bca85cea74f56cb2fe121917d0a9
+    src/bin/benchmark_gpu_public_api/linalg.rs: 9c3d7916a3281d2dfd1caa68551dc9c81c79dab6b7525324339e5c4816581e6d
+    src/bin/benchmark_gpu_public_api/multi.rs: 949eadd6272c17ba4e380a228547a03608d328a5ef852eb95294731c288f24d9
+    src/bin/benchmark_gpu_public_api/plan.rs: 70fce8a6e9ed7518779a51a9d8692e010fa1e470e95eee0ce5276f595737fde8
+    src/bin/benchmark_gpu_public_api/read_layout.rs: fc42e2160094ba5f9c7dd6facb5667a76e10b73f971ef9facfb1f64723e42467
+    src/bin/benchmark_gpu_public_api/reuse.rs: a5a4aa0edb0a1158f6669b642f4bc25a7079314fc2a711ef3ef57cc19c0a35b2
+    src/bin/benchmark_gpu_public_api/runtime_ops.rs: c9d61b1e99bda517a59a6e34f625fd4d651bbbb19f6dc06ba4d0d1c0d50dfd6a
+    src/bin/benchmark_gpu_public_api/state.rs: a8bbf8985bbc58c435e3c4dda7135161a141a90a10fa50d4f95128397ce949cb
+    src/bin/benchmark_gpu_public_api/structural.rs: 8b61ac01b58edc090eafbc124ec135d5efeb4979631a939656ba78dd6e5c042a
+    /home/shinaoka/work/wallclock/scripts/benchmark_gpu_public_api.py: 1919e33cc5f2d0208901837f80cb7c0600426462f998be6dd933062d9f6bb345
+    /home/shinaoka/work/wallclock/scripts/gpu_public_api_ops.py: e88823db3f4a1fe43dc13c4743c9d78ece6af76a968724091af318dd8d7f2528
+    scripts/run_gpu_public_api.sh: 31587e7a83440d99417be00110c4dd12c5cc1143e620bf24b1c03fe5f76bfb5e
+    data/results/nvidia-gpu/gpu/fft/20261105_0820/fixtures/manifest.json: 291fe47a7068f6aa42602cf730357edc2d116c31ccf9b3998cb32b6737d90541
+    target/release/benchmark_gpu_public_api: efd5ab70e2c4de27c458d808d308b8bf3415012551220c291451a2591d08880f
+  reference_numpy_version: 2.4.2
+```
+
+## Untimed work over the recorded budget
+
+Each row records the wall clock it spent outside its timed region. These cases spent more than the recorded budget ratio (0.2) there. The threshold has no measured basis, so this is a recorded warning: it does not change a cell, its acceptance or the exit status of the run.
+
+| Case | Backend | Warning |
+| --- | --- | --- |
+| fft_c64_n1048576 | tenferro-cuda-direct | fft_c64_n1048576 untimed 296.7 ms is 932% of the 31.8 ms timed region (budget 20%) |
+| ifft_c64_n1048576 | tenferro-cuda-direct | ifft_c64_n1048576 untimed 1209.2 ms is 2925% of the 41.3 ms timed region (budget 20%) |
+| rfft_f64_n1048576 | tenferro-cuda-direct | rfft_f64_n1048576 untimed 72.7 ms is 196% of the 37.1 ms timed region (budget 20%) |
+| irfft_c64_n1048576 | tenferro-cuda-direct | irfft_c64_n1048576 untimed 94.6 ms is 173% of the 54.8 ms timed region (budget 20%) |
+| fft_c64_n1048576 | tenferro-cuda-eager | fft_c64_n1048576 untimed 47220.8 ms is 106670% of the 44.3 ms timed region (budget 20%) |
+| ifft_c64_n1048576 | tenferro-cuda-eager | ifft_c64_n1048576 untimed 1080.2 ms is 2000% of the 54.0 ms timed region (budget 20%) |
+| rfft_f64_n1048576 | tenferro-cuda-eager | rfft_f64_n1048576 untimed 68.2 ms is 127% of the 53.8 ms timed region (budget 20%) |
+| irfft_c64_n1048576 | tenferro-cuda-eager | irfft_c64_n1048576 untimed 62.7 ms is 170% of the 36.9 ms timed region (budget 20%) |
+| fft_c64_n1048576 | pytorch-cuda | fft_c64_n1048576 untimed 1289.4 ms is 5360% of the 24.1 ms timed region (budget 20%) |
+| ifft_c64_n1048576 | pytorch-cuda | ifft_c64_n1048576 untimed 1270.4 ms is 4754% of the 26.7 ms timed region (budget 20%) |
+| rfft_f64_n1048576 | pytorch-cuda | rfft_f64_n1048576 untimed 608.5 ms is 2611% of the 23.3 ms timed region (budget 20%) |
+| irfft_c64_n1048576 | pytorch-cuda | irfft_c64_n1048576 untimed 1206.1 ms is 3534% of the 34.1 ms timed region (budget 20%) |
+| fft_c64_n1048576 | jax-cuda | fft_c64_n1048576 untimed 1578.8 ms is 3173% of the 49.8 ms timed region (budget 20%) |
+| ifft_c64_n1048576 | jax-cuda | ifft_c64_n1048576 untimed 1246.6 ms is 2594% of the 48.1 ms timed region (budget 20%) |
+| rfft_f64_n1048576 | jax-cuda | rfft_f64_n1048576 untimed 701.5 ms is 1452% of the 48.3 ms timed region (budget 20%) |
+| irfft_c64_n1048576 | jax-cuda | irfft_c64_n1048576 untimed 1262.8 ms is 2577% of the 49.0 ms timed region (budget 20%) |

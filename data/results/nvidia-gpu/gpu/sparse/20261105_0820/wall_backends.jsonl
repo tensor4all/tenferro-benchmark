@@ -1,0 +1,1 @@
+{"backend": "pytorch-cuda", "build_seconds": 0.0, "process_seconds": 72.144356707, "scope": "backend process wall time includes startup, preparation, validation and samples; build separated"}
