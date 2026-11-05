@@ -1,0 +1,4570 @@
+[
+  {
+    "id": "cholesky_f32_32x32",
+    "op": "cholesky",
+    "dtype": "f32",
+    "n": 1024,
+    "shape": [
+      32,
+      32
+    ],
+    "issue": 155,
+    "excluded": {},
+    "unavailable": {},
+    "inputs": [
+      {
+        "file": "cholesky_f32_32x32_in0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "cholesky_f32_32x32_out0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 8192,
+      "reads_bytes": 4096,
+      "writes_bytes": 4096,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "cholesky_f64_32x32",
+    "op": "cholesky",
+    "dtype": "f64",
+    "n": 1024,
+    "shape": [
+      32,
+      32
+    ],
+    "issue": 155,
+    "excluded": {},
+    "unavailable": {},
+    "inputs": [
+      {
+        "file": "cholesky_f64_32x32_in0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "cholesky_f64_32x32_out0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 16384,
+      "reads_bytes": 8192,
+      "writes_bytes": 8192,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "svdvals_f32_32x32",
+    "op": "svdvals",
+    "dtype": "f32",
+    "n": 1024,
+    "shape": [
+      32,
+      32
+    ],
+    "issue": 155,
+    "excluded": {},
+    "unavailable": {
+      "tenferro-cuda-eager": "EagerSessionLinalgExt has no values-only svdvals entry point; returning and discarding singular vectors is not equivalent."
+    },
+    "inputs": [
+      {
+        "file": "svdvals_f32_32x32_in0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "svdvals_f32_32x32_out0.bin",
+        "shape": [
+          32
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 4224,
+      "reads_bytes": 4096,
+      "writes_bytes": 128,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "svdvals_f64_32x32",
+    "op": "svdvals",
+    "dtype": "f64",
+    "n": 1024,
+    "shape": [
+      32,
+      32
+    ],
+    "issue": 155,
+    "excluded": {},
+    "unavailable": {
+      "tenferro-cuda-eager": "EagerSessionLinalgExt has no values-only svdvals entry point; returning and discarding singular vectors is not equivalent."
+    },
+    "inputs": [
+      {
+        "file": "svdvals_f64_32x32_in0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "svdvals_f64_32x32_out0.bin",
+        "shape": [
+          32
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 8448,
+      "reads_bytes": 8192,
+      "writes_bytes": 256,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "eigvalsh_f32_32x32",
+    "op": "eigvalsh",
+    "dtype": "f32",
+    "n": 1024,
+    "shape": [
+      32,
+      32
+    ],
+    "issue": 155,
+    "excluded": {},
+    "unavailable": {},
+    "inputs": [
+      {
+        "file": "eigvalsh_f32_32x32_in0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "eigvalsh_f32_32x32_out0.bin",
+        "shape": [
+          32
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 4224,
+      "reads_bytes": 4096,
+      "writes_bytes": 128,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "eigvalsh_f64_32x32",
+    "op": "eigvalsh",
+    "dtype": "f64",
+    "n": 1024,
+    "shape": [
+      32,
+      32
+    ],
+    "issue": 155,
+    "excluded": {},
+    "unavailable": {},
+    "inputs": [
+      {
+        "file": "eigvalsh_f64_32x32_in0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "eigvalsh_f64_32x32_out0.bin",
+        "shape": [
+          32
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 8448,
+      "reads_bytes": 8192,
+      "writes_bytes": 256,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "pinv_f32_32x32",
+    "op": "pinv",
+    "dtype": "f32",
+    "n": 1024,
+    "shape": [
+      32,
+      32
+    ],
+    "issue": 155,
+    "excluded": {
+      "tenferro-cuda-eager": "Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer."
+    },
+    "unavailable": {
+      "tenferro-cuda-direct": "CUDA concrete route fails at revision 8b13220c: pinv_from_svd passes a host threshold scalar to mul_read. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906."
+    },
+    "inputs": [
+      {
+        "file": "pinv_f32_32x32_in0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f32"
+      },
+      {
+        "file": "pinv_f32_32x32_in1.bin",
+        "shape": [],
+        "dtype": "f32"
+      },
+      {
+        "file": "pinv_f32_32x32_in2.bin",
+        "shape": [],
+        "dtype": "f32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "pinv_f32_32x32_out0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 8200,
+      "reads_bytes": 4104,
+      "writes_bytes": 4096,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "pinv_f64_32x32",
+    "op": "pinv",
+    "dtype": "f64",
+    "n": 1024,
+    "shape": [
+      32,
+      32
+    ],
+    "issue": 155,
+    "excluded": {
+      "tenferro-cuda-eager": "Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer."
+    },
+    "unavailable": {
+      "tenferro-cuda-direct": "CUDA concrete route fails at revision 8b13220c: pinv_from_svd passes a host threshold scalar to mul_read. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906."
+    },
+    "inputs": [
+      {
+        "file": "pinv_f64_32x32_in0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f64"
+      },
+      {
+        "file": "pinv_f64_32x32_in1.bin",
+        "shape": [],
+        "dtype": "f64"
+      },
+      {
+        "file": "pinv_f64_32x32_in2.bin",
+        "shape": [],
+        "dtype": "f64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "pinv_f64_32x32_out0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 16400,
+      "reads_bytes": 8208,
+      "writes_bytes": 8192,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "inv_f32_32x32",
+    "op": "inv",
+    "dtype": "f32",
+    "n": 1024,
+    "shape": [
+      32,
+      32
+    ],
+    "issue": 155,
+    "excluded": {
+      "tenferro-cuda-eager": "Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer."
+    },
+    "unavailable": {
+      "tenferro-cuda-direct": "CUDA concrete route fails at revision 8b13220c: inv_owned/eye_like passes a host scalar to broadcast_in_dim. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906."
+    },
+    "inputs": [
+      {
+        "file": "inv_f32_32x32_in0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "inv_f32_32x32_out0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 8192,
+      "reads_bytes": 4096,
+      "writes_bytes": 4096,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "inv_f64_32x32",
+    "op": "inv",
+    "dtype": "f64",
+    "n": 1024,
+    "shape": [
+      32,
+      32
+    ],
+    "issue": 155,
+    "excluded": {
+      "tenferro-cuda-eager": "Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer."
+    },
+    "unavailable": {
+      "tenferro-cuda-direct": "CUDA concrete route fails at revision 8b13220c: inv_owned/eye_like passes a host scalar to broadcast_in_dim. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906."
+    },
+    "inputs": [
+      {
+        "file": "inv_f64_32x32_in0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "inv_f64_32x32_out0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 16384,
+      "reads_bytes": 8192,
+      "writes_bytes": 8192,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "det_f32_32x32",
+    "op": "det",
+    "dtype": "f32",
+    "n": 1024,
+    "shape": [
+      32,
+      32
+    ],
+    "issue": 155,
+    "excluded": {},
+    "unavailable": {},
+    "inputs": [
+      {
+        "file": "det_f32_32x32_in0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "det_f32_32x32_out0.bin",
+        "shape": [],
+        "dtype": "f32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 4100,
+      "reads_bytes": 4096,
+      "writes_bytes": 4,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "det_f64_32x32",
+    "op": "det",
+    "dtype": "f64",
+    "n": 1024,
+    "shape": [
+      32,
+      32
+    ],
+    "issue": 155,
+    "excluded": {},
+    "unavailable": {},
+    "inputs": [
+      {
+        "file": "det_f64_32x32_in0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "det_f64_32x32_out0.bin",
+        "shape": [],
+        "dtype": "f64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 8200,
+      "reads_bytes": 8192,
+      "writes_bytes": 8,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "norm_f32_32x32",
+    "op": "norm",
+    "dtype": "f32",
+    "n": 1024,
+    "shape": [
+      32,
+      32
+    ],
+    "issue": 155,
+    "excluded": {},
+    "unavailable": {},
+    "inputs": [
+      {
+        "file": "norm_f32_32x32_in0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "norm_f32_32x32_out0.bin",
+        "shape": [],
+        "dtype": "f32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 4100,
+      "reads_bytes": 4096,
+      "writes_bytes": 4,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "norm_f64_32x32",
+    "op": "norm",
+    "dtype": "f64",
+    "n": 1024,
+    "shape": [
+      32,
+      32
+    ],
+    "issue": 155,
+    "excluded": {},
+    "unavailable": {},
+    "inputs": [
+      {
+        "file": "norm_f64_32x32_in0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "norm_f64_32x32_out0.bin",
+        "shape": [],
+        "dtype": "f64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 8200,
+      "reads_bytes": 8192,
+      "writes_bytes": 8,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "triangular_solve_f32_32x32",
+    "op": "triangular_solve",
+    "dtype": "f32",
+    "n": 1024,
+    "shape": [
+      32,
+      32
+    ],
+    "issue": 155,
+    "excluded": {},
+    "unavailable": {},
+    "inputs": [
+      {
+        "file": "triangular_solve_f32_32x32_in0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f32"
+      },
+      {
+        "file": "triangular_solve_f32_32x32_in1.bin",
+        "shape": [
+          32,
+          8
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "triangular_solve_f32_32x32_out0.bin",
+        "shape": [
+          32,
+          8
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 6144,
+      "reads_bytes": 5120,
+      "writes_bytes": 1024,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "triangular_solve_f64_32x32",
+    "op": "triangular_solve",
+    "dtype": "f64",
+    "n": 1024,
+    "shape": [
+      32,
+      32
+    ],
+    "issue": 155,
+    "excluded": {},
+    "unavailable": {},
+    "inputs": [
+      {
+        "file": "triangular_solve_f64_32x32_in0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f64"
+      },
+      {
+        "file": "triangular_solve_f64_32x32_in1.bin",
+        "shape": [
+          32,
+          8
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "triangular_solve_f64_32x32_out0.bin",
+        "shape": [
+          32,
+          8
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 12288,
+      "reads_bytes": 10240,
+      "writes_bytes": 2048,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "svd_full_square_f32_32x32",
+    "op": "svd_full",
+    "dtype": "f32",
+    "n": 1024,
+    "shape": [
+      32,
+      32
+    ],
+    "variant": "square",
+    "issue": 155,
+    "inputs": [
+      {
+        "file": "svd_full_square_f32_32x32_in0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "svd_full_square_f32_32x32_out0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f32"
+      },
+      {
+        "file": "svd_full_square_f32_32x32_out1.bin",
+        "shape": [
+          32
+        ],
+        "dtype": "f32"
+      },
+      {
+        "file": "svd_full_square_f32_32x32_out2.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 12416,
+      "reads_bytes": 4096,
+      "writes_bytes": 8320,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "svd_full_tall_f32_64x32",
+    "op": "svd_full",
+    "dtype": "f32",
+    "n": 2048,
+    "shape": [
+      64,
+      32
+    ],
+    "variant": "tall",
+    "issue": 155,
+    "inputs": [
+      {
+        "file": "svd_full_tall_f32_64x32_in0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "svd_full_tall_f32_64x32_out0.bin",
+        "shape": [
+          64,
+          64
+        ],
+        "dtype": "f32"
+      },
+      {
+        "file": "svd_full_tall_f32_64x32_out1.bin",
+        "shape": [
+          32
+        ],
+        "dtype": "f32"
+      },
+      {
+        "file": "svd_full_tall_f32_64x32_out2.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 28800,
+      "reads_bytes": 8192,
+      "writes_bytes": 20608,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "svd_full_wide_f32_32x64",
+    "op": "svd_full",
+    "dtype": "f32",
+    "n": 2048,
+    "shape": [
+      32,
+      64
+    ],
+    "variant": "wide",
+    "issue": 155,
+    "inputs": [
+      {
+        "file": "svd_full_wide_f32_32x64_in0.bin",
+        "shape": [
+          32,
+          64
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "svd_full_wide_f32_32x64_out0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f32"
+      },
+      {
+        "file": "svd_full_wide_f32_32x64_out1.bin",
+        "shape": [
+          32
+        ],
+        "dtype": "f32"
+      },
+      {
+        "file": "svd_full_wide_f32_32x64_out2.bin",
+        "shape": [
+          64,
+          64
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 28800,
+      "reads_bytes": 8192,
+      "writes_bytes": 20608,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "slogdet_positive_f32_32x32",
+    "op": "slogdet",
+    "dtype": "f32",
+    "n": 1024,
+    "shape": [
+      32,
+      32
+    ],
+    "variant": "positive",
+    "issue": 155,
+    "inputs": [
+      {
+        "file": "slogdet_positive_f32_32x32_in0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "slogdet_positive_f32_32x32_out0.bin",
+        "shape": [],
+        "dtype": "f32"
+      },
+      {
+        "file": "slogdet_positive_f32_32x32_out1.bin",
+        "shape": [],
+        "dtype": "f32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 4104,
+      "reads_bytes": 4096,
+      "writes_bytes": 8,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "slogdet_negative_f32_32x32",
+    "op": "slogdet",
+    "dtype": "f32",
+    "n": 1024,
+    "shape": [
+      32,
+      32
+    ],
+    "variant": "negative",
+    "issue": 155,
+    "inputs": [
+      {
+        "file": "slogdet_negative_f32_32x32_in0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "slogdet_negative_f32_32x32_out0.bin",
+        "shape": [],
+        "dtype": "f32"
+      },
+      {
+        "file": "slogdet_negative_f32_32x32_out1.bin",
+        "shape": [],
+        "dtype": "f32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 4104,
+      "reads_bytes": 4096,
+      "writes_bytes": 8,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "svd_full_square_f64_32x32",
+    "op": "svd_full",
+    "dtype": "f64",
+    "n": 1024,
+    "shape": [
+      32,
+      32
+    ],
+    "variant": "square",
+    "issue": 155,
+    "inputs": [
+      {
+        "file": "svd_full_square_f64_32x32_in0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "svd_full_square_f64_32x32_out0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f64"
+      },
+      {
+        "file": "svd_full_square_f64_32x32_out1.bin",
+        "shape": [
+          32
+        ],
+        "dtype": "f64"
+      },
+      {
+        "file": "svd_full_square_f64_32x32_out2.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 24832,
+      "reads_bytes": 8192,
+      "writes_bytes": 16640,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "svd_full_tall_f64_64x32",
+    "op": "svd_full",
+    "dtype": "f64",
+    "n": 2048,
+    "shape": [
+      64,
+      32
+    ],
+    "variant": "tall",
+    "issue": 155,
+    "inputs": [
+      {
+        "file": "svd_full_tall_f64_64x32_in0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "svd_full_tall_f64_64x32_out0.bin",
+        "shape": [
+          64,
+          64
+        ],
+        "dtype": "f64"
+      },
+      {
+        "file": "svd_full_tall_f64_64x32_out1.bin",
+        "shape": [
+          32
+        ],
+        "dtype": "f64"
+      },
+      {
+        "file": "svd_full_tall_f64_64x32_out2.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 57600,
+      "reads_bytes": 16384,
+      "writes_bytes": 41216,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "svd_full_wide_f64_32x64",
+    "op": "svd_full",
+    "dtype": "f64",
+    "n": 2048,
+    "shape": [
+      32,
+      64
+    ],
+    "variant": "wide",
+    "issue": 155,
+    "inputs": [
+      {
+        "file": "svd_full_wide_f64_32x64_in0.bin",
+        "shape": [
+          32,
+          64
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "svd_full_wide_f64_32x64_out0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f64"
+      },
+      {
+        "file": "svd_full_wide_f64_32x64_out1.bin",
+        "shape": [
+          32
+        ],
+        "dtype": "f64"
+      },
+      {
+        "file": "svd_full_wide_f64_32x64_out2.bin",
+        "shape": [
+          64,
+          64
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 57600,
+      "reads_bytes": 16384,
+      "writes_bytes": 41216,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "slogdet_positive_f64_32x32",
+    "op": "slogdet",
+    "dtype": "f64",
+    "n": 1024,
+    "shape": [
+      32,
+      32
+    ],
+    "variant": "positive",
+    "issue": 155,
+    "inputs": [
+      {
+        "file": "slogdet_positive_f64_32x32_in0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "slogdet_positive_f64_32x32_out0.bin",
+        "shape": [],
+        "dtype": "f64"
+      },
+      {
+        "file": "slogdet_positive_f64_32x32_out1.bin",
+        "shape": [],
+        "dtype": "f64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 8208,
+      "reads_bytes": 8192,
+      "writes_bytes": 16,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "slogdet_negative_f64_32x32",
+    "op": "slogdet",
+    "dtype": "f64",
+    "n": 1024,
+    "shape": [
+      32,
+      32
+    ],
+    "variant": "negative",
+    "issue": 155,
+    "inputs": [
+      {
+        "file": "slogdet_negative_f64_32x32_in0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "slogdet_negative_f64_32x32_out0.bin",
+        "shape": [],
+        "dtype": "f64"
+      },
+      {
+        "file": "slogdet_negative_f64_32x32_out1.bin",
+        "shape": [],
+        "dtype": "f64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 8208,
+      "reads_bytes": 8192,
+      "writes_bytes": 16,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "svd_full_square_c32_32x32",
+    "op": "svd_full",
+    "dtype": "c32",
+    "n": 1024,
+    "shape": [
+      32,
+      32
+    ],
+    "variant": "square",
+    "issue": 155,
+    "inputs": [
+      {
+        "file": "svd_full_square_c32_32x32_in0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "c32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "svd_full_square_c32_32x32_out0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "c32"
+      },
+      {
+        "file": "svd_full_square_c32_32x32_out1.bin",
+        "shape": [
+          32
+        ],
+        "dtype": "f32"
+      },
+      {
+        "file": "svd_full_square_c32_32x32_out2.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "c32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 24704,
+      "reads_bytes": 8192,
+      "writes_bytes": 16512,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "svd_full_tall_c32_64x32",
+    "op": "svd_full",
+    "dtype": "c32",
+    "n": 2048,
+    "shape": [
+      64,
+      32
+    ],
+    "variant": "tall",
+    "issue": 155,
+    "inputs": [
+      {
+        "file": "svd_full_tall_c32_64x32_in0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "c32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "svd_full_tall_c32_64x32_out0.bin",
+        "shape": [
+          64,
+          64
+        ],
+        "dtype": "c32"
+      },
+      {
+        "file": "svd_full_tall_c32_64x32_out1.bin",
+        "shape": [
+          32
+        ],
+        "dtype": "f32"
+      },
+      {
+        "file": "svd_full_tall_c32_64x32_out2.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "c32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 57472,
+      "reads_bytes": 16384,
+      "writes_bytes": 41088,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "svd_full_wide_c32_32x64",
+    "op": "svd_full",
+    "dtype": "c32",
+    "n": 2048,
+    "shape": [
+      32,
+      64
+    ],
+    "variant": "wide",
+    "issue": 155,
+    "inputs": [
+      {
+        "file": "svd_full_wide_c32_32x64_in0.bin",
+        "shape": [
+          32,
+          64
+        ],
+        "dtype": "c32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "svd_full_wide_c32_32x64_out0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "c32"
+      },
+      {
+        "file": "svd_full_wide_c32_32x64_out1.bin",
+        "shape": [
+          32
+        ],
+        "dtype": "f32"
+      },
+      {
+        "file": "svd_full_wide_c32_32x64_out2.bin",
+        "shape": [
+          64,
+          64
+        ],
+        "dtype": "c32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 57472,
+      "reads_bytes": 16384,
+      "writes_bytes": 41088,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "slogdet_positive_c32_32x32",
+    "op": "slogdet",
+    "dtype": "c32",
+    "n": 1024,
+    "shape": [
+      32,
+      32
+    ],
+    "variant": "positive",
+    "issue": 155,
+    "inputs": [
+      {
+        "file": "slogdet_positive_c32_32x32_in0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "c32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "slogdet_positive_c32_32x32_out0.bin",
+        "shape": [],
+        "dtype": "c32"
+      },
+      {
+        "file": "slogdet_positive_c32_32x32_out1.bin",
+        "shape": [],
+        "dtype": "f32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 8204,
+      "reads_bytes": 8192,
+      "writes_bytes": 12,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "slogdet_negative_c32_32x32",
+    "op": "slogdet",
+    "dtype": "c32",
+    "n": 1024,
+    "shape": [
+      32,
+      32
+    ],
+    "variant": "negative",
+    "issue": 155,
+    "inputs": [
+      {
+        "file": "slogdet_negative_c32_32x32_in0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "c32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "slogdet_negative_c32_32x32_out0.bin",
+        "shape": [],
+        "dtype": "c32"
+      },
+      {
+        "file": "slogdet_negative_c32_32x32_out1.bin",
+        "shape": [],
+        "dtype": "f32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 8204,
+      "reads_bytes": 8192,
+      "writes_bytes": 12,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "svd_full_square_c64_32x32",
+    "op": "svd_full",
+    "dtype": "c64",
+    "n": 1024,
+    "shape": [
+      32,
+      32
+    ],
+    "variant": "square",
+    "issue": 155,
+    "inputs": [
+      {
+        "file": "svd_full_square_c64_32x32_in0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "c64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "svd_full_square_c64_32x32_out0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "c64"
+      },
+      {
+        "file": "svd_full_square_c64_32x32_out1.bin",
+        "shape": [
+          32
+        ],
+        "dtype": "f64"
+      },
+      {
+        "file": "svd_full_square_c64_32x32_out2.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "c64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 49408,
+      "reads_bytes": 16384,
+      "writes_bytes": 33024,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "svd_full_tall_c64_64x32",
+    "op": "svd_full",
+    "dtype": "c64",
+    "n": 2048,
+    "shape": [
+      64,
+      32
+    ],
+    "variant": "tall",
+    "issue": 155,
+    "inputs": [
+      {
+        "file": "svd_full_tall_c64_64x32_in0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "c64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "svd_full_tall_c64_64x32_out0.bin",
+        "shape": [
+          64,
+          64
+        ],
+        "dtype": "c64"
+      },
+      {
+        "file": "svd_full_tall_c64_64x32_out1.bin",
+        "shape": [
+          32
+        ],
+        "dtype": "f64"
+      },
+      {
+        "file": "svd_full_tall_c64_64x32_out2.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "c64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 114944,
+      "reads_bytes": 32768,
+      "writes_bytes": 82176,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "svd_full_wide_c64_32x64",
+    "op": "svd_full",
+    "dtype": "c64",
+    "n": 2048,
+    "shape": [
+      32,
+      64
+    ],
+    "variant": "wide",
+    "issue": 155,
+    "inputs": [
+      {
+        "file": "svd_full_wide_c64_32x64_in0.bin",
+        "shape": [
+          32,
+          64
+        ],
+        "dtype": "c64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "svd_full_wide_c64_32x64_out0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "c64"
+      },
+      {
+        "file": "svd_full_wide_c64_32x64_out1.bin",
+        "shape": [
+          32
+        ],
+        "dtype": "f64"
+      },
+      {
+        "file": "svd_full_wide_c64_32x64_out2.bin",
+        "shape": [
+          64,
+          64
+        ],
+        "dtype": "c64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 114944,
+      "reads_bytes": 32768,
+      "writes_bytes": 82176,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "slogdet_positive_c64_32x32",
+    "op": "slogdet",
+    "dtype": "c64",
+    "n": 1024,
+    "shape": [
+      32,
+      32
+    ],
+    "variant": "positive",
+    "issue": 155,
+    "inputs": [
+      {
+        "file": "slogdet_positive_c64_32x32_in0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "c64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "slogdet_positive_c64_32x32_out0.bin",
+        "shape": [],
+        "dtype": "c64"
+      },
+      {
+        "file": "slogdet_positive_c64_32x32_out1.bin",
+        "shape": [],
+        "dtype": "f64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 16408,
+      "reads_bytes": 16384,
+      "writes_bytes": 24,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "slogdet_negative_c64_32x32",
+    "op": "slogdet",
+    "dtype": "c64",
+    "n": 1024,
+    "shape": [
+      32,
+      32
+    ],
+    "variant": "negative",
+    "issue": 155,
+    "inputs": [
+      {
+        "file": "slogdet_negative_c64_32x32_in0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "c64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "slogdet_negative_c64_32x32_out0.bin",
+        "shape": [],
+        "dtype": "c64"
+      },
+      {
+        "file": "slogdet_negative_c64_32x32_out1.bin",
+        "shape": [],
+        "dtype": "f64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 16408,
+      "reads_bytes": 16384,
+      "writes_bytes": 24,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "householder_qr_square_f32_32x32",
+    "op": "householder_qr",
+    "dtype": "f32",
+    "n": 1024,
+    "shape": [
+      32,
+      32
+    ],
+    "variant": "square",
+    "issue": 155,
+    "inputs": [
+      {
+        "file": "householder_qr_square_f32_32x32_in0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "householder_qr_square_f32_32x32_out0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f32"
+      },
+      {
+        "file": "householder_qr_square_f32_32x32_out1.bin",
+        "shape": [
+          32
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 8320,
+      "reads_bytes": 4096,
+      "writes_bytes": 4224,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "householder_qr_tall_f32_64x32",
+    "op": "householder_qr",
+    "dtype": "f32",
+    "n": 2048,
+    "shape": [
+      64,
+      32
+    ],
+    "variant": "tall",
+    "issue": 155,
+    "inputs": [
+      {
+        "file": "householder_qr_tall_f32_64x32_in0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "householder_qr_tall_f32_64x32_out0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "f32"
+      },
+      {
+        "file": "householder_qr_tall_f32_64x32_out1.bin",
+        "shape": [
+          32
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 16512,
+      "reads_bytes": 8192,
+      "writes_bytes": 8320,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "householder_qr_wide_f32_32x64",
+    "op": "householder_qr",
+    "dtype": "f32",
+    "n": 2048,
+    "shape": [
+      32,
+      64
+    ],
+    "variant": "wide",
+    "issue": 155,
+    "inputs": [
+      {
+        "file": "householder_qr_wide_f32_32x64_in0.bin",
+        "shape": [
+          32,
+          64
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "householder_qr_wide_f32_32x64_out0.bin",
+        "shape": [
+          32,
+          64
+        ],
+        "dtype": "f32"
+      },
+      {
+        "file": "householder_qr_wide_f32_32x64_out1.bin",
+        "shape": [
+          32
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 16512,
+      "reads_bytes": 8192,
+      "writes_bytes": 8320,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "householder_qr_square_f64_32x32",
+    "op": "householder_qr",
+    "dtype": "f64",
+    "n": 1024,
+    "shape": [
+      32,
+      32
+    ],
+    "variant": "square",
+    "issue": 155,
+    "inputs": [
+      {
+        "file": "householder_qr_square_f64_32x32_in0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "householder_qr_square_f64_32x32_out0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f64"
+      },
+      {
+        "file": "householder_qr_square_f64_32x32_out1.bin",
+        "shape": [
+          32
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 16640,
+      "reads_bytes": 8192,
+      "writes_bytes": 8448,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "householder_qr_tall_f64_64x32",
+    "op": "householder_qr",
+    "dtype": "f64",
+    "n": 2048,
+    "shape": [
+      64,
+      32
+    ],
+    "variant": "tall",
+    "issue": 155,
+    "inputs": [
+      {
+        "file": "householder_qr_tall_f64_64x32_in0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "householder_qr_tall_f64_64x32_out0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "f64"
+      },
+      {
+        "file": "householder_qr_tall_f64_64x32_out1.bin",
+        "shape": [
+          32
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 33024,
+      "reads_bytes": 16384,
+      "writes_bytes": 16640,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "householder_qr_wide_f64_32x64",
+    "op": "householder_qr",
+    "dtype": "f64",
+    "n": 2048,
+    "shape": [
+      32,
+      64
+    ],
+    "variant": "wide",
+    "issue": 155,
+    "inputs": [
+      {
+        "file": "householder_qr_wide_f64_32x64_in0.bin",
+        "shape": [
+          32,
+          64
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "householder_qr_wide_f64_32x64_out0.bin",
+        "shape": [
+          32,
+          64
+        ],
+        "dtype": "f64"
+      },
+      {
+        "file": "householder_qr_wide_f64_32x64_out1.bin",
+        "shape": [
+          32
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 33024,
+      "reads_bytes": 16384,
+      "writes_bytes": 16640,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "householder_qr_square_c32_32x32",
+    "op": "householder_qr",
+    "dtype": "c32",
+    "n": 1024,
+    "shape": [
+      32,
+      32
+    ],
+    "variant": "square",
+    "issue": 155,
+    "inputs": [
+      {
+        "file": "householder_qr_square_c32_32x32_in0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "c32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "householder_qr_square_c32_32x32_out0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "c32"
+      },
+      {
+        "file": "householder_qr_square_c32_32x32_out1.bin",
+        "shape": [
+          32
+        ],
+        "dtype": "c32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 16640,
+      "reads_bytes": 8192,
+      "writes_bytes": 8448,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "householder_qr_tall_c32_64x32",
+    "op": "householder_qr",
+    "dtype": "c32",
+    "n": 2048,
+    "shape": [
+      64,
+      32
+    ],
+    "variant": "tall",
+    "issue": 155,
+    "inputs": [
+      {
+        "file": "householder_qr_tall_c32_64x32_in0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "c32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "householder_qr_tall_c32_64x32_out0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "c32"
+      },
+      {
+        "file": "householder_qr_tall_c32_64x32_out1.bin",
+        "shape": [
+          32
+        ],
+        "dtype": "c32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 33024,
+      "reads_bytes": 16384,
+      "writes_bytes": 16640,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "householder_qr_wide_c32_32x64",
+    "op": "householder_qr",
+    "dtype": "c32",
+    "n": 2048,
+    "shape": [
+      32,
+      64
+    ],
+    "variant": "wide",
+    "issue": 155,
+    "inputs": [
+      {
+        "file": "householder_qr_wide_c32_32x64_in0.bin",
+        "shape": [
+          32,
+          64
+        ],
+        "dtype": "c32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "householder_qr_wide_c32_32x64_out0.bin",
+        "shape": [
+          32,
+          64
+        ],
+        "dtype": "c32"
+      },
+      {
+        "file": "householder_qr_wide_c32_32x64_out1.bin",
+        "shape": [
+          32
+        ],
+        "dtype": "c32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 33024,
+      "reads_bytes": 16384,
+      "writes_bytes": 16640,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "slogdet_phase_c32_32x32",
+    "op": "slogdet",
+    "dtype": "c32",
+    "n": 1024,
+    "shape": [
+      32,
+      32
+    ],
+    "variant": "phase",
+    "issue": 155,
+    "inputs": [
+      {
+        "file": "slogdet_phase_c32_32x32_in0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "c32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "slogdet_phase_c32_32x32_out0.bin",
+        "shape": [],
+        "dtype": "c32"
+      },
+      {
+        "file": "slogdet_phase_c32_32x32_out1.bin",
+        "shape": [],
+        "dtype": "f32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 8204,
+      "reads_bytes": 8192,
+      "writes_bytes": 12,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "householder_qr_square_c64_32x32",
+    "op": "householder_qr",
+    "dtype": "c64",
+    "n": 1024,
+    "shape": [
+      32,
+      32
+    ],
+    "variant": "square",
+    "issue": 155,
+    "inputs": [
+      {
+        "file": "householder_qr_square_c64_32x32_in0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "c64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "householder_qr_square_c64_32x32_out0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "c64"
+      },
+      {
+        "file": "householder_qr_square_c64_32x32_out1.bin",
+        "shape": [
+          32
+        ],
+        "dtype": "c64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 33280,
+      "reads_bytes": 16384,
+      "writes_bytes": 16896,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "householder_qr_tall_c64_64x32",
+    "op": "householder_qr",
+    "dtype": "c64",
+    "n": 2048,
+    "shape": [
+      64,
+      32
+    ],
+    "variant": "tall",
+    "issue": 155,
+    "inputs": [
+      {
+        "file": "householder_qr_tall_c64_64x32_in0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "c64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "householder_qr_tall_c64_64x32_out0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "c64"
+      },
+      {
+        "file": "householder_qr_tall_c64_64x32_out1.bin",
+        "shape": [
+          32
+        ],
+        "dtype": "c64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 66048,
+      "reads_bytes": 32768,
+      "writes_bytes": 33280,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "householder_qr_wide_c64_32x64",
+    "op": "householder_qr",
+    "dtype": "c64",
+    "n": 2048,
+    "shape": [
+      32,
+      64
+    ],
+    "variant": "wide",
+    "issue": 155,
+    "inputs": [
+      {
+        "file": "householder_qr_wide_c64_32x64_in0.bin",
+        "shape": [
+          32,
+          64
+        ],
+        "dtype": "c64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "householder_qr_wide_c64_32x64_out0.bin",
+        "shape": [
+          32,
+          64
+        ],
+        "dtype": "c64"
+      },
+      {
+        "file": "householder_qr_wide_c64_32x64_out1.bin",
+        "shape": [
+          32
+        ],
+        "dtype": "c64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 66048,
+      "reads_bytes": 32768,
+      "writes_bytes": 33280,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "slogdet_phase_c64_32x32",
+    "op": "slogdet",
+    "dtype": "c64",
+    "n": 1024,
+    "shape": [
+      32,
+      32
+    ],
+    "variant": "phase",
+    "issue": 155,
+    "inputs": [
+      {
+        "file": "slogdet_phase_c64_32x32_in0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "c64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "slogdet_phase_c64_32x32_out0.bin",
+        "shape": [],
+        "dtype": "c64"
+      },
+      {
+        "file": "slogdet_phase_c64_32x32_out1.bin",
+        "shape": [],
+        "dtype": "f64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 16408,
+      "reads_bytes": 16384,
+      "writes_bytes": 24,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "householder_from_factors_default_f32_64x32",
+    "op": "householder_from_factors",
+    "dtype": "f32",
+    "n": 2048,
+    "shape": [
+      64,
+      32
+    ],
+    "variant": "default",
+    "issue": 155,
+    "unavailable": {
+      "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+      "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+      "jax-cuda-jit": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
+    },
+    "inputs": [
+      {
+        "file": "householder_from_factors_default_f32_64x32_in0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "f32"
+      },
+      {
+        "file": "householder_from_factors_default_f32_64x32_in1.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "f32"
+      },
+      {
+        "file": "householder_from_factors_default_f32_64x32_in2.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "householder_from_factors_default_f32_64x32_out0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "f32"
+      },
+      {
+        "file": "householder_from_factors_default_f32_64x32_out1.bin",
+        "shape": [
+          32
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 28800,
+      "reads_bytes": 20480,
+      "writes_bytes": 8320,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "householder_append_default_f32_64x32",
+    "op": "householder_append",
+    "dtype": "f32",
+    "n": 2048,
+    "shape": [
+      64,
+      32
+    ],
+    "variant": "default",
+    "issue": 155,
+    "excluded": {
+      "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+      "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+    },
+    "unavailable": {
+      "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+      "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+      "jax-cuda-jit": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
+    },
+    "inputs": [
+      {
+        "file": "householder_append_default_f32_64x32_in0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "f32"
+      },
+      {
+        "file": "householder_append_default_f32_64x32_in1.bin",
+        "shape": [
+          64,
+          16
+        ],
+        "dtype": "f32"
+      },
+      {
+        "file": "householder_append_default_f32_64x32_in2.bin",
+        "shape": [
+          64,
+          16
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "householder_append_default_f32_64x32_out0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "f32"
+      },
+      {
+        "file": "householder_append_default_f32_64x32_out1.bin",
+        "shape": [
+          32
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 24704,
+      "reads_bytes": 16384,
+      "writes_bytes": 8320,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "householder_r_default_f32_64x32",
+    "op": "householder_r",
+    "dtype": "f32",
+    "n": 2048,
+    "shape": [
+      64,
+      32
+    ],
+    "variant": "default",
+    "issue": 155,
+    "inputs": [
+      {
+        "file": "householder_r_default_f32_64x32_in0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "householder_r_default_f32_64x32_out0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 12288,
+      "reads_bytes": 8192,
+      "writes_bytes": 4096,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "householder_q_columns_prefix_f32_64x32",
+    "op": "householder_q_columns",
+    "dtype": "f32",
+    "n": 2048,
+    "shape": [
+      64,
+      32
+    ],
+    "variant": "prefix",
+    "issue": 155,
+    "column_range": [
+      0,
+      8
+    ],
+    "excluded": {
+      "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+      "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+    },
+    "inputs": [
+      {
+        "file": "householder_q_columns_prefix_f32_64x32_in0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "householder_q_columns_prefix_f32_64x32_out0.bin",
+        "shape": [
+          64,
+          8
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 10240,
+      "reads_bytes": 8192,
+      "writes_bytes": 2048,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "householder_q_columns_complement_f32_64x32",
+    "op": "householder_q_columns",
+    "dtype": "f32",
+    "n": 2048,
+    "shape": [
+      64,
+      32
+    ],
+    "variant": "complement",
+    "issue": 155,
+    "column_range": [
+      32,
+      64
+    ],
+    "excluded": {
+      "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+      "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+    },
+    "unavailable": {
+      "jax-cuda": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs.",
+      "jax-cuda-jit": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs."
+    },
+    "inputs": [
+      {
+        "file": "householder_q_columns_complement_f32_64x32_in0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "householder_q_columns_complement_f32_64x32_out0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 16384,
+      "reads_bytes": 8192,
+      "writes_bytes": 8192,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "householder_from_factors_default_f64_64x32",
+    "op": "householder_from_factors",
+    "dtype": "f64",
+    "n": 2048,
+    "shape": [
+      64,
+      32
+    ],
+    "variant": "default",
+    "issue": 155,
+    "unavailable": {
+      "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+      "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+      "jax-cuda-jit": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
+    },
+    "inputs": [
+      {
+        "file": "householder_from_factors_default_f64_64x32_in0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "f64"
+      },
+      {
+        "file": "householder_from_factors_default_f64_64x32_in1.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "f64"
+      },
+      {
+        "file": "householder_from_factors_default_f64_64x32_in2.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "householder_from_factors_default_f64_64x32_out0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "f64"
+      },
+      {
+        "file": "householder_from_factors_default_f64_64x32_out1.bin",
+        "shape": [
+          32
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 57600,
+      "reads_bytes": 40960,
+      "writes_bytes": 16640,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "householder_append_default_f64_64x32",
+    "op": "householder_append",
+    "dtype": "f64",
+    "n": 2048,
+    "shape": [
+      64,
+      32
+    ],
+    "variant": "default",
+    "issue": 155,
+    "excluded": {
+      "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+      "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+    },
+    "unavailable": {
+      "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+      "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+      "jax-cuda-jit": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
+    },
+    "inputs": [
+      {
+        "file": "householder_append_default_f64_64x32_in0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "f64"
+      },
+      {
+        "file": "householder_append_default_f64_64x32_in1.bin",
+        "shape": [
+          64,
+          16
+        ],
+        "dtype": "f64"
+      },
+      {
+        "file": "householder_append_default_f64_64x32_in2.bin",
+        "shape": [
+          64,
+          16
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "householder_append_default_f64_64x32_out0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "f64"
+      },
+      {
+        "file": "householder_append_default_f64_64x32_out1.bin",
+        "shape": [
+          32
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 49408,
+      "reads_bytes": 32768,
+      "writes_bytes": 16640,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "householder_r_default_f64_64x32",
+    "op": "householder_r",
+    "dtype": "f64",
+    "n": 2048,
+    "shape": [
+      64,
+      32
+    ],
+    "variant": "default",
+    "issue": 155,
+    "inputs": [
+      {
+        "file": "householder_r_default_f64_64x32_in0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "householder_r_default_f64_64x32_out0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 24576,
+      "reads_bytes": 16384,
+      "writes_bytes": 8192,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "householder_q_columns_prefix_f64_64x32",
+    "op": "householder_q_columns",
+    "dtype": "f64",
+    "n": 2048,
+    "shape": [
+      64,
+      32
+    ],
+    "variant": "prefix",
+    "issue": 155,
+    "column_range": [
+      0,
+      8
+    ],
+    "excluded": {
+      "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+      "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+    },
+    "inputs": [
+      {
+        "file": "householder_q_columns_prefix_f64_64x32_in0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "householder_q_columns_prefix_f64_64x32_out0.bin",
+        "shape": [
+          64,
+          8
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 20480,
+      "reads_bytes": 16384,
+      "writes_bytes": 4096,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "householder_q_columns_complement_f64_64x32",
+    "op": "householder_q_columns",
+    "dtype": "f64",
+    "n": 2048,
+    "shape": [
+      64,
+      32
+    ],
+    "variant": "complement",
+    "issue": 155,
+    "column_range": [
+      32,
+      64
+    ],
+    "excluded": {
+      "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+      "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+    },
+    "unavailable": {
+      "jax-cuda": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs.",
+      "jax-cuda-jit": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs."
+    },
+    "inputs": [
+      {
+        "file": "householder_q_columns_complement_f64_64x32_in0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "householder_q_columns_complement_f64_64x32_out0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 32768,
+      "reads_bytes": 16384,
+      "writes_bytes": 16384,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "householder_from_factors_default_c32_64x32",
+    "op": "householder_from_factors",
+    "dtype": "c32",
+    "n": 2048,
+    "shape": [
+      64,
+      32
+    ],
+    "variant": "default",
+    "issue": 155,
+    "unavailable": {
+      "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+      "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+      "jax-cuda-jit": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
+    },
+    "inputs": [
+      {
+        "file": "householder_from_factors_default_c32_64x32_in0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "c32"
+      },
+      {
+        "file": "householder_from_factors_default_c32_64x32_in1.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "c32"
+      },
+      {
+        "file": "householder_from_factors_default_c32_64x32_in2.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "c32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "householder_from_factors_default_c32_64x32_out0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "c32"
+      },
+      {
+        "file": "householder_from_factors_default_c32_64x32_out1.bin",
+        "shape": [
+          32
+        ],
+        "dtype": "c32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 57600,
+      "reads_bytes": 40960,
+      "writes_bytes": 16640,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "householder_append_default_c32_64x32",
+    "op": "householder_append",
+    "dtype": "c32",
+    "n": 2048,
+    "shape": [
+      64,
+      32
+    ],
+    "variant": "default",
+    "issue": 155,
+    "excluded": {
+      "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+      "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+    },
+    "unavailable": {
+      "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+      "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+      "jax-cuda-jit": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
+    },
+    "inputs": [
+      {
+        "file": "householder_append_default_c32_64x32_in0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "c32"
+      },
+      {
+        "file": "householder_append_default_c32_64x32_in1.bin",
+        "shape": [
+          64,
+          16
+        ],
+        "dtype": "c32"
+      },
+      {
+        "file": "householder_append_default_c32_64x32_in2.bin",
+        "shape": [
+          64,
+          16
+        ],
+        "dtype": "c32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "householder_append_default_c32_64x32_out0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "c32"
+      },
+      {
+        "file": "householder_append_default_c32_64x32_out1.bin",
+        "shape": [
+          32
+        ],
+        "dtype": "c32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 49408,
+      "reads_bytes": 32768,
+      "writes_bytes": 16640,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "householder_r_default_c32_64x32",
+    "op": "householder_r",
+    "dtype": "c32",
+    "n": 2048,
+    "shape": [
+      64,
+      32
+    ],
+    "variant": "default",
+    "issue": 155,
+    "inputs": [
+      {
+        "file": "householder_r_default_c32_64x32_in0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "c32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "householder_r_default_c32_64x32_out0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "c32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 24576,
+      "reads_bytes": 16384,
+      "writes_bytes": 8192,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "householder_q_columns_prefix_c32_64x32",
+    "op": "householder_q_columns",
+    "dtype": "c32",
+    "n": 2048,
+    "shape": [
+      64,
+      32
+    ],
+    "variant": "prefix",
+    "issue": 155,
+    "column_range": [
+      0,
+      8
+    ],
+    "excluded": {
+      "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+      "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+    },
+    "inputs": [
+      {
+        "file": "householder_q_columns_prefix_c32_64x32_in0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "c32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "householder_q_columns_prefix_c32_64x32_out0.bin",
+        "shape": [
+          64,
+          8
+        ],
+        "dtype": "c32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 20480,
+      "reads_bytes": 16384,
+      "writes_bytes": 4096,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "householder_q_columns_complement_c32_64x32",
+    "op": "householder_q_columns",
+    "dtype": "c32",
+    "n": 2048,
+    "shape": [
+      64,
+      32
+    ],
+    "variant": "complement",
+    "issue": 155,
+    "column_range": [
+      32,
+      64
+    ],
+    "excluded": {
+      "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+      "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+    },
+    "unavailable": {
+      "jax-cuda": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs.",
+      "jax-cuda-jit": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs."
+    },
+    "inputs": [
+      {
+        "file": "householder_q_columns_complement_c32_64x32_in0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "c32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "householder_q_columns_complement_c32_64x32_out0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "c32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 32768,
+      "reads_bytes": 16384,
+      "writes_bytes": 16384,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "householder_from_factors_default_c64_64x32",
+    "op": "householder_from_factors",
+    "dtype": "c64",
+    "n": 2048,
+    "shape": [
+      64,
+      32
+    ],
+    "variant": "default",
+    "issue": 155,
+    "unavailable": {
+      "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+      "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+      "jax-cuda-jit": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
+    },
+    "inputs": [
+      {
+        "file": "householder_from_factors_default_c64_64x32_in0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "c64"
+      },
+      {
+        "file": "householder_from_factors_default_c64_64x32_in1.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "c64"
+      },
+      {
+        "file": "householder_from_factors_default_c64_64x32_in2.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "c64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "householder_from_factors_default_c64_64x32_out0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "c64"
+      },
+      {
+        "file": "householder_from_factors_default_c64_64x32_out1.bin",
+        "shape": [
+          32
+        ],
+        "dtype": "c64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 115200,
+      "reads_bytes": 81920,
+      "writes_bytes": 33280,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "householder_append_default_c64_64x32",
+    "op": "householder_append",
+    "dtype": "c64",
+    "n": 2048,
+    "shape": [
+      64,
+      32
+    ],
+    "variant": "default",
+    "issue": 155,
+    "excluded": {
+      "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+      "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+    },
+    "unavailable": {
+      "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+      "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+      "jax-cuda-jit": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
+    },
+    "inputs": [
+      {
+        "file": "householder_append_default_c64_64x32_in0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "c64"
+      },
+      {
+        "file": "householder_append_default_c64_64x32_in1.bin",
+        "shape": [
+          64,
+          16
+        ],
+        "dtype": "c64"
+      },
+      {
+        "file": "householder_append_default_c64_64x32_in2.bin",
+        "shape": [
+          64,
+          16
+        ],
+        "dtype": "c64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "householder_append_default_c64_64x32_out0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "c64"
+      },
+      {
+        "file": "householder_append_default_c64_64x32_out1.bin",
+        "shape": [
+          32
+        ],
+        "dtype": "c64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 98816,
+      "reads_bytes": 65536,
+      "writes_bytes": 33280,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "householder_r_default_c64_64x32",
+    "op": "householder_r",
+    "dtype": "c64",
+    "n": 2048,
+    "shape": [
+      64,
+      32
+    ],
+    "variant": "default",
+    "issue": 155,
+    "inputs": [
+      {
+        "file": "householder_r_default_c64_64x32_in0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "c64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "householder_r_default_c64_64x32_out0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "c64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 49152,
+      "reads_bytes": 32768,
+      "writes_bytes": 16384,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "householder_q_columns_prefix_c64_64x32",
+    "op": "householder_q_columns",
+    "dtype": "c64",
+    "n": 2048,
+    "shape": [
+      64,
+      32
+    ],
+    "variant": "prefix",
+    "issue": 155,
+    "column_range": [
+      0,
+      8
+    ],
+    "excluded": {
+      "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+      "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+    },
+    "inputs": [
+      {
+        "file": "householder_q_columns_prefix_c64_64x32_in0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "c64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "householder_q_columns_prefix_c64_64x32_out0.bin",
+        "shape": [
+          64,
+          8
+        ],
+        "dtype": "c64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 40960,
+      "reads_bytes": 32768,
+      "writes_bytes": 8192,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "householder_q_columns_complement_c64_64x32",
+    "op": "householder_q_columns",
+    "dtype": "c64",
+    "n": 2048,
+    "shape": [
+      64,
+      32
+    ],
+    "variant": "complement",
+    "issue": 155,
+    "column_range": [
+      32,
+      64
+    ],
+    "excluded": {
+      "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+      "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+    },
+    "unavailable": {
+      "jax-cuda": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs.",
+      "jax-cuda-jit": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs."
+    },
+    "inputs": [
+      {
+        "file": "householder_q_columns_complement_c64_64x32_in0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "c64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "householder_q_columns_complement_c64_64x32_out0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "c64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 65536,
+      "reads_bytes": 32768,
+      "writes_bytes": 32768,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "lu_square_f32_s32",
+    "op": "lu",
+    "dtype": "f32",
+    "n": 1024,
+    "shape": [
+      32,
+      32
+    ],
+    "issue": 155,
+    "unavailable": {
+      "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+      "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+      "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+    },
+    "inputs": [
+      {
+        "file": "lu_square_f32_s32_in0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "lu_square_f32_s32_out0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f32"
+      },
+      {
+        "file": "lu_square_f32_s32_out1.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f32"
+      },
+      {
+        "file": "lu_square_f32_s32_out2.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f32"
+      },
+      {
+        "file": "lu_square_f32_s32_out3.bin",
+        "shape": [],
+        "dtype": "f32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 16388,
+      "reads_bytes": 4096,
+      "writes_bytes": 12292,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "lu_square_f64_s32",
+    "op": "lu",
+    "dtype": "f64",
+    "n": 1024,
+    "shape": [
+      32,
+      32
+    ],
+    "issue": 155,
+    "unavailable": {
+      "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+      "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+      "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+    },
+    "inputs": [
+      {
+        "file": "lu_square_f64_s32_in0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "lu_square_f64_s32_out0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f64"
+      },
+      {
+        "file": "lu_square_f64_s32_out1.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f64"
+      },
+      {
+        "file": "lu_square_f64_s32_out2.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f64"
+      },
+      {
+        "file": "lu_square_f64_s32_out3.bin",
+        "shape": [],
+        "dtype": "f64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 32776,
+      "reads_bytes": 8192,
+      "writes_bytes": 24584,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "lu_square_c32_s32",
+    "op": "lu",
+    "dtype": "c32",
+    "n": 1024,
+    "shape": [
+      32,
+      32
+    ],
+    "issue": 155,
+    "unavailable": {
+      "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+      "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+      "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+    },
+    "inputs": [
+      {
+        "file": "lu_square_c32_s32_in0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "c32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "lu_square_c32_s32_out0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "c32"
+      },
+      {
+        "file": "lu_square_c32_s32_out1.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "c32"
+      },
+      {
+        "file": "lu_square_c32_s32_out2.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "c32"
+      },
+      {
+        "file": "lu_square_c32_s32_out3.bin",
+        "shape": [],
+        "dtype": "c32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 32776,
+      "reads_bytes": 8192,
+      "writes_bytes": 24584,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "lu_square_c64_s32",
+    "op": "lu",
+    "dtype": "c64",
+    "n": 1024,
+    "shape": [
+      32,
+      32
+    ],
+    "issue": 155,
+    "unavailable": {
+      "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+      "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+      "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+    },
+    "inputs": [
+      {
+        "file": "lu_square_c64_s32_in0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "c64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "lu_square_c64_s32_out0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "c64"
+      },
+      {
+        "file": "lu_square_c64_s32_out1.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "c64"
+      },
+      {
+        "file": "lu_square_c64_s32_out2.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "c64"
+      },
+      {
+        "file": "lu_square_c64_s32_out3.bin",
+        "shape": [],
+        "dtype": "c64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 65552,
+      "reads_bytes": 16384,
+      "writes_bytes": 49168,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "lu_tall_f32_s32",
+    "op": "lu",
+    "dtype": "f32",
+    "n": 2048,
+    "shape": [
+      64,
+      32
+    ],
+    "issue": 155,
+    "unavailable": {
+      "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+      "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+      "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+    },
+    "inputs": [
+      {
+        "file": "lu_tall_f32_s32_in0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "lu_tall_f32_s32_out0.bin",
+        "shape": [
+          64,
+          64
+        ],
+        "dtype": "f32"
+      },
+      {
+        "file": "lu_tall_f32_s32_out1.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "f32"
+      },
+      {
+        "file": "lu_tall_f32_s32_out2.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f32"
+      },
+      {
+        "file": "lu_tall_f32_s32_out3.bin",
+        "shape": [],
+        "dtype": "f32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 36868,
+      "reads_bytes": 8192,
+      "writes_bytes": 28676,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "lu_tall_f64_s32",
+    "op": "lu",
+    "dtype": "f64",
+    "n": 2048,
+    "shape": [
+      64,
+      32
+    ],
+    "issue": 155,
+    "unavailable": {
+      "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+      "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+      "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+    },
+    "inputs": [
+      {
+        "file": "lu_tall_f64_s32_in0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "lu_tall_f64_s32_out0.bin",
+        "shape": [
+          64,
+          64
+        ],
+        "dtype": "f64"
+      },
+      {
+        "file": "lu_tall_f64_s32_out1.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "f64"
+      },
+      {
+        "file": "lu_tall_f64_s32_out2.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f64"
+      },
+      {
+        "file": "lu_tall_f64_s32_out3.bin",
+        "shape": [],
+        "dtype": "f64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 73736,
+      "reads_bytes": 16384,
+      "writes_bytes": 57352,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "lu_tall_c32_s32",
+    "op": "lu",
+    "dtype": "c32",
+    "n": 2048,
+    "shape": [
+      64,
+      32
+    ],
+    "issue": 155,
+    "unavailable": {
+      "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+      "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+      "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+    },
+    "inputs": [
+      {
+        "file": "lu_tall_c32_s32_in0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "c32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "lu_tall_c32_s32_out0.bin",
+        "shape": [
+          64,
+          64
+        ],
+        "dtype": "c32"
+      },
+      {
+        "file": "lu_tall_c32_s32_out1.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "c32"
+      },
+      {
+        "file": "lu_tall_c32_s32_out2.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "c32"
+      },
+      {
+        "file": "lu_tall_c32_s32_out3.bin",
+        "shape": [],
+        "dtype": "c32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 73736,
+      "reads_bytes": 16384,
+      "writes_bytes": 57352,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "lu_tall_c64_s32",
+    "op": "lu",
+    "dtype": "c64",
+    "n": 2048,
+    "shape": [
+      64,
+      32
+    ],
+    "issue": 155,
+    "unavailable": {
+      "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+      "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+      "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+    },
+    "inputs": [
+      {
+        "file": "lu_tall_c64_s32_in0.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "c64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "lu_tall_c64_s32_out0.bin",
+        "shape": [
+          64,
+          64
+        ],
+        "dtype": "c64"
+      },
+      {
+        "file": "lu_tall_c64_s32_out1.bin",
+        "shape": [
+          64,
+          32
+        ],
+        "dtype": "c64"
+      },
+      {
+        "file": "lu_tall_c64_s32_out2.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "c64"
+      },
+      {
+        "file": "lu_tall_c64_s32_out3.bin",
+        "shape": [],
+        "dtype": "c64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 147472,
+      "reads_bytes": 32768,
+      "writes_bytes": 114704,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "lu_wide_f32_s32",
+    "op": "lu",
+    "dtype": "f32",
+    "n": 2048,
+    "shape": [
+      32,
+      64
+    ],
+    "issue": 155,
+    "unavailable": {
+      "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+      "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+      "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+    },
+    "inputs": [
+      {
+        "file": "lu_wide_f32_s32_in0.bin",
+        "shape": [
+          32,
+          64
+        ],
+        "dtype": "f32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "lu_wide_f32_s32_out0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f32"
+      },
+      {
+        "file": "lu_wide_f32_s32_out1.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f32"
+      },
+      {
+        "file": "lu_wide_f32_s32_out2.bin",
+        "shape": [
+          32,
+          64
+        ],
+        "dtype": "f32"
+      },
+      {
+        "file": "lu_wide_f32_s32_out3.bin",
+        "shape": [],
+        "dtype": "f32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 24580,
+      "reads_bytes": 8192,
+      "writes_bytes": 16388,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "lu_wide_f64_s32",
+    "op": "lu",
+    "dtype": "f64",
+    "n": 2048,
+    "shape": [
+      32,
+      64
+    ],
+    "issue": 155,
+    "unavailable": {
+      "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+      "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+      "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+    },
+    "inputs": [
+      {
+        "file": "lu_wide_f64_s32_in0.bin",
+        "shape": [
+          32,
+          64
+        ],
+        "dtype": "f64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "lu_wide_f64_s32_out0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f64"
+      },
+      {
+        "file": "lu_wide_f64_s32_out1.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "f64"
+      },
+      {
+        "file": "lu_wide_f64_s32_out2.bin",
+        "shape": [
+          32,
+          64
+        ],
+        "dtype": "f64"
+      },
+      {
+        "file": "lu_wide_f64_s32_out3.bin",
+        "shape": [],
+        "dtype": "f64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 49160,
+      "reads_bytes": 16384,
+      "writes_bytes": 32776,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "lu_wide_c32_s32",
+    "op": "lu",
+    "dtype": "c32",
+    "n": 2048,
+    "shape": [
+      32,
+      64
+    ],
+    "issue": 155,
+    "unavailable": {
+      "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+      "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+      "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+    },
+    "inputs": [
+      {
+        "file": "lu_wide_c32_s32_in0.bin",
+        "shape": [
+          32,
+          64
+        ],
+        "dtype": "c32"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "lu_wide_c32_s32_out0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "c32"
+      },
+      {
+        "file": "lu_wide_c32_s32_out1.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "c32"
+      },
+      {
+        "file": "lu_wide_c32_s32_out2.bin",
+        "shape": [
+          32,
+          64
+        ],
+        "dtype": "c32"
+      },
+      {
+        "file": "lu_wide_c32_s32_out3.bin",
+        "shape": [],
+        "dtype": "c32"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 0.0005,
+    "atol": 0.0005,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 49160,
+      "reads_bytes": 16384,
+      "writes_bytes": 32776,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  },
+  {
+    "id": "lu_wide_c64_s32",
+    "op": "lu",
+    "dtype": "c64",
+    "n": 2048,
+    "shape": [
+      32,
+      64
+    ],
+    "issue": 155,
+    "unavailable": {
+      "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+      "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+      "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+    },
+    "inputs": [
+      {
+        "file": "lu_wide_c64_s32_in0.bin",
+        "shape": [
+          32,
+          64
+        ],
+        "dtype": "c64"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "lu_wide_c64_s32_out0.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "c64"
+      },
+      {
+        "file": "lu_wide_c64_s32_out1.bin",
+        "shape": [
+          32,
+          32
+        ],
+        "dtype": "c64"
+      },
+      {
+        "file": "lu_wide_c64_s32_out2.bin",
+        "shape": [
+          32,
+          64
+        ],
+        "dtype": "c64"
+      },
+      {
+        "file": "lu_wide_c64_s32_out3.bin",
+        "shape": [],
+        "dtype": "c64"
+      }
+    ],
+    "reference": "numpy/scipy double precision; all requested outputs",
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "traffic": {
+      "kind": "logical_traffic",
+      "bytes_per_operation": 98320,
+      "reads_bytes": 32768,
+      "writes_bytes": 65552,
+      "destination_read_included": false,
+      "basis": "one read of every declared input array plus one write of every declared output array, sized from the suite shape and dtype; logical interface bytes only, so neither cache-resident operands nor intermediate allocations are represented",
+      "unknown_reason": null
+    }
+  }
+]
