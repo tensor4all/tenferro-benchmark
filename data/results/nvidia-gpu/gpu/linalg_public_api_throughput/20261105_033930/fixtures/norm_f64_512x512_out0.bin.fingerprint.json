@@ -1,0 +1,18 @@
+{
+ "schema_version": 1,
+ "case_id": "norm_f64_512x512",
+ "output": 0,
+ "dtype": "f64",
+ "shape": [],
+ "fingerprint": {
+  "sum_re": 147.87553305482962,
+  "sum_im": 0.0,
+  "sum_abs": 147.87553305482962,
+  "sum_squares": 21867.173276250007,
+  "max_abs": 147.87553305482962,
+  "dot_seeded_re": 113.36458018053993,
+  "dot_seeded_im": 0.0,
+  "elements": 1
+ },
+ "unavailable_reason": null
+}

@@ -1,0 +1,20 @@
+{
+ "schema_version": 1,
+ "case_id": "householder_append_default_f64_64x32",
+ "output": 1,
+ "dtype": "f64",
+ "shape": [
+  32
+ ],
+ "fingerprint": {
+  "sum_re": 63.84337251372174,
+  "sum_im": 0.0,
+  "sum_abs": 63.84337251372174,
+  "sum_squares": 127.37429497388608,
+  "max_abs": 1.9969731022915485,
+  "dot_seeded_re": 9.034255910750797,
+  "dot_seeded_im": 0.0,
+  "elements": 32
+ },
+ "unavailable_reason": null
+}

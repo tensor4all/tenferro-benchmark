@@ -1,0 +1,18 @@
+{
+ "schema_version": 1,
+ "case_id": "det_f64_512x512",
+ "output": 0,
+ "dtype": "f64",
+ "shape": [],
+ "fingerprint": {
+  "sum_re": 13057906.52583264,
+  "sum_im": 0.0,
+  "sum_abs": 13057906.52583264,
+  "sum_squares": 170508922837382.66,
+  "max_abs": 13057906.52583264,
+  "dot_seeded_re": 10010473.407990215,
+  "dot_seeded_im": 0.0,
+  "elements": 1
+ },
+ "unavailable_reason": null
+}

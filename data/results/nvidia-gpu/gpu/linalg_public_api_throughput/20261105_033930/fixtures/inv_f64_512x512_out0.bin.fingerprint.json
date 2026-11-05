@@ -1,0 +1,21 @@
+{
+ "schema_version": 1,
+ "case_id": "inv_f64_512x512",
+ "output": 0,
+ "dtype": "f64",
+ "shape": [
+  512,
+  512
+ ],
+ "fingerprint": {
+  "sum_re": 511.75730614503544,
+  "sum_im": 0.0,
+  "sum_abs": 1205.2681444087734,
+  "sum_squares": 496.0719327884936,
+  "max_abs": 0.9803513978831285,
+  "dot_seeded_re": -0.006867518753359114,
+  "dot_seeded_im": 0.0,
+  "elements": 262144
+ },
+ "unavailable_reason": null
+}

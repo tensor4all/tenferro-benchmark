@@ -1,0 +1,21 @@
+{
+ "schema_version": 1,
+ "case_id": "lu_wide_f64_s256",
+ "output": 1,
+ "dtype": "f64",
+ "shape": [
+  256,
+  256
+ ],
+ "fingerprint": {
+  "sum_re": 256.01074767414207,
+  "sum_im": 0.0,
+  "sum_abs": 665.9524192736409,
+  "sum_squares": 262.8705637745491,
+  "max_abs": 1.0,
+  "dot_seeded_re": -10.278270483350727,
+  "dot_seeded_im": 0.0,
+  "elements": 65536
+ },
+ "unavailable_reason": null
+}

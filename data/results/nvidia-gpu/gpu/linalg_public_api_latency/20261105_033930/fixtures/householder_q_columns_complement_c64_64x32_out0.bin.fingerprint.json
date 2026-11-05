@@ -1,0 +1,21 @@
+{
+ "schema_version": 1,
+ "case_id": "householder_q_columns_complement_c64_64x32",
+ "output": 0,
+ "dtype": "c64",
+ "shape": [
+  64,
+  32
+ ],
+ "fingerprint": {
+  "sum_re": 32.13304100068214,
+  "sum_im": 0.12667872321805296,
+  "sum_abs": 52.844780097238015,
+  "sum_squares": 31.999999999999996,
+  "max_abs": 0.9943254452648089,
+  "dot_seeded_re": 2.10553917097457,
+  "dot_seeded_im": -0.22957237223738475,
+  "elements": 2048
+ },
+ "unavailable_reason": null
+}

@@ -1,0 +1,18 @@
+{
+ "schema_version": 1,
+ "case_id": "det_f32_32x32",
+ "output": 0,
+ "dtype": "f32",
+ "shape": [],
+ "fingerprint": {
+  "sum_re": 8.387654304504395,
+  "sum_im": 0.0,
+  "sum_abs": 8.387654304504395,
+  "sum_squares": 70.3527447318711,
+  "max_abs": 8.387654304504395,
+  "dot_seeded_re": 6.430157100952436,
+  "dot_seeded_im": 0.0,
+  "elements": 1
+ },
+ "unavailable_reason": null
+}

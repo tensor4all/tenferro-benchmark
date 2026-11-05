@@ -1,0 +1,21 @@
+{
+ "schema_version": 1,
+ "case_id": "lu_wide_f32_s32",
+ "output": 1,
+ "dtype": "f32",
+ "shape": [
+  32,
+  32
+ ],
+ "fingerprint": {
+  "sum_re": 31.792656514899136,
+  "sum_im": 0.0,
+  "sum_abs": 38.26570726435966,
+  "sum_squares": 32.10559547019723,
+  "max_abs": 1.0,
+  "dot_seeded_re": 2.6652657199096614,
+  "dot_seeded_im": 0.0,
+  "elements": 1024
+ },
+ "unavailable_reason": null
+}

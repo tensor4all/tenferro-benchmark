@@ -1,0 +1,18 @@
+{
+ "schema_version": 1,
+ "case_id": "slogdet_phase_c32_32x32",
+ "output": 1,
+ "dtype": "f32",
+ "shape": [],
+ "fingerprint": {
+  "sum_re": 3.669588088989258,
+  "sum_im": 0.0,
+  "sum_abs": 3.669588088989258,
+  "sum_squares": 13.465876742851833,
+  "max_abs": 3.669588088989258,
+  "dot_seeded_re": 2.813185552403257,
+  "dot_seeded_im": 0.0,
+  "elements": 1
+ },
+ "unavailable_reason": null
+}

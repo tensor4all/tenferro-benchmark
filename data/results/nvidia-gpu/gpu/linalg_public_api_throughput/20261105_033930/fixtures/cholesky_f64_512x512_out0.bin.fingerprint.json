@@ -1,0 +1,21 @@
+{
+ "schema_version": 1,
+ "case_id": "cholesky_f64_512x512",
+ "output": 0,
+ "dtype": "f64",
+ "shape": [
+  512,
+  512
+ ],
+ "fingerprint": {
+  "sum_re": 512.1227867609985,
+  "sum_im": 0.0,
+  "sum_abs": 1764.9694796156796,
+  "sum_squares": 554.7093228051752,
+  "max_abs": 1.0408640261333069,
+  "dot_seeded_re": -0.6995947696856231,
+  "dot_seeded_im": 0.0,
+  "elements": 262144
+ },
+ "unavailable_reason": null
+}

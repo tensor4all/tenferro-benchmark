@@ -1,0 +1,18 @@
+{
+ "schema_version": 1,
+ "case_id": "slogdet_negative_f64_256x256",
+ "output": 1,
+ "dtype": "f64",
+ "shape": [],
+ "fingerprint": {
+  "sum_re": 10.436994384022789,
+  "sum_im": 0.0,
+  "sum_abs": 10.436994384022789,
+  "sum_squares": 108.93085177212323,
+  "max_abs": 10.436994384022789,
+  "dot_seeded_re": 8.001225505322049,
+  "dot_seeded_im": 0.0,
+  "elements": 1
+ },
+ "unavailable_reason": null
+}

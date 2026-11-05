@@ -1,0 +1,21 @@
+{
+ "schema_version": 1,
+ "case_id": "cholesky_f64_32x32",
+ "output": 0,
+ "dtype": "f64",
+ "shape": [
+  32,
+  32
+ ],
+ "fingerprint": {
+  "sum_re": 32.10540435008187,
+  "sum_im": 0.0,
+  "sum_abs": 45.560969588092135,
+  "sum_squares": 34.668653640625,
+  "max_abs": 1.0429137068808714,
+  "dot_seeded_re": 2.3567954762673895,
+  "dot_seeded_im": 0.0,
+  "elements": 1024
+ },
+ "unavailable_reason": null
+}

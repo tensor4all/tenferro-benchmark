@@ -1,0 +1,21 @@
+{
+ "schema_version": 1,
+ "case_id": "householder_qr_tall_f32_512x256",
+ "output": 0,
+ "dtype": "f32",
+ "shape": [
+  512,
+  256
+ ],
+ "fingerprint": {
+  "sum_re": -255.79634708592414,
+  "sum_im": 0.0,
+  "sum_abs": 1249.4702571479042,
+  "sum_squares": 286.4522359884154,
+  "max_abs": 1.0506548881530762,
+  "dot_seeded_re": 9.148468562518026,
+  "dot_seeded_im": 0.0,
+  "elements": 131072
+ },
+ "unavailable_reason": null
+}
