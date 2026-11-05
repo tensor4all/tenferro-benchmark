@@ -3,14 +3,14 @@ use super::{measure, read_array, verify, Case, EngineScope, Result, Settings};
 use serde_json::Value;
 use std::path::Path;
 use tenferro_einsum::ConcreteEinsumPlan;
-use tenferro_gpu::cuda::{upload_tensor, CudaDeviceId, CudaEngine};
+use tenferro_gpu::cuda::{upload_tensor, CudaEngine};
 use tenferro_tensor::{DType, Tensor, TensorRead};
 
 pub(super) fn run(
     root: &Path,
     case: &Case,
     settings: &Settings,
-    device: usize,
+    backend: &mut CudaEngine,
 ) -> Result<(Option<Value>, f64)> {
     let hosts = case
         .inputs
@@ -18,7 +18,6 @@ pub(super) fn run(
         .map(|spec| read_array(root, spec))
         .collect::<Result<Vec<_>>>()?;
     let expected = read_array(root, &case.outputs[0])?;
-    let mut backend = CudaEngine::open(CudaDeviceId::from_ordinal(device.try_into()?))?;
     let rt = backend.runtime().clone();
     let inputs = hosts
         .iter()

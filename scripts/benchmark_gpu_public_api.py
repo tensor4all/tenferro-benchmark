@@ -439,7 +439,6 @@ def run_python(backend, root, output):
             try:
                 hosts = [load_array(root, a) for a in case["inputs"]]
                 is_fft = case["op"] in {"fft", "ifft", "rfft", "irfft"}
-                x_host = load_array(root, case["inputs"][0])
                 stored_fingerprints = [load_fingerprint(root, a) for a in case["outputs"]]
                 expected = [load_array(root, a) for a in case["outputs"]]
                 fixture_ms = (time.monotonic() - fixture_started) * 1e3

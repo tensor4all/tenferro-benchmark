@@ -3,7 +3,7 @@ use num_complex::Complex64;
 use serde_json::Value;
 use std::path::Path;
 use tenferro_ad::{EagerRuntime, EagerSession, EagerTensor};
-use tenferro_gpu::cuda::{download_tensor, upload_tensor, CudaDeviceId, CudaEngine, CudaRuntime};
+use tenferro_gpu::cuda::{download_tensor, upload_tensor, CudaEngine, CudaRuntime};
 use tenferro_linalg::{EagerSessionLinalgExt, HouseholderQr, QrOptions, TensorLinalgExt};
 use tenferro_tensor::{DType, Engine, Tensor};
 
@@ -269,7 +269,7 @@ pub(super) fn run(
     case: &Case,
     mode: &str,
     settings: &Settings,
-    device: usize,
+    backend: &mut CudaEngine,
 ) -> Result<(Option<Value>, f64)> {
     let input = super::read_array(root, &case.inputs[0])?;
     let expected = case
@@ -288,7 +288,6 @@ pub(super) fn run(
                 }
         })
         .sum();
-    let mut backend = CudaEngine::open(CudaDeviceId::from_ordinal(device.try_into()?))?;
     let rt = backend.runtime().clone();
     let x = upload_tensor(&rt, &input)?;
     if mode == "tenferro-cuda-direct" {
@@ -316,7 +315,7 @@ pub(super) fn run(
         // The runtime stores no engine (tenferro-rs #2206).
         let runtime = EagerRuntime::new()?;
         let _guard = runtime.no_grad();
-        runtime.with_eager_session(&mut backend, |session| {
+        runtime.with_eager_session(backend, |session| {
             let x = session.constant_from(x)?;
             let probe = eager(case, &x, session)?;
             let error = check_eager(&rt, &probe, &expected, &input, case, session)?;
