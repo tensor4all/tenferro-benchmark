@@ -435,6 +435,7 @@ def run_python(backend, root, output):
                 f.write(json.dumps(row) + "\n")
                 continue
             case_started = time.monotonic()
+            compile_ms = 0.0
             fixture_started = time.monotonic()
             try:
                 hosts = [load_array(root, a) for a in case["inputs"]]
@@ -471,7 +472,9 @@ def run_python(backend, root, output):
                         inputs = prepare_jax_inputs(case, inputs)
                     if not case.get("jax_ref_addupdate"):
                         if backend.endswith("-jit"):
+                            compile_started = time.monotonic()
                             fn = jax.jit(fn).lower(*inputs).compile()
+                            compile_ms = (time.monotonic() - compile_started) * 1e3
                         op = lambda: fn(*inputs)
                     jax.block_until_ready(inputs)
                     sync = lambda: None  # previous batch waits on every output
@@ -503,6 +506,7 @@ def run_python(backend, root, output):
                 timing = None
                 if not verify_only and not numerical_exclusion:
                     timing = measure(op, sync, ready, sum(v.nbytes for v in expected), warmups, runs, reuse=reuse)
+                    timing["compile_time_ms"] = compile_ms
                     if hasattr(op, "prepare"):
                         op.prepare(timing["operations_per_sample"])
                         sync()

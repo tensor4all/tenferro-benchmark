@@ -228,6 +228,22 @@ def _query_nvidia_smi_device(device_ordinal: int) -> dict[str, Any] | None:
     }
 
 
+def _artifact_cache() -> dict[str, Any]:
+    """The persistent NVRTC cache this run will use, and whether it starts warm.
+
+    Mirrors the runtime's own switch (`TENFERRO_CUDA_ARTIFACT_CACHE`): unset, `none`,
+    `off` and `memory` all mean memory only, and any other value names the directory.
+    A run that reads its cubins back pays no NVRTC compile, and only this record says
+    which of the two regimes produced the page.
+    """
+    value = (os.environ.get("TENFERRO_CUDA_ARTIFACT_CACHE") or "").strip()
+    if not value or value in {"none", "off", "memory"}:
+        return {"path": None, "regime": "off"}
+    path = Path(value)
+    warm = path.is_dir() and any(path.glob("*.cubin"))
+    return {"path": str(path), "regime": "warm" if warm else "cold"}
+
+
 def collect_cuda_metadata(device_ordinal: int = 0) -> dict[str, Any] | None:
     device = _query_nvidia_smi_device(device_ordinal)
     if device is None:
@@ -247,6 +263,7 @@ def collect_cuda_metadata(device_ordinal: int = 0) -> dict[str, Any] | None:
         "cutensor_version": _cutensor_version(),
         "cusolver_version": _cusolver_version(),
         "cudnn_version": _torch_cudnn_version(),
+        "artifact_cache": _artifact_cache(),
     }
     return metadata
 

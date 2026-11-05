@@ -816,8 +816,10 @@ fn main() -> Result<()> {
             writeln!(file, "{}", row)?;
             continue;
         }
+        let compiles_before = backend.runtime().compile_attempts();
         let outcome = run(root, &case, &mode, &settings, &mut backend);
         let case_wall_ms = case_started.elapsed().as_secs_f64() * 1e3;
+        let compiled = backend.runtime().compile_attempts() - compiles_before;
         match outcome {
             Ok((timing, error, phases)) => {
                 row["status"] = json!(if timing.is_some() {
@@ -828,6 +830,7 @@ fn main() -> Result<()> {
                     "unsupported"
                 });
                 let timed_ms = timed_ms_of(timing.as_ref());
+                let untimed_ms = timed_ms.map(|timed| (case_wall_ms - timed).max(0.0));
                 let warning = overhead_warning(&case.id, timed_ms, case_wall_ms, overhead_budget);
                 if let Some(message) = warning.as_ref() {
                     eprintln!("overhead budget: {message}");
@@ -835,7 +838,7 @@ fn main() -> Result<()> {
                 row["overhead"] = json!({
                     "timed_ms": timed_ms,
                     "case_wall_ms": case_wall_ms,
-                    "untimed_ms": timed_ms.map(|timed| (case_wall_ms - timed).max(0.0)),
+                    "untimed_ms": untimed_ms,
                     "fixture_ms": if phases.split_measured { Some(phases.fixture_ms) } else { None },
                     "verify_ms": if phases.split_measured { Some(phases.verify_ms) } else { None },
                     "fingerprint_compares": phases.fingerprint_compares,
@@ -846,7 +849,26 @@ fn main() -> Result<()> {
                     "warning": warning,
                     "scope": "case wall clock outside the timed region: fixtures, H2D, handles, plan initialization, validation, output destruction",
                 });
-                row["timing"] = json!(timing);
+                // miss means this case compiled a module and hit means it did not, so a
+                // warm run cannot hide the compile it skipped. The scope says what
+                // compile_time_ms covers, because a Rust arm cannot time NVRTC alone and
+                // reports the untimed part of the case that compiled.
+                row["compile_cache"] = json!(if compiled > 0 { "miss" } else { "hit" });
+                row["compile_modules"] = json!(compiled);
+                row["compile_time_scope"] = json!(
+                    "untimed case wall of the case that compiled; fixtures and verification excluded"
+                );
+                row["timing"] = match timing {
+                    Some(mut timing) => {
+                        timing["compile_time_ms"] = json!(if compiled > 0 {
+                            untimed_ms.unwrap_or(0.0)
+                        } else {
+                            0.0
+                        });
+                        json!(timing)
+                    }
+                    None => json!(null),
+                };
                 row["verification"] =
                     json!({"max_error_over_tolerance":error,"reference":case.reference});
                 if let Some(reason) = case.excluded.get(&mode) {
