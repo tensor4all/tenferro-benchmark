@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "suite_id": "gpu/fft",
+  "backends": [
+    "tenferro-cuda-direct",
+    "tenferro-cuda-eager",
+    "pytorch-cuda",
+    "jax-cuda"
+  ],
+  "cases": [
+    {
+      "id": "fft_c64_n1048576",
+      "op": "fft",
+      "dtype": "c64",
+      "n": 1048576,
+      "issue": 155
+    },
+    {
+      "id": "ifft_c64_n1048576",
+      "op": "ifft",
+      "dtype": "c64",
+      "n": 1048576,
+      "issue": 155
+    },
+    {
+      "id": "rfft_f64_n1048576",
+      "op": "rfft",
+      "dtype": "f64",
+      "n": 1048576,
+      "issue": 155
+    },
+    {
+      "id": "irfft_c64_n1048576",
+      "op": "irfft",
+      "dtype": "c64",
+      "n": 1048576,
+      "issue": 155
+    }
+  ],
+  "description": "FftExecutor and borrowed eager sessions, PyTorch, JAX eager and JAX JIT. Issue 155."
+}

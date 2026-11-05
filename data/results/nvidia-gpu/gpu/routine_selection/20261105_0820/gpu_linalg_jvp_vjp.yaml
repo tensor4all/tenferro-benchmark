@@ -1,0 +1,279 @@
+schema_version: 1
+suite_id: gpu/linalg_jvp_vjp
+title: GPU Linalg JVP/VJP Benchmarks
+description: Trace-mode linalg automatic differentiation on CUDA for tenferro-rs and PyTorch at GPU-sized
+  matrices (n=256, 512).
+defaults:
+  device:
+    kind: cuda
+    ordinal: 0
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    rtol: 1.0e-05
+    atol: 1.0e-08
+backends:
+- tenferro-cuda-trace
+- pytorch-cuda
+- jax-cuda
+problems:
+- id: linalg_ad_large_grad_sum_svd_s_jvp_f64_256
+  family: linalg_ad
+  op: jvp
+  dtype:
+    a: f64
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  data:
+    generator: well_conditioned
+    seed: 34
+  linalg_ad:
+    suite: large
+    loss: grad_sum_svd_s
+    n: 256
+    matrix_seed: 34
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    rtol: 1.0e-05
+    atol: 1.0e-08
+  notes: shape=256x256
+- id: linalg_ad_large_grad_sum_svd_s_vjp_f64_256
+  family: linalg_ad
+  op: vjp
+  dtype:
+    a: f64
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  data:
+    generator: well_conditioned
+    seed: 34
+  linalg_ad:
+    suite: large
+    loss: grad_sum_svd_s
+    n: 256
+    matrix_seed: 34
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    rtol: 1.0e-05
+    atol: 1.0e-08
+  notes: shape=256x256
+- id: linalg_ad_large_grad_sum_qr_jvp_f64_256
+  family: linalg_ad
+  op: jvp
+  dtype:
+    a: f64
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  data:
+    generator: well_conditioned
+    seed: 26
+  linalg_ad:
+    suite: large
+    loss: grad_sum_qr
+    n: 256
+    matrix_seed: 26
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    rtol: 1.0e-05
+    atol: 1.0e-08
+  notes: shape=256x256
+- id: linalg_ad_large_grad_sum_qr_vjp_f64_256
+  family: linalg_ad
+  op: vjp
+  dtype:
+    a: f64
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  data:
+    generator: well_conditioned
+    seed: 26
+  linalg_ad:
+    suite: large
+    loss: grad_sum_qr
+    n: 256
+    matrix_seed: 26
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    rtol: 1.0e-05
+    atol: 1.0e-08
+  notes: shape=256x256
+- id: linalg_ad_large_grad_sum_eigh_jvp_f64_256
+  family: linalg_ad
+  op: jvp
+  dtype:
+    a: f64
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  data:
+    generator: spd
+    seed: 27
+  linalg_ad:
+    suite: large
+    loss: grad_sum_eigh
+    n: 256
+    matrix_seed: 27
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    rtol: 1.0e-05
+    atol: 1.0e-08
+  notes: shape=256x256
+- id: linalg_ad_large_grad_sum_eigh_vjp_f64_256
+  family: linalg_ad
+  op: vjp
+  dtype:
+    a: f64
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  data:
+    generator: spd
+    seed: 27
+  linalg_ad:
+    suite: large
+    loss: grad_sum_eigh
+    n: 256
+    matrix_seed: 27
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    rtol: 1.0e-05
+    atol: 1.0e-08
+  notes: shape=256x256
+- id: linalg_ad_large_grad_sum_lu_jvp_f64_256
+  family: linalg_ad
+  op: jvp
+  dtype:
+    a: f64
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  data:
+    generator: well_conditioned
+    seed: 54
+  linalg_ad:
+    suite: large
+    loss: grad_sum_lu
+    n: 256
+    matrix_seed: 54
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    rtol: 1.0e-05
+    atol: 1.0e-08
+  notes: shape=256x256
+- id: linalg_ad_large_grad_sum_lu_vjp_f64_256
+  family: linalg_ad
+  op: vjp
+  dtype:
+    a: f64
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  data:
+    generator: well_conditioned
+    seed: 54
+  linalg_ad:
+    suite: large
+    loss: grad_sum_lu
+    n: 256
+    matrix_seed: 54
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    rtol: 1.0e-05
+    atol: 1.0e-08
+  notes: shape=256x256
+- id: linalg_ad_large_grad_sum_solve_jvp_f64_256
+  family: linalg_ad
+  op: jvp
+  dtype:
+    a: f64
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  data:
+    generator: spd
+    seed: 35
+  linalg_ad:
+    suite: large
+    loss: grad_sum_solve
+    n: 256
+    matrix_seed: 35
+    rhs_seed: 36
+    rhs_cols: 1
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    rtol: 1.0e-05
+    atol: 1.0e-08
+  notes: shape=256x256,rhs=1
+- id: linalg_ad_large_grad_sum_solve_vjp_f64_256
+  family: linalg_ad
+  op: vjp
+  dtype:
+    a: f64
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  data:
+    generator: spd
+    seed: 35
+  linalg_ad:
+    suite: large
+    loss: grad_sum_solve
+    n: 256
+    matrix_seed: 35
+    rhs_seed: 36
+    rhs_cols: 1
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    rtol: 1.0e-05
+    atol: 1.0e-08
+  notes: shape=256x256,rhs=1

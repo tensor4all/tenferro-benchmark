@@ -1,0 +1,6 @@
+{
+  "command_seconds_through_this_suite": 764.06054681,
+  "collection_seconds_including_build_and_backend_release_delays": 156.629152226,
+  "report_generation_and_copy_seconds": 0.094388011,
+  "scope": "script clock-read through this suite report copy; devcontainer CLI startup and final wall-record write excluded"
+}

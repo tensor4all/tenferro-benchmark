@@ -1,0 +1,908 @@
+{
+  "schema_version": 1,
+  "suite_id": "gpu/reuse_contraction",
+  "backends": [
+    "tenferro-cuda-direct",
+    "tenferro-cuda-eager",
+    "pytorch-cuda",
+    "jax-cuda"
+  ],
+  "cases": [
+    {
+      "id": "add_into_f64_n1048576",
+      "op": "add_into",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "add_read_into_f64_n1048576",
+      "op": "add_read_into",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "sub_into_f64_n1048576",
+      "op": "sub_into",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "sub_read_into_f64_n1048576",
+      "op": "sub_read_into",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "mul_into_f64_n1048576",
+      "op": "mul_into",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "mul_read_into_f64_n1048576",
+      "op": "mul_read_into",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "div_into_f64_n1048576",
+      "op": "div_into",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "div_read_into_f64_n1048576",
+      "op": "div_read_into",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "neg_into_f64_n1048576",
+      "op": "neg_into",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "neg_read_into_f64_n1048576",
+      "op": "neg_read_into",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "conj_into_c64_n1048576",
+      "op": "conj_into",
+      "dtype": "c64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "conj_read_into_c64_n1048576",
+      "op": "conj_read_into",
+      "dtype": "c64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "tensordot_f64_n262144",
+      "op": "tensordot",
+      "dtype": "f64",
+      "n": 262144,
+      "shape": [
+        512,
+        512
+      ],
+      "issue": 155,
+      "unavailable": {}
+    },
+    {
+      "id": "vdot_read_f64_n262144",
+      "op": "vdot_read",
+      "dtype": "f64",
+      "n": 262144,
+      "shape": [
+        262144
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching immediate EagerSession reduction method; the direct BackendSession API is measured separately."
+      }
+    },
+    {
+      "id": "norm_squared_read_f64_n262144",
+      "op": "norm_squared_read",
+      "dtype": "f64",
+      "n": 262144,
+      "shape": [
+        262144
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching immediate EagerSession reduction method; the direct BackendSession API is measured separately."
+      }
+    },
+    {
+      "id": "axpby_read_into_accum_f64_n1048576",
+      "op": "axpby_read_into_accum",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned accumulating output API; donation is not output reuse.",
+        "jax-cuda": "No verified single-call scaled Ref update for alpha=0.5/beta=1; public Ref.addupdate has no alpha parameter.",
+        "jax-cuda-jit": "No verified single-call scaled Ref update for alpha=0.5/beta=1; public Ref.addupdate has no alpha parameter."
+      }
+    },
+    {
+      "id": "dot_general_read_into_f64_s256",
+      "op": "dot_general_read_into",
+      "dtype": "f64",
+      "n": 65536,
+      "shape": [
+        256,
+        256
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda-jit": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts."
+      }
+    },
+    {
+      "id": "dot_general_read_into_accum_f64_s256",
+      "op": "dot_general_read_into_accum",
+      "dtype": "f64",
+      "n": 65536,
+      "shape": [
+        256,
+        256
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda-jit": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts."
+      }
+    },
+    {
+      "id": "dot_general_read_into_accum_cached_f64_s256",
+      "op": "dot_general_read_into_accum_cached",
+      "dtype": "f64",
+      "n": 65536,
+      "shape": [
+        256,
+        256
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda-jit": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts."
+      }
+    },
+    {
+      "id": "add_strided_read_f64_n1048576",
+      "op": "add_strided_read",
+      "read_op": "add",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "mul_strided_read_f64_n1048576",
+      "op": "mul_strided_read",
+      "read_op": "mul",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "neg_strided_read_f64_n1048576",
+      "op": "neg_strided_read",
+      "read_op": "neg",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "exp_strided_read_f64_n1048576",
+      "op": "exp_strided_read",
+      "read_op": "exp",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "tanh_strided_read_f64_n1048576",
+      "op": "tanh_strided_read",
+      "read_op": "tanh",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "reduce_sum_strided_read_f64_n1048576",
+      "op": "reduce_sum_strided_read",
+      "read_op": "reduce_sum",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "conj_strided_read_c64_n1048576",
+      "op": "conj_strided_read",
+      "read_op": "conj",
+      "dtype": "c64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "dot_general_batch_f64_s256",
+      "op": "dot_general_axes",
+      "variant": "batch",
+      "dtype": "f64",
+      "n": 98304,
+      "shape": [
+        256,
+        3,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263,
+        3
+      ],
+      "equation": "mbk,knb->mnb",
+      "lhs_contracting_dims": [
+        2
+      ],
+      "rhs_contracting_dims": [
+        0
+      ],
+      "lhs_batch_dims": [
+        1
+      ],
+      "rhs_batch_dims": [
+        2
+      ],
+      "issue": 155
+    },
+    {
+      "id": "dot_conj_l0r0_c64_n262144",
+      "op": "dot_general_conj",
+      "dtype": "c64",
+      "n": 262144,
+      "shape": [
+        262144
+      ],
+      "rhs_shape": [
+        262144
+      ],
+      "equation": "i,i->",
+      "lhs_contracting_dims": [
+        0
+      ],
+      "rhs_contracting_dims": [
+        0
+      ],
+      "lhs_batch_dims": [],
+      "rhs_batch_dims": [],
+      "lhs_conj": false,
+      "rhs_conj": false,
+      "issue": 155
+    },
+    {
+      "id": "einsum_plan_owned_f64_s256",
+      "op": "einsum_plan_owned",
+      "dtype": "f64",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
+      }
+    },
+    {
+      "id": "einsum_plan_read_f64_s256",
+      "op": "einsum_plan_read",
+      "dtype": "f64",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
+      }
+    },
+    {
+      "id": "einsum_plan_strided_read_f64_s256",
+      "op": "einsum_plan_strided_read",
+      "dtype": "f64",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
+      }
+    },
+    {
+      "id": "einsum_plan_into_f64_s256",
+      "op": "einsum_plan_into",
+      "dtype": "f64",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_read_into_f64_s256",
+      "op": "einsum_plan_read_into",
+      "dtype": "f64",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_read_into_accum_f64_s256",
+      "op": "einsum_plan_read_into_accum",
+      "dtype": "f64",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_strided_read_into_f64_s256",
+      "op": "einsum_plan_strided_read_into",
+      "dtype": "f64",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_strided_read_into_accum_f64_s256",
+      "op": "einsum_plan_strided_read_into_accum",
+      "dtype": "f64",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "sub_strided_read_f64_n1048576",
+      "op": "sub_strided_read",
+      "read_op": "sub",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "div_strided_read_f64_n1048576",
+      "op": "div_strided_read",
+      "read_op": "div",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "rem_strided_read_f64_n1048576",
+      "op": "rem_strided_read",
+      "read_op": "rem",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "pow_strided_read_f64_n1048576",
+      "op": "pow_strided_read",
+      "read_op": "pow",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "maximum_strided_read_f64_n1048576",
+      "op": "maximum_strided_read",
+      "read_op": "maximum",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "minimum_strided_read_f64_n1048576",
+      "op": "minimum_strided_read",
+      "read_op": "minimum",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "abs_strided_read_f64_n1048576",
+      "op": "abs_strided_read",
+      "read_op": "abs",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "sign_strided_read_f64_n1048576",
+      "op": "sign_strided_read",
+      "read_op": "sign",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "expm1_strided_read_f64_n1048576",
+      "op": "expm1_strided_read",
+      "read_op": "expm1",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "log_strided_read_f64_n1048576",
+      "op": "log_strided_read",
+      "read_op": "log",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "log1p_strided_read_f64_n1048576",
+      "op": "log1p_strided_read",
+      "read_op": "log1p",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "erf_strided_read_f64_n1048576",
+      "op": "erf_strided_read",
+      "read_op": "erf",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "sin_strided_read_f64_n1048576",
+      "op": "sin_strided_read",
+      "read_op": "sin",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "cos_strided_read_f64_n1048576",
+      "op": "cos_strided_read",
+      "read_op": "cos",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "sqrt_strided_read_f64_n1048576",
+      "op": "sqrt_strided_read",
+      "read_op": "sqrt",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "rsqrt_strided_read_f64_n1048576",
+      "op": "rsqrt_strided_read",
+      "read_op": "rsqrt",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "reduce_prod_strided_read_f64_n1048576",
+      "op": "reduce_prod_strided_read",
+      "read_op": "reduce_prod",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "reduce_max_strided_read_f64_n1048576",
+      "op": "reduce_max_strided_read",
+      "read_op": "reduce_max",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "reduce_min_strided_read_f64_n1048576",
+      "op": "reduce_min_strided_read",
+      "read_op": "reduce_min",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "reduce_sum_squares_strided_read_f64_n1048576",
+      "op": "reduce_sum_squares_strided_read",
+      "read_op": "reduce_sum_squares",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    }
+  ],
+  "description": "Isolated public APIs and explicit unsupported timing contracts. Issue 155."
+}

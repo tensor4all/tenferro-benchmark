@@ -1,0 +1,60 @@
+schema_version: 1
+suite_id: gpu/tensornetwork
+title: GPU Tensor Network Benchmarks
+description: Tree-guided tensor network contraction for tenferro-rs vs GPU framework comparison.
+defaults:
+  device:
+    kind: cuda
+    ordinal: 0
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  run:
+    warmups: 3
+    runs: 10
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: analytic_constant_tree_fp64_from_exact_f32_inputs
+    rtol: 0.0001
+    atol: 1.0e-05
+backends:
+- tenferro-cuda-trace
+- tenferro-cuda-eager
+- pytorch-cuda
+- jax-cuda-tree-jit
+problems:
+- id: tensornetwork_permutation_optimized_f32
+  family: tensornetwork
+  op: tensor_network_contract
+  intent: Compare tenferro-rs CUDA backends against PyTorch on the TensorNetworkBenchmarks tree.
+  notes: Uses the complete TensorNetworkBenchmarks tree and original F32 fixture. The previous general-einsum
+    lowering exhausted host memory, and native node-JIT with default compiler settings also exceeded the
+    32 GiB guard (verification run 20261013_125730). Compact native layouts with autotuning and Triton
+    GEMM disabled pass full-size whole-tree JIT and node-JIT CUDA verification. Both use the explicit
+    compiler options below, recorded in result metadata. Eager JAX retains its primitive-dispatch compiler
+    policy.
+  dtype:
+    a: f32
+    accum: f32
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  data:
+    generator: tensornetwork_fill
+    seed: 0
+  tensor_network:
+    source: extern/TensorNetworkBenchmarks/data/tensornetwork_permutation_optimized.json
+    bond_dim: 2
+    fill_value: 0.8408964152537145
+    execution: tree
+    jax_compiler_options:
+      xla_gpu_autotune_level: 0
+      xla_gpu_enable_triton_gemm: false
+  run:
+    warmups: 3
+    runs: 10
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: analytic_constant_tree_fp64_from_exact_f32_inputs
+    rtol: 0.0001
+    atol: 1.0e-05

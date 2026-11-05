@@ -1,0 +1,281 @@
+schema_version: 1
+suite_id: gpu/linalg_ad_latency
+title: GPU Linalg AD Single-Call Latency Benchmarks
+description: Single-call latency and per-op overhead of trace-mode linalg AD on CUDA at n=2, 4, 8. Device
+  kernel time is a small fraction of each measurement, so these rows are latency/overhead diagnostics,
+  not GPU throughput.
+defaults:
+  regime: latency
+  device:
+    kind: cuda
+    ordinal: 0
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    rtol: 1.0e-05
+    atol: 1.0e-08
+backends:
+- tenferro-cuda-trace
+- pytorch-cuda
+- jax-cuda
+problems:
+- id: linalg_ad_small_grad_sum_svd_s_jvp_f64_4
+  family: linalg_ad
+  op: jvp
+  dtype:
+    a: f64
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  data:
+    generator: well_conditioned
+    seed: 10
+  linalg_ad:
+    suite: small
+    loss: grad_sum_svd_s
+    n: 4
+    matrix_seed: 10
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    rtol: 1.0e-05
+    atol: 1.0e-08
+  notes: shape=4x4
+- id: linalg_ad_small_grad_sum_svd_s_vjp_f64_4
+  family: linalg_ad
+  op: vjp
+  dtype:
+    a: f64
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  data:
+    generator: well_conditioned
+    seed: 10
+  linalg_ad:
+    suite: small
+    loss: grad_sum_svd_s
+    n: 4
+    matrix_seed: 10
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    rtol: 1.0e-05
+    atol: 1.0e-08
+  notes: shape=4x4
+- id: linalg_ad_small_grad_sum_qr_jvp_f64_4
+  family: linalg_ad
+  op: jvp
+  dtype:
+    a: f64
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  data:
+    generator: well_conditioned
+    seed: 4
+  linalg_ad:
+    suite: small
+    loss: grad_sum_qr
+    n: 4
+    matrix_seed: 4
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    rtol: 1.0e-05
+    atol: 1.0e-08
+  notes: shape=4x4
+- id: linalg_ad_small_grad_sum_qr_vjp_f64_4
+  family: linalg_ad
+  op: vjp
+  dtype:
+    a: f64
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  data:
+    generator: well_conditioned
+    seed: 4
+  linalg_ad:
+    suite: small
+    loss: grad_sum_qr
+    n: 4
+    matrix_seed: 4
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    rtol: 1.0e-05
+    atol: 1.0e-08
+  notes: shape=4x4
+- id: linalg_ad_small_grad_sum_eigh_jvp_f64_4
+  family: linalg_ad
+  op: jvp
+  dtype:
+    a: f64
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  data:
+    generator: spd
+    seed: 5
+  linalg_ad:
+    suite: small
+    loss: grad_sum_eigh
+    n: 4
+    matrix_seed: 5
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    rtol: 1.0e-05
+    atol: 1.0e-08
+  notes: shape=4x4
+- id: linalg_ad_small_grad_sum_eigh_vjp_f64_4
+  family: linalg_ad
+  op: vjp
+  dtype:
+    a: f64
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  data:
+    generator: spd
+    seed: 5
+  linalg_ad:
+    suite: small
+    loss: grad_sum_eigh
+    n: 4
+    matrix_seed: 5
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    rtol: 1.0e-05
+    atol: 1.0e-08
+  notes: shape=4x4
+- id: linalg_ad_small_grad_sum_lu_jvp_f64_4
+  family: linalg_ad
+  op: jvp
+  dtype:
+    a: f64
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  data:
+    generator: well_conditioned
+    seed: 52
+  linalg_ad:
+    suite: small
+    loss: grad_sum_lu
+    n: 4
+    matrix_seed: 52
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    rtol: 1.0e-05
+    atol: 1.0e-08
+  notes: shape=4x4
+- id: linalg_ad_small_grad_sum_lu_vjp_f64_4
+  family: linalg_ad
+  op: vjp
+  dtype:
+    a: f64
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  data:
+    generator: well_conditioned
+    seed: 52
+  linalg_ad:
+    suite: small
+    loss: grad_sum_lu
+    n: 4
+    matrix_seed: 52
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    rtol: 1.0e-05
+    atol: 1.0e-08
+  notes: shape=4x4
+- id: linalg_ad_small_grad_sum_solve_jvp_f64_4
+  family: linalg_ad
+  op: jvp
+  dtype:
+    a: f64
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  data:
+    generator: spd
+    seed: 11
+  linalg_ad:
+    suite: small
+    loss: grad_sum_solve
+    n: 4
+    matrix_seed: 11
+    rhs_seed: 12
+    rhs_cols: 1
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    rtol: 1.0e-05
+    atol: 1.0e-08
+  notes: shape=4x4,rhs=1
+- id: linalg_ad_small_grad_sum_solve_vjp_f64_4
+  family: linalg_ad
+  op: vjp
+  dtype:
+    a: f64
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  data:
+    generator: spd
+    seed: 11
+  linalg_ad:
+    suite: small
+    loss: grad_sum_solve
+    n: 4
+    matrix_seed: 11
+    rhs_seed: 12
+    rhs_cols: 1
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    rtol: 1.0e-05
+    atol: 1.0e-08
+  notes: shape=4x4,rhs=1
