@@ -2,9 +2,11 @@
 
 Measured cells: **308**. Unsupported cells: **102**, including **28** numerically verified but timing-excluded cells. Unsupported cells do not count as measured coverage.
 
-Raw run: `data/results/nvidia-gpu/gpu/linalg_public_api/20261102_210935/`.
+This run metadata records no device copy rate, so the records carry the logical bytes without a copy ratio.
 
-This page is the throughput view: it holds the 82 cases whose largest matrix dimension is at least 256. Rows are the published measurements of that class from the run above, unchanged.
+Raw run: `data/results/nvidia-gpu/gpu/linalg_public_api_throughput/20261105_020224/`.
+
+Large-shape view of the CUDA public linalg API surface: the 82 cases whose largest matrix dimension is at least 256. `large` is a shape class, not a measured classification: no row is asserted to be compute- or bandwidth-bound, and a memory-bound row takes the same time here as at a small shape (`householder_r_default_f32` measured 34.698 µs at 512x256 and 35.223 µs at 64x32). These rows are never comparable with, or averaged together with, the per-call overhead rows of `gpu/linalg_public_api_latency` (tenferro-rs #2087). The same problems, protocol and backends are split by shape class between the two suites. Issue 155.
 
 Values are median (IQR) **µs per operation**. Samples time batches of declared operations plus device synchronization; retained output memory is limited to 256 MiB. Batch counts and raw durations are preserved in JSONL.
 
@@ -14,523 +16,523 @@ All measured output elements are checked against independently generated NumPy/S
 
 | Case | tenferro-cuda-direct | tenferro-cuda-eager | pytorch-cuda | jax-cuda | jax-cuda-jit |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| cholesky_f32_512x512 | 285.479 (0.618) | 2148.871 (16.305) | 275.240 (1.548) | 240.111 (1.220) | 239.082 (0.687) |
-| cholesky_f64_512x512 | 2141.610 (20.606) | 4032.273 (16.049) | 325.708 (1.898) | 300.422 (7.476) | 298.691 (1.383) |
-| svdvals_f32_512x512 | 31065.968 (14.275) | unsupported | 34148.647 (10.954) | 31626.475 (335.176) | 31260.894 (206.732) |
-| svdvals_f64_512x512 | 77516.391 (26.072) | unsupported | 84564.751 (16.875) | 77713.747 (404.304) | 77738.951 (124.500) |
-| eigvalsh_f32_512x512 | 5197.481 (23.680) | 7081.793 (11.256) | 5223.322 (10.165) | 5817.993 (12.315) | 5714.039 (76.492) |
-| eigvalsh_f64_512x512 | 5571.232 (15.345) | 8025.464 (17.150) | 5584.105 (7.361) | 6102.222 (476.261) | 6032.760 (24.885) |
-| pinv_f32_512x512 | unsupported | unsupported | 34282.021 (9.910) | 31690.857 (448.609) | 31800.522 (377.688) |
-| pinv_f64_512x512 | unsupported | unsupported | 84753.837 (37.377) | 78076.270 (20.005) | 78052.922 (386.638) |
-| inv_f32_512x512 | unsupported | unsupported | 1494.589 (5.152) | 1524.021 (9.958) | 1509.435 (14.158) |
-| inv_f64_512x512 | unsupported | unsupported | 1792.580 (7.458) | 1820.195 (8.585) | 1813.065 (18.398) |
-| det_f32_512x512 | 1620.268 (11.556) | 3286.248 (16.560) | 1174.319 (3.483) | 1207.300 (2.880) | 1204.290 (6.100) |
-| det_f64_512x512 | 2267.824 (11.186) | 4319.472 (48.627) | 1311.829 (5.797) | 1371.321 (14.861) | 1371.771 (13.805) |
-| norm_f32_512x512 | 87.644 (1.999) | 122.144 (0.377) | 9.006 (0.041) | 45.216 (5.315) | 46.020 (1.568) |
-| norm_f64_512x512 | 89.225 (0.481) | 119.660 (1.881) | 9.403 (0.038) | 44.601 (0.411) | 46.162 (0.178) |
-| triangular_solve_f32_512x512 | 169.273 (0.638) | 2013.036 (7.181) | 120.670 (0.073) | 181.569 (1.243) | 184.475 (2.211) |
-| triangular_solve_f64_512x512 | 194.000 (0.960) | 2059.668 (23.115) | 308.119 (0.156) | 215.491 (2.255) | 215.957 (1.596) |
-| svd_full_square_f32_256x256 | 10774.513 (10.610) | 12624.685 (39.757) | 11445.348 (13.700) | 10816.248 (54.188) | 10805.627 (538.422) |
-| svd_full_tall_f32_512x256 | 11152.205 (15.825) | 12980.847 (5.380) | 11937.364 (9.761) | 11238.751 (24.926) | 11671.876 (103.784) |
-| svd_full_wide_f32_256x512 | 10903.527 (17.796) | 12719.808 (15.340) | 11131.837 (12.886) | 11060.045 (454.974) | 10960.223 (492.266) |
-| slogdet_positive_f32_256x256 | 782.108 (2.250) | 2484.592 (17.791) | 532.070 (0.536) | 517.220 (6.920) | 523.360 (1.418) |
-| slogdet_negative_f32_256x256 | 783.738 (2.292) | 2467.601 (101.468) | 533.173 (0.869) | 535.030 (1.140) | 523.372 (3.574) |
-| svd_full_square_f64_256x256 | 25702.093 (9.391) | 27464.404 (38.712) | 25803.312 (14.076) | 26210.837 (132.114) | 25811.664 (40.426) |
-| svd_full_tall_f64_512x256 | 19520.250 (11.975) | 21266.260 (26.951) | 19906.527 (18.391) | 19934.689 (403.723) | 19624.859 (37.457) |
-| svd_full_wide_f64_256x512 | 17637.728 (19.201) | 19520.162 (87.323) | 18262.073 (16.431) | 18035.856 (448.009) | 17729.216 (36.697) |
-| slogdet_positive_f64_256x256 | 798.269 (2.509) | 2515.623 (65.171) | 567.279 (0.879) | 554.496 (5.918) | 556.151 (6.945) |
-| slogdet_negative_f64_256x256 | 798.951 (2.609) | 2516.083 (15.345) | 572.414 (0.980) | 577.139 (1.104) | 566.816 (2.135) |
-| svd_full_square_c32_256x256 | 20293.225 (7.695) | 22012.865 (87.513) | 22152.822 (11.935) | 20360.073 (30.016) | 20369.064 (16.331) |
-| svd_full_tall_c32_512x256 | 19617.984 (20.351) | 21397.684 (18.946) | 20058.012 (22.441) | 19648.689 (15.625) | 19648.030 (10.910) |
-| svd_full_wide_c32_256x512 | 19815.470 (13.436) | 21625.161 (17.885) | 20272.799 (8.500) | 20041.763 (344.737) | 19805.956 (24.060) |
-| slogdet_positive_c32_256x256 | 830.755 (3.879) | 2526.093 (13.615) | 574.501 (1.759) | 562.396 (3.626) | 562.324 (1.150) |
-| slogdet_negative_c32_256x256 | 832.505 (3.226) | 2528.724 (21.892) | 579.424 (1.399) | 574.822 (1.654) | 564.291 (1.306) |
-| svd_full_square_c64_256x256 | 59992.978 (17.196) | 61775.064 (121.340) | 63674.882 (43.051) | 60286.202 (240.483) | 60156.351 (389.153) |
-| svd_full_tall_c64_512x256 | 42626.228 (15.861) | 44579.718 (242.028) | 41016.005 (21.130) | 41064.927 (332.441) | 41001.967 (498.257) |
-| svd_full_wide_c64_256x512 | 42802.934 (41.627) | 44344.930 (201.712) | 41597.143 (23.541) | 40884.692 (164.397) | 41053.159 (398.318) |
-| slogdet_positive_c64_256x256 | 896.250 (2.216) | 2527.063 (90.173) | 627.506 (0.914) | 629.678 (2.627) | 640.861 (1.235) |
-| slogdet_negative_c64_256x256 | 891.174 (2.544) | 2469.141 (16.581) | 631.663 (1.240) | 626.033 (1.675) | 625.098 (5.676) |
-| householder_qr_square_f32_256x256 | 924.743 (3.715) | 2739.690 (90.759) | 909.695 (1.935) | 928.128 (9.397) | 937.909 (3.105) |
-| householder_qr_tall_f32_512x256 | 1213.255 (4.418) | 3101.042 (48.902) | 1194.629 (3.390) | 1275.287 (46.919) | 1289.673 (40.184) |
-| householder_qr_wide_f32_256x512 | 1105.201 (10.640) | 3028.289 (51.091) | 1099.646 (12.313) | 1201.645 (31.886) | 1216.370 (13.433) |
-| householder_qr_square_f64_256x256 | 1037.624 (7.568) | 2887.975 (10.865) | 1008.568 (4.083) | 1061.000 (37.039) | 1077.466 (23.161) |
-| householder_qr_tall_f64_512x256 | 1347.324 (5.650) | 3179.234 (30.296) | 1320.843 (6.975) | 1417.037 (29.951) | 1401.476 (24.658) |
-| householder_qr_wide_f64_256x512 | 1274.887 (6.368) | 3059.011 (18.346) | 1231.961 (11.880) | 1322.369 (33.649) | 1331.044 (32.931) |
-| householder_qr_square_c32_256x256 | 1003.933 (3.115) | 2766.021 (12.036) | 969.985 (2.374) | 1012.339 (21.005) | 1025.539 (12.303) |
-| householder_qr_tall_c32_512x256 | 1312.433 (10.063) | 3075.651 (79.392) | 1269.507 (5.623) | 1371.446 (19.478) | 1351.279 (13.883) |
-| householder_qr_wide_c32_256x512 | 1227.715 (7.515) | 3093.052 (59.927) | 1199.604 (10.848) | 1299.958 (37.071) | 1275.037 (11.653) |
-| slogdet_phase_c32_256x256 | 831.655 (2.707) | 2525.733 (29.831) | 574.019 (0.911) | 554.468 (4.019) | 581.514 (4.197) |
-| householder_qr_square_c64_256x256 | 1206.415 (3.293) | 3046.021 (16.255) | 1173.659 (4.318) | 1238.471 (42.056) | 1236.261 (7.915) |
-| householder_qr_tall_c64_512x256 | 2249.254 (7.680) | 4116.255 (92.833) | 1639.889 (4.770) | 1656.195 (7.280) | 1676.260 (4.232) |
-| householder_qr_wide_c64_256x512 | 2116.240 (15.381) | 4031.573 (59.077) | 1484.489 (11.748) | 1576.282 (12.395) | 1556.857 (12.683) |
-| slogdet_phase_c64_256x256 | 896.479 (3.155) | 2580.635 (11.116) | 628.348 (0.681) | 629.966 (4.474) | 631.218 (11.198) |
-| householder_from_factors_default_f32_512x256 | 1430.822 (6.923) | 3194.356 (117.199) | unsupported | unsupported | unsupported |
+| cholesky_f32_512x512 | 284.479 (0.610) | 328.898 (3.186) | 274.490 (1.679) | 241.716 (0.828) | 238.594 (0.619) |
+| cholesky_f64_512x512 | 2097.823 (10.976) | 2287.360 (15.640) | 327.850 (2.498) | 302.759 (3.541) | 300.060 (3.066) |
+| svdvals_f32_512x512 | 31163.050 (10.995) | unsupported | 34100.574 (21.660) | 31235.694 (13.580) | 31285.436 (20.745) |
+| svdvals_f64_512x512 | 77755.224 (27.146) | unsupported | 84429.970 (32.657) | 77663.226 (24.367) | 77836.693 (26.886) |
+| eigvalsh_f32_512x512 | 5208.810 (8.011) | 5270.462 (10.545) | 5208.401 (7.391) | 5926.066 (39.691) | 5911.445 (10.806) |
+| eigvalsh_f64_512x512 | 5588.264 (11.325) | 6196.684 (14.741) | 5556.683 (15.345) | 6119.482 (64.957) | 6032.290 (36.956) |
+| pinv_f32_512x512 | unsupported | unsupported | 34277.170 (14.020) | 31528.005 (183.101) | 31398.450 (19.114) |
+| pinv_f64_512x512 | unsupported | unsupported | 84627.347 (17.756) | 78119.022 (135.544) | 78078.801 (60.173) |
+| inv_f32_512x512 | unsupported | unsupported | 1505.572 (4.653) | 1505.072 (10.765) | 1544.423 (15.103) |
+| inv_f64_512x512 | unsupported | unsupported | 1800.402 (6.003) | 1839.634 (10.553) | 1796.327 (5.763) |
+| det_f32_512x512 | 1647.517 (4.903) | 1707.774 (9.230) | 1172.921 (3.545) | 1210.917 (26.141) | 1229.978 (25.133) |
+| det_f64_512x512 | 2566.869 (11.345) | 2660.553 (17.105) | 1316.880 (7.805) | 1411.659 (10.530) | 1394.068 (29.303) |
+| norm_f32_512x512 | 95.461 (0.421) | 118.643 (0.279) | 10.817 (0.080) | 49.319 (15.120) | 52.308 (0.605) |
+| norm_f64_512x512 | 95.593 (0.369) | 120.359 (0.629) | 10.804 (0.100) | 48.049 (0.513) | 56.079 (0.792) |
+| triangular_solve_f32_512x512 | 169.935 (0.618) | 223.462 (0.647) | 120.503 (0.041) | 184.583 (4.664) | 182.656 (1.726) |
+| triangular_solve_f64_512x512 | 194.502 (0.693) | 246.548 (1.899) | 307.061 (0.152) | 215.783 (3.834) | 215.922 (2.865) |
+| svd_full_square_f32_256x256 | 10817.655 (10.470) | 10851.636 (14.765) | 11370.034 (12.145) | 10845.286 (27.780) | 10877.878 (32.336) |
+| svd_full_tall_f32_512x256 | 11248.300 (14.831) | 11260.910 (16.841) | 11883.463 (22.236) | 11264.961 (13.912) | 11300.352 (24.276) |
+| svd_full_wide_f32_256x512 | 10971.330 (11.285) | 10932.639 (11.025) | 11070.395 (14.815) | 10998.372 (17.716) | 11022.263 (21.817) |
+| slogdet_positive_f32_256x256 | 781.452 (2.120) | 833.979 (5.289) | 530.831 (1.319) | 518.341 (11.690) | 528.498 (11.055) |
+| slogdet_negative_f32_256x256 | 778.632 (3.465) | 834.952 (2.616) | 530.673 (0.747) | 536.036 (2.462) | 541.086 (4.900) |
+| svd_full_square_f64_256x256 | 25818.925 (7.244) | 25789.924 (17.886) | 25711.213 (10.196) | 25808.126 (13.211) | 25837.267 (30.962) |
+| svd_full_tall_f64_512x256 | 19611.180 (15.126) | 19650.262 (12.770) | 19816.747 (24.006) | 19640.351 (20.361) | 19614.581 (20.401) |
+| svd_full_wide_f64_256x512 | 17730.395 (13.095) | 17792.567 (14.456) | 18191.361 (32.702) | 17815.079 (18.136) | 17818.119 (450.865) |
+| slogdet_positive_f64_256x256 | 824.379 (2.245) | 875.178 (2.929) | 569.160 (0.642) | 559.779 (4.085) | 573.565 (13.804) |
+| slogdet_negative_f64_256x256 | 823.094 (2.718) | 874.856 (2.731) | 567.250 (1.058) | 562.370 (3.786) | 576.265 (2.698) |
+| svd_full_square_c32_256x256 | 20311.824 (3.854) | 20386.337 (15.346) | 22071.956 (9.236) | 20428.949 (14.571) | 20383.247 (14.496) |
+| svd_full_tall_c32_512x256 | 19621.650 (9.726) | 19687.573 (15.556) | 20017.675 (22.736) | 19670.832 (23.281) | 19704.695 (41.281) |
+| svd_full_wide_c32_256x512 | 19804.536 (6.961) | 19831.408 (9.880) | 20218.692 (17.265) | 19822.478 (30.386) | 19868.891 (24.335) |
+| slogdet_positive_c32_256x256 | 832.021 (3.534) | 941.750 (13.704) | 576.582 (0.916) | 558.639 (2.841) | 559.937 (2.471) |
+| slogdet_negative_c32_256x256 | 831.271 (3.723) | 941.040 (22.127) | 574.347 (1.239) | 579.533 (3.006) | 576.185 (2.946) |
+| svd_full_square_c64_256x256 | 60065.572 (19.995) | 60133.815 (15.575) | 63621.528 (27.087) | 60193.050 (262.579) | 60253.483 (24.021) |
+| svd_full_tall_c64_512x256 | 42704.470 (40.392) | 42704.741 (20.306) | 40996.053 (14.625) | 40692.483 (17.741) | 40769.446 (21.176) |
+| svd_full_wide_c64_256x512 | 42831.345 (29.091) | 42886.087 (17.015) | 41572.943 (20.291) | 40803.157 (21.135) | 40837.998 (48.212) |
+| slogdet_positive_c64_256x256 | 889.844 (2.934) | 951.533 (4.373) | 631.645 (1.351) | 651.893 (19.929) | 641.330 (5.917) |
+| slogdet_negative_c64_256x256 | 889.023 (3.286) | 951.993 (15.190) | 628.232 (0.984) | 650.470 (4.095) | 638.360 (1.272) |
+| householder_qr_square_f32_256x256 | 931.307 (2.334) | 983.922 (3.449) | 911.264 (1.676) | 994.789 (26.524) | 945.148 (2.404) |
+| householder_qr_tall_f32_512x256 | 1217.628 (4.196) | 1276.889 (5.965) | 1202.087 (5.816) | 1268.444 (33.269) | 1288.564 (47.114) |
+| householder_qr_wide_f32_256x512 | 1107.678 (10.555) | 1208.121 (13.755) | 1112.099 (6.683) | 1207.452 (35.559) | 1249.983 (50.535) |
+| householder_qr_square_f64_256x256 | 1038.331 (6.676) | 1081.268 (3.883) | 1019.600 (2.762) | 1073.322 (31.091) | 1091.883 (33.383) |
+| householder_qr_tall_f64_512x256 | 1346.307 (5.006) | 1392.424 (5.998) | 1325.671 (8.180) | 1397.819 (11.903) | 1417.249 (8.700) |
+| householder_qr_wide_f64_256x512 | 1267.934 (7.160) | 1321.561 (11.503) | 1235.318 (17.303) | 1314.251 (30.394) | 1327.596 (30.208) |
+| householder_qr_square_c32_256x256 | 1002.155 (1.718) | 1046.691 (4.738) | 975.822 (1.779) | 1019.181 (24.011) | 1033.281 (17.046) |
+| householder_qr_tall_c32_512x256 | 1312.896 (6.740) | 1361.307 (4.908) | 1272.544 (5.280) | 1345.032 (19.323) | 1379.298 (18.240) |
+| householder_qr_wide_c32_256x512 | 1237.348 (10.361) | 1289.100 (14.188) | 1206.712 (12.493) | 1274.364 (14.488) | 1304.050 (36.366) |
+| slogdet_phase_c32_256x256 | 833.059 (3.841) | 892.459 (2.338) | 576.897 (1.460) | 553.997 (1.400) | 577.102 (0.974) |
+| householder_qr_square_c64_256x256 | 1204.952 (4.325) | 1246.133 (3.231) | 1174.356 (4.318) | 1228.038 (11.666) | 1286.604 (28.034) |
+| householder_qr_tall_c64_512x256 | 2279.769 (12.400) | 2311.760 (10.310) | 1645.987 (6.855) | 1658.193 (7.678) | 1677.039 (7.080) |
+| householder_qr_wide_c64_256x512 | 2135.254 (18.045) | 2154.405 (15.145) | 1485.386 (7.853) | 1541.119 (15.181) | 1586.990 (18.156) |
+| slogdet_phase_c64_256x256 | 889.028 (2.140) | 945.063 (4.275) | 629.154 (1.136) | 628.797 (4.575) | 655.466 (4.796) |
+| householder_from_factors_default_f32_512x256 | 1451.780 (8.506) | 1519.668 (7.611) | unsupported | unsupported | unsupported |
 | householder_append_default_f32_512x256 | unsupported | unsupported | unsupported | unsupported | unsupported |
-| householder_r_default_f32_512x256 | 34.698 (0.201) | 48.570 (0.301) | 5.033 (0.026) | 40.069 (0.283) | 41.461 (0.204) |
-| householder_q_columns_prefix_f32_512x256 | unsupported | unsupported | 64.817 (2.031) | 151.903 (12.971) | 103.556 (19.007) |
-| householder_q_columns_complement_f32_512x256 | unsupported | unsupported | 166.399 (0.212) | unsupported | unsupported |
-| householder_from_factors_default_f64_512x256 | 1551.716 (10.860) | 3304.149 (76.438) | unsupported | unsupported | unsupported |
+| householder_r_default_f32_512x256 | 41.421 (1.651) | 48.637 (0.469) | 5.193 (0.130) | 39.895 (0.668) | 50.347 (1.188) |
+| householder_q_columns_prefix_f32_512x256 | unsupported | unsupported | 66.001 (0.999) | 129.183 (1.067) | 108.624 (3.131) |
+| householder_q_columns_complement_f32_512x256 | unsupported | unsupported | 164.518 (0.150) | unsupported | unsupported |
+| householder_from_factors_default_f64_512x256 | 1584.465 (7.335) | 1664.222 (9.043) | unsupported | unsupported | unsupported |
 | householder_append_default_f64_512x256 | unsupported | unsupported | unsupported | unsupported | unsupported |
-| householder_r_default_f64_512x256 | 34.574 (0.171) | 48.938 (0.237) | 5.069 (0.023) | 43.905 (3.066) | 41.426 (0.362) |
-| householder_q_columns_prefix_f64_512x256 | unsupported | unsupported | 75.228 (0.298) | 150.168 (14.547) | 105.807 (1.945) |
-| householder_q_columns_complement_f64_512x256 | unsupported | unsupported | 165.741 (0.220) | unsupported | unsupported |
-| householder_from_factors_default_c32_512x256 | 1540.480 (10.388) | 3277.198 (25.331) | unsupported | unsupported | unsupported |
+| householder_r_default_f64_512x256 | 38.098 (0.097) | 50.827 (0.615) | 5.259 (0.070) | 39.221 (0.276) | 50.496 (1.335) |
+| householder_q_columns_prefix_f64_512x256 | unsupported | unsupported | 78.849 (1.367) | 135.972 (15.661) | 108.073 (0.838) |
+| householder_q_columns_complement_f64_512x256 | unsupported | unsupported | 164.362 (0.395) | unsupported | unsupported |
+| householder_from_factors_default_c32_512x256 | 1560.814 (11.590) | 1600.265 (9.743) | unsupported | unsupported | unsupported |
 | householder_append_default_c32_512x256 | unsupported | unsupported | unsupported | unsupported | unsupported |
-| householder_r_default_c32_512x256 | 37.896 (0.147) | 49.325 (0.142) | 5.253 (0.011) | 44.365 (6.446) | 41.352 (0.240) |
-| householder_q_columns_prefix_c32_512x256 | unsupported | unsupported | 91.455 (0.033) | 151.072 (10.639) | 97.739 (1.146) |
-| householder_q_columns_complement_c32_512x256 | unsupported | unsupported | 251.514 (0.178) | unsupported | unsupported |
-| householder_from_factors_default_c64_512x256 | 1893.182 (7.155) | 3650.221 (23.245) | unsupported | unsupported | unsupported |
+| householder_r_default_c32_512x256 | 37.879 (0.216) | 48.398 (3.114) | 5.274 (0.103) | 39.462 (0.234) | 42.097 (1.238) |
+| householder_q_columns_prefix_c32_512x256 | unsupported | unsupported | 90.910 (0.080) | 127.919 (0.806) | 105.583 (5.209) |
+| householder_q_columns_complement_c32_512x256 | unsupported | unsupported | 249.885 (0.121) | unsupported | unsupported |
+| householder_from_factors_default_c64_512x256 | 1883.876 (8.243) | 1958.708 (12.676) | unsupported | unsupported | unsupported |
 | householder_append_default_c64_512x256 | unsupported | unsupported | unsupported | unsupported | unsupported |
-| householder_r_default_c64_512x256 | 37.194 (0.428) | 45.174 (2.803) | 5.230 (0.023) | 48.592 (3.018) | 41.892 (0.161) |
-| householder_q_columns_prefix_c64_512x256 | unsupported | unsupported | 73.864 (0.229) | 156.098 (6.817) | 106.284 (0.492) |
-| householder_q_columns_complement_c64_512x256 | unsupported | unsupported | 253.176 (0.367) | unsupported | unsupported |
-| lu_square_f32_s256 | 623.948 (2.609) | 2403.559 (101.628) | unsupported | unsupported | unsupported |
-| lu_square_f64_s256 | 659.114 (2.861) | 2427.000 (120.064) | unsupported | unsupported | unsupported |
-| lu_square_c32_s256 | 662.224 (1.536) | 2422.110 (86.122) | unsupported | unsupported | unsupported |
-| lu_square_c64_s256 | 718.776 (1.480) | 2551.664 (108.704) | unsupported | unsupported | unsupported |
-| lu_tall_f32_s256 | 769.320 (2.955) | 2616.876 (34.637) | unsupported | unsupported | unsupported |
-| lu_tall_f64_s256 | 838.435 (2.591) | 2689.689 (13.680) | unsupported | unsupported | unsupported |
-| lu_tall_c32_s256 | 816.227 (1.624) | 2663.018 (13.620) | unsupported | unsupported | unsupported |
-| lu_tall_c64_s256 | 2290.386 (8.555) | 4187.028 (19.986) | unsupported | unsupported | unsupported |
-| lu_wide_f32_s256 | 672.882 (1.264) | 2515.403 (16.256) | unsupported | unsupported | unsupported |
-| lu_wide_f64_s256 | 749.830 (1.150) | 2600.426 (23.381) | unsupported | unsupported | unsupported |
-| lu_wide_c32_s256 | 730.339 (1.778) | 2586.626 (21.670) | unsupported | unsupported | unsupported |
-| lu_wide_c64_s256 | 2285.445 (11.745) | 4167.597 (14.336) | unsupported | unsupported | unsupported |
+| householder_r_default_c64_512x256 | 38.689 (0.144) | 49.653 (0.366) | 5.347 (0.082) | 39.224 (0.292) | 43.226 (2.679) |
+| householder_q_columns_prefix_c64_512x256 | unsupported | unsupported | 77.534 (1.184) | 131.160 (0.744) | 112.811 (2.160) |
+| householder_q_columns_complement_c64_512x256 | unsupported | unsupported | 251.978 (0.254) | unsupported | unsupported |
+| lu_square_f32_s256 | 621.109 (1.900) | 657.070 (2.541) | unsupported | unsupported | unsupported |
+| lu_square_f64_s256 | 657.418 (0.989) | 704.647 (2.908) | unsupported | unsupported | unsupported |
+| lu_square_c32_s256 | 661.143 (3.575) | 707.539 (5.345) | unsupported | unsupported | unsupported |
+| lu_square_c64_s256 | 715.190 (1.404) | 758.094 (7.554) | unsupported | unsupported | unsupported |
+| lu_tall_f32_s256 | 770.274 (2.538) | 810.206 (3.406) | unsupported | unsupported | unsupported |
+| lu_tall_f64_s256 | 837.734 (1.125) | 872.828 (2.009) | unsupported | unsupported | unsupported |
+| lu_tall_c32_s256 | 817.473 (2.760) | 853.117 (2.438) | unsupported | unsupported | unsupported |
+| lu_tall_c64_s256 | 2258.428 (15.120) | 2314.180 (14.701) | unsupported | unsupported | unsupported |
+| lu_wide_f32_s256 | 668.358 (3.434) | 707.132 (2.864) | unsupported | unsupported | unsupported |
+| lu_wide_f64_s256 | 749.149 (3.024) | 785.002 (2.785) | unsupported | unsupported | unsupported |
+| lu_wide_c32_s256 | 727.908 (1.925) | 765.262 (2.359) | unsupported | unsupported | unsupported |
+| lu_wide_c64_s256 | 2337.171 (107.648) | 2394.363 (18.286) | unsupported | unsupported | unsupported |
 
 ## Sampling
 
-| Case | Backend | Ops/sample | Samples | Median batch ms | Verification error/tolerance |
-| --- | --- | ---: | ---: | ---: | ---: |
-| cholesky_f32_512x512 | tenferro-cuda-direct | 8 | 15 | 2.284 | 0.0003558 |
-| cholesky_f64_512x512 | tenferro-cuda-direct | 1 | 15 | 2.142 | 4.418e-07 |
-| svdvals_f32_512x512 | tenferro-cuda-direct | 1 | 15 | 31.066 | 0.1547 |
-| svdvals_f64_512x512 | tenferro-cuda-direct | 1 | 15 | 77.516 | 0.0002063 |
-| eigvalsh_f32_512x512 | tenferro-cuda-direct | 1 | 15 | 5.197 | 0.008342 |
-| eigvalsh_f64_512x512 | tenferro-cuda-direct | 1 | 15 | 5.571 | 1.55e-06 |
-| pinv_f32_512x512 | tenferro-cuda-direct | — | — | — | CUDA concrete route fails at revision 8b13220c: pinv_from_svd passes a host threshold scalar to mul_read. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906. |
-| pinv_f64_512x512 | tenferro-cuda-direct | — | — | — | CUDA concrete route fails at revision 8b13220c: pinv_from_svd passes a host threshold scalar to mul_read. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906. |
-| inv_f32_512x512 | tenferro-cuda-direct | — | — | — | CUDA concrete route fails at revision 8b13220c: inv_owned/eye_like passes a host scalar to broadcast_in_dim. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906. |
-| inv_f64_512x512 | tenferro-cuda-direct | — | — | — | CUDA concrete route fails at revision 8b13220c: inv_owned/eye_like passes a host scalar to broadcast_in_dim. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906. |
-| det_f32_512x512 | tenferro-cuda-direct | 2 | 15 | 3.241 | 0.004748 |
-| det_f64_512x512 | tenferro-cuda-direct | 1 | 15 | 2.268 | 1.426e-05 |
-| norm_f32_512x512 | tenferro-cuda-direct | 32 | 15 | 2.805 | 0 |
-| norm_f64_512x512 | tenferro-cuda-direct | 32 | 15 | 2.855 | 1.909e-07 |
-| triangular_solve_f32_512x512 | tenferro-cuda-direct | 16 | 15 | 2.708 | 0.0007877 |
-| triangular_solve_f64_512x512 | tenferro-cuda-direct | 16 | 15 | 3.104 | 1.157e-06 |
-| svd_full_square_f32_256x256 | tenferro-cuda-direct | 1 | 15 | 10.775 | 0.1152 |
-| svd_full_tall_f32_512x256 | tenferro-cuda-direct | 1 | 15 | 11.152 | 0.1022 |
-| svd_full_wide_f32_256x512 | tenferro-cuda-direct | 1 | 15 | 10.904 | 0.1057 |
-| slogdet_positive_f32_256x256 | tenferro-cuda-direct | 4 | 15 | 3.128 | 0.0005003 |
-| slogdet_negative_f32_256x256 | tenferro-cuda-direct | 4 | 15 | 3.135 | 0.0005003 |
-| svd_full_square_f64_256x256 | tenferro-cuda-direct | 1 | 15 | 25.702 | 8.171e-05 |
-| svd_full_tall_f64_512x256 | tenferro-cuda-direct | 1 | 15 | 19.520 | 7.76e-05 |
-| svd_full_wide_f64_256x512 | tenferro-cuda-direct | 1 | 15 | 17.638 | 7.938e-05 |
-| slogdet_positive_f64_256x256 | tenferro-cuda-direct | 4 | 15 | 3.193 | 1.864e-06 |
-| slogdet_negative_f64_256x256 | tenferro-cuda-direct | 4 | 15 | 3.196 | 1.864e-06 |
-| svd_full_square_c32_256x256 | tenferro-cuda-direct | 1 | 15 | 20.293 | 0.133 |
-| svd_full_tall_c32_512x256 | tenferro-cuda-direct | 1 | 15 | 19.618 | 0.1126 |
-| svd_full_wide_c32_256x512 | tenferro-cuda-direct | 1 | 15 | 19.815 | 0.1103 |
-| slogdet_positive_c32_256x256 | tenferro-cuda-direct | 4 | 15 | 3.323 | 0.01211 |
-| slogdet_negative_c32_256x256 | tenferro-cuda-direct | 4 | 15 | 3.330 | 0.01211 |
-| svd_full_square_c64_256x256 | tenferro-cuda-direct | 1 | 15 | 59.993 | 0.000204 |
-| svd_full_tall_c64_512x256 | tenferro-cuda-direct | 1 | 15 | 42.626 | 0.0002022 |
-| svd_full_wide_c64_256x512 | tenferro-cuda-direct | 1 | 15 | 42.803 | 0.0001943 |
-| slogdet_positive_c64_256x256 | tenferro-cuda-direct | 4 | 15 | 3.585 | 1.025e-06 |
-| slogdet_negative_c64_256x256 | tenferro-cuda-direct | 4 | 15 | 3.565 | 1.025e-06 |
-| householder_qr_square_f32_256x256 | tenferro-cuda-direct | 4 | 15 | 3.699 | 0.001075 |
-| householder_qr_tall_f32_512x256 | tenferro-cuda-direct | 2 | 15 | 2.427 | 0.001435 |
-| householder_qr_wide_f32_256x512 | tenferro-cuda-direct | 2 | 15 | 2.210 | 0.0009125 |
-| householder_qr_square_f64_256x256 | tenferro-cuda-direct | 2 | 15 | 2.075 | 1.098e-06 |
-| householder_qr_tall_f64_512x256 | tenferro-cuda-direct | 2 | 15 | 2.695 | 9.992e-07 |
-| householder_qr_wide_f64_256x512 | tenferro-cuda-direct | 2 | 15 | 2.550 | 1.649e-06 |
-| householder_qr_square_c32_256x256 | tenferro-cuda-direct | 2 | 15 | 2.008 | 0.001198 |
-| householder_qr_tall_c32_512x256 | tenferro-cuda-direct | 2 | 15 | 2.625 | 0.001185 |
-| householder_qr_wide_c32_256x512 | tenferro-cuda-direct | 2 | 15 | 2.455 | 0.001329 |
-| slogdet_phase_c32_256x256 | tenferro-cuda-direct | 4 | 15 | 3.327 | 0.01211 |
-| householder_qr_square_c64_256x256 | tenferro-cuda-direct | 2 | 15 | 2.413 | 1.208e-06 |
-| householder_qr_tall_c64_512x256 | tenferro-cuda-direct | 1 | 15 | 2.249 | 1.11e-06 |
-| householder_qr_wide_c64_256x512 | tenferro-cuda-direct | 1 | 15 | 2.116 | 1.206e-06 |
-| slogdet_phase_c64_256x256 | tenferro-cuda-direct | 4 | 15 | 3.586 | 1.025e-06 |
-| householder_from_factors_default_f32_512x256 | tenferro-cuda-direct | 2 | 15 | 2.862 | 0.0008522 |
-| householder_append_default_f32_512x256 | tenferro-cuda-direct | — | — | — | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
-| householder_r_default_f32_512x256 | tenferro-cuda-direct | 64 | 15 | 2.221 | 0.001415 |
-| householder_q_columns_prefix_f32_512x256 | tenferro-cuda-direct | — | — | — | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
-| householder_q_columns_complement_f32_512x256 | tenferro-cuda-direct | — | — | — | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
-| householder_from_factors_default_f64_512x256 | tenferro-cuda-direct | 2 | 15 | 3.103 | 8.882e-07 |
-| householder_append_default_f64_512x256 | tenferro-cuda-direct | — | — | — | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
-| householder_r_default_f64_512x256 | tenferro-cuda-direct | 64 | 15 | 2.213 | 9.976e-07 |
-| householder_q_columns_prefix_f64_512x256 | tenferro-cuda-direct | — | — | — | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
-| householder_q_columns_complement_f64_512x256 | tenferro-cuda-direct | — | — | — | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
-| householder_from_factors_default_c32_512x256 | tenferro-cuda-direct | 2 | 15 | 3.081 | 0.001103 |
-| householder_append_default_c32_512x256 | tenferro-cuda-direct | — | — | — | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
-| householder_r_default_c32_512x256 | tenferro-cuda-direct | 64 | 15 | 2.425 | 0.001069 |
-| householder_q_columns_prefix_c32_512x256 | tenferro-cuda-direct | — | — | — | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
-| householder_q_columns_complement_c32_512x256 | tenferro-cuda-direct | — | — | — | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
-| householder_from_factors_default_c64_512x256 | tenferro-cuda-direct | 2 | 15 | 3.786 | 9.992e-07 |
-| householder_append_default_c64_512x256 | tenferro-cuda-direct | — | — | — | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
-| householder_r_default_c64_512x256 | tenferro-cuda-direct | 64 | 15 | 2.380 | 9.985e-07 |
-| householder_q_columns_prefix_c64_512x256 | tenferro-cuda-direct | — | — | — | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
-| householder_q_columns_complement_c64_512x256 | tenferro-cuda-direct | — | — | — | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
-| lu_square_f32_s256 | tenferro-cuda-direct | 4 | 15 | 2.496 | 0.001428 |
-| lu_square_f64_s256 | tenferro-cuda-direct | 4 | 15 | 2.636 | 1.102e-06 |
-| lu_square_c32_s256 | tenferro-cuda-direct | 4 | 15 | 2.649 | 0.001541 |
-| lu_square_c64_s256 | tenferro-cuda-direct | 4 | 15 | 2.875 | 1.431e-06 |
-| lu_tall_f32_s256 | tenferro-cuda-direct | 4 | 15 | 3.077 | 0.001428 |
-| lu_tall_f64_s256 | tenferro-cuda-direct | 4 | 15 | 3.354 | 1.102e-06 |
-| lu_tall_c32_s256 | tenferro-cuda-direct | 4 | 15 | 3.265 | 0.002239 |
-| lu_tall_c64_s256 | tenferro-cuda-direct | 1 | 15 | 2.290 | 1.542e-06 |
-| lu_wide_f32_s256 | tenferro-cuda-direct | 4 | 15 | 2.692 | 0.001297 |
-| lu_wide_f64_s256 | tenferro-cuda-direct | 4 | 15 | 2.999 | 8.806e-07 |
-| lu_wide_c32_s256 | tenferro-cuda-direct | 4 | 15 | 2.921 | 0.002021 |
-| lu_wide_c64_s256 | tenferro-cuda-direct | 1 | 15 | 2.285 | 1.433e-06 |
-| cholesky_f32_512x512 | tenferro-cuda-eager | 1 | 15 | 2.149 | 0.0003558 |
-| cholesky_f64_512x512 | tenferro-cuda-eager | 1 | 15 | 4.032 | 4.418e-07 |
-| svdvals_f32_512x512 | tenferro-cuda-eager | — | — | — | EagerSessionLinalgExt has no values-only svdvals entry point; returning and discarding singular vectors is not equivalent. |
-| svdvals_f64_512x512 | tenferro-cuda-eager | — | — | — | EagerSessionLinalgExt has no values-only svdvals entry point; returning and discarding singular vectors is not equivalent. |
-| eigvalsh_f32_512x512 | tenferro-cuda-eager | 1 | 15 | 7.082 | 0.008342 |
-| eigvalsh_f64_512x512 | tenferro-cuda-eager | 1 | 15 | 8.025 | 1.55e-06 |
-| pinv_f32_512x512 | tenferro-cuda-eager | — | — | — | Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer. |
-| pinv_f64_512x512 | tenferro-cuda-eager | — | — | — | Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer. |
-| inv_f32_512x512 | tenferro-cuda-eager | — | — | — | Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer. |
-| inv_f64_512x512 | tenferro-cuda-eager | — | — | — | Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer. |
-| det_f32_512x512 | tenferro-cuda-eager | 1 | 15 | 3.286 | 0.004748 |
-| det_f64_512x512 | tenferro-cuda-eager | 1 | 15 | 4.319 | 1.426e-05 |
-| norm_f32_512x512 | tenferro-cuda-eager | 32 | 15 | 3.909 | 0 |
-| norm_f64_512x512 | tenferro-cuda-eager | 32 | 15 | 3.829 | 1.909e-07 |
-| triangular_solve_f32_512x512 | tenferro-cuda-eager | 1 | 15 | 2.013 | 0.0007877 |
-| triangular_solve_f64_512x512 | tenferro-cuda-eager | 1 | 15 | 2.060 | 1.157e-06 |
-| svd_full_square_f32_256x256 | tenferro-cuda-eager | 1 | 15 | 12.625 | 0.1152 |
-| svd_full_tall_f32_512x256 | tenferro-cuda-eager | 1 | 15 | 12.981 | 0.1022 |
-| svd_full_wide_f32_256x512 | tenferro-cuda-eager | 1 | 15 | 12.720 | 0.1057 |
-| slogdet_positive_f32_256x256 | tenferro-cuda-eager | 1 | 15 | 2.485 | 0.0005003 |
-| slogdet_negative_f32_256x256 | tenferro-cuda-eager | 1 | 15 | 2.468 | 0.0005003 |
-| svd_full_square_f64_256x256 | tenferro-cuda-eager | 1 | 15 | 27.464 | 8.171e-05 |
-| svd_full_tall_f64_512x256 | tenferro-cuda-eager | 1 | 15 | 21.266 | 7.76e-05 |
-| svd_full_wide_f64_256x512 | tenferro-cuda-eager | 1 | 15 | 19.520 | 7.938e-05 |
-| slogdet_positive_f64_256x256 | tenferro-cuda-eager | 1 | 15 | 2.516 | 1.864e-06 |
-| slogdet_negative_f64_256x256 | tenferro-cuda-eager | 1 | 15 | 2.516 | 1.864e-06 |
-| svd_full_square_c32_256x256 | tenferro-cuda-eager | 1 | 15 | 22.013 | 0.133 |
-| svd_full_tall_c32_512x256 | tenferro-cuda-eager | 1 | 15 | 21.398 | 0.1126 |
-| svd_full_wide_c32_256x512 | tenferro-cuda-eager | 1 | 15 | 21.625 | 0.1103 |
-| slogdet_positive_c32_256x256 | tenferro-cuda-eager | 1 | 15 | 2.526 | 0.01211 |
-| slogdet_negative_c32_256x256 | tenferro-cuda-eager | 1 | 15 | 2.529 | 0.01211 |
-| svd_full_square_c64_256x256 | tenferro-cuda-eager | 1 | 15 | 61.775 | 0.000204 |
-| svd_full_tall_c64_512x256 | tenferro-cuda-eager | 1 | 15 | 44.580 | 0.0002022 |
-| svd_full_wide_c64_256x512 | tenferro-cuda-eager | 1 | 15 | 44.345 | 0.0001943 |
-| slogdet_positive_c64_256x256 | tenferro-cuda-eager | 1 | 15 | 2.527 | 1.025e-06 |
-| slogdet_negative_c64_256x256 | tenferro-cuda-eager | 1 | 15 | 2.469 | 1.025e-06 |
-| householder_qr_square_f32_256x256 | tenferro-cuda-eager | 1 | 15 | 2.740 | 0.001075 |
-| householder_qr_tall_f32_512x256 | tenferro-cuda-eager | 1 | 15 | 3.101 | 0.001435 |
-| householder_qr_wide_f32_256x512 | tenferro-cuda-eager | 1 | 15 | 3.028 | 0.0009125 |
-| householder_qr_square_f64_256x256 | tenferro-cuda-eager | 1 | 15 | 2.888 | 1.098e-06 |
-| householder_qr_tall_f64_512x256 | tenferro-cuda-eager | 1 | 15 | 3.179 | 9.992e-07 |
-| householder_qr_wide_f64_256x512 | tenferro-cuda-eager | 1 | 15 | 3.059 | 1.649e-06 |
-| householder_qr_square_c32_256x256 | tenferro-cuda-eager | 1 | 15 | 2.766 | 0.001198 |
-| householder_qr_tall_c32_512x256 | tenferro-cuda-eager | 1 | 15 | 3.076 | 0.001185 |
-| householder_qr_wide_c32_256x512 | tenferro-cuda-eager | 1 | 15 | 3.093 | 0.001329 |
-| slogdet_phase_c32_256x256 | tenferro-cuda-eager | 1 | 15 | 2.526 | 0.01211 |
-| householder_qr_square_c64_256x256 | tenferro-cuda-eager | 1 | 15 | 3.046 | 1.208e-06 |
-| householder_qr_tall_c64_512x256 | tenferro-cuda-eager | 1 | 15 | 4.116 | 1.11e-06 |
-| householder_qr_wide_c64_256x512 | tenferro-cuda-eager | 1 | 15 | 4.032 | 1.206e-06 |
-| slogdet_phase_c64_256x256 | tenferro-cuda-eager | 1 | 15 | 2.581 | 1.025e-06 |
-| householder_from_factors_default_f32_512x256 | tenferro-cuda-eager | 1 | 15 | 3.194 | 0.0008522 |
-| householder_append_default_f32_512x256 | tenferro-cuda-eager | — | — | — | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
-| householder_r_default_f32_512x256 | tenferro-cuda-eager | 64 | 15 | 3.109 | 0.001415 |
-| householder_q_columns_prefix_f32_512x256 | tenferro-cuda-eager | — | — | — | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
-| householder_q_columns_complement_f32_512x256 | tenferro-cuda-eager | — | — | — | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
-| householder_from_factors_default_f64_512x256 | tenferro-cuda-eager | 1 | 15 | 3.304 | 8.882e-07 |
-| householder_append_default_f64_512x256 | tenferro-cuda-eager | — | — | — | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
-| householder_r_default_f64_512x256 | tenferro-cuda-eager | 64 | 15 | 3.132 | 9.976e-07 |
-| householder_q_columns_prefix_f64_512x256 | tenferro-cuda-eager | — | — | — | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
-| householder_q_columns_complement_f64_512x256 | tenferro-cuda-eager | — | — | — | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
-| householder_from_factors_default_c32_512x256 | tenferro-cuda-eager | 1 | 15 | 3.277 | 0.001103 |
-| householder_append_default_c32_512x256 | tenferro-cuda-eager | — | — | — | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
-| householder_r_default_c32_512x256 | tenferro-cuda-eager | 64 | 15 | 3.157 | 0.001069 |
-| householder_q_columns_prefix_c32_512x256 | tenferro-cuda-eager | — | — | — | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
-| householder_q_columns_complement_c32_512x256 | tenferro-cuda-eager | — | — | — | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
-| householder_from_factors_default_c64_512x256 | tenferro-cuda-eager | 1 | 15 | 3.650 | 9.992e-07 |
-| householder_append_default_c64_512x256 | tenferro-cuda-eager | — | — | — | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
-| householder_r_default_c64_512x256 | tenferro-cuda-eager | 64 | 15 | 2.891 | 9.985e-07 |
-| householder_q_columns_prefix_c64_512x256 | tenferro-cuda-eager | — | — | — | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
-| householder_q_columns_complement_c64_512x256 | tenferro-cuda-eager | — | — | — | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
-| lu_square_f32_s256 | tenferro-cuda-eager | 1 | 15 | 2.404 | 0.001428 |
-| lu_square_f64_s256 | tenferro-cuda-eager | 1 | 15 | 2.427 | 1.102e-06 |
-| lu_square_c32_s256 | tenferro-cuda-eager | 1 | 15 | 2.422 | 0.001541 |
-| lu_square_c64_s256 | tenferro-cuda-eager | 1 | 15 | 2.552 | 1.431e-06 |
-| lu_tall_f32_s256 | tenferro-cuda-eager | 1 | 15 | 2.617 | 0.001428 |
-| lu_tall_f64_s256 | tenferro-cuda-eager | 1 | 15 | 2.690 | 1.102e-06 |
-| lu_tall_c32_s256 | tenferro-cuda-eager | 1 | 15 | 2.663 | 0.002239 |
-| lu_tall_c64_s256 | tenferro-cuda-eager | 1 | 15 | 4.187 | 1.542e-06 |
-| lu_wide_f32_s256 | tenferro-cuda-eager | 1 | 15 | 2.515 | 0.001297 |
-| lu_wide_f64_s256 | tenferro-cuda-eager | 1 | 15 | 2.600 | 8.806e-07 |
-| lu_wide_c32_s256 | tenferro-cuda-eager | 1 | 15 | 2.587 | 0.002021 |
-| lu_wide_c64_s256 | tenferro-cuda-eager | 1 | 15 | 4.168 | 1.433e-06 |
-| cholesky_f32_512x512 | pytorch-cuda | 8 | 15 | 2.202 | 0.0003558 |
-| cholesky_f64_512x512 | pytorch-cuda | 8 | 15 | 2.606 | 4.418e-07 |
-| svdvals_f32_512x512 | pytorch-cuda | 1 | 15 | 34.149 | 0.1733 |
-| svdvals_f64_512x512 | pytorch-cuda | 1 | 15 | 84.565 | 0.0002066 |
-| eigvalsh_f32_512x512 | pytorch-cuda | 1 | 15 | 5.223 | 0.008342 |
-| eigvalsh_f64_512x512 | pytorch-cuda | 1 | 15 | 5.584 | 1.55e-06 |
-| pinv_f32_512x512 | pytorch-cuda | 1 | 15 | 34.282 | 0.01174 |
-| pinv_f64_512x512 | pytorch-cuda | 1 | 15 | 84.754 | 8.747e-06 |
-| inv_f32_512x512 | pytorch-cuda | 2 | 15 | 2.989 | 0.002107 |
-| inv_f64_512x512 | pytorch-cuda | 2 | 15 | 3.585 | 1.85e-06 |
-| det_f32_512x512 | pytorch-cuda | 2 | 15 | 2.349 | 0.007965 |
-| det_f64_512x512 | pytorch-cuda | 2 | 15 | 2.624 | 1.369e-05 |
-| norm_f32_512x512 | pytorch-cuda | 256 | 15 | 2.305 | 0 |
-| norm_f64_512x512 | pytorch-cuda | 256 | 15 | 2.407 | 1.909e-07 |
-| triangular_solve_f32_512x512 | pytorch-cuda | 32 | 15 | 3.861 | 0.0006008 |
-| triangular_solve_f64_512x512 | pytorch-cuda | 8 | 15 | 2.465 | 6.241e-07 |
-| svd_full_square_f32_256x256 | pytorch-cuda | 1 | 15 | 11.445 | 0.1135 |
-| svd_full_tall_f32_512x256 | pytorch-cuda | 1 | 15 | 11.937 | 0.1033 |
-| svd_full_wide_f32_256x512 | pytorch-cuda | 1 | 15 | 11.132 | 0.106 |
-| slogdet_positive_f32_256x256 | pytorch-cuda | 4 | 15 | 2.128 | 0.0005003 |
-| slogdet_negative_f32_256x256 | pytorch-cuda | 4 | 15 | 2.133 | 0.0005003 |
-| svd_full_square_f64_256x256 | pytorch-cuda | 1 | 15 | 25.803 | 8.105e-05 |
-| svd_full_tall_f64_512x256 | pytorch-cuda | 1 | 15 | 19.907 | 7.76e-05 |
-| svd_full_wide_f64_256x512 | pytorch-cuda | 1 | 15 | 18.262 | 7.938e-05 |
-| slogdet_positive_f64_256x256 | pytorch-cuda | 4 | 15 | 2.269 | 1.708e-06 |
-| slogdet_negative_f64_256x256 | pytorch-cuda | 4 | 15 | 2.290 | 1.708e-06 |
-| svd_full_square_c32_256x256 | pytorch-cuda | 1 | 15 | 22.153 | 0.1305 |
-| svd_full_tall_c32_512x256 | pytorch-cuda | 1 | 15 | 20.058 | 0.1089 |
-| svd_full_wide_c32_256x512 | pytorch-cuda | 1 | 15 | 20.273 | 0.108 |
-| slogdet_positive_c32_256x256 | pytorch-cuda | 4 | 15 | 2.298 | 0.01211 |
-| slogdet_negative_c32_256x256 | pytorch-cuda | 4 | 15 | 2.318 | 0.01211 |
-| svd_full_square_c64_256x256 | pytorch-cuda | 1 | 15 | 63.675 | 0.0002064 |
-| svd_full_tall_c64_512x256 | pytorch-cuda | 1 | 15 | 41.016 | 0.0001992 |
-| svd_full_wide_c64_256x512 | pytorch-cuda | 1 | 15 | 41.597 | 0.0001941 |
-| slogdet_positive_c64_256x256 | pytorch-cuda | 4 | 15 | 2.510 | 1.23e-06 |
-| slogdet_negative_c64_256x256 | pytorch-cuda | 4 | 15 | 2.527 | 1.23e-06 |
-| householder_qr_square_f32_256x256 | pytorch-cuda | 4 | 15 | 3.639 | 0.001043 |
-| householder_qr_tall_f32_512x256 | pytorch-cuda | 2 | 15 | 2.389 | 0.001475 |
-| householder_qr_wide_f32_256x512 | pytorch-cuda | 2 | 15 | 2.199 | 0.0009736 |
-| householder_qr_square_f64_256x256 | pytorch-cuda | 2 | 15 | 2.017 | 1.887e-06 |
-| householder_qr_tall_f64_512x256 | pytorch-cuda | 2 | 15 | 2.642 | 1.887e-06 |
-| householder_qr_wide_f64_256x512 | pytorch-cuda | 2 | 15 | 2.464 | 1.759e-06 |
-| householder_qr_square_c32_256x256 | pytorch-cuda | 4 | 15 | 3.880 | 0.001258 |
-| householder_qr_tall_c32_512x256 | pytorch-cuda | 2 | 15 | 2.539 | 0.001161 |
-| householder_qr_wide_c32_256x512 | pytorch-cuda | 2 | 15 | 2.399 | 0.001226 |
-| slogdet_phase_c32_256x256 | pytorch-cuda | 4 | 15 | 2.296 | 0.01233 |
-| householder_qr_square_c64_256x256 | pytorch-cuda | 2 | 15 | 2.347 | 2.109e-06 |
-| householder_qr_tall_c64_512x256 | pytorch-cuda | 2 | 15 | 3.280 | 2.942e-06 |
-| householder_qr_wide_c64_256x512 | pytorch-cuda | 2 | 15 | 2.969 | 2.276e-06 |
-| slogdet_phase_c64_256x256 | pytorch-cuda | 4 | 15 | 2.513 | 1.025e-06 |
-| householder_from_factors_default_f32_512x256 | pytorch-cuda | — | — | — | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
-| householder_append_default_f32_512x256 | pytorch-cuda | — | — | — | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
-| householder_r_default_f32_512x256 | pytorch-cuda | 256 | 15 | 1.288 | 0.001415 |
-| householder_q_columns_prefix_f32_512x256 | pytorch-cuda | 32 | 15 | 2.074 | 0.0001829 |
-| householder_q_columns_complement_f32_512x256 | pytorch-cuda | 16 | 15 | 2.662 | 8.761e-05 |
-| householder_from_factors_default_f64_512x256 | pytorch-cuda | — | — | — | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
-| householder_append_default_f64_512x256 | pytorch-cuda | — | — | — | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
-| householder_r_default_f64_512x256 | pytorch-cuda | 256 | 15 | 1.298 | 9.976e-07 |
-| householder_q_columns_prefix_f64_512x256 | pytorch-cuda | 32 | 15 | 2.407 | 1.136e-07 |
-| householder_q_columns_complement_f64_512x256 | pytorch-cuda | 16 | 15 | 2.652 | 7.26e-07 |
-| householder_from_factors_default_c32_512x256 | pytorch-cuda | — | — | — | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
-| householder_append_default_c32_512x256 | pytorch-cuda | — | — | — | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
-| householder_r_default_c32_512x256 | pytorch-cuda | 512 | 15 | 2.690 | 0.001069 |
-| householder_q_columns_prefix_c32_512x256 | pytorch-cuda | 32 | 15 | 2.927 | 0.0001246 |
-| householder_q_columns_complement_c32_512x256 | pytorch-cuda | 8 | 15 | 2.012 | 0.0001141 |
-| householder_from_factors_default_c64_512x256 | pytorch-cuda | — | — | — | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
-| householder_append_default_c64_512x256 | pytorch-cuda | — | — | — | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
-| householder_r_default_c64_512x256 | pytorch-cuda | 256 | 15 | 1.339 | 9.985e-07 |
-| householder_q_columns_prefix_c64_512x256 | pytorch-cuda | 32 | 15 | 2.364 | 5.968e-08 |
-| householder_q_columns_complement_c64_512x256 | pytorch-cuda | 8 | 15 | 2.025 | 7.282e-07 |
-| lu_square_f32_s256 | pytorch-cuda | — | — | — | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
-| lu_square_f64_s256 | pytorch-cuda | — | — | — | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
-| lu_square_c32_s256 | pytorch-cuda | — | — | — | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
-| lu_square_c64_s256 | pytorch-cuda | — | — | — | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
-| lu_tall_f32_s256 | pytorch-cuda | — | — | — | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
-| lu_tall_f64_s256 | pytorch-cuda | — | — | — | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
-| lu_tall_c32_s256 | pytorch-cuda | — | — | — | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
-| lu_tall_c64_s256 | pytorch-cuda | — | — | — | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
-| lu_wide_f32_s256 | pytorch-cuda | — | — | — | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
-| lu_wide_f64_s256 | pytorch-cuda | — | — | — | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
-| lu_wide_c32_s256 | pytorch-cuda | — | — | — | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
-| lu_wide_c64_s256 | pytorch-cuda | — | — | — | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
-| cholesky_f32_512x512 | jax-cuda | 16 | 15 | 3.842 | 0.0003558 |
-| cholesky_f64_512x512 | jax-cuda | 8 | 15 | 2.403 | 4.418e-07 |
-| svdvals_f32_512x512 | jax-cuda | 1 | 15 | 31.626 | 0.1547 |
-| svdvals_f64_512x512 | jax-cuda | 1 | 15 | 77.714 | 0.0002063 |
-| eigvalsh_f32_512x512 | jax-cuda | 1 | 15 | 5.818 | 0.008342 |
-| eigvalsh_f64_512x512 | jax-cuda | 1 | 15 | 6.102 | 1.55e-06 |
-| pinv_f32_512x512 | jax-cuda | 1 | 15 | 31.691 | 0.009697 |
-| pinv_f64_512x512 | jax-cuda | 1 | 15 | 78.076 | 8.975e-06 |
-| inv_f32_512x512 | jax-cuda | 2 | 15 | 3.048 | 0.002107 |
-| inv_f64_512x512 | jax-cuda | 2 | 15 | 3.640 | 1.85e-06 |
-| det_f32_512x512 | jax-cuda | 2 | 15 | 2.415 | 0.004748 |
-| det_f64_512x512 | jax-cuda | 2 | 15 | 2.743 | 1.426e-05 |
-| norm_f32_512x512 | jax-cuda | 64 | 15 | 2.894 | 0 |
-| norm_f64_512x512 | jax-cuda | 64 | 15 | 2.854 | 1.909e-07 |
-| triangular_solve_f32_512x512 | jax-cuda | 16 | 15 | 2.905 | 0.0007877 |
-| triangular_solve_f64_512x512 | jax-cuda | 16 | 15 | 3.448 | 1.157e-06 |
-| svd_full_square_f32_256x256 | jax-cuda | 1 | 15 | 10.816 | 0.1152 |
-| svd_full_tall_f32_512x256 | jax-cuda | 1 | 15 | 11.239 | 0.1022 |
-| svd_full_wide_f32_256x512 | jax-cuda | 1 | 15 | 11.060 | 0.1057 |
-| slogdet_positive_f32_256x256 | jax-cuda | 4 | 15 | 2.069 | 0.0005003 |
-| slogdet_negative_f32_256x256 | jax-cuda | 4 | 15 | 2.140 | 0.0005003 |
-| svd_full_square_f64_256x256 | jax-cuda | 1 | 15 | 26.211 | 8.171e-05 |
-| svd_full_tall_f64_512x256 | jax-cuda | 1 | 15 | 19.935 | 7.76e-05 |
-| svd_full_wide_f64_256x512 | jax-cuda | 1 | 15 | 18.036 | 7.938e-05 |
-| slogdet_positive_f64_256x256 | jax-cuda | 4 | 15 | 2.218 | 1.864e-06 |
-| slogdet_negative_f64_256x256 | jax-cuda | 4 | 15 | 2.309 | 1.864e-06 |
-| svd_full_square_c32_256x256 | jax-cuda | 1 | 15 | 20.360 | 0.133 |
-| svd_full_tall_c32_512x256 | jax-cuda | 1 | 15 | 19.649 | 0.1126 |
-| svd_full_wide_c32_256x512 | jax-cuda | 1 | 15 | 20.042 | 0.1103 |
-| slogdet_positive_c32_256x256 | jax-cuda | 4 | 15 | 2.250 | 0.01211 |
-| slogdet_negative_c32_256x256 | jax-cuda | 4 | 15 | 2.299 | 0.01211 |
-| svd_full_square_c64_256x256 | jax-cuda | 1 | 15 | 60.286 | 0.000204 |
-| svd_full_tall_c64_512x256 | jax-cuda | 1 | 15 | 41.065 | 0.0002021 |
-| svd_full_wide_c64_256x512 | jax-cuda | 1 | 15 | 40.885 | 0.0001946 |
-| slogdet_positive_c64_256x256 | jax-cuda | 4 | 15 | 2.519 | 1.025e-06 |
-| slogdet_negative_c64_256x256 | jax-cuda | 4 | 15 | 2.504 | 1.025e-06 |
-| householder_qr_square_f32_256x256 | jax-cuda | 4 | 15 | 3.713 | 0.001043 |
-| householder_qr_tall_f32_512x256 | jax-cuda | 2 | 15 | 2.551 | 0.001475 |
-| householder_qr_wide_f32_256x512 | jax-cuda | 2 | 15 | 2.403 | 0.0009736 |
-| householder_qr_square_f64_256x256 | jax-cuda | 2 | 15 | 2.122 | 1.887e-06 |
-| householder_qr_tall_f64_512x256 | jax-cuda | 2 | 15 | 2.834 | 1.887e-06 |
-| householder_qr_wide_f64_256x512 | jax-cuda | 2 | 15 | 2.645 | 1.759e-06 |
-| householder_qr_square_c32_256x256 | jax-cuda | 2 | 15 | 2.025 | 0.001258 |
-| householder_qr_tall_c32_512x256 | jax-cuda | 2 | 15 | 2.743 | 0.001161 |
-| householder_qr_wide_c32_256x512 | jax-cuda | 2 | 15 | 2.600 | 0.001226 |
-| slogdet_phase_c32_256x256 | jax-cuda | 4 | 15 | 2.218 | 0.01233 |
-| householder_qr_square_c64_256x256 | jax-cuda | 2 | 15 | 2.477 | 2.109e-06 |
-| householder_qr_tall_c64_512x256 | jax-cuda | 2 | 15 | 3.312 | 2.942e-06 |
-| householder_qr_wide_c64_256x512 | jax-cuda | 2 | 15 | 3.153 | 2.276e-06 |
-| slogdet_phase_c64_256x256 | jax-cuda | 4 | 15 | 2.520 | 1.025e-06 |
-| householder_from_factors_default_f32_512x256 | jax-cuda | — | — | — | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
-| householder_append_default_f32_512x256 | jax-cuda | — | — | — | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
-| householder_r_default_f32_512x256 | jax-cuda | 64 | 15 | 2.564 | 0.001415 |
-| householder_q_columns_prefix_f32_512x256 | jax-cuda | 16 | 15 | 2.430 | 0.0001829 |
-| householder_q_columns_complement_f32_512x256 | jax-cuda | — | — | — | No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs. |
-| householder_from_factors_default_f64_512x256 | jax-cuda | — | — | — | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
-| householder_append_default_f64_512x256 | jax-cuda | — | — | — | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
-| householder_r_default_f64_512x256 | jax-cuda | 64 | 15 | 2.810 | 9.976e-07 |
-| householder_q_columns_prefix_f64_512x256 | jax-cuda | 16 | 15 | 2.403 | 1.136e-07 |
-| householder_q_columns_complement_f64_512x256 | jax-cuda | — | — | — | No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs. |
-| householder_from_factors_default_c32_512x256 | jax-cuda | — | — | — | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
-| householder_append_default_c32_512x256 | jax-cuda | — | — | — | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
-| householder_r_default_c32_512x256 | jax-cuda | 64 | 15 | 2.839 | 0.001069 |
-| householder_q_columns_prefix_c32_512x256 | jax-cuda | 16 | 15 | 2.417 | 0.0001246 |
-| householder_q_columns_complement_c32_512x256 | jax-cuda | — | — | — | No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs. |
-| householder_from_factors_default_c64_512x256 | jax-cuda | — | — | — | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
-| householder_append_default_c64_512x256 | jax-cuda | — | — | — | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
-| householder_r_default_c64_512x256 | jax-cuda | 64 | 15 | 3.110 | 9.985e-07 |
-| householder_q_columns_prefix_c64_512x256 | jax-cuda | 16 | 15 | 2.498 | 5.968e-08 |
-| householder_q_columns_complement_c64_512x256 | jax-cuda | — | — | — | No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs. |
-| lu_square_f32_s256 | jax-cuda | — | — | — | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
-| lu_square_f64_s256 | jax-cuda | — | — | — | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
-| lu_square_c32_s256 | jax-cuda | — | — | — | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
-| lu_square_c64_s256 | jax-cuda | — | — | — | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
-| lu_tall_f32_s256 | jax-cuda | — | — | — | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
-| lu_tall_f64_s256 | jax-cuda | — | — | — | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
-| lu_tall_c32_s256 | jax-cuda | — | — | — | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
-| lu_tall_c64_s256 | jax-cuda | — | — | — | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
-| lu_wide_f32_s256 | jax-cuda | — | — | — | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
-| lu_wide_f64_s256 | jax-cuda | — | — | — | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
-| lu_wide_c32_s256 | jax-cuda | — | — | — | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
-| lu_wide_c64_s256 | jax-cuda | — | — | — | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
-| cholesky_f32_512x512 | jax-cuda-jit | 16 | 15 | 3.825 | 0.0003558 |
-| cholesky_f64_512x512 | jax-cuda-jit | 8 | 15 | 2.390 | 4.418e-07 |
-| svdvals_f32_512x512 | jax-cuda-jit | 1 | 15 | 31.261 | 0.1547 |
-| svdvals_f64_512x512 | jax-cuda-jit | 1 | 15 | 77.739 | 0.0002063 |
-| eigvalsh_f32_512x512 | jax-cuda-jit | 1 | 15 | 5.714 | 0.008342 |
-| eigvalsh_f64_512x512 | jax-cuda-jit | 1 | 15 | 6.033 | 1.55e-06 |
-| pinv_f32_512x512 | jax-cuda-jit | 1 | 15 | 31.801 | 0.009581 |
-| pinv_f64_512x512 | jax-cuda-jit | 1 | 15 | 78.053 | 8.975e-06 |
-| inv_f32_512x512 | jax-cuda-jit | 2 | 15 | 3.019 | 0.002107 |
-| inv_f64_512x512 | jax-cuda-jit | 2 | 15 | 3.626 | 1.85e-06 |
-| det_f32_512x512 | jax-cuda-jit | 2 | 15 | 2.409 | 0.004748 |
-| det_f64_512x512 | jax-cuda-jit | 2 | 15 | 2.744 | 1.426e-05 |
-| norm_f32_512x512 | jax-cuda-jit | 64 | 15 | 2.945 | 0 |
-| norm_f64_512x512 | jax-cuda-jit | 64 | 15 | 2.954 | 1.909e-07 |
-| triangular_solve_f32_512x512 | jax-cuda-jit | 16 | 15 | 2.952 | 0.0007877 |
-| triangular_solve_f64_512x512 | jax-cuda-jit | 16 | 15 | 3.455 | 1.157e-06 |
-| svd_full_square_f32_256x256 | jax-cuda-jit | 1 | 15 | 10.806 | 0.1152 |
-| svd_full_tall_f32_512x256 | jax-cuda-jit | 1 | 15 | 11.672 | 0.1022 |
-| svd_full_wide_f32_256x512 | jax-cuda-jit | 1 | 15 | 10.960 | 0.1057 |
-| slogdet_positive_f32_256x256 | jax-cuda-jit | 4 | 15 | 2.093 | 0.0005003 |
-| slogdet_negative_f32_256x256 | jax-cuda-jit | 4 | 15 | 2.093 | 0.0005003 |
-| svd_full_square_f64_256x256 | jax-cuda-jit | 1 | 15 | 25.812 | 8.171e-05 |
-| svd_full_tall_f64_512x256 | jax-cuda-jit | 1 | 15 | 19.625 | 7.76e-05 |
-| svd_full_wide_f64_256x512 | jax-cuda-jit | 1 | 15 | 17.729 | 7.938e-05 |
-| slogdet_positive_f64_256x256 | jax-cuda-jit | 4 | 15 | 2.225 | 1.864e-06 |
-| slogdet_negative_f64_256x256 | jax-cuda-jit | 4 | 15 | 2.267 | 1.864e-06 |
-| svd_full_square_c32_256x256 | jax-cuda-jit | 1 | 15 | 20.369 | 0.133 |
-| svd_full_tall_c32_512x256 | jax-cuda-jit | 1 | 15 | 19.648 | 0.1126 |
-| svd_full_wide_c32_256x512 | jax-cuda-jit | 1 | 15 | 19.806 | 0.1103 |
-| slogdet_positive_c32_256x256 | jax-cuda-jit | 4 | 15 | 2.249 | 0.01211 |
-| slogdet_negative_c32_256x256 | jax-cuda-jit | 4 | 15 | 2.257 | 0.01211 |
-| svd_full_square_c64_256x256 | jax-cuda-jit | 1 | 15 | 60.156 | 0.000204 |
-| svd_full_tall_c64_512x256 | jax-cuda-jit | 1 | 15 | 41.002 | 0.0002021 |
-| svd_full_wide_c64_256x512 | jax-cuda-jit | 1 | 15 | 41.053 | 0.0001946 |
-| slogdet_positive_c64_256x256 | jax-cuda-jit | 4 | 15 | 2.563 | 1.025e-06 |
-| slogdet_negative_c64_256x256 | jax-cuda-jit | 4 | 15 | 2.500 | 1.025e-06 |
-| householder_qr_square_f32_256x256 | jax-cuda-jit | 4 | 15 | 3.752 | 0.001043 |
-| householder_qr_tall_f32_512x256 | jax-cuda-jit | 2 | 15 | 2.579 | 0.001475 |
-| householder_qr_wide_f32_256x512 | jax-cuda-jit | 2 | 15 | 2.433 | 0.0009736 |
-| householder_qr_square_f64_256x256 | jax-cuda-jit | 2 | 15 | 2.155 | 1.887e-06 |
-| householder_qr_tall_f64_512x256 | jax-cuda-jit | 2 | 15 | 2.803 | 1.887e-06 |
-| householder_qr_wide_f64_256x512 | jax-cuda-jit | 2 | 15 | 2.662 | 1.759e-06 |
-| householder_qr_square_c32_256x256 | jax-cuda-jit | 2 | 15 | 2.051 | 0.001258 |
-| householder_qr_tall_c32_512x256 | jax-cuda-jit | 2 | 15 | 2.703 | 0.001161 |
-| householder_qr_wide_c32_256x512 | jax-cuda-jit | 2 | 15 | 2.550 | 0.001226 |
-| slogdet_phase_c32_256x256 | jax-cuda-jit | 4 | 15 | 2.326 | 0.01233 |
-| householder_qr_square_c64_256x256 | jax-cuda-jit | 2 | 15 | 2.473 | 2.109e-06 |
-| householder_qr_tall_c64_512x256 | jax-cuda-jit | 2 | 15 | 3.353 | 2.942e-06 |
-| householder_qr_wide_c64_256x512 | jax-cuda-jit | 2 | 15 | 3.114 | 2.276e-06 |
-| slogdet_phase_c64_256x256 | jax-cuda-jit | 4 | 15 | 2.525 | 1.025e-06 |
-| householder_from_factors_default_f32_512x256 | jax-cuda-jit | — | — | — | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
-| householder_append_default_f32_512x256 | jax-cuda-jit | — | — | — | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
-| householder_r_default_f32_512x256 | jax-cuda-jit | 64 | 15 | 2.654 | 0.001415 |
-| householder_q_columns_prefix_f32_512x256 | jax-cuda-jit | 16 | 15 | 1.657 | 0.0001829 |
-| householder_q_columns_complement_f32_512x256 | jax-cuda-jit | — | — | — | No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs. |
-| householder_from_factors_default_f64_512x256 | jax-cuda-jit | — | — | — | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
-| householder_append_default_f64_512x256 | jax-cuda-jit | — | — | — | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
-| householder_r_default_f64_512x256 | jax-cuda-jit | 64 | 15 | 2.651 | 9.976e-07 |
-| householder_q_columns_prefix_f64_512x256 | jax-cuda-jit | 32 | 15 | 3.386 | 1.136e-07 |
-| householder_q_columns_complement_f64_512x256 | jax-cuda-jit | — | — | — | No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs. |
-| householder_from_factors_default_c32_512x256 | jax-cuda-jit | — | — | — | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
-| householder_append_default_c32_512x256 | jax-cuda-jit | — | — | — | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
-| householder_r_default_c32_512x256 | jax-cuda-jit | 64 | 15 | 2.647 | 0.001069 |
-| householder_q_columns_prefix_c32_512x256 | jax-cuda-jit | 32 | 15 | 3.128 | 0.0001246 |
-| householder_q_columns_complement_c32_512x256 | jax-cuda-jit | — | — | — | No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs. |
-| householder_from_factors_default_c64_512x256 | jax-cuda-jit | — | — | — | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
-| householder_append_default_c64_512x256 | jax-cuda-jit | — | — | — | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
-| householder_r_default_c64_512x256 | jax-cuda-jit | 64 | 15 | 2.681 | 9.985e-07 |
-| householder_q_columns_prefix_c64_512x256 | jax-cuda-jit | 32 | 15 | 3.401 | 5.968e-08 |
-| householder_q_columns_complement_c64_512x256 | jax-cuda-jit | — | — | — | No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs. |
-| lu_square_f32_s256 | jax-cuda-jit | — | — | — | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
-| lu_square_f64_s256 | jax-cuda-jit | — | — | — | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
-| lu_square_c32_s256 | jax-cuda-jit | — | — | — | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
-| lu_square_c64_s256 | jax-cuda-jit | — | — | — | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
-| lu_tall_f32_s256 | jax-cuda-jit | — | — | — | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
-| lu_tall_f64_s256 | jax-cuda-jit | — | — | — | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
-| lu_tall_c32_s256 | jax-cuda-jit | — | — | — | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
-| lu_tall_c64_s256 | jax-cuda-jit | — | — | — | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
-| lu_wide_f32_s256 | jax-cuda-jit | — | — | — | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
-| lu_wide_f64_s256 | jax-cuda-jit | — | — | — | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
-| lu_wide_c32_s256 | jax-cuda-jit | — | — | — | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
-| lu_wide_c64_s256 | jax-cuda-jit | — | — | — | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
+| Case | Backend | Ops/sample | Samples | Median batch ms | Bytes/op | Copy ratio | Verification error/tolerance |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| cholesky_f32_512x512 | jax-cuda | 16 | 15 | 3.867 | 2097152 | unavailable | 0.0003558 |
+| cholesky_f32_512x512 | jax-cuda-jit | 16 | 15 | 3.818 | 2097152 | unavailable | 0.0003558 |
+| cholesky_f32_512x512 | pytorch-cuda | 8 | 15 | 2.196 | 2097152 | unavailable | 0.0003558 |
+| cholesky_f32_512x512 | tenferro-cuda-direct | 8 | 15 | 2.276 | 2097152 | unavailable | 0.0003558 |
+| cholesky_f32_512x512 | tenferro-cuda-eager | 8 | 15 | 2.631 | 2097152 | unavailable | 0.0003558 |
+| cholesky_f64_512x512 | jax-cuda | 8 | 15 | 2.422 | 4194304 | unavailable | 4.418e-07 |
+| cholesky_f64_512x512 | jax-cuda-jit | 8 | 15 | 2.400 | 4194304 | unavailable | 4.418e-07 |
+| cholesky_f64_512x512 | pytorch-cuda | 8 | 15 | 2.623 | 4194304 | unavailable | 4.418e-07 |
+| cholesky_f64_512x512 | tenferro-cuda-direct | 1 | 15 | 2.098 | 4194304 | unavailable | 4.418e-07 |
+| cholesky_f64_512x512 | tenferro-cuda-eager | 1 | 15 | 2.287 | 4194304 | unavailable | 4.418e-07 |
+| det_f32_512x512 | jax-cuda | 2 | 15 | 2.422 | 1048580 | unavailable | 0.004748 |
+| det_f32_512x512 | jax-cuda-jit | 2 | 15 | 2.460 | 1048580 | unavailable | 0.004748 |
+| det_f32_512x512 | pytorch-cuda | 2 | 15 | 2.346 | 1048580 | unavailable | 0.007965 |
+| det_f32_512x512 | tenferro-cuda-direct | 2 | 15 | 3.295 | 1048580 | unavailable | 0.004748 |
+| det_f32_512x512 | tenferro-cuda-eager | 2 | 15 | 3.416 | 1048580 | unavailable | 0.004748 |
+| det_f64_512x512 | jax-cuda | 2 | 15 | 2.823 | 2097160 | unavailable | 1.426e-05 |
+| det_f64_512x512 | jax-cuda-jit | 2 | 15 | 2.788 | 2097160 | unavailable | 1.426e-05 |
+| det_f64_512x512 | pytorch-cuda | 2 | 15 | 2.634 | 2097160 | unavailable | 1.369e-05 |
+| det_f64_512x512 | tenferro-cuda-direct | 1 | 15 | 2.567 | 2097160 | unavailable | 1.426e-05 |
+| det_f64_512x512 | tenferro-cuda-eager | 1 | 15 | 2.661 | 2097160 | unavailable | 1.426e-05 |
+| eigvalsh_f32_512x512 | jax-cuda | 1 | 15 | 5.926 | 1050624 | unavailable | 0.008342 |
+| eigvalsh_f32_512x512 | jax-cuda-jit | 1 | 15 | 5.911 | 1050624 | unavailable | 0.008342 |
+| eigvalsh_f32_512x512 | pytorch-cuda | 1 | 15 | 5.208 | 1050624 | unavailable | 0.008342 |
+| eigvalsh_f32_512x512 | tenferro-cuda-direct | 1 | 15 | 5.209 | 1050624 | unavailable | 0.008342 |
+| eigvalsh_f32_512x512 | tenferro-cuda-eager | 1 | 15 | 5.270 | 1050624 | unavailable | 0.008342 |
+| eigvalsh_f64_512x512 | jax-cuda | 1 | 15 | 6.119 | 2101248 | unavailable | 1.55e-06 |
+| eigvalsh_f64_512x512 | jax-cuda-jit | 1 | 15 | 6.032 | 2101248 | unavailable | 1.55e-06 |
+| eigvalsh_f64_512x512 | pytorch-cuda | 1 | 15 | 5.557 | 2101248 | unavailable | 1.55e-06 |
+| eigvalsh_f64_512x512 | tenferro-cuda-direct | 1 | 15 | 5.588 | 2101248 | unavailable | 1.55e-06 |
+| eigvalsh_f64_512x512 | tenferro-cuda-eager | 1 | 15 | 6.197 | 2101248 | unavailable | 1.55e-06 |
+| householder_append_default_c32_512x256 | jax-cuda | — | — | — | 3147776 | unavailable | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
+| householder_append_default_c32_512x256 | jax-cuda-jit | — | — | — | 3147776 | unavailable | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
+| householder_append_default_c32_512x256 | pytorch-cuda | — | — | — | 3147776 | unavailable | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
+| householder_append_default_c32_512x256 | tenferro-cuda-direct | — | — | — | 3147776 | unavailable | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
+| householder_append_default_c32_512x256 | tenferro-cuda-eager | — | — | — | 3147776 | unavailable | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
+| householder_append_default_c64_512x256 | jax-cuda | — | — | — | 6295552 | unavailable | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
+| householder_append_default_c64_512x256 | jax-cuda-jit | — | — | — | 6295552 | unavailable | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
+| householder_append_default_c64_512x256 | pytorch-cuda | — | — | — | 6295552 | unavailable | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
+| householder_append_default_c64_512x256 | tenferro-cuda-direct | — | — | — | 6295552 | unavailable | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
+| householder_append_default_c64_512x256 | tenferro-cuda-eager | — | — | — | 6295552 | unavailable | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
+| householder_append_default_f32_512x256 | jax-cuda | — | — | — | 1573888 | unavailable | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
+| householder_append_default_f32_512x256 | jax-cuda-jit | — | — | — | 1573888 | unavailable | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
+| householder_append_default_f32_512x256 | pytorch-cuda | — | — | — | 1573888 | unavailable | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
+| householder_append_default_f32_512x256 | tenferro-cuda-direct | — | — | — | 1573888 | unavailable | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
+| householder_append_default_f32_512x256 | tenferro-cuda-eager | — | — | — | 1573888 | unavailable | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
+| householder_append_default_f64_512x256 | jax-cuda | — | — | — | 3147776 | unavailable | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
+| householder_append_default_f64_512x256 | jax-cuda-jit | — | — | — | 3147776 | unavailable | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
+| householder_append_default_f64_512x256 | pytorch-cuda | — | — | — | 3147776 | unavailable | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
+| householder_append_default_f64_512x256 | tenferro-cuda-direct | — | — | — | 3147776 | unavailable | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
+| householder_append_default_f64_512x256 | tenferro-cuda-eager | — | — | — | 3147776 | unavailable | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
+| householder_from_factors_default_c32_512x256 | jax-cuda | — | — | — | 3672064 | unavailable | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
+| householder_from_factors_default_c32_512x256 | jax-cuda-jit | — | — | — | 3672064 | unavailable | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
+| householder_from_factors_default_c32_512x256 | pytorch-cuda | — | — | — | 3672064 | unavailable | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
+| householder_from_factors_default_c32_512x256 | tenferro-cuda-direct | 2 | 15 | 3.122 | 3672064 | unavailable | 0.001103 |
+| householder_from_factors_default_c32_512x256 | tenferro-cuda-eager | 2 | 15 | 3.201 | 3672064 | unavailable | 0.001103 |
+| householder_from_factors_default_c64_512x256 | jax-cuda | — | — | — | 7344128 | unavailable | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
+| householder_from_factors_default_c64_512x256 | jax-cuda-jit | — | — | — | 7344128 | unavailable | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
+| householder_from_factors_default_c64_512x256 | pytorch-cuda | — | — | — | 7344128 | unavailable | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
+| householder_from_factors_default_c64_512x256 | tenferro-cuda-direct | 2 | 15 | 3.768 | 7344128 | unavailable | 9.992e-07 |
+| householder_from_factors_default_c64_512x256 | tenferro-cuda-eager | 2 | 15 | 3.917 | 7344128 | unavailable | 9.992e-07 |
+| householder_from_factors_default_f32_512x256 | jax-cuda | — | — | — | 1836032 | unavailable | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
+| householder_from_factors_default_f32_512x256 | jax-cuda-jit | — | — | — | 1836032 | unavailable | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
+| householder_from_factors_default_f32_512x256 | pytorch-cuda | — | — | — | 1836032 | unavailable | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
+| householder_from_factors_default_f32_512x256 | tenferro-cuda-direct | 2 | 15 | 2.904 | 1836032 | unavailable | 0.0008522 |
+| householder_from_factors_default_f32_512x256 | tenferro-cuda-eager | 2 | 15 | 3.039 | 1836032 | unavailable | 0.0008522 |
+| householder_from_factors_default_f64_512x256 | jax-cuda | — | — | — | 3672064 | unavailable | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
+| householder_from_factors_default_f64_512x256 | jax-cuda-jit | — | — | — | 3672064 | unavailable | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
+| householder_from_factors_default_f64_512x256 | pytorch-cuda | — | — | — | 3672064 | unavailable | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
+| householder_from_factors_default_f64_512x256 | tenferro-cuda-direct | 2 | 15 | 3.169 | 3672064 | unavailable | 8.882e-07 |
+| householder_from_factors_default_f64_512x256 | tenferro-cuda-eager | 2 | 15 | 3.328 | 3672064 | unavailable | 8.882e-07 |
+| householder_q_columns_complement_c32_512x256 | jax-cuda | — | — | — | 2097152 | unavailable | No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs. |
+| householder_q_columns_complement_c32_512x256 | jax-cuda-jit | — | — | — | 2097152 | unavailable | No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs. |
+| householder_q_columns_complement_c32_512x256 | pytorch-cuda | 8 | 15 | 1.999 | 2097152 | unavailable | 0.0001141 |
+| householder_q_columns_complement_c32_512x256 | tenferro-cuda-direct | — | — | — | 2097152 | unavailable | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
+| householder_q_columns_complement_c32_512x256 | tenferro-cuda-eager | — | — | — | 2097152 | unavailable | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
+| householder_q_columns_complement_c64_512x256 | jax-cuda | — | — | — | 4194304 | unavailable | No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs. |
+| householder_q_columns_complement_c64_512x256 | jax-cuda-jit | — | — | — | 4194304 | unavailable | No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs. |
+| householder_q_columns_complement_c64_512x256 | pytorch-cuda | 8 | 15 | 2.016 | 4194304 | unavailable | 7.282e-07 |
+| householder_q_columns_complement_c64_512x256 | tenferro-cuda-direct | — | — | — | 4194304 | unavailable | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
+| householder_q_columns_complement_c64_512x256 | tenferro-cuda-eager | — | — | — | 4194304 | unavailable | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
+| householder_q_columns_complement_f32_512x256 | jax-cuda | — | — | — | 1048576 | unavailable | No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs. |
+| householder_q_columns_complement_f32_512x256 | jax-cuda-jit | — | — | — | 1048576 | unavailable | No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs. |
+| householder_q_columns_complement_f32_512x256 | pytorch-cuda | 16 | 15 | 2.632 | 1048576 | unavailable | 8.761e-05 |
+| householder_q_columns_complement_f32_512x256 | tenferro-cuda-direct | — | — | — | 1048576 | unavailable | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
+| householder_q_columns_complement_f32_512x256 | tenferro-cuda-eager | — | — | — | 1048576 | unavailable | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
+| householder_q_columns_complement_f64_512x256 | jax-cuda | — | — | — | 2097152 | unavailable | No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs. |
+| householder_q_columns_complement_f64_512x256 | jax-cuda-jit | — | — | — | 2097152 | unavailable | No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs. |
+| householder_q_columns_complement_f64_512x256 | pytorch-cuda | 16 | 15 | 2.630 | 2097152 | unavailable | 7.26e-07 |
+| householder_q_columns_complement_f64_512x256 | tenferro-cuda-direct | — | — | — | 2097152 | unavailable | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
+| householder_q_columns_complement_f64_512x256 | tenferro-cuda-eager | — | — | — | 2097152 | unavailable | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
+| householder_q_columns_prefix_c32_512x256 | jax-cuda | 16 | 15 | 2.047 | 1081344 | unavailable | 0.0001246 |
+| householder_q_columns_prefix_c32_512x256 | jax-cuda-jit | 32 | 15 | 3.379 | 1081344 | unavailable | 0.0001246 |
+| householder_q_columns_prefix_c32_512x256 | pytorch-cuda | 32 | 15 | 2.909 | 1081344 | unavailable | 0.0001246 |
+| householder_q_columns_prefix_c32_512x256 | tenferro-cuda-direct | — | — | — | 1081344 | unavailable | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
+| householder_q_columns_prefix_c32_512x256 | tenferro-cuda-eager | — | — | — | 1081344 | unavailable | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
+| householder_q_columns_prefix_c64_512x256 | jax-cuda | 16 | 15 | 2.099 | 2162688 | unavailable | 5.968e-08 |
+| householder_q_columns_prefix_c64_512x256 | jax-cuda-jit | 32 | 15 | 3.610 | 2162688 | unavailable | 5.968e-08 |
+| householder_q_columns_prefix_c64_512x256 | pytorch-cuda | 32 | 15 | 2.481 | 2162688 | unavailable | 5.968e-08 |
+| householder_q_columns_prefix_c64_512x256 | tenferro-cuda-direct | — | — | — | 2162688 | unavailable | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
+| householder_q_columns_prefix_c64_512x256 | tenferro-cuda-eager | — | — | — | 2162688 | unavailable | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
+| householder_q_columns_prefix_f32_512x256 | jax-cuda | 16 | 15 | 2.067 | 540672 | unavailable | 0.0001829 |
+| householder_q_columns_prefix_f32_512x256 | jax-cuda-jit | 16 | 15 | 1.738 | 540672 | unavailable | 0.0001829 |
+| householder_q_columns_prefix_f32_512x256 | pytorch-cuda | 32 | 15 | 2.112 | 540672 | unavailable | 0.0001829 |
+| householder_q_columns_prefix_f32_512x256 | tenferro-cuda-direct | — | — | — | 540672 | unavailable | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
+| householder_q_columns_prefix_f32_512x256 | tenferro-cuda-eager | — | — | — | 540672 | unavailable | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
+| householder_q_columns_prefix_f64_512x256 | jax-cuda | 16 | 15 | 2.176 | 1081344 | unavailable | 1.136e-07 |
+| householder_q_columns_prefix_f64_512x256 | jax-cuda-jit | 32 | 15 | 3.458 | 1081344 | unavailable | 1.136e-07 |
+| householder_q_columns_prefix_f64_512x256 | pytorch-cuda | 32 | 15 | 2.523 | 1081344 | unavailable | 1.136e-07 |
+| householder_q_columns_prefix_f64_512x256 | tenferro-cuda-direct | — | — | — | 1081344 | unavailable | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
+| householder_q_columns_prefix_f64_512x256 | tenferro-cuda-eager | — | — | — | 1081344 | unavailable | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
+| householder_qr_square_c32_256x256 | jax-cuda | 2 | 15 | 2.038 | 1050624 | unavailable | 0.001258 |
+| householder_qr_square_c32_256x256 | jax-cuda-jit | 2 | 15 | 2.067 | 1050624 | unavailable | 0.001258 |
+| householder_qr_square_c32_256x256 | pytorch-cuda | 4 | 15 | 3.903 | 1050624 | unavailable | 0.001258 |
+| householder_qr_square_c32_256x256 | tenferro-cuda-direct | 2 | 15 | 2.004 | 1050624 | unavailable | 0.001198 |
+| householder_qr_square_c32_256x256 | tenferro-cuda-eager | 2 | 15 | 2.093 | 1050624 | unavailable | 0.001198 |
+| householder_qr_square_c64_256x256 | jax-cuda | 2 | 15 | 2.456 | 2101248 | unavailable | 2.109e-06 |
+| householder_qr_square_c64_256x256 | jax-cuda-jit | 2 | 15 | 2.573 | 2101248 | unavailable | 2.109e-06 |
+| householder_qr_square_c64_256x256 | pytorch-cuda | 2 | 15 | 2.349 | 2101248 | unavailable | 2.109e-06 |
+| householder_qr_square_c64_256x256 | tenferro-cuda-direct | 2 | 15 | 2.410 | 2101248 | unavailable | 1.208e-06 |
+| householder_qr_square_c64_256x256 | tenferro-cuda-eager | 2 | 15 | 2.492 | 2101248 | unavailable | 1.208e-06 |
+| householder_qr_square_f32_256x256 | jax-cuda | 2 | 15 | 1.990 | 525312 | unavailable | 0.001043 |
+| householder_qr_square_f32_256x256 | jax-cuda-jit | 4 | 15 | 3.781 | 525312 | unavailable | 0.001043 |
+| householder_qr_square_f32_256x256 | pytorch-cuda | 4 | 15 | 3.645 | 525312 | unavailable | 0.001043 |
+| householder_qr_square_f32_256x256 | tenferro-cuda-direct | 4 | 15 | 3.725 | 525312 | unavailable | 0.001075 |
+| householder_qr_square_f32_256x256 | tenferro-cuda-eager | 4 | 15 | 3.936 | 525312 | unavailable | 0.001075 |
+| householder_qr_square_f64_256x256 | jax-cuda | 2 | 15 | 2.147 | 1050624 | unavailable | 1.887e-06 |
+| householder_qr_square_f64_256x256 | jax-cuda-jit | 2 | 15 | 2.184 | 1050624 | unavailable | 1.887e-06 |
+| householder_qr_square_f64_256x256 | pytorch-cuda | 2 | 15 | 2.039 | 1050624 | unavailable | 1.887e-06 |
+| householder_qr_square_f64_256x256 | tenferro-cuda-direct | 2 | 15 | 2.077 | 1050624 | unavailable | 1.098e-06 |
+| householder_qr_square_f64_256x256 | tenferro-cuda-eager | 2 | 15 | 2.163 | 1050624 | unavailable | 1.098e-06 |
+| householder_qr_tall_c32_512x256 | jax-cuda | 2 | 15 | 2.690 | 2099200 | unavailable | 0.001161 |
+| householder_qr_tall_c32_512x256 | jax-cuda-jit | 2 | 15 | 2.759 | 2099200 | unavailable | 0.001161 |
+| householder_qr_tall_c32_512x256 | pytorch-cuda | 2 | 15 | 2.545 | 2099200 | unavailable | 0.001161 |
+| householder_qr_tall_c32_512x256 | tenferro-cuda-direct | 2 | 15 | 2.626 | 2099200 | unavailable | 0.001185 |
+| householder_qr_tall_c32_512x256 | tenferro-cuda-eager | 2 | 15 | 2.723 | 2099200 | unavailable | 0.001185 |
+| householder_qr_tall_c64_512x256 | jax-cuda | 2 | 15 | 3.316 | 4198400 | unavailable | 2.942e-06 |
+| householder_qr_tall_c64_512x256 | jax-cuda-jit | 2 | 15 | 3.354 | 4198400 | unavailable | 2.942e-06 |
+| householder_qr_tall_c64_512x256 | pytorch-cuda | 2 | 15 | 3.292 | 4198400 | unavailable | 2.942e-06 |
+| householder_qr_tall_c64_512x256 | tenferro-cuda-direct | 1 | 15 | 2.280 | 4198400 | unavailable | 1.11e-06 |
+| householder_qr_tall_c64_512x256 | tenferro-cuda-eager | 1 | 15 | 2.312 | 4198400 | unavailable | 1.11e-06 |
+| householder_qr_tall_f32_512x256 | jax-cuda | 2 | 15 | 2.537 | 1049600 | unavailable | 0.001475 |
+| householder_qr_tall_f32_512x256 | jax-cuda-jit | 2 | 15 | 2.577 | 1049600 | unavailable | 0.001475 |
+| householder_qr_tall_f32_512x256 | pytorch-cuda | 2 | 15 | 2.404 | 1049600 | unavailable | 0.001475 |
+| householder_qr_tall_f32_512x256 | tenferro-cuda-direct | 2 | 15 | 2.435 | 1049600 | unavailable | 0.001435 |
+| householder_qr_tall_f32_512x256 | tenferro-cuda-eager | 2 | 15 | 2.554 | 1049600 | unavailable | 0.001435 |
+| householder_qr_tall_f64_512x256 | jax-cuda | 2 | 15 | 2.796 | 2099200 | unavailable | 1.887e-06 |
+| householder_qr_tall_f64_512x256 | jax-cuda-jit | 2 | 15 | 2.834 | 2099200 | unavailable | 1.887e-06 |
+| householder_qr_tall_f64_512x256 | pytorch-cuda | 2 | 15 | 2.651 | 2099200 | unavailable | 1.887e-06 |
+| householder_qr_tall_f64_512x256 | tenferro-cuda-direct | 2 | 15 | 2.693 | 2099200 | unavailable | 9.992e-07 |
+| householder_qr_tall_f64_512x256 | tenferro-cuda-eager | 2 | 15 | 2.785 | 2099200 | unavailable | 9.992e-07 |
+| householder_qr_wide_c32_256x512 | jax-cuda | 2 | 15 | 2.549 | 2099200 | unavailable | 0.001226 |
+| householder_qr_wide_c32_256x512 | jax-cuda-jit | 2 | 15 | 2.608 | 2099200 | unavailable | 0.001226 |
+| householder_qr_wide_c32_256x512 | pytorch-cuda | 2 | 15 | 2.413 | 2099200 | unavailable | 0.001226 |
+| householder_qr_wide_c32_256x512 | tenferro-cuda-direct | 2 | 15 | 2.475 | 2099200 | unavailable | 0.001329 |
+| householder_qr_wide_c32_256x512 | tenferro-cuda-eager | 2 | 15 | 2.578 | 2099200 | unavailable | 0.001329 |
+| householder_qr_wide_c64_256x512 | jax-cuda | 2 | 15 | 3.082 | 4198400 | unavailable | 2.276e-06 |
+| householder_qr_wide_c64_256x512 | jax-cuda-jit | 2 | 15 | 3.174 | 4198400 | unavailable | 2.276e-06 |
+| householder_qr_wide_c64_256x512 | pytorch-cuda | 2 | 15 | 2.971 | 4198400 | unavailable | 2.276e-06 |
+| householder_qr_wide_c64_256x512 | tenferro-cuda-direct | 1 | 15 | 2.135 | 4198400 | unavailable | 1.206e-06 |
+| householder_qr_wide_c64_256x512 | tenferro-cuda-eager | 1 | 15 | 2.154 | 4198400 | unavailable | 1.206e-06 |
+| householder_qr_wide_f32_256x512 | jax-cuda | 2 | 15 | 2.415 | 1049600 | unavailable | 0.0009736 |
+| householder_qr_wide_f32_256x512 | jax-cuda-jit | 2 | 15 | 2.500 | 1049600 | unavailable | 0.0009736 |
+| householder_qr_wide_f32_256x512 | pytorch-cuda | 2 | 15 | 2.224 | 1049600 | unavailable | 0.0009736 |
+| householder_qr_wide_f32_256x512 | tenferro-cuda-direct | 2 | 15 | 2.215 | 1049600 | unavailable | 0.0009125 |
+| householder_qr_wide_f32_256x512 | tenferro-cuda-eager | 2 | 15 | 2.416 | 1049600 | unavailable | 0.0009125 |
+| householder_qr_wide_f64_256x512 | jax-cuda | 2 | 15 | 2.629 | 2099200 | unavailable | 1.759e-06 |
+| householder_qr_wide_f64_256x512 | jax-cuda-jit | 2 | 15 | 2.655 | 2099200 | unavailable | 1.759e-06 |
+| householder_qr_wide_f64_256x512 | pytorch-cuda | 2 | 15 | 2.471 | 2099200 | unavailable | 1.759e-06 |
+| householder_qr_wide_f64_256x512 | tenferro-cuda-direct | 2 | 15 | 2.536 | 2099200 | unavailable | 1.649e-06 |
+| householder_qr_wide_f64_256x512 | tenferro-cuda-eager | 2 | 15 | 2.643 | 2099200 | unavailable | 1.649e-06 |
+| householder_r_default_c32_512x256 | jax-cuda | 64 | 15 | 2.526 | 1572864 | unavailable | 0.001069 |
+| householder_r_default_c32_512x256 | jax-cuda-jit | 64 | 15 | 2.694 | 1572864 | unavailable | 0.001069 |
+| householder_r_default_c32_512x256 | pytorch-cuda | 512 | 15 | 2.700 | 1572864 | unavailable | 0.001069 |
+| householder_r_default_c32_512x256 | tenferro-cuda-direct | 64 | 15 | 2.424 | 1572864 | unavailable | 0.001069 |
+| householder_r_default_c32_512x256 | tenferro-cuda-eager | 64 | 15 | 3.097 | 1572864 | unavailable | 0.001069 |
+| householder_r_default_c64_512x256 | jax-cuda | 64 | 15 | 2.510 | 3145728 | unavailable | 9.985e-07 |
+| householder_r_default_c64_512x256 | jax-cuda-jit | 64 | 15 | 2.766 | 3145728 | unavailable | 9.985e-07 |
+| householder_r_default_c64_512x256 | pytorch-cuda | 256 | 15 | 1.369 | 3145728 | unavailable | 9.985e-07 |
+| householder_r_default_c64_512x256 | tenferro-cuda-direct | 64 | 15 | 2.476 | 3145728 | unavailable | 9.985e-07 |
+| householder_r_default_c64_512x256 | tenferro-cuda-eager | 64 | 15 | 3.178 | 3145728 | unavailable | 9.985e-07 |
+| householder_r_default_f32_512x256 | jax-cuda | 32 | 15 | 1.277 | 786432 | unavailable | 0.001415 |
+| householder_r_default_f32_512x256 | jax-cuda-jit | 32 | 15 | 1.611 | 786432 | unavailable | 0.001415 |
+| householder_r_default_f32_512x256 | pytorch-cuda | 256 | 15 | 1.329 | 786432 | unavailable | 0.001415 |
+| householder_r_default_f32_512x256 | tenferro-cuda-direct | 64 | 15 | 2.651 | 786432 | unavailable | 0.001415 |
+| householder_r_default_f32_512x256 | tenferro-cuda-eager | 64 | 15 | 3.113 | 786432 | unavailable | 0.001415 |
+| householder_r_default_f64_512x256 | jax-cuda | 64 | 15 | 2.510 | 1572864 | unavailable | 9.976e-07 |
+| householder_r_default_f64_512x256 | jax-cuda-jit | 64 | 15 | 3.232 | 1572864 | unavailable | 9.976e-07 |
+| householder_r_default_f64_512x256 | pytorch-cuda | 256 | 15 | 1.346 | 1572864 | unavailable | 9.976e-07 |
+| householder_r_default_f64_512x256 | tenferro-cuda-direct | 64 | 15 | 2.438 | 1572864 | unavailable | 9.976e-07 |
+| householder_r_default_f64_512x256 | tenferro-cuda-eager | 64 | 15 | 3.253 | 1572864 | unavailable | 9.976e-07 |
+| inv_f32_512x512 | jax-cuda | 2 | 15 | 3.010 | 2097152 | unavailable | 0.002107 |
+| inv_f32_512x512 | jax-cuda-jit | 2 | 15 | 3.089 | 2097152 | unavailable | 0.002107 |
+| inv_f32_512x512 | pytorch-cuda | 2 | 15 | 3.011 | 2097152 | unavailable | 0.002107 |
+| inv_f32_512x512 | tenferro-cuda-direct | — | — | — | 2097152 | unavailable | CUDA concrete route fails at revision 8b13220c: inv_owned/eye_like passes a host scalar to broadcast_in_dim. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906. |
+| inv_f32_512x512 | tenferro-cuda-eager | — | — | — | 2097152 | unavailable | Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer. |
+| inv_f64_512x512 | jax-cuda | 2 | 15 | 3.679 | 4194304 | unavailable | 1.85e-06 |
+| inv_f64_512x512 | jax-cuda-jit | 2 | 15 | 3.593 | 4194304 | unavailable | 1.85e-06 |
+| inv_f64_512x512 | pytorch-cuda | 2 | 15 | 3.601 | 4194304 | unavailable | 1.85e-06 |
+| inv_f64_512x512 | tenferro-cuda-direct | — | — | — | 4194304 | unavailable | CUDA concrete route fails at revision 8b13220c: inv_owned/eye_like passes a host scalar to broadcast_in_dim. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906. |
+| inv_f64_512x512 | tenferro-cuda-eager | — | — | — | 4194304 | unavailable | Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer. |
+| lu_square_c32_s256 | jax-cuda | — | — | — | 2097160 | unavailable | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
+| lu_square_c32_s256 | jax-cuda-jit | — | — | — | 2097160 | unavailable | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
+| lu_square_c32_s256 | pytorch-cuda | — | — | — | 2097160 | unavailable | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
+| lu_square_c32_s256 | tenferro-cuda-direct | 4 | 15 | 2.645 | 2097160 | unavailable | 0.001541 |
+| lu_square_c32_s256 | tenferro-cuda-eager | 4 | 15 | 2.830 | 2097160 | unavailable | 0.001541 |
+| lu_square_c64_s256 | jax-cuda | — | — | — | 4194320 | unavailable | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
+| lu_square_c64_s256 | jax-cuda-jit | — | — | — | 4194320 | unavailable | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
+| lu_square_c64_s256 | pytorch-cuda | — | — | — | 4194320 | unavailable | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
+| lu_square_c64_s256 | tenferro-cuda-direct | 4 | 15 | 2.861 | 4194320 | unavailable | 1.431e-06 |
+| lu_square_c64_s256 | tenferro-cuda-eager | 4 | 15 | 3.032 | 4194320 | unavailable | 1.431e-06 |
+| lu_square_f32_s256 | jax-cuda | — | — | — | 1048580 | unavailable | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
+| lu_square_f32_s256 | jax-cuda-jit | — | — | — | 1048580 | unavailable | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
+| lu_square_f32_s256 | pytorch-cuda | — | — | — | 1048580 | unavailable | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
+| lu_square_f32_s256 | tenferro-cuda-direct | 4 | 15 | 2.484 | 1048580 | unavailable | 0.001428 |
+| lu_square_f32_s256 | tenferro-cuda-eager | 4 | 15 | 2.628 | 1048580 | unavailable | 0.001428 |
+| lu_square_f64_s256 | jax-cuda | — | — | — | 2097160 | unavailable | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
+| lu_square_f64_s256 | jax-cuda-jit | — | — | — | 2097160 | unavailable | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
+| lu_square_f64_s256 | pytorch-cuda | — | — | — | 2097160 | unavailable | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
+| lu_square_f64_s256 | tenferro-cuda-direct | 4 | 15 | 2.630 | 2097160 | unavailable | 1.102e-06 |
+| lu_square_f64_s256 | tenferro-cuda-eager | 4 | 15 | 2.819 | 2097160 | unavailable | 1.102e-06 |
+| lu_tall_c32_s256 | jax-cuda | — | — | — | 4718600 | unavailable | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
+| lu_tall_c32_s256 | jax-cuda-jit | — | — | — | 4718600 | unavailable | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
+| lu_tall_c32_s256 | pytorch-cuda | — | — | — | 4718600 | unavailable | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
+| lu_tall_c32_s256 | tenferro-cuda-direct | 4 | 15 | 3.270 | 4718600 | unavailable | 0.002239 |
+| lu_tall_c32_s256 | tenferro-cuda-eager | 4 | 15 | 3.412 | 4718600 | unavailable | 0.002239 |
+| lu_tall_c64_s256 | jax-cuda | — | — | — | 9437200 | unavailable | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
+| lu_tall_c64_s256 | jax-cuda-jit | — | — | — | 9437200 | unavailable | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
+| lu_tall_c64_s256 | pytorch-cuda | — | — | — | 9437200 | unavailable | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
+| lu_tall_c64_s256 | tenferro-cuda-direct | 1 | 15 | 2.258 | 9437200 | unavailable | 1.542e-06 |
+| lu_tall_c64_s256 | tenferro-cuda-eager | 1 | 15 | 2.314 | 9437200 | unavailable | 1.542e-06 |
+| lu_tall_f32_s256 | jax-cuda | — | — | — | 2359300 | unavailable | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
+| lu_tall_f32_s256 | jax-cuda-jit | — | — | — | 2359300 | unavailable | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
+| lu_tall_f32_s256 | pytorch-cuda | — | — | — | 2359300 | unavailable | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
+| lu_tall_f32_s256 | tenferro-cuda-direct | 4 | 15 | 3.081 | 2359300 | unavailable | 0.001428 |
+| lu_tall_f32_s256 | tenferro-cuda-eager | 4 | 15 | 3.241 | 2359300 | unavailable | 0.001428 |
+| lu_tall_f64_s256 | jax-cuda | — | — | — | 4718600 | unavailable | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
+| lu_tall_f64_s256 | jax-cuda-jit | — | — | — | 4718600 | unavailable | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
+| lu_tall_f64_s256 | pytorch-cuda | — | — | — | 4718600 | unavailable | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
+| lu_tall_f64_s256 | tenferro-cuda-direct | 4 | 15 | 3.351 | 4718600 | unavailable | 1.102e-06 |
+| lu_tall_f64_s256 | tenferro-cuda-eager | 4 | 15 | 3.491 | 4718600 | unavailable | 1.102e-06 |
+| lu_wide_c32_s256 | jax-cuda | — | — | — | 3145736 | unavailable | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
+| lu_wide_c32_s256 | jax-cuda-jit | — | — | — | 3145736 | unavailable | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
+| lu_wide_c32_s256 | pytorch-cuda | — | — | — | 3145736 | unavailable | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
+| lu_wide_c32_s256 | tenferro-cuda-direct | 4 | 15 | 2.912 | 3145736 | unavailable | 0.002021 |
+| lu_wide_c32_s256 | tenferro-cuda-eager | 4 | 15 | 3.061 | 3145736 | unavailable | 0.002021 |
+| lu_wide_c64_s256 | jax-cuda | — | — | — | 6291472 | unavailable | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
+| lu_wide_c64_s256 | jax-cuda-jit | — | — | — | 6291472 | unavailable | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
+| lu_wide_c64_s256 | pytorch-cuda | — | — | — | 6291472 | unavailable | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
+| lu_wide_c64_s256 | tenferro-cuda-direct | 1 | 15 | 2.337 | 6291472 | unavailable | 1.433e-06 |
+| lu_wide_c64_s256 | tenferro-cuda-eager | 1 | 15 | 2.394 | 6291472 | unavailable | 1.433e-06 |
+| lu_wide_f32_s256 | jax-cuda | — | — | — | 1572868 | unavailable | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
+| lu_wide_f32_s256 | jax-cuda-jit | — | — | — | 1572868 | unavailable | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
+| lu_wide_f32_s256 | pytorch-cuda | — | — | — | 1572868 | unavailable | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
+| lu_wide_f32_s256 | tenferro-cuda-direct | 4 | 15 | 2.673 | 1572868 | unavailable | 0.001297 |
+| lu_wide_f32_s256 | tenferro-cuda-eager | 4 | 15 | 2.829 | 1572868 | unavailable | 0.001297 |
+| lu_wide_f64_s256 | jax-cuda | — | — | — | 3145736 | unavailable | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
+| lu_wide_f64_s256 | jax-cuda-jit | — | — | — | 3145736 | unavailable | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
+| lu_wide_f64_s256 | pytorch-cuda | — | — | — | 3145736 | unavailable | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
+| lu_wide_f64_s256 | tenferro-cuda-direct | 4 | 15 | 2.997 | 3145736 | unavailable | 8.806e-07 |
+| lu_wide_f64_s256 | tenferro-cuda-eager | 4 | 15 | 3.140 | 3145736 | unavailable | 8.806e-07 |
+| norm_f32_512x512 | jax-cuda | 32 | 15 | 1.578 | 1048580 | unavailable | 0 |
+| norm_f32_512x512 | jax-cuda-jit | 64 | 15 | 3.348 | 1048580 | unavailable | 0 |
+| norm_f32_512x512 | pytorch-cuda | 256 | 15 | 2.769 | 1048580 | unavailable | 0 |
+| norm_f32_512x512 | tenferro-cuda-direct | 32 | 15 | 3.055 | 1048580 | unavailable | 0 |
+| norm_f32_512x512 | tenferro-cuda-eager | 32 | 15 | 3.797 | 1048580 | unavailable | 0 |
+| norm_f64_512x512 | jax-cuda | 64 | 15 | 3.075 | 2097160 | unavailable | 1.909e-07 |
+| norm_f64_512x512 | jax-cuda-jit | 64 | 15 | 3.589 | 2097160 | unavailable | 1.909e-07 |
+| norm_f64_512x512 | pytorch-cuda | 256 | 15 | 2.766 | 2097160 | unavailable | 1.909e-07 |
+| norm_f64_512x512 | tenferro-cuda-direct | 32 | 15 | 3.059 | 2097160 | unavailable | 1.909e-07 |
+| norm_f64_512x512 | tenferro-cuda-eager | 32 | 15 | 3.851 | 2097160 | unavailable | 1.909e-07 |
+| pinv_f32_512x512 | jax-cuda | 1 | 15 | 31.528 | 2097160 | unavailable | 0.009697 |
+| pinv_f32_512x512 | jax-cuda-jit | 1 | 15 | 31.398 | 2097160 | unavailable | 0.009581 |
+| pinv_f32_512x512 | pytorch-cuda | 1 | 15 | 34.277 | 2097160 | unavailable | 0.01174 |
+| pinv_f32_512x512 | tenferro-cuda-direct | — | — | — | 2097160 | unavailable | CUDA concrete route fails at revision 8b13220c: pinv_from_svd passes a host threshold scalar to mul_read. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906. |
+| pinv_f32_512x512 | tenferro-cuda-eager | — | — | — | 2097160 | unavailable | Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer. |
+| pinv_f64_512x512 | jax-cuda | 1 | 15 | 78.119 | 4194320 | unavailable | 8.975e-06 |
+| pinv_f64_512x512 | jax-cuda-jit | 1 | 15 | 78.079 | 4194320 | unavailable | 8.975e-06 |
+| pinv_f64_512x512 | pytorch-cuda | 1 | 15 | 84.627 | 4194320 | unavailable | 8.747e-06 |
+| pinv_f64_512x512 | tenferro-cuda-direct | — | — | — | 4194320 | unavailable | CUDA concrete route fails at revision 8b13220c: pinv_from_svd passes a host threshold scalar to mul_read. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906. |
+| pinv_f64_512x512 | tenferro-cuda-eager | — | — | — | 4194320 | unavailable | Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer. |
+| slogdet_negative_c32_256x256 | jax-cuda | 4 | 15 | 2.318 | 524300 | unavailable | 0.01211 |
+| slogdet_negative_c32_256x256 | jax-cuda-jit | 4 | 15 | 2.305 | 524300 | unavailable | 0.01211 |
+| slogdet_negative_c32_256x256 | pytorch-cuda | 4 | 15 | 2.297 | 524300 | unavailable | 0.01211 |
+| slogdet_negative_c32_256x256 | tenferro-cuda-direct | 4 | 15 | 3.325 | 524300 | unavailable | 0.01211 |
+| slogdet_negative_c32_256x256 | tenferro-cuda-eager | 4 | 15 | 3.764 | 524300 | unavailable | 0.01211 |
+| slogdet_negative_c64_256x256 | jax-cuda | 4 | 15 | 2.602 | 1048600 | unavailable | 1.025e-06 |
+| slogdet_negative_c64_256x256 | jax-cuda-jit | 4 | 15 | 2.553 | 1048600 | unavailable | 1.025e-06 |
+| slogdet_negative_c64_256x256 | pytorch-cuda | 4 | 15 | 2.513 | 1048600 | unavailable | 1.23e-06 |
+| slogdet_negative_c64_256x256 | tenferro-cuda-direct | 4 | 15 | 3.556 | 1048600 | unavailable | 1.025e-06 |
+| slogdet_negative_c64_256x256 | tenferro-cuda-eager | 4 | 15 | 3.808 | 1048600 | unavailable | 1.025e-06 |
+| slogdet_negative_f32_256x256 | jax-cuda | 4 | 15 | 2.144 | 262152 | unavailable | 0.0005003 |
+| slogdet_negative_f32_256x256 | jax-cuda-jit | 4 | 15 | 2.164 | 262152 | unavailable | 0.0005003 |
+| slogdet_negative_f32_256x256 | pytorch-cuda | 4 | 15 | 2.123 | 262152 | unavailable | 0.0005003 |
+| slogdet_negative_f32_256x256 | tenferro-cuda-direct | 4 | 15 | 3.115 | 262152 | unavailable | 0.0005003 |
+| slogdet_negative_f32_256x256 | tenferro-cuda-eager | 4 | 15 | 3.340 | 262152 | unavailable | 0.0005003 |
+| slogdet_negative_f64_256x256 | jax-cuda | 4 | 15 | 2.249 | 524304 | unavailable | 1.864e-06 |
+| slogdet_negative_f64_256x256 | jax-cuda-jit | 4 | 15 | 2.305 | 524304 | unavailable | 1.864e-06 |
+| slogdet_negative_f64_256x256 | pytorch-cuda | 4 | 15 | 2.269 | 524304 | unavailable | 1.708e-06 |
+| slogdet_negative_f64_256x256 | tenferro-cuda-direct | 4 | 15 | 3.292 | 524304 | unavailable | 1.864e-06 |
+| slogdet_negative_f64_256x256 | tenferro-cuda-eager | 4 | 15 | 3.499 | 524304 | unavailable | 1.864e-06 |
+| slogdet_phase_c32_256x256 | jax-cuda | 4 | 15 | 2.216 | 524300 | unavailable | 0.01233 |
+| slogdet_phase_c32_256x256 | jax-cuda-jit | 4 | 15 | 2.308 | 524300 | unavailable | 0.01233 |
+| slogdet_phase_c32_256x256 | pytorch-cuda | 4 | 15 | 2.308 | 524300 | unavailable | 0.01233 |
+| slogdet_phase_c32_256x256 | tenferro-cuda-direct | 4 | 15 | 3.332 | 524300 | unavailable | 0.01211 |
+| slogdet_phase_c32_256x256 | tenferro-cuda-eager | 4 | 15 | 3.570 | 524300 | unavailable | 0.01211 |
+| slogdet_phase_c64_256x256 | jax-cuda | 4 | 15 | 2.515 | 1048600 | unavailable | 1.025e-06 |
+| slogdet_phase_c64_256x256 | jax-cuda-jit | 4 | 15 | 2.622 | 1048600 | unavailable | 1.025e-06 |
+| slogdet_phase_c64_256x256 | pytorch-cuda | 4 | 15 | 2.517 | 1048600 | unavailable | 1.025e-06 |
+| slogdet_phase_c64_256x256 | tenferro-cuda-direct | 4 | 15 | 3.556 | 1048600 | unavailable | 1.025e-06 |
+| slogdet_phase_c64_256x256 | tenferro-cuda-eager | 4 | 15 | 3.780 | 1048600 | unavailable | 1.025e-06 |
+| slogdet_positive_c32_256x256 | jax-cuda | 4 | 15 | 2.235 | 524300 | unavailable | 0.01211 |
+| slogdet_positive_c32_256x256 | jax-cuda-jit | 4 | 15 | 2.240 | 524300 | unavailable | 0.01211 |
+| slogdet_positive_c32_256x256 | pytorch-cuda | 4 | 15 | 2.306 | 524300 | unavailable | 0.01211 |
+| slogdet_positive_c32_256x256 | tenferro-cuda-direct | 4 | 15 | 3.328 | 524300 | unavailable | 0.01211 |
+| slogdet_positive_c32_256x256 | tenferro-cuda-eager | 4 | 15 | 3.767 | 524300 | unavailable | 0.01211 |
+| slogdet_positive_c64_256x256 | jax-cuda | 4 | 15 | 2.608 | 1048600 | unavailable | 1.025e-06 |
+| slogdet_positive_c64_256x256 | jax-cuda-jit | 4 | 15 | 2.565 | 1048600 | unavailable | 1.025e-06 |
+| slogdet_positive_c64_256x256 | pytorch-cuda | 4 | 15 | 2.527 | 1048600 | unavailable | 1.23e-06 |
+| slogdet_positive_c64_256x256 | tenferro-cuda-direct | 4 | 15 | 3.559 | 1048600 | unavailable | 1.025e-06 |
+| slogdet_positive_c64_256x256 | tenferro-cuda-eager | 4 | 15 | 3.806 | 1048600 | unavailable | 1.025e-06 |
+| slogdet_positive_f32_256x256 | jax-cuda | 4 | 15 | 2.073 | 262152 | unavailable | 0.0005003 |
+| slogdet_positive_f32_256x256 | jax-cuda-jit | 4 | 15 | 2.114 | 262152 | unavailable | 0.0005003 |
+| slogdet_positive_f32_256x256 | pytorch-cuda | 4 | 15 | 2.123 | 262152 | unavailable | 0.0005003 |
+| slogdet_positive_f32_256x256 | tenferro-cuda-direct | 4 | 15 | 3.126 | 262152 | unavailable | 0.0005003 |
+| slogdet_positive_f32_256x256 | tenferro-cuda-eager | 4 | 15 | 3.336 | 262152 | unavailable | 0.0005003 |
+| slogdet_positive_f64_256x256 | jax-cuda | 4 | 15 | 2.239 | 524304 | unavailable | 1.864e-06 |
+| slogdet_positive_f64_256x256 | jax-cuda-jit | 4 | 15 | 2.294 | 524304 | unavailable | 1.864e-06 |
+| slogdet_positive_f64_256x256 | pytorch-cuda | 4 | 15 | 2.277 | 524304 | unavailable | 1.708e-06 |
+| slogdet_positive_f64_256x256 | tenferro-cuda-direct | 4 | 15 | 3.298 | 524304 | unavailable | 1.864e-06 |
+| slogdet_positive_f64_256x256 | tenferro-cuda-eager | 4 | 15 | 3.501 | 524304 | unavailable | 1.864e-06 |
+| svd_full_square_c32_256x256 | jax-cuda | 1 | 15 | 20.429 | 1573888 | unavailable | 0.133 |
+| svd_full_square_c32_256x256 | jax-cuda-jit | 1 | 15 | 20.383 | 1573888 | unavailable | 0.133 |
+| svd_full_square_c32_256x256 | pytorch-cuda | 1 | 15 | 22.072 | 1573888 | unavailable | 0.1305 |
+| svd_full_square_c32_256x256 | tenferro-cuda-direct | 1 | 15 | 20.312 | 1573888 | unavailable | 0.133 |
+| svd_full_square_c32_256x256 | tenferro-cuda-eager | 1 | 15 | 20.386 | 1573888 | unavailable | 0.133 |
+| svd_full_square_c64_256x256 | jax-cuda | 1 | 15 | 60.193 | 3147776 | unavailable | 0.000204 |
+| svd_full_square_c64_256x256 | jax-cuda-jit | 1 | 15 | 60.253 | 3147776 | unavailable | 0.000204 |
+| svd_full_square_c64_256x256 | pytorch-cuda | 1 | 15 | 63.622 | 3147776 | unavailable | 0.0002064 |
+| svd_full_square_c64_256x256 | tenferro-cuda-direct | 1 | 15 | 60.066 | 3147776 | unavailable | 0.000204 |
+| svd_full_square_c64_256x256 | tenferro-cuda-eager | 1 | 15 | 60.134 | 3147776 | unavailable | 0.000204 |
+| svd_full_square_f32_256x256 | jax-cuda | 1 | 15 | 10.845 | 787456 | unavailable | 0.1152 |
+| svd_full_square_f32_256x256 | jax-cuda-jit | 1 | 15 | 10.878 | 787456 | unavailable | 0.1152 |
+| svd_full_square_f32_256x256 | pytorch-cuda | 1 | 15 | 11.370 | 787456 | unavailable | 0.1135 |
+| svd_full_square_f32_256x256 | tenferro-cuda-direct | 1 | 15 | 10.818 | 787456 | unavailable | 0.1152 |
+| svd_full_square_f32_256x256 | tenferro-cuda-eager | 1 | 15 | 10.852 | 787456 | unavailable | 0.1152 |
+| svd_full_square_f64_256x256 | jax-cuda | 1 | 15 | 25.808 | 1574912 | unavailable | 8.171e-05 |
+| svd_full_square_f64_256x256 | jax-cuda-jit | 1 | 15 | 25.837 | 1574912 | unavailable | 8.171e-05 |
+| svd_full_square_f64_256x256 | pytorch-cuda | 1 | 15 | 25.711 | 1574912 | unavailable | 8.105e-05 |
+| svd_full_square_f64_256x256 | tenferro-cuda-direct | 1 | 15 | 25.819 | 1574912 | unavailable | 8.171e-05 |
+| svd_full_square_f64_256x256 | tenferro-cuda-eager | 1 | 15 | 25.790 | 1574912 | unavailable | 8.171e-05 |
+| svd_full_tall_c32_512x256 | jax-cuda | 1 | 15 | 19.671 | 3671040 | unavailable | 0.1126 |
+| svd_full_tall_c32_512x256 | jax-cuda-jit | 1 | 15 | 19.705 | 3671040 | unavailable | 0.1126 |
+| svd_full_tall_c32_512x256 | pytorch-cuda | 1 | 15 | 20.018 | 3671040 | unavailable | 0.1089 |
+| svd_full_tall_c32_512x256 | tenferro-cuda-direct | 1 | 15 | 19.622 | 3671040 | unavailable | 0.1126 |
+| svd_full_tall_c32_512x256 | tenferro-cuda-eager | 1 | 15 | 19.688 | 3671040 | unavailable | 0.1126 |
+| svd_full_tall_c64_512x256 | jax-cuda | 1 | 15 | 40.692 | 7342080 | unavailable | 0.0002021 |
+| svd_full_tall_c64_512x256 | jax-cuda-jit | 1 | 15 | 40.769 | 7342080 | unavailable | 0.0002021 |
+| svd_full_tall_c64_512x256 | pytorch-cuda | 1 | 15 | 40.996 | 7342080 | unavailable | 0.0001992 |
+| svd_full_tall_c64_512x256 | tenferro-cuda-direct | 1 | 15 | 42.704 | 7342080 | unavailable | 0.0002022 |
+| svd_full_tall_c64_512x256 | tenferro-cuda-eager | 1 | 15 | 42.705 | 7342080 | unavailable | 0.0002022 |
+| svd_full_tall_f32_512x256 | jax-cuda | 1 | 15 | 11.265 | 1836032 | unavailable | 0.1022 |
+| svd_full_tall_f32_512x256 | jax-cuda-jit | 1 | 15 | 11.300 | 1836032 | unavailable | 0.1022 |
+| svd_full_tall_f32_512x256 | pytorch-cuda | 1 | 15 | 11.883 | 1836032 | unavailable | 0.1033 |
+| svd_full_tall_f32_512x256 | tenferro-cuda-direct | 1 | 15 | 11.248 | 1836032 | unavailable | 0.1022 |
+| svd_full_tall_f32_512x256 | tenferro-cuda-eager | 1 | 15 | 11.261 | 1836032 | unavailable | 0.1022 |
+| svd_full_tall_f64_512x256 | jax-cuda | 1 | 15 | 19.640 | 3672064 | unavailable | 7.76e-05 |
+| svd_full_tall_f64_512x256 | jax-cuda-jit | 1 | 15 | 19.615 | 3672064 | unavailable | 7.76e-05 |
+| svd_full_tall_f64_512x256 | pytorch-cuda | 1 | 15 | 19.817 | 3672064 | unavailable | 7.76e-05 |
+| svd_full_tall_f64_512x256 | tenferro-cuda-direct | 1 | 15 | 19.611 | 3672064 | unavailable | 7.76e-05 |
+| svd_full_tall_f64_512x256 | tenferro-cuda-eager | 1 | 15 | 19.650 | 3672064 | unavailable | 7.76e-05 |
+| svd_full_wide_c32_256x512 | jax-cuda | 1 | 15 | 19.822 | 3671040 | unavailable | 0.1103 |
+| svd_full_wide_c32_256x512 | jax-cuda-jit | 1 | 15 | 19.869 | 3671040 | unavailable | 0.1103 |
+| svd_full_wide_c32_256x512 | pytorch-cuda | 1 | 15 | 20.219 | 3671040 | unavailable | 0.108 |
+| svd_full_wide_c32_256x512 | tenferro-cuda-direct | 1 | 15 | 19.805 | 3671040 | unavailable | 0.1103 |
+| svd_full_wide_c32_256x512 | tenferro-cuda-eager | 1 | 15 | 19.831 | 3671040 | unavailable | 0.1103 |
+| svd_full_wide_c64_256x512 | jax-cuda | 1 | 15 | 40.803 | 7342080 | unavailable | 0.0001946 |
+| svd_full_wide_c64_256x512 | jax-cuda-jit | 1 | 15 | 40.838 | 7342080 | unavailable | 0.0001946 |
+| svd_full_wide_c64_256x512 | pytorch-cuda | 1 | 15 | 41.573 | 7342080 | unavailable | 0.0001941 |
+| svd_full_wide_c64_256x512 | tenferro-cuda-direct | 1 | 15 | 42.831 | 7342080 | unavailable | 0.0001943 |
+| svd_full_wide_c64_256x512 | tenferro-cuda-eager | 1 | 15 | 42.886 | 7342080 | unavailable | 0.0001943 |
+| svd_full_wide_f32_256x512 | jax-cuda | 1 | 15 | 10.998 | 1836032 | unavailable | 0.1057 |
+| svd_full_wide_f32_256x512 | jax-cuda-jit | 1 | 15 | 11.022 | 1836032 | unavailable | 0.1057 |
+| svd_full_wide_f32_256x512 | pytorch-cuda | 1 | 15 | 11.070 | 1836032 | unavailable | 0.106 |
+| svd_full_wide_f32_256x512 | tenferro-cuda-direct | 1 | 15 | 10.971 | 1836032 | unavailable | 0.1057 |
+| svd_full_wide_f32_256x512 | tenferro-cuda-eager | 1 | 15 | 10.933 | 1836032 | unavailable | 0.1057 |
+| svd_full_wide_f64_256x512 | jax-cuda | 1 | 15 | 17.815 | 3672064 | unavailable | 7.938e-05 |
+| svd_full_wide_f64_256x512 | jax-cuda-jit | 1 | 15 | 17.818 | 3672064 | unavailable | 7.938e-05 |
+| svd_full_wide_f64_256x512 | pytorch-cuda | 1 | 15 | 18.191 | 3672064 | unavailable | 7.938e-05 |
+| svd_full_wide_f64_256x512 | tenferro-cuda-direct | 1 | 15 | 17.730 | 3672064 | unavailable | 7.938e-05 |
+| svd_full_wide_f64_256x512 | tenferro-cuda-eager | 1 | 15 | 17.793 | 3672064 | unavailable | 7.938e-05 |
+| svdvals_f32_512x512 | jax-cuda | 1 | 15 | 31.236 | 1050624 | unavailable | 0.1547 |
+| svdvals_f32_512x512 | jax-cuda-jit | 1 | 15 | 31.285 | 1050624 | unavailable | 0.1547 |
+| svdvals_f32_512x512 | pytorch-cuda | 1 | 15 | 34.101 | 1050624 | unavailable | 0.1733 |
+| svdvals_f32_512x512 | tenferro-cuda-direct | 1 | 15 | 31.163 | 1050624 | unavailable | 0.1547 |
+| svdvals_f32_512x512 | tenferro-cuda-eager | — | — | — | 1050624 | unavailable | EagerSessionLinalgExt has no values-only svdvals entry point; returning and discarding singular vectors is not equivalent. |
+| svdvals_f64_512x512 | jax-cuda | 1 | 15 | 77.663 | 2101248 | unavailable | 0.0002063 |
+| svdvals_f64_512x512 | jax-cuda-jit | 1 | 15 | 77.837 | 2101248 | unavailable | 0.0002063 |
+| svdvals_f64_512x512 | pytorch-cuda | 1 | 15 | 84.430 | 2101248 | unavailable | 0.0002066 |
+| svdvals_f64_512x512 | tenferro-cuda-direct | 1 | 15 | 77.755 | 2101248 | unavailable | 0.0002063 |
+| svdvals_f64_512x512 | tenferro-cuda-eager | — | — | — | 2101248 | unavailable | EagerSessionLinalgExt has no values-only svdvals entry point; returning and discarding singular vectors is not equivalent. |
+| triangular_solve_f32_512x512 | jax-cuda | 16 | 15 | 2.953 | 1081344 | unavailable | 0.0007877 |
+| triangular_solve_f32_512x512 | jax-cuda-jit | 16 | 15 | 2.923 | 1081344 | unavailable | 0.0007877 |
+| triangular_solve_f32_512x512 | pytorch-cuda | 32 | 15 | 3.856 | 1081344 | unavailable | 0.0006008 |
+| triangular_solve_f32_512x512 | tenferro-cuda-direct | 16 | 15 | 2.719 | 1081344 | unavailable | 0.0007877 |
+| triangular_solve_f32_512x512 | tenferro-cuda-eager | 16 | 15 | 3.575 | 1081344 | unavailable | 0.0007877 |
+| triangular_solve_f64_512x512 | jax-cuda | 16 | 15 | 3.453 | 2162688 | unavailable | 1.157e-06 |
+| triangular_solve_f64_512x512 | jax-cuda-jit | 16 | 15 | 3.455 | 2162688 | unavailable | 1.157e-06 |
+| triangular_solve_f64_512x512 | pytorch-cuda | 8 | 15 | 2.456 | 2162688 | unavailable | 6.241e-07 |
+| triangular_solve_f64_512x512 | tenferro-cuda-direct | 16 | 15 | 3.112 | 2162688 | unavailable | 1.157e-06 |
+| triangular_solve_f64_512x512 | tenferro-cuda-eager | 16 | 15 | 3.945 | 2162688 | unavailable | 1.157e-06 |
 
 ## Run metadata
 
 ```yaml
 schema_version: 1
 target_profile: nvidia-gpu
-suite_id: gpu/linalg_public_api
-suite_file: benchmarks/gpu/linalg_public_api.yaml
-timestamp: '2026-11-02T21:09:35Z'
+suite_id: gpu/linalg_public_api_throughput
+suite_file: benchmarks/gpu/linalg_public_api_throughput.yaml
+timestamp: '2026-11-05T02:02:29Z'
 tenferro_rs:
-  path: extern/tenferro-rs
-  commit: 433121a7756fdb4f109b02f0422d3714a04514c6
+  path: /workspaces/tenferro-benchmark/extern/tenferro-rs
+  commit: a000e5c4929d5bebb91e783c329b27106baed12e
   dirty: false
   features:
   - cuda
-  resolved_path: /home/shinaoka/projects/tensor4all/tenferro-batched-gemm
+  resolved_path: /workspaces/tenferro-benchmark/extern/tenferro-rs
 harness:
   path: /workspaces/tenferro-benchmark
-  commit: 8987033651c18a03e47e16cdd365df807b77b6be
-  dirty: true
+  commit: ab5a363734c362746c60ebcbc9cd31e68b2e0768
+  dirty: false
 resolved_deps:
   strided-perm:
   - 0.8.0
@@ -649,7 +651,8 @@ build:
     rustflags: null
     target_cpu: null
 environment:
-  hostname: 0fe295fad79b
+  container: devcontainer
+  hostname: bd7fc8e76a87
   os: Linux-6.8.0-147-generic-x86_64-with-glibc2.39
   arch: x86_64
   cpu: x86_64
@@ -659,7 +662,7 @@ environment:
     observer_cpus: null
     override_of: null
     thread_budget: '1'
-    measured_cpus: 0-7
+    measured_cpus: 0-63
     l3_domains:
     - 0-7
     - 8-15
@@ -763,6 +766,10 @@ cuda:
   driver_version: 580.178.04
   runtime_version: '12.9'
   cuda_version: '13.0'
+  toolkit_version: '12.9'
+  toolkit_root: /usr/local/cuda
+  cutensor_version: 2.2.0
+  cusolver_version: 11.7.5
   cudnn_version: '92700'
 gpu_assignment:
   role: benchmark
@@ -773,14 +780,14 @@ gpu_assignment:
   verification_only: false
 collection:
   command: BENCHMARK_TARGET_PROFILE=nvidia-gpu GPU_BENCH_DEVICE=0 BENCH_RUNS=15 BENCH_WARMUPS=3
-    ./scripts/run_gpu_public_api.sh linalg_public_api
+    ./scripts/run_gpu_public_api.sh linalg_public_api_throughput
   devcontainer_config: .devcontainer/cuda/devcontainer.json
-  expected_cases: 164
-  selected_cases: 164
+  expected_cases: 82
+  selected_cases: 82
   sha256:
     .devcontainer/cuda/devcontainer.json: 0bf1465bbd1a4c9f896d5320838f2d5a488632a59af7f9b59cc050e95e0b8e09
     .devcontainer/cuda/Dockerfile: 578d9815e5145aa1651ac7e93833468c345ee8bf5e95bfa7717551580ae9feca
-    src/bin/benchmark_gpu_public_api.rs: 1a5f3469fc9ffde64a79e05eb9853632366855ece3280ba83e2ba21fe3fb2cdc
+    src/bin/benchmark_gpu_public_api.rs: c04fab6297d9d008d5806c829b6c77349cd4665a1bd6cc6835c2fcde79e7a44c
     src/bin/benchmark_gpu_public_api/lifetime.rs: 34be366f56aac88f5f3b86ade8018a15dad2bca85cea74f56cb2fe121917d0a9
     src/bin/benchmark_gpu_public_api/linalg.rs: 9c3d7916a3281d2dfd1caa68551dc9c81c79dab6b7525324339e5c4816581e6d
     src/bin/benchmark_gpu_public_api/multi.rs: 291e63a517b6f7108527254a7f83751420aa1d4e73395aa60f0691312b2a3773
@@ -790,10 +797,10 @@ collection:
     src/bin/benchmark_gpu_public_api/runtime_ops.rs: c9d61b1e99bda517a59a6e34f625fd4d651bbbb19f6dc06ba4d0d1c0d50dfd6a
     src/bin/benchmark_gpu_public_api/state.rs: e11a863aee7a85822c474eb771b45ec402e21dbe92173d178c42119ab8ca307e
     src/bin/benchmark_gpu_public_api/structural.rs: 8b61ac01b58edc090eafbc124ec135d5efeb4979631a939656ba78dd6e5c042a
-    /workspaces/tenferro-benchmark/scripts/benchmark_gpu_public_api.py: ddc112ea5d568a0399378f2be8b31c91b3144fe7d286e8094d27ca5ccda959bf
+    /workspaces/tenferro-benchmark/scripts/benchmark_gpu_public_api.py: c888dccb103bcb7a764a1e592eb046ce32e1e55a274fcfd71f8b3052a93a694d
     /workspaces/tenferro-benchmark/scripts/gpu_public_api_ops.py: e88823db3f4a1fe43dc13c4743c9d78ece6af76a968724091af318dd8d7f2528
-    scripts/run_gpu_public_api.sh: 9cbcb473cba55b1605bab07fd3ff14247859fd7fe9e73d5378dd70108313256b
-    data/results/nvidia-gpu/gpu/linalg_public_api/20261102_210935/fixtures/manifest.json: e8153a1102e04a6f09305645386390e52b03aa74d9b41adcaa496512183a88c9
-    target/release/benchmark_gpu_public_api: c0a0be40dd246cd4cb7ca59cac19bacd1549a4f3a593aea91e887cf41f6e4aa6
+    scripts/run_gpu_public_api.sh: 31587e7a83440d99417be00110c4dd12c5cc1143e620bf24b1c03fe5f76bfb5e
+    data/results/nvidia-gpu/gpu/linalg_public_api_throughput/20261105_020224/fixtures/manifest.json: 9bc6d3164be9e92417459d741f7875f4416224b26ecb3d4bd0381358bee92930
+    target/release/benchmark_gpu_public_api: 34546e3ed1766badcc680cf308a6262672e67901a681a3518564249bded54c46
   reference_numpy_version: 2.4.2
 ```
