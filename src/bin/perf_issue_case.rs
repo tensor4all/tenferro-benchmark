@@ -40,6 +40,8 @@ mod cpu_gap_mwe;
 
 #[path = "perf_issue_case/umbrella.rs"]
 mod umbrella;
+#[path = "perf_issue_case/binary_shortcut.rs"]
+mod binary_shortcut;
 
 type BoxError = Box<dyn Error + Send + Sync>;
 type Result<T> = std::result::Result<T, BoxError>;
@@ -1135,7 +1137,8 @@ fn tanh_chain(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
     let x_t = Tensor::from_vec_col_major(vec![rows, cols], data.clone())?;
     let (error, measurement, timer, outside) = match arm {
         "compiled-prepared" => {
-            let x_in = TracedTensor::input_concrete_shape(DType::F32, &[rows, cols])?;
+            let trace = tenferro_runtime::TraceContext::new();
+            let x_in = trace.input_concrete_shape(DType::F32, &[rows, cols])?;
             let mut y = x_in.clone();
             for _ in 0..chain {
                 y = y.tanh()?;
@@ -1603,7 +1606,8 @@ fn trace_metadata_case(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
             s.neg(&y)
         })?
     } else {
-        let input = TracedTensor::from_tensor_concrete_shape(x)?;
+        let trace = tenferro_runtime::TraceContext::new();
+        let input = trace.from_tensor_concrete_shape(x)?;
         let mut y = input;
         let mut views = Vec::new();
         for _ in 0..steps { y = y.triu(0)?.transpose(&[1, 0])?; if arm == "trace-outputs" { views.push(y.clone()); } }
@@ -2107,16 +2111,17 @@ fn small_grad_trace(params: &Value, timing: &Timing, threads: usize) -> Result<C
     let ad = AdContext::builder()
         .with_semantic_extension_rules(tenferro_linalg::semantic_ad_rules()?)?
         .build()?;
-    let a = TracedTensor::from_tensor_concrete_shape(Tensor::from_vec_col_major(
+    let trace = tenferro_runtime::TraceContext::new();
+    let a = trace.from_tensor_concrete_shape(Tensor::from_vec_col_major(
         vec![n, n],
         data.clone(),
     )?)?;
-    let b = TracedTensor::from_tensor_concrete_shape(Tensor::from_vec_col_major(
+    let b = trace.from_tensor_concrete_shape(Tensor::from_vec_col_major(
         vec![n, n],
         rhs.clone(),
     )?)?;
     let loss = small_ad_loss_traced(op, &a, &b)?;
-    let seed = TracedTensor::from_tensor_concrete_shape(Tensor::from_vec_col_major(
+    let seed = trace.from_tensor_concrete_shape(Tensor::from_vec_col_major(
         Vec::<usize>::new(),
         vec![1.0],
     )?)?;
@@ -2818,6 +2823,7 @@ fn main() -> Result<()> {
             decode_projection_view_operand(&params, &timing, threads)
         }
         "copy_volume" => copy_volume(&params),
+        "binary_einsum_shortcut" | "thin_complex_gemm" => binary_shortcut::run(&params, &timing, threads),
         "gemm_mm256" => gemm_mm256(&params, &timing),
         "rank1_dot" => rank1_dot(&params, &timing),
         "small_solves" => small_solves(&params, &timing),

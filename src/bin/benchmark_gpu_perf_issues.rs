@@ -34,6 +34,8 @@ use tenferro_tensor::{
 type BoxError = Box<dyn Error + Send + Sync>;
 type Result<T> = std::result::Result<T, BoxError>;
 
+#[path = "benchmark_gpu_perf_issues/cholesky_staging.rs"]
+mod cholesky_staging;
 #[path = "benchmark_gpu_perf_issues/dispatch.rs"]
 mod dispatch;
 #[path = "benchmark_gpu_perf_issues/shape_stream.rs"]
@@ -2749,6 +2751,7 @@ fn main() -> Result<()> {
     };
     let kind = param_str(&params, "kind")?;
     let outcome = match kind {
+        "cholesky_staging" => cholesky_staging::run(&params, &timing, device),
         "prepared_decode" => dispatch::decode(&params, &timing, device),
         "standard_batched_matmul" => dispatch::batched(&params, &timing, device),
         "transfer" => transfer(&params, &timing, device),

@@ -14,6 +14,20 @@ def fixture(case, device):
         v = ((i * 2654435761 + seed * 97) % 2001).to(dtype) / 1000 - 1
         return v if decode else v * 0.5
 
+    if kind == 'cholesky_staging':
+        n = p['n']
+        dtype = torch.float64 if case['dtype'] == 'f64' else torch.float32
+        i = torch.arange(n, device=device)[:,None]
+        j = torch.arange(n, device=device)[None,:]
+        a = ((torch.minimum(i,j)*7+torch.maximum(i,j)*13) % 31).double()/128-0.1
+        a.diagonal().fill_(n)
+        a = a.to(dtype).contiguous()
+        op = lambda: torch.linalg.cholesky(a)
+        def check(out):
+            torch.testing.assert_close(out @ out.T, a,
+                                       rtol=1e-10 if dtype == torch.float64 else 1e-4,
+                                       atol=1e-10 if dtype == torch.float64 else 1e-4)
+        return op, check, n*n*a.element_size()
     if kind == 'prepared_decode':
         din, dout, length = p['in'], p['out'], p['len']
         # Rust: compact column-major x[in,len], W[in,out], result[len,out].

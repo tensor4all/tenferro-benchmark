@@ -425,8 +425,9 @@ fn fused(
     threads: usize,
 ) -> Result<(Value, Option<Measurement>, Value)> {
     let shape = &fx.shape;
+    let trace = tenferro_runtime::TraceContext::new();
     let inputs: Vec<_> = (0..3)
-        .map(|_| TracedTensor::input_concrete_shape(DType::F64, shape))
+        .map(|_| trace.input_concrete_shape(DType::F64, shape))
         .collect::<std::result::Result<_, _>>()?;
     let out = inputs[0].mul(&inputs[1])?.add(&inputs[2])?;
     let specs: Vec<_> = inputs

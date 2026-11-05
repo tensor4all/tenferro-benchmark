@@ -3,7 +3,7 @@
 # explicitly labelled diagnostics (per-call session entry, eager AD workflows,
 # counter runs). Bump MANIFEST_VERSION in the generator on any change.
 # GPU quick also includes fixed/mixed/fresh sequence and allocation-entry controls.
-manifest_version: 9
+manifest_version: 10
 suite_id: gpu/perf_issues
 source: data/instances/gpu_perf_issues.json
 generated_by: scripts/generate_perf_issue_cases.py
@@ -91,6 +91,12 @@ coverage:
   - qr_live_buffers_f64_n32_live16
   - qr_live_buffers_f64_n32_live256
   - qr_live_buffers_f64_n32_live1024
+  - cholesky_readback_latency_f64_n512
+  - cholesky_readback_latency_f64_n512_eager
+  - cholesky_readback_latency_f64_n512_pytorch
+  - cholesky_readback_latency_f32_n512
+  - cholesky_readback_latency_f32_n512_eager
+  - cholesky_readback_latency_f32_n512_pytorch
   - prepared_dot_general_f32_decode_len8
   - prepared_dot_general_f32_decode_len8_eager-session
   - prepared_dot_general_f32_decode_len8_pytorch
@@ -250,6 +256,12 @@ coverage:
   - qr_live_buffers_f64_n32_live1024
   - first_call_transpose_to-contiguous_f64_layouts_r2-12_c5-7
   - first_call_transpose_copy-into_f64_layouts_r2-12_c5-7
+  - cholesky_readback_latency_f64_n512
+  - cholesky_readback_latency_f64_n512_eager
+  - cholesky_readback_latency_f64_n512_pytorch
+  - cholesky_readback_latency_f32_n512
+  - cholesky_readback_latency_f32_n512_eager
+  - cholesky_readback_latency_f32_n512_pytorch
   - prepared_dot_general_f32_decode_len8
   - prepared_dot_general_f32_decode_len8_eager-session
   - prepared_dot_general_f32_decode_len8_pytorch

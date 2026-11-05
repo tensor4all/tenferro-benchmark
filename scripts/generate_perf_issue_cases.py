@@ -43,13 +43,13 @@ ROOT = Path(__file__).resolve().parents[1]
 INSTANCES = ROOT / "data/instances/perf_issues.json"
 MANIFEST = ROOT / "benchmarks/cpu/manifests/perf_issues.yaml"
 SUITE = ROOT / "benchmarks/cpu/perf_issues.yaml"
-MANIFEST_VERSION = 21
+MANIFEST_VERSION = 22
 SUITE_ID = "cpu/perf_issues"
 
 GPU_INSTANCES = ROOT / "data/instances/gpu_perf_issues.json"
 GPU_MANIFEST = ROOT / "benchmarks/gpu/manifests/perf_issues.yaml"
 GPU_SUITE = ROOT / "benchmarks/gpu/perf_issues.yaml"
-GPU_MANIFEST_VERSION = 9
+GPU_MANIFEST_VERSION = 10
 GPU_SUITE_ID = "gpu/perf_issues"
 
 DIAGNOSTIC_SCOPES = {"session_entry_diagnostic", "counter_diagnostic", "eager_ad_workflow",
@@ -662,8 +662,79 @@ def softmax_pool_cases():
     return rows
 
 
+def binary_shortcut_cases():
+    rows = []
+    for dtype, shape in (("f64", "2x2"), ("f64", "16x16"), ("c64", "2x2"),
+                         ("c64", "16x16"), ("f64", "abc_cef_abef")):
+        n = 2 if shape == "2x2" else 16
+        params = ({"m": 8, "k": 2, "n": 16, "format": "abc,cef->abef"}
+                  if shape == "abc_cef_abef" else
+                  {"m": n, "k": n, "n": n, "format": "ij,jk->ik"})
+        target = f"two_operand_einsum_{dtype}_{shape}_string"
+        for arm, backend in (("string", "tenferro-rs"), ("subscripts", "tenferro-rs"),
+                             ("prepared", "tenferro-rs"), ("dot-general", "tenferro-rs"),
+                             ("pytorch", "pytorch-cpu")):
+            row = case(f"two_operand_einsum_{dtype}_{shape}_{arm}", ("#2325", "#2324"),
+                "binary_einsum_shortcut", params, arm=arm, backend=backend, dtype=dtype,
+                profiles=("zen5-cpu", "amd-cpu", "mac-cpu"),
+                reference_for=target if arm != "string" else None,
+                intent="tenferro-rs #2325 / #2324 (benchmark #340): exact-output two-operand "
+                       "einsum shortcut versus direct dot_general on identical logical inputs. "
+                       "String, integer subscripts and prepared ConcreteEinsumPlan execution "
+                       "are separate paths; torch.einsum is the external reference. "
+                       "Inputs, engine, session, subscripts and plan prepared before timing; "
+                       "latency/dispatch cost, not compute throughput. abc,cef->abef uses "
+                       "[2,4,2] x [2,4,4] -> [2,4,4,4].")
+            row.update(regime="latency", execution_path=arm, thread_counts=[1, 4])
+            rows.append(row)
+    return rows
+
+
+def thin_complex_cases():
+    rows = []
+    for m in (1, 2, 8):
+        target = f"thin_c64_gemm_{m}x141_141x282_t1"
+        for arm, backend in (("dot-general", "tenferro-rs"), ("faer-direct", "faer-direct"),
+                             ("pytorch", "pytorch-cpu")):
+            row = case(target if arm == "dot-general" else target + "_" + arm,
+                ("#2416", "#1099"), "thin_complex_gemm", {"m": m, "k": 141, "n": 282},
+                arm=arm, backend=backend, dtype="c64", profiles=("mac-cpu",),
+                reference_for=target if arm != "dot-general" else None,
+                intent="tenferro-rs #2416 / #1099 (benchmark #339): column-major complex128 "
+                       "products on an Accelerate link, m=1/2 select the thin faer route; "
+                       "m=8 is the vendor-route control. Public dot_general versus allocating "
+                       "faer-direct and torch.matmul on identical values. Engine, session, "
+                       "operands and views outside timing; intrinsic output allocation inside. "
+                       "Latency/kernel-route diagnostic, not large GEMM throughput.")
+            row.update(regime="latency", execution_path=arm, thread_counts=[1])
+            rows.append(row)
+    return rows
+
+
+def gpu_cholesky_staging_cases(gpu):
+    rows = []
+    for dtype in ("f64", "f32"):
+        target = f"cholesky_readback_latency_{dtype}_n512"
+        for arm, backend in (("direct", "tenferro-cuda"), ("eager", "tenferro-cuda-eager"),
+                             ("pytorch", "pytorch-cuda")):
+            row = case(target if arm == "direct" else target + "_" + arm,
+                ("#2436", "#2440", "#2445"), "cholesky_staging", {"n": 512},
+                arm=arm, backend=backend, dtype=dtype, profiles=gpu,
+                reference_for=target if arm != "direct" else None,
+                intent="tenferro-rs #2436 / #2440 / #2445 (benchmark #338): 512x512 HPD "
+                       "Cholesky exercises solver-info pinned staging reuse. f32 on the "
+                       "identical shape controls the f64 route. Direct, EagerTensor and "
+                       "torch.linalg.cholesky paths are distinct. Fixture, upload, engine, "
+                       "session, wrapping, lazy initialization and reconstruction untimed; "
+                       "only factorization and device synchronization timed. Throughput "
+                       "factorization row, including its intrinsic solver-status readback.")
+            row.update(regime="throughput", execution_path=arm)
+            rows.append(row)
+    return rows
+
+
 def generate_cases():
-    return (decode_cases() + decode_view_operand_cases() + other_cases() + b1_op_cases()
+    return (binary_shortcut_cases() + thin_complex_cases() + decode_cases() + decode_view_operand_cases() + other_cases() + b1_op_cases()
             + cpu_gap_cases() + metadata_clone_cases()
             + cpu_followup_cases() + cpu_umbrella_cases() + pool_state_cases()
             + small_grad_cases() + fft_axis_cases() + degenerate_dot_cases()
@@ -1005,6 +1076,7 @@ def generate_gpu_cases():
                     "destination, of a transposed device view) for 22 distinct [r, c] layouts after "
                     "one warm-up layout, in one cold process. A first-call (NVRTC compile) "
                     "diagnostic, never a steady-state row; the second call is the warm reference.")))
+    rows += gpu_cholesky_staging_cases(gpu)
     rows += gpu_dispatch_regression_cases(gpu)
     rows += gpu_latency_cases(gpu)
     rows += gpu_memory_cases(gpu)
