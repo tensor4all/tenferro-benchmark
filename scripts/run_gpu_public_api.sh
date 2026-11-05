@@ -28,6 +28,20 @@ export BENCHMARK_TARGET_PROFILE=nvidia-gpu
 # zero now means the same card in Rust, PyTorch and JAX, regardless of PCI order.
 configure_gpu_bench_env "$default_device"
 echo "$GPU_API_ROLE: physical GPU $GPU_BENCH_PHYSICAL_DEVICE ($GPU_BENCH_DEVICE_UUID), process CUDA ordinal 0"
+# Each family starts two Rust arms, and a NVRTC-compiled module costs about 48 s the
+# first time a process compiles it. A persistent artifact directory outside the
+# repository lets the later families read the cubins back instead of compiling them
+# again. It is keyed by the NVRTC version and the device's compute capability, so a
+# toolkit upgrade or another card cannot read a stale entry.
+gpu_arch=unknown
+if command -v nvidia-smi >/dev/null 2>&1; then
+    capability="$(nvidia-smi -i "$GPU_BENCH_PHYSICAL_DEVICE" --query-gpu=compute_cap --format=csv,noheader 2>/dev/null | tr -d '. \n' | head -1)"
+    [[ -n "$capability" ]] && gpu_arch="sm_$capability"
+fi
+nvrtc_lib="$(ls "${CUDA_HOME:-/usr/local/cuda}"/lib64/libnvrtc.so.* 2>/dev/null | sort -V | tail -1)"
+nvrtc_version="${nvrtc_lib##*/libnvrtc.so.}"
+export TENFERRO_CUDA_ARTIFACT_CACHE="${TENFERRO_CUDA_ARTIFACT_CACHE:-${XDG_CACHE_HOME:-$HOME/.cache}/tenferro-benchmark/cuda-artifacts/${nvrtc_version:-unknown}/$gpu_arch}"
+echo "CUDA artifacts: $TENFERRO_CUDA_ARTIFACT_CACHE"
 export BENCH_RUNS="${BENCH_RUNS:-15}" BENCH_WARMUPS="${BENCH_WARMUPS:-3}"
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 RAYON_NUM_THREADS=1
 export XLA_PYTHON_CLIENT_PREALLOCATE=false
