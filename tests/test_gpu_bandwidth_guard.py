@@ -209,6 +209,21 @@ class CaseTraffic(unittest.TestCase):
         self.assertEqual(document["traffic_bytes_per_copy"], 2 * BUFFER_BYTES)
         self.assertNotIn("limit_bytes_per_second", document)
 
+    def test_a_torch_version_subclass_is_recorded_as_a_plain_string(self):
+        # ``torch.__version__`` is a ``TorchVersion``, a ``str`` subclass, and
+        # ``yaml.safe_dump`` has no representer for one: the calibration failed
+        # to write run.yaml and the pages lost their copy ratio.
+        class TorchVersion(str):
+            pass
+
+        document = calibration.copy_document(
+            COPY_SAMPLES_NS, BUFFER_BYTES, device_ordinal=0, device_name="test device",
+            warmups=3, torch_version=TorchVersion("2.12.0+cu130"),
+            cuda_version="13.0", timestamp="2026-11-04T00:00:00+00:00")
+        self.assertIs(type(document["torch_version"]), str)
+        self.assertEqual(
+            yaml.safe_load(yaml.safe_dump(document))["torch_version"], "2.12.0+cu130")
+
 
 class Publication(unittest.TestCase):
     def suite(self):

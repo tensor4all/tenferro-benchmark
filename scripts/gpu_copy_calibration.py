@@ -65,7 +65,9 @@ def copy_document(sample_ns, buffer_bytes, *, device_ordinal, device_name,
         "sample_ms": [float(value) / 1e6 for value in sample_ns],
         "median_ms": median_ns / 1e6,
         "bytes_per_second": rate,
-        "torch_version": torch_version,
+        # ``torch.__version__`` is a ``TorchVersion``, a ``str`` subclass that
+        # ``yaml.safe_dump`` cannot represent; this document is written to run.yaml.
+        "torch_version": str(torch_version),
         "cuda_version": cuda_version,
         "timestamp": timestamp,
     }
