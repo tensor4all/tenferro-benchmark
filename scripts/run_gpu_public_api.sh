@@ -65,6 +65,11 @@ else
     suite="$run_dir/instances.json"
     uv run python scripts/gpu_routine_selection.py --instances "$declaration" --output "$suite"
 fi
+# The run keeps the selection it measured, so its page and sidecar can be
+# rendered from the run directory alone.
+if [[ "$suite" != "$run_dir/instances.json" ]]; then
+    cp "$suite" "$run_dir/instances.json"
+fi
 if [[ "${GPU_BENCH_PREBUILT_RUST:-0}" == 1 ]]; then
     # The hosted build job ships this binary; the benchmark pod has no Rust toolchain.
     python3 scripts/ci/gpu_artifact.py "${CARGO_TARGET_DIR:-target}/release/benchmark_gpu_public_api"

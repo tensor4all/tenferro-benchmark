@@ -1,0 +1,9 @@
+{
+  "suite_id": "gpu/linalg_public_api_throughput",
+  "backends": ["tenferro-cuda-direct", "pytorch-cuda"],
+  "description": "Large-shape view of the same CUDA public linalg surface. `large` is a shape class, not a measured classification: a memory-bound row takes the same time here as at a small shape.",
+  "cases": [
+    {"id": "cholesky_f32_512x512", "op": "cholesky"},
+    {"id": "householder_r_default_f32_512x256", "op": "householder_r"}
+  ]
+}

@@ -147,7 +147,8 @@ class PublicGpuContracts(unittest.TestCase):
                 bench.measure(operation, lambda: None, lambda outputs: None, 16, 0, 1)
 
     def test_excluded_verified_rows_cannot_hide_failed_validation_or_timings(self):
-        suite = {"suite_id": "gpu/lstsq", "cases": [{"id": "one"}], "backends": ["a"]}
+        suite = {"suite_id": "gpu/lstsq", "cases": [{"id": "one"}], "backends": ["a"],
+                 "description": "Small-shape view of the public linalg surface."}
         row = dict(case_id="one", backend="a", status="unsupported", reason="internal setup",
                    timing=None, cuda_implementation_verified=True,
                    verification={"max_error_over_tolerance": 0.})

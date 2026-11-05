@@ -1,0 +1,2 @@
+{"case_id": "cholesky_f32_512x512", "backend": "pytorch-cuda", "status": "ok", "verification": {"max_error_over_tolerance": 0.25}, "timing": {"operations_per_sample": 4, "batch_ms": [0.27424, 0.275481, 0.27679]}}
+{"case_id": "householder_r_default_f32_512x256", "backend": "pytorch-cuda", "status": "unsupported", "reason": "state projections need an extra uploaded operand; excluded from standard timing", "cuda_implementation_verified": true, "verification": {"max_error_over_tolerance": 0.125}}

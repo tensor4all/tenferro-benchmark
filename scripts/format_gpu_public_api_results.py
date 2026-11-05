@@ -47,14 +47,21 @@ def load_rows(suite, paths, *, verify_only=False):
     return rows
 
 
-def render(suite, paths, metadata, timestamp):
+def render(suite, paths, metadata, timestamp, run_path=None):
     rows = load_rows(suite, paths)
     backends = suite["backends"]
     measured = sum(row["status"] == "ok" for row in rows.values())
     excluded_verified = sum(row["status"] == "unsupported" and bool(row.get("cuda_implementation_verified")) for row in rows.values())
+    # The declared run is the one the page names, including a run collected under
+    # an earlier suite-directory layout.
+    raw_run = str(run_path or f'data/results/nvidia-gpu/{suite["suite_id"]}/{timestamp}').rstrip("/")
+    if not suite.get("description"):
+        raise ValueError("suite selection records no 'description'; the page note "
+                         "that says what its shape class means cannot be written")
     text = [f'# {suite["suite_id"]}: CUDA public API benchmark', "",
             f'Measured cells: **{measured}**. Unsupported cells: **{len(rows)-measured}**, including **{excluded_verified}** numerically verified but timing-excluded cells. Unsupported cells do not count as measured coverage.', "",
-            f'Raw run: `data/results/nvidia-gpu/{suite["suite_id"]}/{timestamp}/`.', "",
+            f'Raw run: `{raw_run}/`.', "",
+            " ".join(str(suite["description"]).split()), "",
             'Values are median (IQR) **µs per operation**. Samples time batches of declared operations plus device synchronization; retained output memory is limited to 256 MiB. Batch counts and raw durations are preserved in JSONL.', "",
             'Setup, input transfers, library/plan initialization, JIT compilation, validation downloads and output destruction are outside timing. Intrinsic output allocation is inside timing; output-reuse rows instead use preallocated destinations across samples. Accumulating destinations are restored from prepared GPU seeds and synchronized before every batch clock, including initialization and calibration. Direct and eager each use one entered session across samples; direct FFT uses cached `FftExecutor`. JAX eager and compiled JIT are separate arms.', "",
             'All measured output elements are checked against independently generated NumPy/SciPy reference results before and after sampling. Unsupported rows include unavailable APIs and APIs whose internal setup cannot be excluded; these are not performance measurements. Short batches limited by output memory remain identifiable in the sampling table.', "",
@@ -92,7 +99,9 @@ def render(suite, paths, metadata, timestamp):
                 cells.append(f'{np.median(v):.3f} ({np.percentile(v, 75)-np.percentile(v, 25):.3f})')
         text.append('| ' + case["id"] + ' | ' + ' | '.join(cells) + ' |')
     text += ["", "## Sampling", "", "| Case | Backend | Ops/sample | Samples | Median batch ms | Verification error/tolerance |", "| --- | --- | ---: | ---: | ---: | ---: |"]
-    for key, row in rows.items():
+    # Sorted, so the page does not depend on the order the backends' files were
+    # passed in (the collector starts Rust arms before Python arms).
+    for key, row in sorted(rows.items()):
         if row["status"] == "ok":
             t = row["timing"]
             text.append(f'| {key[0]} | {key[1]} | {t["operations_per_sample"]} | {len(t["batch_ms"])} | {np.median(t["batch_ms"]):.3f} | {row["verification"]["max_error_over_tolerance"]:.4g} |')

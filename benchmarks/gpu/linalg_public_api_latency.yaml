@@ -2,14 +2,15 @@ schema_version: 1
 suite_id: gpu/linalg_public_api_latency
 title: CUDA public linalg APIs, per-call latency and launch overhead
 description: >-
-  Per-call latency and launch/synchronization overhead of the same CUDA
-  public linalg API surface: the 82 cases whose largest matrix dimension is at
-  most 128. Device kernel time is a small fraction of each measurement, so these
-  rows are overhead diagnostics, not GPU throughput, and are never comparable
-  with, or averaged together with, the throughput rows of
+  Small-shape view of the same CUDA public linalg API surface: the 82 cases
+  whose largest matrix dimension is at most 128. `small` is a shape class, not a
+  measured classification: device kernel time is a small fraction of each
+  measurement here, so these rows are per-call launch and synchronization
+  overhead diagnostics rather than GPU throughput. They are never comparable
+  with, or averaged together with, the large-shape rows of
   `gpu/linalg_public_api_throughput` (tenferro-rs #2087). Issue 155.
 defaults:
-  # latency: 32x32..64x32 matrices; launch and sync cost dominates.
+  # latency: the 32x32..64x32 shape class.
   regime: latency
   device: {kind: cuda, ordinal: 0}
   run: {warmups: 3, runs: 15, min_runtime_ms: 2, timing_scope: steady_state_host_api_plus_device_sync}

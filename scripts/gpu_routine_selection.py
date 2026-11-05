@@ -49,6 +49,22 @@ def suite_problems(root, spec):
     return source, cases, instances
 
 
+def suite_payload(instances, source, key, selected, backends):
+    """The suite document a collector reads: cases, identity and the page note.
+
+    Both selection paths (the per-family command and the routine manifest) hand
+    the collector the same shape, so the page a run publishes states the
+    declaration's own identity and shape class whichever path collected it.
+    """
+    return dict(
+        instances,
+        suite_id=source["suite_id"],
+        backends=backends,
+        description=source.get("description", ""),
+        **{key: [copy.deepcopy(entry) for entry in selected]},
+    )
+
+
 def instances_for(declaration, output):
     """Write the instance document one suite declaration selects.
 
@@ -67,8 +83,13 @@ def instances_for(declaration, output):
     missing = [problem for problem in problems["include"] if problem not in entries]
     if missing:
         raise ValueError(f"{declaration}: cases absent from {problems['source']}: {missing}")
-    payload = dict(instances, suite_id=source["suite_id"], backends=source["backends"])
-    payload[key] = [copy.deepcopy(entries[problem]) for problem in problems["include"]]
+    payload = suite_payload(
+        instances,
+        source,
+        key,
+        [entries[problem] for problem in problems["include"]],
+        source["backends"],
+    )
     Path(output).write_text(json.dumps(payload, indent=2) + "\n")
     return payload
 
@@ -119,11 +140,10 @@ def materialize(manifest_path, requested, output, backend_override="", problem="
             # selection hands the collector a materialized instance document. It
             # carries the selected suite's own identity, so the page and raw-run
             # path name this suite rather than the instance file's origin.
-            payload = dict(instances)
             key = "cases" if "cases" in instances else "patterns"
-            payload[key] = [copy.deepcopy(problems[pid]) for pid in ids]
-            payload["suite_id"] = suite_id
-            payload["backends"] = backends
+            payload = suite_payload(
+                instances, source, key, [problems[pid] for pid in ids], backends
+            )
             instances_path = output / (suite_id.replace("/", "_") + "_instances.json")
             instances_path.write_text(json.dumps(payload, indent=2) + "\n")
             instances_files[path.as_posix()] = instances_path.as_posix()

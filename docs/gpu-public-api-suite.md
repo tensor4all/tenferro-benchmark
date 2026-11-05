@@ -92,11 +92,43 @@ explicit initialization before calibration/sampling. Each backend runs in its
 own process and completes before the next starts.
 
 Raw runs live in `data/results/nvidia-gpu/gpu/<family>/<timestamp>/`. They contain
-`run.yaml`, per-backend JSONL and `fixtures/manifest.json` with typed binary
+`run.yaml`, `instances.json` (the case selection the declaration materialized),
+per-backend JSONL, the folded `records.jsonl`, `report.md` and
+`report.summary.json`, and `fixtures/manifest.json` with typed binary
 inputs/reference outputs. Metadata records the tenferro revision, framework and
 CUDA versions, GPU, environment, exact command, devcontainer configuration and
 source/binary hashes. Failed runs are retained; publication rejects failures,
 missing rows, duplicates and invalid samples without replacing the latest report.
+
+## Reproducing a published page
+
+A page is derived from one run directory: its `instances.json`, its per-backend
+JSONL, its `records.jsonl` and its `run.yaml`. Publishing re-renders it instead
+of copying the run's `report.md`, so a page cannot drift from the records it
+names:
+
+```bash
+uv run python scripts/regenerate_report_summaries.py --publish \
+    data/results/nvidia-gpu/gpu/linalg_public_api_throughput/20261102_210935
+```
+
+The run's own path is what the page's `Raw run:` line names, and the note that
+states its shape class comes from the suite declaration the collector stamped
+into `instances.json`. A run that kept no `instances.json`, no result file for a
+declared backend, no `records.jsonl`, no recorded `cuda.device_name`, or a
+declaration without a `description` fails the publication with the run and the
+missing field named rather than rendering a different selection or the GPU of
+whichever host is rendering. `tests/test_publish_gpu_page.py` publishes the fixture run
+`tests/fixtures/render_run/gpu_linalg_public_api_throughput/20261102_210935` and
+compares the page and the sidecar byte for byte with
+`tests/fixtures/render_run/expected/`.
+
+The two linalg pages split one surface by shape class. `large` (largest
+dimension at least 256) and `small` (largest dimension at most 128) are shape
+classes, not measured classifications: no row is asserted to be compute-,
+memory- or bandwidth-bound. `householder_r_default_f32` measures the same time
+in both classes (34.698 µs at 512x256 and 35.223 µs at 64x32), which is why the
+page states the class it holds rather than a bound it claims.
 
 ## Timing and reference contracts
 

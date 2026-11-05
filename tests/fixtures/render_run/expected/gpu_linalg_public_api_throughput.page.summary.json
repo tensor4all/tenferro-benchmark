@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "target_profile": "nvidia-gpu",
+  "suite_id": "gpu/linalg_public_api_throughput",
+  "timestamp": "2026-11-02T21:09:35Z",
+  "tenferro_commit": "433121a7756fdb4f109b02f0422d3714a04514c6",
+  "hardware": {
+    "gpu": "NVIDIA A100 80GB PCIe",
+    "cpu": "AMD EPYC 7713P 64-Core Processor",
+    "host": "fixture-host"
+  },
+  "unit": "ms",
+  "rows": [
+    {
+      "case": "cholesky_f32_512x512",
+      "group": "cholesky",
+      "backend": "pytorch-cuda",
+      "median": 0.06887025,
+      "iqr": 0.00031875000000000653,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "cholesky_f32_512x512",
+      "group": "cholesky",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.07136975,
+      "iqr": 0.0001244999999999996,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "householder_r_default_f32_512x256",
+      "group": "householder_r",
+      "backend": "pytorch-cuda",
+      "median": null,
+      "status": "unsupported",
+      "verified": true,
+      "reason": "state projections need an extra uploaded operand; excluded from standard timing"
+    },
+    {
+      "case": "householder_r_default_f32_512x256",
+      "group": "householder_r",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.034698,
+      "iqr": 0.0,
+      "status": "ok",
+      "verified": true
+    }
+  ]
+}

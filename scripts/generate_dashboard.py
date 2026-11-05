@@ -155,7 +155,7 @@ THROUGHPUT = "throughput"
 LATENCY = "latency"
 REGIMES = (THROUGHPUT, LATENCY)
 REGIME_LABEL = {
-    THROUGHPUT: "Compute / bandwidth bound",
+    THROUGHPUT: "Throughput regime",
     LATENCY: "Latency and per-call overhead",
 }
 
@@ -1622,15 +1622,17 @@ def how_to_read() -> str:
         f"{noisy_iqr_ratio():g} of its own median. Its ratio is marked "
         "<code>~</code> and badged as indicative: the run-to-run spread is too large for "
         "the ratio to be read as a fact.</dd>"
-        "<dt>regimes</dt><dd>compute/bandwidth-bound results and latency/overhead results are "
-        "on separate pages and are never mixed. A small workload is not evidence of slow compute.</dd>"
+        "<dt>regimes</dt><dd>throughput-regime results and latency/overhead results are "
+        "on separate pages and are never mixed. A regime is a workload class, not a measured "
+        "compute- or bandwidth-bound classification, and a small workload is not evidence of "
+        "slow compute.</dd>"
         "</dl></section>"
     )
 
 
 def family_notice(family: str) -> str:
     return (
-        f'<p class="notice">Compute- and bandwidth-bound {FAMILY_LABEL[family]} cases only. '
+        f'<p class="notice">Throughput-regime {FAMILY_LABEL[family]} cases only. '
         'Per-call latency results are on the <a href="latency/index.html">latency page</a>.</p>'
     )
 
@@ -2104,7 +2106,7 @@ def render_suite_page(
             cases = view.regime_cases(regime)
             if not cases:
                 continue
-            title = "Compute-bound cases" if regime == THROUGHPUT else "Latency and per-call overhead"
+            title = "Throughput-regime cases" if regime == THROUGHPUT else "Latency and per-call overhead"
             body.append(f"<h2>{esc(title)} ({len(cases)})</h2>")
             if regime == LATENCY:
                 body.append(
@@ -2112,6 +2114,11 @@ def render_suite_page(
                     "these numbers are overhead, not device throughput.</p>"
                 )
             else:
+                body.append(
+                    '<p class="chart-legend">Grouped by the regime the suite declares. This regime is a '
+                    "workload class, not a measured compute- or bandwidth-bound classification: a "
+                    "memory-bound case can take the same time here as at a small shape.</p>"
+                )
                 body.append(
                     '<p class="chart-legend">Absolute medians on a log time axis. Bars are shorter '
                     "for faster calls; the dashed line is the best reference for each case.</p>"
