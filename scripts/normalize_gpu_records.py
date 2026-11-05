@@ -127,7 +127,7 @@ def fold(row, suite_id=None):
         "timing": {
             "warmup_runs": row.get("warmup") or timing.get("warmups") or 0,
             "timed_runs": len(values),
-            "compile_time_ms": None, "first_run_ms": None,
+            "compile_time_ms": timing.get("compile_time_ms"), "first_run_ms": None,
             "median_ms": median, "min_ms": min(values) if values else None,
             "p95_ms": None, "iqr_ms": iqr,
             "timing_scope": TIMING_SCOPE,
