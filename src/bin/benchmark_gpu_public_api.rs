@@ -9,6 +9,15 @@ use tenferro_fft::{EagerSessionFftExt, FftExecutor, FftNorm};
 use tenferro_gpu::cuda::{download_tensor, upload_tensor, CudaDeviceId, CudaEngine, CudaRuntime};
 use tenferro_tensor::{DType, Engine, Tensor};
 
+/// What this binary's `compile_time_ms` is, for a reader of a raw arm file.
+///
+/// The field stays present, and stays null: a Rust arm cannot time NVRTC on its
+/// own, and the untimed case wall that surrounds a compile also holds that
+/// case's fixture read, transfers and verification. `compile_modules` is the
+/// compile diagnostic, and the untimed wall is published as a wall
+/// (`overhead.untimed_ms`), never as a compile time.
+const COMPILE_TIME_SCOPE: &str = "not measured: no compile interval is recorded; compile_modules counts the NVRTC modules this case compiled, and the case's untimed wall is published as overhead.untimed_ms, which also holds fixture read, transfers and verification";
+
 /// Borrow the caller-held CUDA engine for one operation sequence.
 ///
 /// tenferro-rs #2206 removed backend sessions: the engine the caller holds is
@@ -850,28 +859,21 @@ fn main() -> Result<()> {
                     "scope": "case wall clock outside the timed region: fixtures, H2D, handles, plan initialization, validation, output destruction",
                 });
                 // miss means this case compiled a module and hit means it did not, so a
-                // warm run cannot hide the compile it skipped. The scope says what
-                // compile_time_ms covers, because a Rust arm cannot time NVRTC alone and
-                // reports the untimed part of the case that compiled.
+                // warm run cannot hide the compile it skipped. No compile interval is
+                // measured here: a Rust arm cannot time NVRTC alone, and the untimed case
+                // wall around a compile also holds that case's fixture read, transfers and
+                // verification. The module count is therefore the compile diagnostic, and
+                // the untimed wall is published as a wall (`overhead.untimed_ms`), never as
+                // a compile time.
                 row["compile_cache"] = json!(if compiled > 0 { "miss" } else { "hit" });
                 row["compile_modules"] = json!(compiled);
-                row["compile_time_scope"] = json!(
-                    "untimed case wall of the case that compiled, including that case's fixture read, transfers and verification"
-                );
-                let compile_ms = if compiled > 0 {
-                    untimed_ms.unwrap_or(case_wall_ms)
-                } else {
-                    0.0
-                };
-                // An excluded or verify-only case still paid for its module, and a null
-                // timing block has nowhere to put that time, so it goes at the top level
-                // rather than being dropped from the run's totals.
-                if timing.is_none() {
-                    row["compile_time_ms"] = json!(compile_ms);
-                }
+                row["compile_time_ms"] = json!(null);
+                row["compile_time_scope"] = json!(COMPILE_TIME_SCOPE);
                 row["timing"] = match timing {
                     Some(mut timing) => {
-                        timing["compile_time_ms"] = json!(compile_ms);
+                        // The block keeps the field, always null, so a reader of a raw arm
+                        // file cannot mistake the module count for a measured interval.
+                        timing["compile_time_ms"] = json!(null);
                         json!(timing)
                     }
                     None => json!(null),
@@ -890,11 +892,14 @@ fn main() -> Result<()> {
                     "runtime_failed"
                 });
                 row["reason"] = json!(e.to_string());
-                // A case that failed after compiling still cost the run that module.
+                // A case that failed after compiling still cost the run that module. Only
+                // the module count is a compile diagnostic; its wall is the case's whole
+                // untimed wall and is not a compile interval.
                 if compiled > 0 {
                     row["compile_cache"] = json!("miss");
                     row["compile_modules"] = json!(compiled);
-                    row["compile_time_ms"] = json!(case_wall_ms);
+                    row["compile_time_ms"] = json!(null);
+                    row["compile_time_scope"] = json!(COMPILE_TIME_SCOPE);
                 }
             }
         }

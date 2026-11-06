@@ -86,13 +86,15 @@
         "compile": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["case_wall_seconds", "compiling_processes", "modules_compiled", "compile_time_ms"],
-          "description": "The run's own wall clock and NVRTC compile totals, folded back from the arm files by normalize_gpu_records. \"case_wall_seconds\" sums each record's own case wall clock, so the compile it carries is a share of that same denominator. A run whose artifact cache was warm records zeros rather than omitting the block.",
+          "required": ["case_wall_seconds", "compiling_processes", "modules_compiled", "compile_time_ms", "compile_time_scope", "untimed_wall_seconds"],
+          "description": "The run's own wall clock and NVRTC compile totals, folded back from the arm files by normalize_gpu_records. \"case_wall_seconds\" sums each record's own case wall clock, so the compile it carries is a share of that same denominator. A run whose artifact cache was warm still carries the block, with \"modules_compiled\": 0, rather than omitting it. \"compile_time_ms\" is null, and \"compile_time_scope\" says why, on an arm that measures no compile interval; \"untimed_wall_seconds\" is the untimed wall of the cases that compiled, which also holds their fixture read, transfers and verification.",
           "properties": {
             "case_wall_seconds": { "type": "number", "minimum": 0 },
             "compiling_processes": { "type": "integer", "minimum": 0 },
             "modules_compiled": { "type": "integer", "minimum": 0 },
-            "compile_time_ms": { "type": "number", "minimum": 0 }
+            "compile_time_ms": { "type": ["number", "null"], "minimum": 0 },
+            "compile_time_scope": { "type": "string", "minLength": 1, "description": "What compile_time_ms holds. Never absent when compile_time_ms is present, so no consumer reads an untimed case wall as a compile interval." },
+            "untimed_wall_seconds": { "type": "number", "minimum": 0, "description": "The untimed wall of the cases that compiled: fixture read, transfers, verification and the compile that ran in the same window." }
           }
         }
       }

@@ -414,35 +414,39 @@ class CompileNoteTest(unittest.TestCase):
 
     def test_a_cold_run_quotes_its_own_recorded_totals(self):
         note = formatter.compile_note({"case_wall_seconds": 228.4, "compiling_processes": 2,
-                                       "modules_compiled": 8, "compile_time_ms": 69014.2},
-                                      "gpu/linalg_public_api_throughput")
-        # Sourced from the accounting, never from the fixed cold reference.
+                                       "modules_compiled": 8, "compile_time_ms": None,
+                                       "untimed_wall_seconds": 69.0142})
+        # Sourced from this run's own accounting, never from another run's figures.
         self.assertIn("**8 NVRTC modules**", note)
         self.assertIn("2 of its arms", note)
-        self.assertIn("**69.0 s**", note)
-        self.assertIn("228.4 s", note)
         self.assertIn("started cold", note)
-        self.assertNotIn("warm**", note)
+        # The wall is named as a wall, because it is not a compile interval.
+        self.assertIn("The untimed wall of the cases that compiled is **69.0 s**", note)
+        self.assertIn("228.4 s", note)
+        self.assertIn("not a compile time", note)
 
-    def test_a_warm_run_says_warm_and_names_the_cold_reference(self):
+    def test_a_run_that_did_not_compile_says_so_without_claiming_a_warm_cache(self):
         note = formatter.compile_note({"case_wall_seconds": 45.8, "compiling_processes": 0,
-                                       "modules_compiled": 0, "compile_time_ms": 0.0},
-                                      "gpu/linalg_public_api_latency")
-        self.assertIn("**warm**", note)
-        self.assertIn("compiled nothing", note)
-        # The cold reference is attributed, not presented as this run's own measurement.
-        self.assertIn("94.1 s against 28.1 s warm", note)
-        self.assertIn(formatter.COLD_REFERENCE["provenance"], note)
+                                       "modules_compiled": 0, "compile_time_ms": None,
+                                       "untimed_wall_seconds": 0.0})
+        self.assertIn("did not compile", note)
+        self.assertIn("no NVRTC module was built", note)
+        # 0 modules is a statement about this run, not proof of a warm cache.
+        self.assertNotIn("warm**", note)
+        self.assertNotIn("because the CUDA artifact cache was", note)
+        self.assertIn("does not show that the CUDA artifact cache was warm", note)
 
-    def test_a_warm_run_of_another_family_gets_no_cold_reference(self):
-        # The recorded cold measurement is the linalg pair's, so an fft page must not
-        # borrow it as if it described fft.
-        note = formatter.compile_note({"case_wall_seconds": 5.0, "compiling_processes": 0,
-                                       "modules_compiled": 0, "compile_time_ms": 0.0},
-                                      "gpu/fft")
-        self.assertIn("**warm**", note)
-        self.assertNotIn("cold measurement", note)
-        self.assertNotIn("94.1", note)
+    def test_no_page_quotes_another_runs_compile(self):
+        # The hardcoded cold reference is gone: a page of any family describes only the run
+        # that produced it, so the figures recorded for a different run never appear.
+        self.assertFalse(hasattr(formatter, "COLD_REFERENCE"))
+        for suite_id in ("gpu/linalg_public_api_throughput", "gpu/linalg_public_api_latency"):
+            note = formatter.compile_note({"case_wall_seconds": 5.0, "compiling_processes": 0,
+                                           "modules_compiled": 0, "compile_time_ms": None,
+                                           "untimed_wall_seconds": 0.0})
+            self.assertNotIn("94.1", note)
+            self.assertNotIn("66.9", note)
+            self.assertNotIn(suite_id, note)
 
     def test_a_run_without_accounting_adds_no_sentence(self):
         suite = {"suite_id": "gpu/one", "backends": ["b"], "description": "d",
