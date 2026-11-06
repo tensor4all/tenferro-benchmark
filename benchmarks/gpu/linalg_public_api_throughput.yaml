@@ -9,10 +9,12 @@ description: >-
   (`householder_r_default_f32` measured 34.698 µs at 512x256 and 35.223 µs at
   64x32). These rows are never comparable with, or averaged together with, the
   per-call overhead rows of `gpu/linalg_public_api_latency` (tenferro-rs #2087).
-  Rows here are lower than on pages published before this harness change because
-  the harness used to open the CUDA engine once per case inside the timed region
-  and now opens it once per arm, so the difference is removed harness cost and
-  not a change in the kernels.
+  Rows here are not lower than on pages published before this harness change for
+  any timing reason: the sample clock starts inside `measure`, so engine
+  construction was never part of a case median. What changed is repeated
+  **untimed setup** work, which was removed: the CUDA engine is opened once per
+  arm and held for the whole run instead of once per case, which shortens the
+  untimed wall clock around the cases and moves no operation median on this page.
   The same problems, protocol and backends are split by shape class between the
   two suites. Issue 155.
 defaults:

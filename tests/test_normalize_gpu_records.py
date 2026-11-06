@@ -152,7 +152,9 @@ class NormalizeTest(unittest.TestCase):
             metadata = yaml.safe_load(run.read_text())
             self.assertEqual(metadata["collection"]["compile"],
                              {"case_wall_seconds": 4.0, "compiling_processes": 1,
-                              "modules_compiled": 2, "compile_time_ms": 3000.0})
+                              "modules_compiled": 2, "compile_time_ms": 3000.0,
+                              "compile_time_scope": normalize.COMPILE_TIME_SCOPE,
+                              "untimed_wall_seconds": 3.0})
             # Everything the collector wrote is still there.
             self.assertEqual(metadata["cuda"]["artifact_cache"]["regime"], "cold")
             once = run.read_text()
@@ -184,14 +186,46 @@ class NormalizeTest(unittest.TestCase):
         ]
         self.assertEqual(compile_accounting(raw), {
             "case_wall_seconds": 7.2, "compiling_processes": 2,
-            "modules_compiled": 4, "compile_time_ms": 4000.7})
+            "modules_compiled": 4, "compile_time_ms": 4000.7,
+            "compile_time_scope": normalize.COMPILE_TIME_SCOPE,
+            "untimed_wall_seconds": 4.001})
 
     def test_a_warm_run_records_zeros_rather_than_no_block(self):
         raw = [{"backend": "direct", "compile_modules": 0,
                 "overhead": {"case_wall_ms": 500.0}, "timing": {"compile_time_ms": 0.0}}]
         self.assertEqual(compile_accounting(raw), {
             "case_wall_seconds": 0.5, "compiling_processes": 0,
-            "modules_compiled": 0, "compile_time_ms": 0.0})
+            "modules_compiled": 0, "compile_time_ms": 0.0,
+            "compile_time_scope": normalize.COMPILE_TIME_SCOPE,
+            "untimed_wall_seconds": 0.0})
+
+    def test_an_arm_that_measures_no_compile_interval_keeps_the_wall_as_a_wall(self):
+        # The public-API Rust arms publish compile_time_ms null and the case's untimed wall
+        # under overhead, so the accounting must not sum a missing interval into a total and
+        # must say what the field it does publish is.
+        raw = [{"backend": "direct", "compile_modules": 2, "compile_time_ms": None,
+                "overhead": {"case_wall_ms": 4000.0, "untimed_ms": 3000.0},
+                "timing": {"compile_time_ms": None}},
+               {"backend": "direct", "compile_modules": 0, "compile_time_ms": None,
+                "overhead": {"case_wall_ms": 1000.0, "untimed_ms": 990.0},
+                "timing": {"compile_time_ms": None}}]
+        self.assertEqual(compile_accounting(raw), {
+            "case_wall_seconds": 5.0, "compiling_processes": 1,
+            "modules_compiled": 2, "compile_time_ms": None,
+            "compile_time_scope": normalize.COMPILE_TIME_ABSENT,
+            "untimed_wall_seconds": 3.0})
+
+    def test_every_folded_record_says_what_its_compile_field_is(self):
+        folded = fold(family_row(compile_cache="miss", compile_modules=2,
+                                 timing={"operations_per_sample": 1, "batch_ms": [0.4],
+                                         "compile_time_ms": None}), "gpu/linalg_public_api_throughput")
+        self.assertIsNone(folded["timing"]["compile_time_ms"])
+        self.assertEqual(folded["timing"]["compile_time_scope"], normalize.COMPILE_TIME_ABSENT)
+        kept = fold(family_row(compile_cache="miss", compile_modules=2,
+                               timing={"operations_per_sample": 1, "batch_ms": [0.4],
+                                       "compile_time_ms": 3000.0}), "gpu/linalg_public_api_throughput")
+        self.assertEqual(kept["timing"]["compile_time_ms"], 3000.0)
+        self.assertEqual(kept["timing"]["compile_time_scope"], normalize.COMPILE_TIME_SCOPE)
 
     def test_a_family_that_does_not_compile_records_nothing(self):
         self.assertIsNone(compile_accounting([family_row()]))

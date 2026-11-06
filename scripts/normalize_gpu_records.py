@@ -38,6 +38,16 @@ from format_gpu_results import build_summary  # noqa: E402
 
 TIMING_SCOPE = "steady_state_host_api_plus_device_sync"
 
+# What a record's `compile_time_ms` actually holds. A Rust public-API arm cannot time
+# NVRTC on its own: it records the module count and the untimed case wall around a
+# compile, which also holds that case's fixture read, transfers and verification. The
+# arms publish `compile_time_ms` as null for that reason, so a consumer must be told
+# which of the two it is holding rather than inferring "compile time" from the name.
+COMPILE_TIME_SCOPE = ("the untimed case wall of the case that compiled, including fixture read, "
+                      "transfers and verification; not a compile interval")
+COMPILE_TIME_ABSENT = ("not measured: no compile interval was recorded; `compile_modules` counts "
+                       "the NVRTC modules and the untimed wall is the case wall")
+
 
 def _spread(values):
     if len(values) < 2:
@@ -117,6 +127,7 @@ def fold(row, suite_id=None):
     iqr = timing.get("iqr_ms_recorded", _spread(values))
     if status not in {"ok", "unsupported", "skipped", "not_configured", "verification_only"}:
         median = None
+    recorded_compile_ms = timing.get("compile_time_ms")
     record = {
         "schema_version": 1,
         "suite_id": suite_id,
@@ -127,7 +138,10 @@ def fold(row, suite_id=None):
         "timing": {
             "warmup_runs": row.get("warmup") or timing.get("warmups") or 0,
             "timed_runs": len(values),
-            "compile_time_ms": timing.get("compile_time_ms"), "first_run_ms": None,
+            "compile_time_ms": recorded_compile_ms,
+            "compile_time_scope": (COMPILE_TIME_SCOPE if recorded_compile_ms is not None
+                                   else COMPILE_TIME_ABSENT),
+            "first_run_ms": None,
             "median_ms": median, "min_ms": min(values) if values else None,
             "p95_ms": None, "iqr_ms": iqr,
             "timing_scope": TIMING_SCOPE,
@@ -157,15 +171,32 @@ def fold(row, suite_id=None):
 
 
 def nvrtc_compile_time_ms(row):
-    """The NVRTC compile time one row recorded.
+    """The compile-time field one row recorded, or None when it recorded none.
 
-    A case that compiled but recorded no sampling keeps its time at the top level, because
+    A case that compiled but recorded no sampling keeps its value at the top level, because
     a null timing block has nowhere else to put it. Only rows that carry
     ``compile_modules`` are NVRTC rows; a Python arm's compile is a different measurement
-    and is not summed into this total.
+    and is not summed into this total. None rather than 0.0 for an absent value, so an arm
+    that measured no compile interval cannot be summed into a compile total.
     """
     recorded = (row.get("timing") or {}).get("compile_time_ms")
-    return recorded if recorded is not None else (row.get("compile_time_ms") or 0.0)
+    return recorded if recorded is not None else row.get("compile_time_ms")
+
+
+def nvrtc_untimed_wall_ms(row):
+    """The untimed case wall of one NVRTC row, whatever the record era calls the field.
+
+    An arm that publishes no compile interval reports the same wall as the case's
+    ``overhead.untimed_ms``; an older arm file reported it as ``compile_time_ms``. The
+    total is the same either way, and it stays a wall: it holds fixture read, transfers
+    and verification, so it is not a compile interval.
+    """
+    recorded = nvrtc_compile_time_ms(row)
+    if recorded is not None:
+        return recorded
+    if (row.get("compile_modules") or 0) > 0:
+        return (row.get("overhead") or {}).get("untimed_ms")
+    return None
 
 
 def compile_accounting(raw):
@@ -173,19 +204,26 @@ def compile_accounting(raw):
 
     ``case_wall_seconds`` sums every record's own case wall clock, so the compile it
     carries is a share of that same denominator. ``compiling_processes`` counts the arm
-    processes that compiled at least one module, not the modules. The three compile
-    numbers are read from the NVRTC arms only.
+    processes that compiled at least one module, not the modules. The compile numbers are
+    read from the NVRTC arms only, and ``compile_time_scope`` says what
+    ``compile_time_ms`` is so a consumer cannot read it as a compile interval.
     """
     nvrtc = [row for row in raw if "compile_modules" in row]
     if not nvrtc:
         return None
+    recorded = [value for value in (nvrtc_compile_time_ms(row) for row in nvrtc)
+                if value is not None]
+    walls = [value for value in (nvrtc_untimed_wall_ms(row) for row in nvrtc)
+             if value is not None]
     return {
         "case_wall_seconds": round(sum((row.get("overhead") or {}).get("case_wall_ms") or 0.0
                                       for row in raw) / 1e3, 3),
         "compiling_processes": len({row.get("backend") for row in nvrtc
                                     if (row.get("compile_modules") or 0) > 0}),
         "modules_compiled": sum(row.get("compile_modules") or 0 for row in nvrtc),
-        "compile_time_ms": round(sum(nvrtc_compile_time_ms(row) for row in nvrtc), 3),
+        "compile_time_ms": round(sum(recorded), 3) if recorded else None,
+        "compile_time_scope": (COMPILE_TIME_SCOPE if recorded else COMPILE_TIME_ABSENT),
+        "untimed_wall_seconds": round(sum(walls) / 1e3, 3),
     }
 
 

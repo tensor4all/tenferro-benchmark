@@ -12,39 +12,28 @@ import gpu_bandwidth_guard as guard
 
 GIGABYTE = 1e9
 
-# A warm run has no cold measurement of its own to quote, so a page of the two linalg
-# suites quotes the one recorded cold measurement they were sized with, and names it. It
-# is a single cold-then-warm pair, not a mix of runs: one empty artifact cache, then the
-# same two Rust arms against that cache, 82 cases each, A100 80GB PCIe, driver 580.178.04,
-# primerose, 2026-11-05. The empty cache cost 8 NVRTC modules and 66.9 s, and the first
-# arm took 94.1 s cold against 28.1 s warm, which is that 28.1 s plus the compile it had
-# just paid. A run of any other family gets no such sentence, because this measurement
-# does not describe it.
-COLD_REFERENCE = {
-    "suites": ("gpu/linalg_public_api_throughput", "gpu/linalg_public_api_latency"),
-    "modules": 8, "compile_seconds": 66.9,
-    "first_arm_cold_seconds": 94.1, "first_arm_warm_seconds": 28.1,
-    "provenance": "gpu/linalg_public_api_throughput, 82 cases, two Rust arms, A100 80GB, 2026-11-05",
-}
 
+def compile_note(accounting):
+    """One sentence naming this run's compile, from the totals the run recorded.
 
-def compile_note(accounting, suite_id):
-    """One sentence naming this run's compile, from the totals the run recorded."""
-    seconds = accounting["compile_time_ms"] / 1e3
-    if accounting["modules_compiled"]:
-        return (f'This run compiled **{accounting["modules_compiled"]} NVRTC modules** in '
-                f'{accounting["compiling_processes"]} of its arms and paid **{seconds:.1f} s** of its '
-                f'{accounting["case_wall_seconds"]:.1f} s of recorded case wall clock, because the CUDA '
-                f'artifact cache started cold. A warm run reads those cubins back and compiles nothing.')
-    note = ('This run compiled nothing because the CUDA artifact cache was **warm** and every cubin '
-            'came back from it.')
-    if suite_id in COLD_REFERENCE["suites"]:
-        note += (f' A cold run pays the compile instead: the recorded cold measurement of this suite '
-                 f'pair ({COLD_REFERENCE["provenance"]}) compiled {COLD_REFERENCE["modules"]} modules '
-                 f'and {COLD_REFERENCE["compile_seconds"]} s of NVRTC, and its first arm took '
-                 f'{COLD_REFERENCE["first_arm_cold_seconds"]} s against '
-                 f'{COLD_REFERENCE["first_arm_warm_seconds"]} s warm.')
-    return note
+    A Rust arm cannot time NVRTC alone, so the run publishes the module count and the
+    untimed wall of the cases that compiled, never a compile interval. Nothing here is
+    taken from another run: a page describes the run that produced it.
+    """
+    modules = accounting["modules_compiled"]
+    if modules:
+        note = (f'This run compiled **{modules} NVRTC modules** in '
+                f'{accounting["compiling_processes"]} of its arms, because the CUDA '
+                f'artifact cache started cold.')
+        wall = accounting.get("untimed_wall_seconds")
+        if isinstance(wall, (int, float)):
+            note += (f' The untimed wall of the cases that compiled is **{wall:.1f} s** of its '
+                     f'{accounting["case_wall_seconds"]:.1f} s of recorded case wall clock, and '
+                     f'that wall also holds their fixture read, transfers and verification, so '
+                     f'it is not a compile time.')
+        return note
+    return ('This run did not compile: no NVRTC module was built in any of its arms. That '
+            'describes this run only, and does not show that the CUDA artifact cache was warm.')
 
 
 def load_rows(suite, paths, *, verify_only=False):
@@ -110,9 +99,9 @@ def render(suite, paths, metadata, timestamp, run_path=None):
             " ".join(str(suite["description"]).split()), ""]
     accounting = (metadata.get("collection") or {}).get("compile")
     if accounting:
-        # Next to the note about the engine-once change, so a reader comparing this page
-        # with an older one meets the compile accounting in the same place.
-        text += [compile_note(accounting, suite["suite_id"]), ""]
+        # This run's own compile accounting: the module count and the untimed wall of the
+        # cases that compiled. No other run's figures are quoted here.
+        text += [compile_note(accounting), ""]
     text += [
             'Values are median (IQR) **µs per operation**. Samples time batches of declared operations plus device synchronization; retained output memory is limited to 256 MiB. Batch counts and raw durations are preserved in JSONL.', "",
             'Setup, input transfers, library/plan initialization, JIT compilation, validation downloads and output destruction are outside timing. Intrinsic output allocation is inside timing; output-reuse rows instead use preallocated destinations across samples. Accumulating destinations are restored from prepared GPU seeds and synchronized before every batch clock, including initialization and calibration. Direct and eager each use one entered session across samples; direct FFT uses cached `FftExecutor`. JAX eager and compiled JIT are separate arms.', "",

@@ -34,21 +34,14 @@ move by median 0.6 % with two cases beyond 10 %.
 
 ## What is left, and why it should be left alone
 
-The warm run's 897.9 s, partitioned without overlaps:
-
-| Item | Seconds |
-|---|---:|
-| Recorded case walls, of which | 458.1 |
-| — the timed regions themselves | 281.6 |
-| — untimed preparation around each case | 86.3 |
-| — JAX per-case jit (one distinct shape per case) | 45.1 |
-| — validation, probe, warmup, calibration, backend init, sampler overhead | 45.1 |
-| Per-suite fixture generation and copy calibration | 114.4 |
-| `permutation` arms (their records carry medians only, no case wall) | 154.2 |
-| `linalg_ad_latency` and `linalg_jvp_vjp` (no case wall recorded) | 66.6 |
-| Backend-release sleeps, deliberate (`GPU_BENCH_BACKEND_SLEEP=2`) | 34.0 |
-| Process startup and imports, per-suite glue, accounting, report writes | 70.6 |
-| **Total** | **897.9** |
+The warm run's 897.9 s, partitioned without overlaps: 458.1 s of recorded case
+walls (281.6 s of them the timed regions), 154.2 s of `permutation` arms,
+114.4 s of per-suite fixture generation and copy calibration, 66.6 s of the two
+AD suites whose records carry no case wall, 34.0 s of deliberate backend-release
+sleeps and 70.6 s of process startup and report glue. The totals are the
+[budget reference's](../../benchmarks/gpu/routine_budget.yaml) `cache_conditions`
+figure; the partition is not republished here, and the warm run directories were
+not retained under `data/results/`.
 
 That is a harness whose remaining cost is the measurement and deliberate waiting:
 281.6 s of timed regions it exists to report, one fixture generation per suite
@@ -63,16 +56,13 @@ timestamp; startup and report glue ~34 s vs ~29 s).
 ## What the untimed preparation contains
 
 Measured with throwaway timers that were removed before the change was committed,
-warm cache, three cases (seconds):
-
-| Case | Arm | Generation | H2D | CPU reference | Plan |
-|---|---|---:|---:|---:|---:|
-| `dense_batched_matmul_f64_b16_32` | eager | 0.000 | 0.011 | 0.000 | 0.010 |
-| `dense_matmul_f64_3072` | eager | 0.164 | 0.082 | 0.090 | 0.015 |
-| `dense_qr_f64_1536` | eager | 0.022 | 0.024 | 0.012 | 0.010 |
-| `dense_matmul_f64_3072` | traced | 0.237 (graph) | in graph | — | < 0.001 |
-| `dense_matmul_f64_3072` | torch | 0.360 | 0.009 | 0.113 | 0.000 |
-| `dense_matmul_f64_3072` | jax | 0.365 | 0.091 | 0.162 | 0.711 (jit) |
+warm cache, three cases: several tenths of a second per case for input generation
+and H2D, one CPU reference of note (`dense_matmul_f64_3072`, 0.090 s eager and
+0.113 s torch) and JAX's per-case jit as the largest single item at 0.711 s. Those
+timers left no stored record, so the per-case figures are not republished here;
+their window is the untimed case wall that each record still carries as
+`overhead.untimed_ms` in the stored [cold
+run](../../data/results/nvidia-gpu/gpu/routine_selection/20261105_0820).
 
 The routine suites generate their inputs from a seed; there is no fixture file to
 read, so "fixture read" is zero here and fixture generation for the public-API
