@@ -2,12 +2,46 @@
 # quick: steady-state operation rows and their reference arms; full adds the
 # explicitly labelled diagnostics (per-call session entry, eager AD workflows,
 # counter runs). Bump MANIFEST_VERSION in the generator on any change.
-manifest_version: 21
+manifest_version: 22
 suite_id: cpu/perf_issues
 source: data/instances/perf_issues.json
 generated_by: scripts/generate_perf_issue_cases.py
 coverage:
   quick:
+  - two_operand_einsum_f64_2x2_string
+  - two_operand_einsum_f64_2x2_subscripts
+  - two_operand_einsum_f64_2x2_prepared
+  - two_operand_einsum_f64_2x2_dot-general
+  - two_operand_einsum_f64_2x2_pytorch
+  - two_operand_einsum_f64_16x16_string
+  - two_operand_einsum_f64_16x16_subscripts
+  - two_operand_einsum_f64_16x16_prepared
+  - two_operand_einsum_f64_16x16_dot-general
+  - two_operand_einsum_f64_16x16_pytorch
+  - two_operand_einsum_c64_2x2_string
+  - two_operand_einsum_c64_2x2_subscripts
+  - two_operand_einsum_c64_2x2_prepared
+  - two_operand_einsum_c64_2x2_dot-general
+  - two_operand_einsum_c64_2x2_pytorch
+  - two_operand_einsum_c64_16x16_string
+  - two_operand_einsum_c64_16x16_subscripts
+  - two_operand_einsum_c64_16x16_prepared
+  - two_operand_einsum_c64_16x16_dot-general
+  - two_operand_einsum_c64_16x16_pytorch
+  - two_operand_einsum_f64_abc_cef_abef_string
+  - two_operand_einsum_f64_abc_cef_abef_subscripts
+  - two_operand_einsum_f64_abc_cef_abef_prepared
+  - two_operand_einsum_f64_abc_cef_abef_dot-general
+  - two_operand_einsum_f64_abc_cef_abef_pytorch
+  - thin_c64_gemm_1x141_141x282_t1
+  - thin_c64_gemm_1x141_141x282_t1_faer-direct
+  - thin_c64_gemm_1x141_141x282_t1_pytorch
+  - thin_c64_gemm_2x141_141x282_t1
+  - thin_c64_gemm_2x141_141x282_t1_faer-direct
+  - thin_c64_gemm_2x141_141x282_t1_pytorch
+  - thin_c64_gemm_8x141_141x282_t1
+  - thin_c64_gemm_8x141_141x282_t1_faer-direct
+  - thin_c64_gemm_8x141_141x282_t1_pytorch
   - decode_proj_f32_eager-shared_in1024_out1024_len8
   - decode_proj_f32_faer-direct_in1024_out1024_len8
   - decode_proj_f32_host-sgemm_in1024_out1024_len8
@@ -344,6 +378,40 @@ coverage:
   - softmax_f64_pool_pytorch_t1_1024x4096
   - softmax_f64_pool_pytorch_t4_1024x4096
   full:
+  - two_operand_einsum_f64_2x2_string
+  - two_operand_einsum_f64_2x2_subscripts
+  - two_operand_einsum_f64_2x2_prepared
+  - two_operand_einsum_f64_2x2_dot-general
+  - two_operand_einsum_f64_2x2_pytorch
+  - two_operand_einsum_f64_16x16_string
+  - two_operand_einsum_f64_16x16_subscripts
+  - two_operand_einsum_f64_16x16_prepared
+  - two_operand_einsum_f64_16x16_dot-general
+  - two_operand_einsum_f64_16x16_pytorch
+  - two_operand_einsum_c64_2x2_string
+  - two_operand_einsum_c64_2x2_subscripts
+  - two_operand_einsum_c64_2x2_prepared
+  - two_operand_einsum_c64_2x2_dot-general
+  - two_operand_einsum_c64_2x2_pytorch
+  - two_operand_einsum_c64_16x16_string
+  - two_operand_einsum_c64_16x16_subscripts
+  - two_operand_einsum_c64_16x16_prepared
+  - two_operand_einsum_c64_16x16_dot-general
+  - two_operand_einsum_c64_16x16_pytorch
+  - two_operand_einsum_f64_abc_cef_abef_string
+  - two_operand_einsum_f64_abc_cef_abef_subscripts
+  - two_operand_einsum_f64_abc_cef_abef_prepared
+  - two_operand_einsum_f64_abc_cef_abef_dot-general
+  - two_operand_einsum_f64_abc_cef_abef_pytorch
+  - thin_c64_gemm_1x141_141x282_t1
+  - thin_c64_gemm_1x141_141x282_t1_faer-direct
+  - thin_c64_gemm_1x141_141x282_t1_pytorch
+  - thin_c64_gemm_2x141_141x282_t1
+  - thin_c64_gemm_2x141_141x282_t1_faer-direct
+  - thin_c64_gemm_2x141_141x282_t1_pytorch
+  - thin_c64_gemm_8x141_141x282_t1
+  - thin_c64_gemm_8x141_141x282_t1_faer-direct
+  - thin_c64_gemm_8x141_141x282_t1_pytorch
   - decode_proj_f32_eager-shared_in1024_out1024_len8
   - decode_proj_f32_eager-per-call_in1024_out1024_len8
   - decode_proj_f32_faer-direct_in1024_out1024_len8

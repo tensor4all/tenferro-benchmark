@@ -1904,6 +1904,160 @@
   "intent": "tenferro-rs #1885 §3.4 addendum: first and second call of a materializing transpose (TensorViewCanonicalization::to_contiguous, or copy_into a compact destination, of a transposed device view) for 22 distinct [r, c] layouts after one warm-up layout, in one cold process. A first-call (NVRTC compile) diagnostic, never a steady-state row; the second call is the warm reference."
  },
  {
+  "id": "cholesky_readback_latency_f64_n512",
+  "issues": [
+   "#2436",
+   "#2440",
+   "#2445"
+  ],
+  "kind": "cholesky_staging",
+  "arm": "direct",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "n": 512,
+   "kind": "cholesky_staging",
+   "arm": "direct",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2436 / #2440 / #2445 (benchmark #338): 512x512 HPD Cholesky exercises solver-info pinned staging reuse. f32 on the identical shape controls the f64 route. Direct, EagerTensor and torch.linalg.cholesky paths are distinct. Fixture, upload, engine, session, wrapping, lazy initialization and reconstruction untimed; only factorization and device synchronization timed. Throughput factorization row, including its intrinsic solver-status readback.",
+  "regime": "throughput",
+  "execution_path": "direct"
+ },
+ {
+  "id": "cholesky_readback_latency_f64_n512_eager",
+  "issues": [
+   "#2436",
+   "#2440",
+   "#2445"
+  ],
+  "kind": "cholesky_staging",
+  "arm": "eager",
+  "backend": "tenferro-cuda-eager",
+  "dtype": "f64",
+  "params": {
+   "n": 512,
+   "kind": "cholesky_staging",
+   "arm": "eager",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2436 / #2440 / #2445 (benchmark #338): 512x512 HPD Cholesky exercises solver-info pinned staging reuse. f32 on the identical shape controls the f64 route. Direct, EagerTensor and torch.linalg.cholesky paths are distinct. Fixture, upload, engine, session, wrapping, lazy initialization and reconstruction untimed; only factorization and device synchronization timed. Throughput factorization row, including its intrinsic solver-status readback.",
+  "reference_for": "cholesky_readback_latency_f64_n512",
+  "regime": "throughput",
+  "execution_path": "eager"
+ },
+ {
+  "id": "cholesky_readback_latency_f64_n512_pytorch",
+  "issues": [
+   "#2436",
+   "#2440",
+   "#2445"
+  ],
+  "kind": "cholesky_staging",
+  "arm": "pytorch",
+  "backend": "pytorch-cuda",
+  "dtype": "f64",
+  "params": {
+   "n": 512,
+   "kind": "cholesky_staging",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2436 / #2440 / #2445 (benchmark #338): 512x512 HPD Cholesky exercises solver-info pinned staging reuse. f32 on the identical shape controls the f64 route. Direct, EagerTensor and torch.linalg.cholesky paths are distinct. Fixture, upload, engine, session, wrapping, lazy initialization and reconstruction untimed; only factorization and device synchronization timed. Throughput factorization row, including its intrinsic solver-status readback.",
+  "reference_for": "cholesky_readback_latency_f64_n512",
+  "regime": "throughput",
+  "execution_path": "pytorch"
+ },
+ {
+  "id": "cholesky_readback_latency_f32_n512",
+  "issues": [
+   "#2436",
+   "#2440",
+   "#2445"
+  ],
+  "kind": "cholesky_staging",
+  "arm": "direct",
+  "backend": "tenferro-cuda",
+  "dtype": "f32",
+  "params": {
+   "n": 512,
+   "kind": "cholesky_staging",
+   "arm": "direct",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2436 / #2440 / #2445 (benchmark #338): 512x512 HPD Cholesky exercises solver-info pinned staging reuse. f32 on the identical shape controls the f64 route. Direct, EagerTensor and torch.linalg.cholesky paths are distinct. Fixture, upload, engine, session, wrapping, lazy initialization and reconstruction untimed; only factorization and device synchronization timed. Throughput factorization row, including its intrinsic solver-status readback.",
+  "regime": "throughput",
+  "execution_path": "direct"
+ },
+ {
+  "id": "cholesky_readback_latency_f32_n512_eager",
+  "issues": [
+   "#2436",
+   "#2440",
+   "#2445"
+  ],
+  "kind": "cholesky_staging",
+  "arm": "eager",
+  "backend": "tenferro-cuda-eager",
+  "dtype": "f32",
+  "params": {
+   "n": 512,
+   "kind": "cholesky_staging",
+   "arm": "eager",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2436 / #2440 / #2445 (benchmark #338): 512x512 HPD Cholesky exercises solver-info pinned staging reuse. f32 on the identical shape controls the f64 route. Direct, EagerTensor and torch.linalg.cholesky paths are distinct. Fixture, upload, engine, session, wrapping, lazy initialization and reconstruction untimed; only factorization and device synchronization timed. Throughput factorization row, including its intrinsic solver-status readback.",
+  "reference_for": "cholesky_readback_latency_f32_n512",
+  "regime": "throughput",
+  "execution_path": "eager"
+ },
+ {
+  "id": "cholesky_readback_latency_f32_n512_pytorch",
+  "issues": [
+   "#2436",
+   "#2440",
+   "#2445"
+  ],
+  "kind": "cholesky_staging",
+  "arm": "pytorch",
+  "backend": "pytorch-cuda",
+  "dtype": "f32",
+  "params": {
+   "n": 512,
+   "kind": "cholesky_staging",
+   "arm": "pytorch",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2436 / #2440 / #2445 (benchmark #338): 512x512 HPD Cholesky exercises solver-info pinned staging reuse. f32 on the identical shape controls the f64 route. Direct, EagerTensor and torch.linalg.cholesky paths are distinct. Fixture, upload, engine, session, wrapping, lazy initialization and reconstruction untimed; only factorization and device synchronization timed. Throughput factorization row, including its intrinsic solver-status readback.",
+  "reference_for": "cholesky_readback_latency_f32_n512",
+  "regime": "throughput",
+  "execution_path": "pytorch"
+ },
+ {
   "id": "prepared_dot_general_f32_decode_len8",
   "issues": [
    "#2197"

@@ -40,6 +40,8 @@ mod cpu_gap_mwe;
 
 #[path = "perf_issue_case/umbrella.rs"]
 mod umbrella;
+#[path = "perf_issue_case/binary_shortcut.rs"]
+mod binary_shortcut;
 
 type BoxError = Box<dyn Error + Send + Sync>;
 type Result<T> = std::result::Result<T, BoxError>;
@@ -2818,6 +2820,7 @@ fn main() -> Result<()> {
             decode_projection_view_operand(&params, &timing, threads)
         }
         "copy_volume" => copy_volume(&params),
+        "binary_einsum_shortcut" | "thin_complex_gemm" => binary_shortcut::run(&params, &timing, threads),
         "gemm_mm256" => gemm_mm256(&params, &timing),
         "rank1_dot" => rank1_dot(&params, &timing),
         "small_solves" => small_solves(&params, &timing),

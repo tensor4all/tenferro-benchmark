@@ -198,7 +198,18 @@ def load_suite_metadata(benchmarks_dir: Path) -> dict[str, dict[str, Any]]:
         default_run = defaults.get("run") or {}
         default_regime = defaults.get("regime") or THROUGHPUT
         problems: dict[str, dict[str, Any]] = {}
-        for problem in document.get("problems") or []:
+        declared_problems = document.get("problems") or []
+        if isinstance(declared_problems, dict):
+            # Generated suites retain per-case regimes in their instance source.
+            source = declared_problems.get("source")
+            include = set(declared_problems.get("include") or [])
+            try:
+                instances = json.loads((benchmarks_dir.parent / source).read_text()) if source else []
+            except (OSError, ValueError):
+                instances = []
+            declared_problems = [row for row in instances if isinstance(row, dict)
+                                 and (not include or row.get("id") in include)]
+        for problem in declared_problems:
             if not isinstance(problem, dict) or not problem.get("id"):
                 continue
             run = problem.get("run") or {}

@@ -1,5 +1,1117 @@
 [
  {
+  "id": "two_operand_einsum_f64_2x2_string",
+  "issues": [
+   "#2325",
+   "#2324"
+  ],
+  "kind": "binary_einsum_shortcut",
+  "arm": "string",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "m": 2,
+   "k": 2,
+   "n": 2,
+   "format": "ij,jk->ik",
+   "kind": "binary_einsum_shortcut",
+   "arm": "string",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "zen5-cpu",
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2325 / #2324 (benchmark #340): exact-output two-operand einsum shortcut versus direct dot_general on identical logical inputs. String, integer subscripts and prepared ConcreteEinsumPlan execution are separate paths; torch.einsum is the external reference. Inputs, engine, session, subscripts and plan prepared before timing; latency/dispatch cost, not compute throughput. abc,cef->abef uses [2,4,2] x [2,4,4] -> [2,4,4,4].",
+  "regime": "latency",
+  "execution_path": "string",
+  "thread_counts": [
+   1,
+   4
+  ]
+ },
+ {
+  "id": "two_operand_einsum_f64_2x2_subscripts",
+  "issues": [
+   "#2325",
+   "#2324"
+  ],
+  "kind": "binary_einsum_shortcut",
+  "arm": "subscripts",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "m": 2,
+   "k": 2,
+   "n": 2,
+   "format": "ij,jk->ik",
+   "kind": "binary_einsum_shortcut",
+   "arm": "subscripts",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "zen5-cpu",
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2325 / #2324 (benchmark #340): exact-output two-operand einsum shortcut versus direct dot_general on identical logical inputs. String, integer subscripts and prepared ConcreteEinsumPlan execution are separate paths; torch.einsum is the external reference. Inputs, engine, session, subscripts and plan prepared before timing; latency/dispatch cost, not compute throughput. abc,cef->abef uses [2,4,2] x [2,4,4] -> [2,4,4,4].",
+  "reference_for": "two_operand_einsum_f64_2x2_string",
+  "regime": "latency",
+  "execution_path": "subscripts",
+  "thread_counts": [
+   1,
+   4
+  ]
+ },
+ {
+  "id": "two_operand_einsum_f64_2x2_prepared",
+  "issues": [
+   "#2325",
+   "#2324"
+  ],
+  "kind": "binary_einsum_shortcut",
+  "arm": "prepared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "m": 2,
+   "k": 2,
+   "n": 2,
+   "format": "ij,jk->ik",
+   "kind": "binary_einsum_shortcut",
+   "arm": "prepared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "zen5-cpu",
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2325 / #2324 (benchmark #340): exact-output two-operand einsum shortcut versus direct dot_general on identical logical inputs. String, integer subscripts and prepared ConcreteEinsumPlan execution are separate paths; torch.einsum is the external reference. Inputs, engine, session, subscripts and plan prepared before timing; latency/dispatch cost, not compute throughput. abc,cef->abef uses [2,4,2] x [2,4,4] -> [2,4,4,4].",
+  "reference_for": "two_operand_einsum_f64_2x2_string",
+  "regime": "latency",
+  "execution_path": "prepared",
+  "thread_counts": [
+   1,
+   4
+  ]
+ },
+ {
+  "id": "two_operand_einsum_f64_2x2_dot-general",
+  "issues": [
+   "#2325",
+   "#2324"
+  ],
+  "kind": "binary_einsum_shortcut",
+  "arm": "dot-general",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "m": 2,
+   "k": 2,
+   "n": 2,
+   "format": "ij,jk->ik",
+   "kind": "binary_einsum_shortcut",
+   "arm": "dot-general",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "zen5-cpu",
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2325 / #2324 (benchmark #340): exact-output two-operand einsum shortcut versus direct dot_general on identical logical inputs. String, integer subscripts and prepared ConcreteEinsumPlan execution are separate paths; torch.einsum is the external reference. Inputs, engine, session, subscripts and plan prepared before timing; latency/dispatch cost, not compute throughput. abc,cef->abef uses [2,4,2] x [2,4,4] -> [2,4,4,4].",
+  "reference_for": "two_operand_einsum_f64_2x2_string",
+  "regime": "latency",
+  "execution_path": "dot-general",
+  "thread_counts": [
+   1,
+   4
+  ]
+ },
+ {
+  "id": "two_operand_einsum_f64_2x2_pytorch",
+  "issues": [
+   "#2325",
+   "#2324"
+  ],
+  "kind": "binary_einsum_shortcut",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "m": 2,
+   "k": 2,
+   "n": 2,
+   "format": "ij,jk->ik",
+   "kind": "binary_einsum_shortcut",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "zen5-cpu",
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2325 / #2324 (benchmark #340): exact-output two-operand einsum shortcut versus direct dot_general on identical logical inputs. String, integer subscripts and prepared ConcreteEinsumPlan execution are separate paths; torch.einsum is the external reference. Inputs, engine, session, subscripts and plan prepared before timing; latency/dispatch cost, not compute throughput. abc,cef->abef uses [2,4,2] x [2,4,4] -> [2,4,4,4].",
+  "reference_for": "two_operand_einsum_f64_2x2_string",
+  "regime": "latency",
+  "execution_path": "pytorch",
+  "thread_counts": [
+   1,
+   4
+  ]
+ },
+ {
+  "id": "two_operand_einsum_f64_16x16_string",
+  "issues": [
+   "#2325",
+   "#2324"
+  ],
+  "kind": "binary_einsum_shortcut",
+  "arm": "string",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "m": 16,
+   "k": 16,
+   "n": 16,
+   "format": "ij,jk->ik",
+   "kind": "binary_einsum_shortcut",
+   "arm": "string",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "zen5-cpu",
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2325 / #2324 (benchmark #340): exact-output two-operand einsum shortcut versus direct dot_general on identical logical inputs. String, integer subscripts and prepared ConcreteEinsumPlan execution are separate paths; torch.einsum is the external reference. Inputs, engine, session, subscripts and plan prepared before timing; latency/dispatch cost, not compute throughput. abc,cef->abef uses [2,4,2] x [2,4,4] -> [2,4,4,4].",
+  "regime": "latency",
+  "execution_path": "string",
+  "thread_counts": [
+   1,
+   4
+  ]
+ },
+ {
+  "id": "two_operand_einsum_f64_16x16_subscripts",
+  "issues": [
+   "#2325",
+   "#2324"
+  ],
+  "kind": "binary_einsum_shortcut",
+  "arm": "subscripts",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "m": 16,
+   "k": 16,
+   "n": 16,
+   "format": "ij,jk->ik",
+   "kind": "binary_einsum_shortcut",
+   "arm": "subscripts",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "zen5-cpu",
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2325 / #2324 (benchmark #340): exact-output two-operand einsum shortcut versus direct dot_general on identical logical inputs. String, integer subscripts and prepared ConcreteEinsumPlan execution are separate paths; torch.einsum is the external reference. Inputs, engine, session, subscripts and plan prepared before timing; latency/dispatch cost, not compute throughput. abc,cef->abef uses [2,4,2] x [2,4,4] -> [2,4,4,4].",
+  "reference_for": "two_operand_einsum_f64_16x16_string",
+  "regime": "latency",
+  "execution_path": "subscripts",
+  "thread_counts": [
+   1,
+   4
+  ]
+ },
+ {
+  "id": "two_operand_einsum_f64_16x16_prepared",
+  "issues": [
+   "#2325",
+   "#2324"
+  ],
+  "kind": "binary_einsum_shortcut",
+  "arm": "prepared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "m": 16,
+   "k": 16,
+   "n": 16,
+   "format": "ij,jk->ik",
+   "kind": "binary_einsum_shortcut",
+   "arm": "prepared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "zen5-cpu",
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2325 / #2324 (benchmark #340): exact-output two-operand einsum shortcut versus direct dot_general on identical logical inputs. String, integer subscripts and prepared ConcreteEinsumPlan execution are separate paths; torch.einsum is the external reference. Inputs, engine, session, subscripts and plan prepared before timing; latency/dispatch cost, not compute throughput. abc,cef->abef uses [2,4,2] x [2,4,4] -> [2,4,4,4].",
+  "reference_for": "two_operand_einsum_f64_16x16_string",
+  "regime": "latency",
+  "execution_path": "prepared",
+  "thread_counts": [
+   1,
+   4
+  ]
+ },
+ {
+  "id": "two_operand_einsum_f64_16x16_dot-general",
+  "issues": [
+   "#2325",
+   "#2324"
+  ],
+  "kind": "binary_einsum_shortcut",
+  "arm": "dot-general",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "m": 16,
+   "k": 16,
+   "n": 16,
+   "format": "ij,jk->ik",
+   "kind": "binary_einsum_shortcut",
+   "arm": "dot-general",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "zen5-cpu",
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2325 / #2324 (benchmark #340): exact-output two-operand einsum shortcut versus direct dot_general on identical logical inputs. String, integer subscripts and prepared ConcreteEinsumPlan execution are separate paths; torch.einsum is the external reference. Inputs, engine, session, subscripts and plan prepared before timing; latency/dispatch cost, not compute throughput. abc,cef->abef uses [2,4,2] x [2,4,4] -> [2,4,4,4].",
+  "reference_for": "two_operand_einsum_f64_16x16_string",
+  "regime": "latency",
+  "execution_path": "dot-general",
+  "thread_counts": [
+   1,
+   4
+  ]
+ },
+ {
+  "id": "two_operand_einsum_f64_16x16_pytorch",
+  "issues": [
+   "#2325",
+   "#2324"
+  ],
+  "kind": "binary_einsum_shortcut",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "m": 16,
+   "k": 16,
+   "n": 16,
+   "format": "ij,jk->ik",
+   "kind": "binary_einsum_shortcut",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "zen5-cpu",
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2325 / #2324 (benchmark #340): exact-output two-operand einsum shortcut versus direct dot_general on identical logical inputs. String, integer subscripts and prepared ConcreteEinsumPlan execution are separate paths; torch.einsum is the external reference. Inputs, engine, session, subscripts and plan prepared before timing; latency/dispatch cost, not compute throughput. abc,cef->abef uses [2,4,2] x [2,4,4] -> [2,4,4,4].",
+  "reference_for": "two_operand_einsum_f64_16x16_string",
+  "regime": "latency",
+  "execution_path": "pytorch",
+  "thread_counts": [
+   1,
+   4
+  ]
+ },
+ {
+  "id": "two_operand_einsum_c64_2x2_string",
+  "issues": [
+   "#2325",
+   "#2324"
+  ],
+  "kind": "binary_einsum_shortcut",
+  "arm": "string",
+  "backend": "tenferro-rs",
+  "dtype": "c64",
+  "params": {
+   "m": 2,
+   "k": 2,
+   "n": 2,
+   "format": "ij,jk->ik",
+   "kind": "binary_einsum_shortcut",
+   "arm": "string",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "zen5-cpu",
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2325 / #2324 (benchmark #340): exact-output two-operand einsum shortcut versus direct dot_general on identical logical inputs. String, integer subscripts and prepared ConcreteEinsumPlan execution are separate paths; torch.einsum is the external reference. Inputs, engine, session, subscripts and plan prepared before timing; latency/dispatch cost, not compute throughput. abc,cef->abef uses [2,4,2] x [2,4,4] -> [2,4,4,4].",
+  "regime": "latency",
+  "execution_path": "string",
+  "thread_counts": [
+   1,
+   4
+  ]
+ },
+ {
+  "id": "two_operand_einsum_c64_2x2_subscripts",
+  "issues": [
+   "#2325",
+   "#2324"
+  ],
+  "kind": "binary_einsum_shortcut",
+  "arm": "subscripts",
+  "backend": "tenferro-rs",
+  "dtype": "c64",
+  "params": {
+   "m": 2,
+   "k": 2,
+   "n": 2,
+   "format": "ij,jk->ik",
+   "kind": "binary_einsum_shortcut",
+   "arm": "subscripts",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "zen5-cpu",
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2325 / #2324 (benchmark #340): exact-output two-operand einsum shortcut versus direct dot_general on identical logical inputs. String, integer subscripts and prepared ConcreteEinsumPlan execution are separate paths; torch.einsum is the external reference. Inputs, engine, session, subscripts and plan prepared before timing; latency/dispatch cost, not compute throughput. abc,cef->abef uses [2,4,2] x [2,4,4] -> [2,4,4,4].",
+  "reference_for": "two_operand_einsum_c64_2x2_string",
+  "regime": "latency",
+  "execution_path": "subscripts",
+  "thread_counts": [
+   1,
+   4
+  ]
+ },
+ {
+  "id": "two_operand_einsum_c64_2x2_prepared",
+  "issues": [
+   "#2325",
+   "#2324"
+  ],
+  "kind": "binary_einsum_shortcut",
+  "arm": "prepared",
+  "backend": "tenferro-rs",
+  "dtype": "c64",
+  "params": {
+   "m": 2,
+   "k": 2,
+   "n": 2,
+   "format": "ij,jk->ik",
+   "kind": "binary_einsum_shortcut",
+   "arm": "prepared",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "zen5-cpu",
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2325 / #2324 (benchmark #340): exact-output two-operand einsum shortcut versus direct dot_general on identical logical inputs. String, integer subscripts and prepared ConcreteEinsumPlan execution are separate paths; torch.einsum is the external reference. Inputs, engine, session, subscripts and plan prepared before timing; latency/dispatch cost, not compute throughput. abc,cef->abef uses [2,4,2] x [2,4,4] -> [2,4,4,4].",
+  "reference_for": "two_operand_einsum_c64_2x2_string",
+  "regime": "latency",
+  "execution_path": "prepared",
+  "thread_counts": [
+   1,
+   4
+  ]
+ },
+ {
+  "id": "two_operand_einsum_c64_2x2_dot-general",
+  "issues": [
+   "#2325",
+   "#2324"
+  ],
+  "kind": "binary_einsum_shortcut",
+  "arm": "dot-general",
+  "backend": "tenferro-rs",
+  "dtype": "c64",
+  "params": {
+   "m": 2,
+   "k": 2,
+   "n": 2,
+   "format": "ij,jk->ik",
+   "kind": "binary_einsum_shortcut",
+   "arm": "dot-general",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "zen5-cpu",
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2325 / #2324 (benchmark #340): exact-output two-operand einsum shortcut versus direct dot_general on identical logical inputs. String, integer subscripts and prepared ConcreteEinsumPlan execution are separate paths; torch.einsum is the external reference. Inputs, engine, session, subscripts and plan prepared before timing; latency/dispatch cost, not compute throughput. abc,cef->abef uses [2,4,2] x [2,4,4] -> [2,4,4,4].",
+  "reference_for": "two_operand_einsum_c64_2x2_string",
+  "regime": "latency",
+  "execution_path": "dot-general",
+  "thread_counts": [
+   1,
+   4
+  ]
+ },
+ {
+  "id": "two_operand_einsum_c64_2x2_pytorch",
+  "issues": [
+   "#2325",
+   "#2324"
+  ],
+  "kind": "binary_einsum_shortcut",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "c64",
+  "params": {
+   "m": 2,
+   "k": 2,
+   "n": 2,
+   "format": "ij,jk->ik",
+   "kind": "binary_einsum_shortcut",
+   "arm": "pytorch",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "zen5-cpu",
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2325 / #2324 (benchmark #340): exact-output two-operand einsum shortcut versus direct dot_general on identical logical inputs. String, integer subscripts and prepared ConcreteEinsumPlan execution are separate paths; torch.einsum is the external reference. Inputs, engine, session, subscripts and plan prepared before timing; latency/dispatch cost, not compute throughput. abc,cef->abef uses [2,4,2] x [2,4,4] -> [2,4,4,4].",
+  "reference_for": "two_operand_einsum_c64_2x2_string",
+  "regime": "latency",
+  "execution_path": "pytorch",
+  "thread_counts": [
+   1,
+   4
+  ]
+ },
+ {
+  "id": "two_operand_einsum_c64_16x16_string",
+  "issues": [
+   "#2325",
+   "#2324"
+  ],
+  "kind": "binary_einsum_shortcut",
+  "arm": "string",
+  "backend": "tenferro-rs",
+  "dtype": "c64",
+  "params": {
+   "m": 16,
+   "k": 16,
+   "n": 16,
+   "format": "ij,jk->ik",
+   "kind": "binary_einsum_shortcut",
+   "arm": "string",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "zen5-cpu",
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2325 / #2324 (benchmark #340): exact-output two-operand einsum shortcut versus direct dot_general on identical logical inputs. String, integer subscripts and prepared ConcreteEinsumPlan execution are separate paths; torch.einsum is the external reference. Inputs, engine, session, subscripts and plan prepared before timing; latency/dispatch cost, not compute throughput. abc,cef->abef uses [2,4,2] x [2,4,4] -> [2,4,4,4].",
+  "regime": "latency",
+  "execution_path": "string",
+  "thread_counts": [
+   1,
+   4
+  ]
+ },
+ {
+  "id": "two_operand_einsum_c64_16x16_subscripts",
+  "issues": [
+   "#2325",
+   "#2324"
+  ],
+  "kind": "binary_einsum_shortcut",
+  "arm": "subscripts",
+  "backend": "tenferro-rs",
+  "dtype": "c64",
+  "params": {
+   "m": 16,
+   "k": 16,
+   "n": 16,
+   "format": "ij,jk->ik",
+   "kind": "binary_einsum_shortcut",
+   "arm": "subscripts",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "zen5-cpu",
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2325 / #2324 (benchmark #340): exact-output two-operand einsum shortcut versus direct dot_general on identical logical inputs. String, integer subscripts and prepared ConcreteEinsumPlan execution are separate paths; torch.einsum is the external reference. Inputs, engine, session, subscripts and plan prepared before timing; latency/dispatch cost, not compute throughput. abc,cef->abef uses [2,4,2] x [2,4,4] -> [2,4,4,4].",
+  "reference_for": "two_operand_einsum_c64_16x16_string",
+  "regime": "latency",
+  "execution_path": "subscripts",
+  "thread_counts": [
+   1,
+   4
+  ]
+ },
+ {
+  "id": "two_operand_einsum_c64_16x16_prepared",
+  "issues": [
+   "#2325",
+   "#2324"
+  ],
+  "kind": "binary_einsum_shortcut",
+  "arm": "prepared",
+  "backend": "tenferro-rs",
+  "dtype": "c64",
+  "params": {
+   "m": 16,
+   "k": 16,
+   "n": 16,
+   "format": "ij,jk->ik",
+   "kind": "binary_einsum_shortcut",
+   "arm": "prepared",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "zen5-cpu",
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2325 / #2324 (benchmark #340): exact-output two-operand einsum shortcut versus direct dot_general on identical logical inputs. String, integer subscripts and prepared ConcreteEinsumPlan execution are separate paths; torch.einsum is the external reference. Inputs, engine, session, subscripts and plan prepared before timing; latency/dispatch cost, not compute throughput. abc,cef->abef uses [2,4,2] x [2,4,4] -> [2,4,4,4].",
+  "reference_for": "two_operand_einsum_c64_16x16_string",
+  "regime": "latency",
+  "execution_path": "prepared",
+  "thread_counts": [
+   1,
+   4
+  ]
+ },
+ {
+  "id": "two_operand_einsum_c64_16x16_dot-general",
+  "issues": [
+   "#2325",
+   "#2324"
+  ],
+  "kind": "binary_einsum_shortcut",
+  "arm": "dot-general",
+  "backend": "tenferro-rs",
+  "dtype": "c64",
+  "params": {
+   "m": 16,
+   "k": 16,
+   "n": 16,
+   "format": "ij,jk->ik",
+   "kind": "binary_einsum_shortcut",
+   "arm": "dot-general",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "zen5-cpu",
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2325 / #2324 (benchmark #340): exact-output two-operand einsum shortcut versus direct dot_general on identical logical inputs. String, integer subscripts and prepared ConcreteEinsumPlan execution are separate paths; torch.einsum is the external reference. Inputs, engine, session, subscripts and plan prepared before timing; latency/dispatch cost, not compute throughput. abc,cef->abef uses [2,4,2] x [2,4,4] -> [2,4,4,4].",
+  "reference_for": "two_operand_einsum_c64_16x16_string",
+  "regime": "latency",
+  "execution_path": "dot-general",
+  "thread_counts": [
+   1,
+   4
+  ]
+ },
+ {
+  "id": "two_operand_einsum_c64_16x16_pytorch",
+  "issues": [
+   "#2325",
+   "#2324"
+  ],
+  "kind": "binary_einsum_shortcut",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "c64",
+  "params": {
+   "m": 16,
+   "k": 16,
+   "n": 16,
+   "format": "ij,jk->ik",
+   "kind": "binary_einsum_shortcut",
+   "arm": "pytorch",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "zen5-cpu",
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2325 / #2324 (benchmark #340): exact-output two-operand einsum shortcut versus direct dot_general on identical logical inputs. String, integer subscripts and prepared ConcreteEinsumPlan execution are separate paths; torch.einsum is the external reference. Inputs, engine, session, subscripts and plan prepared before timing; latency/dispatch cost, not compute throughput. abc,cef->abef uses [2,4,2] x [2,4,4] -> [2,4,4,4].",
+  "reference_for": "two_operand_einsum_c64_16x16_string",
+  "regime": "latency",
+  "execution_path": "pytorch",
+  "thread_counts": [
+   1,
+   4
+  ]
+ },
+ {
+  "id": "two_operand_einsum_f64_abc_cef_abef_string",
+  "issues": [
+   "#2325",
+   "#2324"
+  ],
+  "kind": "binary_einsum_shortcut",
+  "arm": "string",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "m": 8,
+   "k": 2,
+   "n": 16,
+   "format": "abc,cef->abef",
+   "kind": "binary_einsum_shortcut",
+   "arm": "string",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "zen5-cpu",
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2325 / #2324 (benchmark #340): exact-output two-operand einsum shortcut versus direct dot_general on identical logical inputs. String, integer subscripts and prepared ConcreteEinsumPlan execution are separate paths; torch.einsum is the external reference. Inputs, engine, session, subscripts and plan prepared before timing; latency/dispatch cost, not compute throughput. abc,cef->abef uses [2,4,2] x [2,4,4] -> [2,4,4,4].",
+  "regime": "latency",
+  "execution_path": "string",
+  "thread_counts": [
+   1,
+   4
+  ]
+ },
+ {
+  "id": "two_operand_einsum_f64_abc_cef_abef_subscripts",
+  "issues": [
+   "#2325",
+   "#2324"
+  ],
+  "kind": "binary_einsum_shortcut",
+  "arm": "subscripts",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "m": 8,
+   "k": 2,
+   "n": 16,
+   "format": "abc,cef->abef",
+   "kind": "binary_einsum_shortcut",
+   "arm": "subscripts",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "zen5-cpu",
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2325 / #2324 (benchmark #340): exact-output two-operand einsum shortcut versus direct dot_general on identical logical inputs. String, integer subscripts and prepared ConcreteEinsumPlan execution are separate paths; torch.einsum is the external reference. Inputs, engine, session, subscripts and plan prepared before timing; latency/dispatch cost, not compute throughput. abc,cef->abef uses [2,4,2] x [2,4,4] -> [2,4,4,4].",
+  "reference_for": "two_operand_einsum_f64_abc_cef_abef_string",
+  "regime": "latency",
+  "execution_path": "subscripts",
+  "thread_counts": [
+   1,
+   4
+  ]
+ },
+ {
+  "id": "two_operand_einsum_f64_abc_cef_abef_prepared",
+  "issues": [
+   "#2325",
+   "#2324"
+  ],
+  "kind": "binary_einsum_shortcut",
+  "arm": "prepared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "m": 8,
+   "k": 2,
+   "n": 16,
+   "format": "abc,cef->abef",
+   "kind": "binary_einsum_shortcut",
+   "arm": "prepared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "zen5-cpu",
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2325 / #2324 (benchmark #340): exact-output two-operand einsum shortcut versus direct dot_general on identical logical inputs. String, integer subscripts and prepared ConcreteEinsumPlan execution are separate paths; torch.einsum is the external reference. Inputs, engine, session, subscripts and plan prepared before timing; latency/dispatch cost, not compute throughput. abc,cef->abef uses [2,4,2] x [2,4,4] -> [2,4,4,4].",
+  "reference_for": "two_operand_einsum_f64_abc_cef_abef_string",
+  "regime": "latency",
+  "execution_path": "prepared",
+  "thread_counts": [
+   1,
+   4
+  ]
+ },
+ {
+  "id": "two_operand_einsum_f64_abc_cef_abef_dot-general",
+  "issues": [
+   "#2325",
+   "#2324"
+  ],
+  "kind": "binary_einsum_shortcut",
+  "arm": "dot-general",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "m": 8,
+   "k": 2,
+   "n": 16,
+   "format": "abc,cef->abef",
+   "kind": "binary_einsum_shortcut",
+   "arm": "dot-general",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "zen5-cpu",
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2325 / #2324 (benchmark #340): exact-output two-operand einsum shortcut versus direct dot_general on identical logical inputs. String, integer subscripts and prepared ConcreteEinsumPlan execution are separate paths; torch.einsum is the external reference. Inputs, engine, session, subscripts and plan prepared before timing; latency/dispatch cost, not compute throughput. abc,cef->abef uses [2,4,2] x [2,4,4] -> [2,4,4,4].",
+  "reference_for": "two_operand_einsum_f64_abc_cef_abef_string",
+  "regime": "latency",
+  "execution_path": "dot-general",
+  "thread_counts": [
+   1,
+   4
+  ]
+ },
+ {
+  "id": "two_operand_einsum_f64_abc_cef_abef_pytorch",
+  "issues": [
+   "#2325",
+   "#2324"
+  ],
+  "kind": "binary_einsum_shortcut",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "m": 8,
+   "k": 2,
+   "n": 16,
+   "format": "abc,cef->abef",
+   "kind": "binary_einsum_shortcut",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "zen5-cpu",
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2325 / #2324 (benchmark #340): exact-output two-operand einsum shortcut versus direct dot_general on identical logical inputs. String, integer subscripts and prepared ConcreteEinsumPlan execution are separate paths; torch.einsum is the external reference. Inputs, engine, session, subscripts and plan prepared before timing; latency/dispatch cost, not compute throughput. abc,cef->abef uses [2,4,2] x [2,4,4] -> [2,4,4,4].",
+  "reference_for": "two_operand_einsum_f64_abc_cef_abef_string",
+  "regime": "latency",
+  "execution_path": "pytorch",
+  "thread_counts": [
+   1,
+   4
+  ]
+ },
+ {
+  "id": "thin_c64_gemm_1x141_141x282_t1",
+  "issues": [
+   "#2416",
+   "#1099"
+  ],
+  "kind": "thin_complex_gemm",
+  "arm": "dot-general",
+  "backend": "tenferro-rs",
+  "dtype": "c64",
+  "params": {
+   "m": 1,
+   "k": 141,
+   "n": 282,
+   "kind": "thin_complex_gemm",
+   "arm": "dot-general",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2416 / #1099 (benchmark #339): column-major complex128 products on an Accelerate link, m=1/2 select the thin faer route; m=8 is the vendor-route control. Public dot_general versus allocating faer-direct and torch.matmul on identical values. Engine, session, operands and views outside timing; intrinsic output allocation inside. Latency/kernel-route diagnostic, not large GEMM throughput.",
+  "regime": "latency",
+  "execution_path": "dot-general",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "thin_c64_gemm_1x141_141x282_t1_faer-direct",
+  "issues": [
+   "#2416",
+   "#1099"
+  ],
+  "kind": "thin_complex_gemm",
+  "arm": "faer-direct",
+  "backend": "faer-direct",
+  "dtype": "c64",
+  "params": {
+   "m": 1,
+   "k": 141,
+   "n": 282,
+   "kind": "thin_complex_gemm",
+   "arm": "faer-direct",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2416 / #1099 (benchmark #339): column-major complex128 products on an Accelerate link, m=1/2 select the thin faer route; m=8 is the vendor-route control. Public dot_general versus allocating faer-direct and torch.matmul on identical values. Engine, session, operands and views outside timing; intrinsic output allocation inside. Latency/kernel-route diagnostic, not large GEMM throughput.",
+  "reference_for": "thin_c64_gemm_1x141_141x282_t1",
+  "regime": "latency",
+  "execution_path": "faer-direct",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "thin_c64_gemm_1x141_141x282_t1_pytorch",
+  "issues": [
+   "#2416",
+   "#1099"
+  ],
+  "kind": "thin_complex_gemm",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "c64",
+  "params": {
+   "m": 1,
+   "k": 141,
+   "n": 282,
+   "kind": "thin_complex_gemm",
+   "arm": "pytorch",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2416 / #1099 (benchmark #339): column-major complex128 products on an Accelerate link, m=1/2 select the thin faer route; m=8 is the vendor-route control. Public dot_general versus allocating faer-direct and torch.matmul on identical values. Engine, session, operands and views outside timing; intrinsic output allocation inside. Latency/kernel-route diagnostic, not large GEMM throughput.",
+  "reference_for": "thin_c64_gemm_1x141_141x282_t1",
+  "regime": "latency",
+  "execution_path": "pytorch",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "thin_c64_gemm_2x141_141x282_t1",
+  "issues": [
+   "#2416",
+   "#1099"
+  ],
+  "kind": "thin_complex_gemm",
+  "arm": "dot-general",
+  "backend": "tenferro-rs",
+  "dtype": "c64",
+  "params": {
+   "m": 2,
+   "k": 141,
+   "n": 282,
+   "kind": "thin_complex_gemm",
+   "arm": "dot-general",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2416 / #1099 (benchmark #339): column-major complex128 products on an Accelerate link, m=1/2 select the thin faer route; m=8 is the vendor-route control. Public dot_general versus allocating faer-direct and torch.matmul on identical values. Engine, session, operands and views outside timing; intrinsic output allocation inside. Latency/kernel-route diagnostic, not large GEMM throughput.",
+  "regime": "latency",
+  "execution_path": "dot-general",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "thin_c64_gemm_2x141_141x282_t1_faer-direct",
+  "issues": [
+   "#2416",
+   "#1099"
+  ],
+  "kind": "thin_complex_gemm",
+  "arm": "faer-direct",
+  "backend": "faer-direct",
+  "dtype": "c64",
+  "params": {
+   "m": 2,
+   "k": 141,
+   "n": 282,
+   "kind": "thin_complex_gemm",
+   "arm": "faer-direct",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2416 / #1099 (benchmark #339): column-major complex128 products on an Accelerate link, m=1/2 select the thin faer route; m=8 is the vendor-route control. Public dot_general versus allocating faer-direct and torch.matmul on identical values. Engine, session, operands and views outside timing; intrinsic output allocation inside. Latency/kernel-route diagnostic, not large GEMM throughput.",
+  "reference_for": "thin_c64_gemm_2x141_141x282_t1",
+  "regime": "latency",
+  "execution_path": "faer-direct",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "thin_c64_gemm_2x141_141x282_t1_pytorch",
+  "issues": [
+   "#2416",
+   "#1099"
+  ],
+  "kind": "thin_complex_gemm",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "c64",
+  "params": {
+   "m": 2,
+   "k": 141,
+   "n": 282,
+   "kind": "thin_complex_gemm",
+   "arm": "pytorch",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2416 / #1099 (benchmark #339): column-major complex128 products on an Accelerate link, m=1/2 select the thin faer route; m=8 is the vendor-route control. Public dot_general versus allocating faer-direct and torch.matmul on identical values. Engine, session, operands and views outside timing; intrinsic output allocation inside. Latency/kernel-route diagnostic, not large GEMM throughput.",
+  "reference_for": "thin_c64_gemm_2x141_141x282_t1",
+  "regime": "latency",
+  "execution_path": "pytorch",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "thin_c64_gemm_8x141_141x282_t1",
+  "issues": [
+   "#2416",
+   "#1099"
+  ],
+  "kind": "thin_complex_gemm",
+  "arm": "dot-general",
+  "backend": "tenferro-rs",
+  "dtype": "c64",
+  "params": {
+   "m": 8,
+   "k": 141,
+   "n": 282,
+   "kind": "thin_complex_gemm",
+   "arm": "dot-general",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2416 / #1099 (benchmark #339): column-major complex128 products on an Accelerate link, m=1/2 select the thin faer route; m=8 is the vendor-route control. Public dot_general versus allocating faer-direct and torch.matmul on identical values. Engine, session, operands and views outside timing; intrinsic output allocation inside. Latency/kernel-route diagnostic, not large GEMM throughput.",
+  "regime": "latency",
+  "execution_path": "dot-general",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "thin_c64_gemm_8x141_141x282_t1_faer-direct",
+  "issues": [
+   "#2416",
+   "#1099"
+  ],
+  "kind": "thin_complex_gemm",
+  "arm": "faer-direct",
+  "backend": "faer-direct",
+  "dtype": "c64",
+  "params": {
+   "m": 8,
+   "k": 141,
+   "n": 282,
+   "kind": "thin_complex_gemm",
+   "arm": "faer-direct",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2416 / #1099 (benchmark #339): column-major complex128 products on an Accelerate link, m=1/2 select the thin faer route; m=8 is the vendor-route control. Public dot_general versus allocating faer-direct and torch.matmul on identical values. Engine, session, operands and views outside timing; intrinsic output allocation inside. Latency/kernel-route diagnostic, not large GEMM throughput.",
+  "reference_for": "thin_c64_gemm_8x141_141x282_t1",
+  "regime": "latency",
+  "execution_path": "faer-direct",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "thin_c64_gemm_8x141_141x282_t1_pytorch",
+  "issues": [
+   "#2416",
+   "#1099"
+  ],
+  "kind": "thin_complex_gemm",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "c64",
+  "params": {
+   "m": 8,
+   "k": 141,
+   "n": 282,
+   "kind": "thin_complex_gemm",
+   "arm": "pytorch",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2416 / #1099 (benchmark #339): column-major complex128 products on an Accelerate link, m=1/2 select the thin faer route; m=8 is the vendor-route control. Public dot_general versus allocating faer-direct and torch.matmul on identical values. Engine, session, operands and views outside timing; intrinsic output allocation inside. Latency/kernel-route diagnostic, not large GEMM throughput.",
+  "reference_for": "thin_c64_gemm_8x141_141x282_t1",
+  "regime": "latency",
+  "execution_path": "pytorch",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
   "id": "decode_proj_f32_eager-shared_in1024_out1024_len8",
   "issues": [
    "#1992",

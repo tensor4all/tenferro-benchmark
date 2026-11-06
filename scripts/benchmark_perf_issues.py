@@ -78,6 +78,30 @@ def torch_case(case):
             validate(op())
             return 0.0  # assertion checks against the analytical solution
         return op, check, retained, [p["operation"], "intrinsic output allocation", "Python dispatch"]
+    if kind in ("binary_einsum_shortcut", "thin_complex_gemm"):
+        m, k, n = p['m'], p['k'], p['n']
+        complex_dtype = case['dtype'] == 'c64'
+        dtype = torch.complex128 if complex_dtype else torch.float64
+        def vals(count, seed):
+            re = _values(count, seed)
+            return [complex(r, i) for r, i in zip(re, _values(count, seed+1))] if complex_dtype else re
+        av, bv = vals(m*k, 91), vals(k*n, 92)
+        # Preserve logical column-major values in native row-major operands.
+        a = torch.tensor(av, dtype=dtype).reshape(k,m).T.contiguous()
+        b = torch.tensor(bv, dtype=dtype).reshape(n,k).T.contiguous()
+        expected = torch.tensor([[sum(av[i+m*q]*bv[q+k*j] for q in range(k))
+                                  for j in range(n)] for i in range(m)], dtype=dtype)
+        fmt = p.get('format', 'ij,jk->ik')
+        if fmt == 'abc,cef->abef':
+            a = a.T.reshape(k,4,2).permute(2,1,0).contiguous()
+            b = b.T.reshape(4,4,k).permute(2,1,0).contiguous()
+            expected = expected.T.reshape(4,4,4,2).permute(3,2,1,0).contiguous()
+        op = (lambda: torch.einsum(fmt, a, b)) if kind == 'binary_einsum_shortcut' else (lambda: a @ b)
+        def check():
+            out = op()
+            torch.testing.assert_close(out, expected, rtol=1e-10, atol=1e-10)
+            return float(((out-expected).abs()/expected.abs().clamp(min=1.)).max())
+        return op, check, m*n*(16 if complex_dtype else 8), ['declared allocating PyTorch product', 'output_allocation']
     if kind == "decode_projection":
         din, dout, length = p["in"], p["out"], p["len"]
         # Same logical x (in, len) and W (in, out) as the Rust arms; PyTorch's
@@ -641,7 +665,8 @@ def render_report(run_dir, target, suite_key="cpu"):
     steady = [r for r in rows if r["measurement_scope"] == "steady_state"]
     allocation_policy = ("" if suite_key == "gpu" else
                          "faer-direct and host-sgemm write into a preallocated output, the tenferro and "
-                         "PyTorch arms allocate their output. ")
+                         "PyTorch arms allocate their output. The thin_complex_gemm faer-direct arm instead "
+                         "allocates its output inside timing to match its product references. ")
     lines += ["## Steady-state operation rows", "",
               "Each batch is one wall-clock interval over many operations; every output is retained until the "
               "clock stops. Median and inclusive IQR are per operation, in nanoseconds; CoV is sample standard "
