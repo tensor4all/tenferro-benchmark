@@ -3,29 +3,29 @@
 - Suite: `cpu/public_api`
 - Target profile: `mac-cpu`
 - Suite file: `benchmarks/cpu/public_api.yaml`
-- Run metadata: `data/results/mac-cpu/cpu/public_api/20261105_175005/run.yaml`
-- Timestamp: `2026-11-05T17:50:05.395492+00:00`
+- Run metadata: `data/results/mac-cpu/cpu/public_api/20261106_182046/run.yaml`
+- Timestamp: `2026-11-06T18:20:46.704878+00:00`
 
 Latest run: `./scripts/run_cpu_public_api.sh 1 4`.
 
 - Public API coverage manifest: `benchmarks/cpu/public_api_coverage.yaml`
 
-This file is generated from sequential CPU public API runs under `data/results/mac-cpu/cpu/public_api/20261105_175005`.
+This file is generated from sequential CPU public API runs under `data/results/mac-cpu/cpu/public_api/20261106_182046`.
 
 - tenferro-rs commit: `a000e5c4929d5bebb91e783c329b27106baed12e`
 
 ## CPU Information
 
-- Model: `Apple M2 Pro (Virtual)`
+- Model: `Apple M1 (Virtual)`
 - Vendor: `Apple`
-- Logical CPUs: `5`
-- Physical CPUs: `5`
+- Logical CPUs: `3`
+- Physical CPUs: `3`
 - Sockets: `1`
-- Cores per socket: `5`
+- Cores per socket: `3`
 - Threads per core: `1`
 - NUMA nodes: `1`
-- Performance levels: `Standard: 5 physical / 5 logical (L1i 128 KiB, L1d 64 KiB, L2 4 MiB, 5 CPUs/L2)`
-- Python platform: `macOS-26.7.2-arm64-arm-64bit-Mach-O`
+- Performance levels: `Standard: 3 physical / 3 logical (L1i 192 KiB, L1d 128 KiB, L2 12 MiB, 3 CPUs/L2)`
+- Python platform: `macOS-26.6.2-arm64-arm-64bit-Mach-O`
 - Container: `none`
 
 ## Thread Environments
@@ -99,8 +99,8 @@ This file is generated from sequential CPU public API runs under `data/results/m
 
 ## Threads: 1 4
 
-- CSV: `data/results/mac-cpu/cpu/public_api/20261105_175005/cpu_public_api_t1_20261105_175005.csv`
-- CSV: `data/results/mac-cpu/cpu/public_api/20261105_175005/cpu_public_api_t4_20261105_175005.csv`
+- CSV: `data/results/mac-cpu/cpu/public_api/20261106_182046/cpu_public_api_t1_20261106_182046.csv`
+- CSV: `data/results/mac-cpu/cpu/public_api/20261106_182046/cpu_public_api_t4_20261106_182046.csv`
 
 ## CPU Benchmark Items
 
@@ -108,678 +108,678 @@ Median ± IQR (ms). Missing backends are shown as `-`.
 
 | suite | benchmark | dtype | threads | shape | tenferro-rs direct API (ms) | tenferro-rs eager mode (ms) | tenferro-rs trace mode (ms) | PyTorch Python (ms) | JAX Python (XLA CPU) (ms) | Julia (Base/LinearAlgebra) (ms) | Julia (Strided.jl) (ms) |
 |---|---|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|
-| cpu/complex | `cholesky` | c64 | 1 | `448x448` | 3.649 ± 0.063 | - | 3.859 ± 0.086 | 3.894 ± 0.089 | 1.209 ± 0.134 | 6.069 ± 0.718 | - |
-| cpu/complex | `cholesky` | c64 | 4 | `448x448` | 3.654 ± 0.189 | - | 3.629 ± 0.134 | 3.947 ± 0.405 | 1.163 ± 0.093 | 1.851 ± 0.142 | - |
-| cpu/complex | `conj` | c64 | 1 | `16777216` | 8.841 ± 2.798 | - | 8.364 ± 0.294 | 9.762 ± 1.503 | 8.888 ± 0.630 | 8.128 ± 0.215 | 15.416 ± 5.550 |
-| cpu/complex | `conj` | c64 | 4 | `16777216` | 6.230 ± 2.703 | - | 4.866 ± 1.200 | 5.283 ± 0.498 | 5.562 ± 1.411 | 7.120 ± 0.178 | 3.832 ± 0.133 |
-| cpu/complex | `div` | c64 | 1 | `8388608` | 44.595 ± 2.046 | - | 43.290 ± 2.655 | 19.043 ± 0.426 | 36.025 ± 1.750 | 46.888 ± 1.504 | 50.770 ± 1.917 |
-| cpu/complex | `div` | c64 | 4 | `8388608` | 15.711 ± 2.335 | - | 14.872 ± 2.051 | 7.364 ± 0.407 | 17.186 ± 3.135 | 42.163 ± 4.520 | 12.174 ± 2.906 |
-| cpu/complex | `dot_general` | c64 | 1 | `640x640` | 9.571 ± 0.298 | - | 9.420 ± 0.550 | 8.000 ± 0.300 | 46.748 ± 2.862 | 61.165 ± 1.783 | - |
-| cpu/complex | `dot_general` | c64 | 4 | `640x640` | 9.392 ± 0.368 | - | 8.552 ± 0.967 | 8.524 ± 1.176 | 12.969 ± 1.445 | 13.637 ± 1.538 | - |
-| cpu/complex | `dot_general_with_conj` | c64 | 1 | `640x640` | 11.041 ± 2.263 | - | unsupported | 9.140 ± 0.306 | 49.573 ± 8.535 | 57.509 ± 3.446 | - |
-| cpu/complex | `dot_general_with_conj` | c64 | 4 | `640x640` | 9.638 ± 0.923 | - | unsupported | 9.055 ± 0.598 | 13.343 ± 0.912 | 13.867 ± 0.623 | - |
-| cpu/complex | `eig` | c64 | 1 | `112x112` | 9.964 ± 0.533 | - | 9.292 ± 1.542 | 9.534 ± 0.273 | 16.295 ± 0.768 | 8.395 ± 1.107 | - |
-| cpu/complex | `eig` | c64 | 4 | `112x112` | 8.836 ± 0.464 | - | 8.571 ± 0.578 | 9.217 ± 0.441 | 18.128 ± 0.961 | 11.412 ± 0.840 | - |
-| cpu/complex | `exp` | c64 | 1 | `4194304` | 34.166 ± 1.515 | - | 31.805 ± 1.901 | 36.524 ± 7.413 | 42.945 ± 1.360 | 47.171 ± 2.276 | 46.821 ± 1.821 |
-| cpu/complex | `exp` | c64 | 4 | `4194304` | 10.763 ± 5.859 | - | 13.163 ± 2.381 | 13.779 ± 0.468 | 16.204 ± 2.409 | 42.316 ± 1.382 | 14.273 ± 2.215 |
-| cpu/complex | `log` | c64 | 1 | `4194304` | 44.913 ± 1.653 | - | 43.427 ± 1.591 | 65.727 ± 2.891 | 87.333 ± 2.135 | 68.166 ± 8.258 | 70.523 ± 6.169 |
-| cpu/complex | `log` | c64 | 4 | `4194304` | 11.230 ± 0.795 | - | 13.252 ± 4.213 | 18.402 ± 0.497 | 30.484 ± 4.567 | 75.660 ± 9.651 | 21.184 ± 3.113 |
-| cpu/complex | `mul` | c64 | 1 | `8388608` | 6.495 ± 0.414 | - | 6.086 ± 1.338 | 6.849 ± 0.594 | 6.978 ± 1.625 | 7.277 ± 0.630 | 7.753 ± 0.599 |
-| cpu/complex | `mul` | c64 | 4 | `8388608` | 3.481 ± 1.917 | - | 4.200 ± 0.319 | 3.768 ± 0.788 | 5.091 ± 0.921 | 5.658 ± 0.459 | 4.279 ± 0.196 |
-| cpu/complex | `norm_fro` | c64 | 1 | `2048x1536` | 1.074 ± 0.047 | - | 6.642 ± 0.290 | 5.511 ± 0.165 | 4.433 ± 0.221 | 8.440 ± 0.680 | - |
-| cpu/complex | `norm_fro` | c64 | 4 | `2048x1536` | 0.649 ± 0.013 | - | 1.686 ± 0.790 | 2.397 ± 0.499 | 1.931 ± 0.334 | 7.896 ± 0.168 | - |
-| cpu/complex | `qr` | c64 | 1 | `256x256` | 6.867 ± 0.287 | - | 6.886 ± 0.505 | 7.087 ± 0.140 | 5.405 ± 0.403 | 9.487 ± 1.297 | - |
-| cpu/complex | `qr` | c64 | 4 | `256x256` | 6.128 ± 0.555 | - | 5.990 ± 0.344 | 6.732 ± 0.217 | 5.712 ± 0.369 | 4.676 ± 2.103 | - |
-| cpu/complex | `solve` | c64 | 1 | `384x384,rhs=8` | 4.632 ± 0.435 | - | 4.901 ± 0.368 | 4.972 ± 0.461 | 2.292 ± 0.164 | 6.228 ± 0.257 | - |
-| cpu/complex | `solve` | c64 | 4 | `384x384,rhs=8` | 4.698 ± 0.131 | - | 5.559 ± 0.494 | 4.982 ± 0.393 | 2.151 ± 0.065 | 2.277 ± 0.026 | - |
-| cpu/complex | `svd` | c64 | 1 | `160x160` | 5.977 ± 0.439 | - | 5.983 ± 0.588 | 5.695 ± 0.186 | 4.167 ± 0.210 | 7.500 ± 2.740 | - |
-| cpu/complex | `svd` | c64 | 4 | `160x160` | 5.388 ± 0.049 | - | 5.601 ± 0.491 | 5.310 ± 0.634 | 4.398 ± 0.236 | 4.848 ± 0.254 | - |
-| cpu/complex | `tensordot` | c64 | 1 | `640x640` | 9.586 ± 0.236 | - | 9.418 ± 0.471 | 9.574 ± 0.745 | 51.915 ± 2.509 | 56.963 ± 2.628 | - |
-| cpu/complex | `tensordot` | c64 | 4 | `640x640` | 9.156 ± 0.934 | - | 8.552 ± 0.661 | 9.339 ± 0.596 | 12.508 ± 1.848 | 14.402 ± 2.106 | - |
-| cpu/einsum_concrete | `einsum_ij_jk_ik` | f64 | 1 | `1024x1024` | 7.945 ± 0.515 | - | unsupported | 7.619 ± 0.257 | 52.338 ± 6.404 | - | - |
-| cpu/einsum_concrete | `einsum_ij_jk_ik` | f64 | 4 | `1024x1024` | 7.757 ± 1.169 | - | unsupported | 7.881 ± 1.269 | 14.416 ± 1.548 | - | - |
-| cpu/elementwise_reduction | `abs` | f64 | 1 | `33554432` | 7.992 ± 0.664 | - | 8.067 ± 0.942 | 8.591 ± 0.465 | 14.331 ± 1.165 | 8.670 ± 7.344 | 13.757 ± 1.762 |
-| cpu/elementwise_reduction | `abs` | f64 | 4 | `33554432` | 5.203 ± 0.844 | - | 4.276 ± 0.753 | 5.204 ± 1.520 | 6.378 ± 1.816 | 8.121 ± 1.058 | 4.768 ± 0.892 |
-| cpu/elementwise_reduction | `add` | f64 | 1 | `33554432` | 10.960 ± 1.488 | - | 11.891 ± 0.967 | 11.427 ± 0.342 | 18.419 ± 2.332 | 13.767 ± 0.954 | 15.599 ± 2.407 |
-| cpu/elementwise_reduction | `add` | f64 | 4 | `33554432` | 7.189 ± 2.466 | - | 6.600 ± 0.465 | 9.479 ± 1.301 | 14.500 ± 0.192 | 11.158 ± 1.359 | 7.081 ± 0.684 |
-| cpu/elementwise_reduction | `chain_log1p_exp_mul` | f64 | 1 | `4194304` | 26.286 ± 0.856 | - | 35.003 ± 1.547 | 35.277 ± 1.309 | 28.805 ± 2.738 | 51.796 ± 2.280 | 55.705 ± 9.536 |
-| cpu/elementwise_reduction | `chain_log1p_exp_mul` | f64 | 4 | `4194304` | 12.967 ± 5.888 | - | 9.504 ± 2.387 | 14.449 ± 2.339 | 12.329 ± 1.848 | 48.273 ± 3.444 | 14.839 ± 1.085 |
-| cpu/elementwise_reduction | `clamp` | f64 | 1 | `8388608` | 4.978 ± 0.566 | - | 4.625 ± 0.565 | 5.385 ± 0.280 | 6.998 ± 0.484 | 4.726 ± 0.677 | 6.878 ± 9.379 |
-| cpu/elementwise_reduction | `clamp` | f64 | 4 | `8388608` | 2.730 ± 0.653 | - | 2.967 ± 0.322 | 2.790 ± 0.646 | 4.875 ± 1.238 | 4.084 ± 0.265 | 2.770 ± 0.455 |
-| cpu/elementwise_reduction | `compare_lt` | f64 | 1 | `33554432` | 12.791 ± 1.002 | - | 12.698 ± 0.463 | 15.674 ± 1.685 | 14.215 ± 0.743 | 13.623 ± 1.544 | - |
-| cpu/elementwise_reduction | `compare_lt` | f64 | 4 | `33554432` | 6.019 ± 0.429 | - | 8.703 ± 1.383 | 6.873 ± 1.490 | 7.489 ± 0.081 | 13.700 ± 3.249 | - |
-| cpu/elementwise_reduction | `cos` | f64 | 1 | `8388608` | 31.806 ± 1.515 | - | 31.034 ± 6.874 | 32.726 ± 1.671 | 28.381 ± 0.522 | 36.905 ± 12.026 | 38.076 ± 2.584 |
-| cpu/elementwise_reduction | `cos` | f64 | 4 | `8388608` | 13.051 ± 8.447 | - | 10.240 ± 3.444 | 8.990 ± 0.808 | 9.393 ± 0.384 | 36.703 ± 4.199 | 9.194 ± 2.937 |
-| cpu/elementwise_reduction | `div` | f64 | 1 | `33554432` | 11.413 ± 0.549 | - | 12.864 ± 1.298 | 13.269 ± 1.100 | 19.756 ± 3.142 | 13.811 ± 1.339 | 15.683 ± 0.758 |
-| cpu/elementwise_reduction | `div` | f64 | 4 | `33554432` | 7.425 ± 1.598 | - | 7.380 ± 1.626 | 7.323 ± 0.994 | 11.147 ± 1.762 | 13.293 ± 2.052 | 8.114 ± 0.582 |
-| cpu/elementwise_reduction | `exp` | f64 | 1 | `8388608` | 16.872 ± 1.174 | - | 16.794 ± 0.703 | 27.720 ± 0.469 | 16.760 ± 0.379 | 32.414 ± 1.519 | 34.037 ± 2.708 |
-| cpu/elementwise_reduction | `exp` | f64 | 4 | `8388608` | 4.587 ± 2.632 | - | 4.462 ± 3.885 | 10.977 ± 1.119 | 5.545 ± 0.195 | 34.411 ± 2.355 | 8.436 ± 0.661 |
-| cpu/elementwise_reduction | `expm1` | f64 | 1 | `4194304` | 26.072 ± 1.221 | - | 26.098 ± 0.595 | 27.188 ± 0.902 | 16.098 ± 0.590 | 27.286 ± 1.888 | 26.582 ± 3.000 |
-| cpu/elementwise_reduction | `expm1` | f64 | 4 | `4194304` | 10.116 ± 6.017 | - | 11.678 ± 6.299 | 11.419 ± 3.253 | 5.823 ± 0.362 | 23.133 ± 1.002 | 6.097 ± 0.803 |
-| cpu/elementwise_reduction | `log` | f64 | 1 | `8388608` | 31.451 ± 2.149 | - | 31.582 ± 1.577 | 40.668 ± 4.267 | 26.037 ± 2.687 | 42.627 ± 0.900 | 43.047 ± 1.927 |
-| cpu/elementwise_reduction | `log` | f64 | 4 | `8388608` | 7.942 ± 5.492 | - | 9.634 ± 5.938 | 17.962 ± 3.983 | 8.448 ± 0.162 | 40.694 ± 8.017 | 10.934 ± 3.521 |
-| cpu/elementwise_reduction | `log1p` | f64 | 1 | `4194304` | 14.765 ± 0.988 | - | 15.992 ± 0.527 | 20.997 ± 0.724 | 17.215 ± 1.079 | 23.494 ± 3.495 | 24.281 ± 5.269 |
-| cpu/elementwise_reduction | `log1p` | f64 | 4 | `4194304` | 7.941 ± 4.785 | - | 9.232 ± 7.037 | 9.034 ± 0.670 | 5.819 ± 0.129 | 22.779 ± 2.101 | 5.566 ± 0.869 |
-| cpu/elementwise_reduction | `masked_log_softmax_axis1` | f64 | 1 | `1024x64` | 0.276 ± 0.051 | 0.297 ± 0.037 | unsupported | unsupported | 0.228 ± 0.024 | - | - |
-| cpu/elementwise_reduction | `masked_log_softmax_axis1` | f64 | 4 | `1024x64` | 0.258 ± 0.039 | 0.287 ± 0.021 | unsupported | unsupported | 0.180 ± 0.007 | - | - |
-| cpu/elementwise_reduction | `maximum` | f64 | 1 | `33554432` | 12.544 ± 0.512 | - | 12.705 ± 3.097 | 13.054 ± 0.765 | 19.276 ± 2.265 | 12.819 ± 1.106 | 14.980 ± 1.085 |
-| cpu/elementwise_reduction | `maximum` | f64 | 4 | `33554432` | 7.908 ± 0.927 | - | 8.375 ± 0.934 | 7.525 ± 1.426 | 11.229 ± 1.442 | 12.572 ± 1.728 | 8.399 ± 1.081 |
-| cpu/elementwise_reduction | `minimum` | f64 | 1 | `33554432` | 11.432 ± 0.413 | - | 13.771 ± 1.933 | 12.694 ± 1.697 | 18.743 ± 1.523 | 13.153 ± 1.703 | 15.077 ± 1.401 |
-| cpu/elementwise_reduction | `minimum` | f64 | 4 | `33554432` | 8.377 ± 1.978 | - | 8.185 ± 0.306 | 7.098 ± 0.911 | 11.048 ± 0.390 | 12.713 ± 2.028 | 7.669 ± 2.907 |
-| cpu/elementwise_reduction | `mul` | f64 | 1 | `33554432` | 12.247 ± 0.983 | - | 11.303 ± 0.235 | 13.005 ± 0.637 | 18.535 ± 1.567 | 13.898 ± 2.315 | 15.497 ± 0.984 |
-| cpu/elementwise_reduction | `mul` | f64 | 4 | `33554432` | 7.879 ± 1.173 | - | 7.166 ± 1.815 | 7.452 ± 1.517 | 11.022 ± 0.604 | 12.508 ± 3.291 | 8.376 ± 0.341 |
-| cpu/elementwise_reduction | `neg` | f64 | 1 | `33554432` | 8.187 ± 0.370 | - | 8.330 ± 0.492 | 8.472 ± 0.556 | 13.450 ± 1.566 | 8.228 ± 0.801 | 13.123 ± 1.280 |
-| cpu/elementwise_reduction | `neg` | f64 | 4 | `33554432` | 4.003 ± 1.774 | - | 4.008 ± 1.925 | 4.561 ± 0.389 | 6.282 ± 0.723 | 8.356 ± 1.532 | 4.555 ± 3.406 |
-| cpu/elementwise_reduction | `pow` | f64 | 1 | `4194304` | 36.405 ± 0.826 | - | 35.967 ± 0.573 | 67.752 ± 2.359 | 37.484 ± 0.990 | 74.305 ± 4.913 | 83.919 ± 13.084 |
-| cpu/elementwise_reduction | `pow` | f64 | 4 | `4194304` | 14.980 ± 4.458 | - | 16.091 ± 3.445 | 22.436 ± 4.071 | 12.697 ± 1.302 | 74.261 ± 6.710 | 19.410 ± 1.222 |
-| cpu/elementwise_reduction | `reduce_max_all` | f64 | 1 | `8192x4096` | 7.571 ± 0.422 | - | 7.619 ± 0.519 | 11.697 ± 0.614 | 28.954 ± 0.773 | 5.825 ± 0.388 | - |
-| cpu/elementwise_reduction | `reduce_max_all` | f64 | 4 | `8192x4096` | 3.575 ± 0.231 | - | 2.868 ± 0.853 | 4.040 ± 0.274 | 10.283 ± 0.360 | 5.958 ± 0.648 | - |
-| cpu/elementwise_reduction | `reduce_max_axis0` | f64 | 1 | `2048x2048` | 0.965 ± 0.078 | - | 0.965 ± 0.062 | 17.135 ± 1.416 | 2.353 ± 0.145 | 0.717 ± 0.042 | - |
-| cpu/elementwise_reduction | `reduce_max_axis0` | f64 | 4 | `2048x2048` | 0.495 ± 0.005 | - | 0.304 ± 0.010 | 8.448 ± 1.578 | 1.052 ± 0.125 | 0.780 ± 0.096 | - |
-| cpu/elementwise_reduction | `reduce_max_axis1` | f64 | 1 | `2048x2048` | 0.883 ± 0.102 | - | 0.916 ± 0.094 | 1.526 ± 0.138 | 0.748 ± 0.032 | 0.792 ± 0.029 | - |
-| cpu/elementwise_reduction | `reduce_max_axis1` | f64 | 4 | `2048x2048` | 0.823 ± 0.433 | - | 2.718 ± 2.184 | 0.689 ± 0.062 | 0.572 ± 0.030 | 0.927 ± 0.165 | - |
-| cpu/elementwise_reduction | `reduce_min_all` | f64 | 1 | `8192x4096` | 7.815 ± 2.131 | - | 7.848 ± 0.591 | 11.236 ± 1.443 | 29.327 ± 1.263 | 6.345 ± 0.531 | - |
-| cpu/elementwise_reduction | `reduce_min_all` | f64 | 4 | `8192x4096` | 3.968 ± 0.481 | - | 3.885 ± 0.389 | 3.919 ± 0.171 | 10.202 ± 0.091 | 5.890 ± 1.210 | - |
-| cpu/elementwise_reduction | `reduce_min_axis0` | f64 | 1 | `2048x2048` | 0.932 ± 0.067 | - | 0.898 ± 0.096 | 17.316 ± 1.362 | 2.286 ± 0.261 | 0.611 ± 0.061 | - |
-| cpu/elementwise_reduction | `reduce_min_axis0` | f64 | 4 | `2048x2048` | 0.433 ± 0.012 | - | 0.528 ± 0.032 | 8.431 ± 1.313 | 1.034 ± 0.086 | 0.731 ± 0.137 | - |
-| cpu/elementwise_reduction | `reduce_min_axis1` | f64 | 1 | `4096x4096` | 3.783 ± 0.392 | - | 3.542 ± 0.509 | 5.587 ± 0.130 | 3.483 ± 0.287 | 3.568 ± 0.093 | - |
-| cpu/elementwise_reduction | `reduce_min_axis1` | f64 | 4 | `4096x4096` | 3.905 ± 0.895 | - | 3.894 ± 1.115 | 3.109 ± 1.291 | 2.731 ± 0.078 | 4.192 ± 0.549 | - |
-| cpu/elementwise_reduction | `reduce_prod_all` | f64 | 1 | `8192x4096` | 7.061 ± 0.643 | - | 7.558 ± 0.307 | 6.957 ± 0.777 | 42.544 ± 0.740 | 6.561 ± 0.312 | - |
-| cpu/elementwise_reduction | `reduce_prod_all` | f64 | 4 | `8192x4096` | 3.574 ± 0.659 | - | 3.380 ± 1.118 | 3.160 ± 0.222 | 13.912 ± 0.273 | 6.315 ± 1.342 | - |
-| cpu/elementwise_reduction | `reduce_prod_axis0` | f64 | 1 | `2048x2048` | 0.805 ± 0.118 | - | 0.836 ± 0.084 | 4.551 ± 0.216 | 2.492 ± 0.123 | 0.681 ± 0.068 | - |
-| cpu/elementwise_reduction | `reduce_prod_axis0` | f64 | 4 | `2048x2048` | 0.410 ± 0.012 | - | 0.473 ± 0.076 | 1.686 ± 0.070 | 0.980 ± 0.162 | 0.707 ± 0.121 | - |
-| cpu/elementwise_reduction | `reduce_prod_axis1` | f64 | 1 | `2048x2048` | 0.865 ± 0.106 | - | 0.892 ± 0.135 | 0.755 ± 0.088 | 1.093 ± 0.084 | 0.671 ± 0.045 | - |
-| cpu/elementwise_reduction | `reduce_prod_axis1` | f64 | 4 | `2048x2048` | 0.987 ± 0.061 | - | 1.283 ± 3.671 | 0.391 ± 0.046 | 0.563 ± 0.037 | 0.836 ± 0.099 | - |
-| cpu/elementwise_reduction | `reduce_sum_all` | f64 | 1 | `8192x4096` | 7.938 ± 0.966 | - | 6.930 ± 0.264 | 6.393 ± 0.281 | 34.257 ± 3.504 | 6.588 ± 0.300 | - |
-| cpu/elementwise_reduction | `reduce_sum_all` | f64 | 4 | `8192x4096` | 3.550 ± 0.902 | - | 3.686 ± 0.333 | 3.056 ± 0.784 | 12.282 ± 0.518 | 5.553 ± 0.201 | - |
-| cpu/elementwise_reduction | `reduce_sum_axis0` | f64 | 1 | `2048x2048` | 0.795 ± 0.236 | - | 0.656 ± 0.072 | 4.119 ± 0.641 | 2.133 ± 0.170 | 0.599 ± 0.037 | - |
-| cpu/elementwise_reduction | `reduce_sum_axis0` | f64 | 4 | `2048x2048` | 0.403 ± 0.034 | - | 0.461 ± 0.048 | 1.649 ± 0.045 | 0.999 ± 0.024 | 0.758 ± 0.171 | - |
-| cpu/elementwise_reduction | `reduce_sum_axis1` | f64 | 1 | `2048x2048` | 0.676 ± 0.024 | - | 0.836 ± 0.284 | 0.495 ± 0.011 | 0.864 ± 0.178 | 0.707 ± 0.046 | - |
-| cpu/elementwise_reduction | `reduce_sum_axis1` | f64 | 4 | `2048x2048` | 0.708 ± 0.069 | - | 0.689 ± 0.053 | 0.441 ± 0.037 | 0.710 ± 0.060 | 1.065 ± 0.393 | - |
-| cpu/elementwise_reduction | `reduce_sum_squares_axis0` | f64 | 1 | `2048x2048` | 0.789 ± 0.078 | 0.801 ± 0.062 | unsupported | unsupported | unsupported | - | - |
-| cpu/elementwise_reduction | `reduce_sum_squares_axis0` | f64 | 4 | `2048x2048` | 0.412 ± 0.024 | 0.418 ± 0.062 | unsupported | unsupported | unsupported | - | - |
-| cpu/elementwise_reduction | `rem` | f64 | 1 | `8388608` | 28.740 ± 1.649 | - | 27.709 ± 1.365 | 31.294 ± 1.400 | 35.948 ± 0.645 | 26.886 ± 6.366 | 28.785 ± 1.822 |
-| cpu/elementwise_reduction | `rem` | f64 | 4 | `8388608` | 10.959 ± 3.815 | - | 8.343 ± 2.666 | 8.516 ± 3.848 | 12.030 ± 0.303 | 22.434 ± 4.718 | 8.727 ± 1.251 |
-| cpu/elementwise_reduction | `rsqrt` | f64 | 1 | `33554432` | 18.232 ± 1.028 | - | 18.149 ± 0.916 | 17.944 ± 1.412 | 35.269 ± 1.035 | 41.621 ± 2.126 | 41.395 ± 2.367 |
-| cpu/elementwise_reduction | `rsqrt` | f64 | 4 | `33554432` | 7.498 ± 5.774 | - | 6.063 ± 3.961 | 7.707 ± 0.345 | 12.020 ± 0.595 | 40.660 ± 3.295 | 13.101 ± 7.040 |
-| cpu/elementwise_reduction | `select` | f64 | 1 | `33554432` | 19.367 ± 0.443 | - | 19.198 ± 0.367 | 17.211 ± 1.866 | 21.897 ± 0.749 | 19.244 ± 1.738 | - |
-| cpu/elementwise_reduction | `select` | f64 | 4 | `33554432` | 11.712 ± 1.945 | - | 11.736 ± 2.317 | 9.918 ± 0.313 | 11.812 ± 0.221 | 16.521 ± 2.191 | - |
-| cpu/elementwise_reduction | `sign` | f64 | 1 | `33554432` | 8.161 ± 0.429 | - | 8.567 ± 1.470 | 9.145 ± 0.420 | 15.477 ± 0.625 | 9.400 ± 0.850 | 18.177 ± 1.222 |
-| cpu/elementwise_reduction | `sign` | f64 | 4 | `33554432` | 3.990 ± 0.898 | - | 4.127 ± 1.900 | 6.064 ± 1.039 | 7.650 ± 1.818 | 9.512 ± 2.001 | 4.919 ± 0.899 |
-| cpu/elementwise_reduction | `sin` | f64 | 1 | `8388608` | 25.213 ± 1.360 | - | 24.808 ± 0.745 | 28.927 ± 1.670 | 26.075 ± 0.409 | 31.683 ± 2.091 | 30.386 ± 1.074 |
-| cpu/elementwise_reduction | `sin` | f64 | 4 | `8388608` | 6.044 ± 1.733 | - | 6.167 ± 0.317 | 10.171 ± 1.424 | 8.885 ± 0.286 | 28.607 ± 3.573 | 7.399 ± 4.183 |
-| cpu/elementwise_reduction | `sqrt` | f64 | 1 | `33554432` | 12.332 ± 2.114 | - | 12.070 ± 0.374 | 13.199 ± 1.124 | 20.522 ± 1.502 | 26.454 ± 0.975 | 27.128 ± 2.170 |
-| cpu/elementwise_reduction | `sqrt` | f64 | 4 | `33554432` | 5.905 ± 1.987 | - | 4.764 ± 1.008 | 5.717 ± 0.341 | 7.791 ± 0.939 | 25.582 ± 1.034 | 7.194 ± 0.714 |
-| cpu/elementwise_reduction | `sub` | f64 | 1 | `33554432` | 12.248 ± 1.990 | - | 11.645 ± 0.970 | 12.994 ± 1.298 | 19.136 ± 1.911 | 12.932 ± 1.925 | 13.858 ± 2.123 |
-| cpu/elementwise_reduction | `sub` | f64 | 4 | `33554432` | 7.982 ± 1.604 | - | 7.900 ± 0.756 | 7.891 ± 0.605 | 11.170 ± 3.884 | 13.439 ± 2.024 | 7.425 ± 1.216 |
-| cpu/elementwise_reduction | `tanh` | f64 | 1 | `8388608` | 67.266 ± 2.216 | - | 65.300 ± 1.616 | 63.924 ± 2.263 | 14.046 ± 0.566 | 44.795 ± 1.107 | 47.116 ± 2.055 |
-| cpu/elementwise_reduction | `tanh` | f64 | 4 | `8388608` | 21.597 ± 4.725 | - | 21.938 ± 7.836 | 18.570 ± 6.284 | 4.652 ± 0.344 | 44.926 ± 5.157 | 11.326 ± 0.822 |
-| cpu/elementwise_reduction | `where_select` | f64 | 1 | `33554432` | 19.355 ± 0.544 | 18.465 ± 0.797 | unsupported | 19.591 ± 1.129 | 22.009 ± 0.400 | - | - |
-| cpu/elementwise_reduction | `where_select` | f64 | 4 | `33554432` | 10.531 ± 0.641 | 11.311 ± 2.204 | unsupported | 8.575 ± 1.569 | 11.029 ± 3.140 | - | - |
-| cpu/indexing_layout | `concatenate` | f64 | 1 | `1048576+1048576` | 0.661 ± 0.232 | - | 0.733 ± 0.384 | 0.388 ± 0.062 | 0.434 ± 0.028 | 0.442 ± 0.033 | - |
-| cpu/indexing_layout | `concatenate` | f64 | 4 | `1048576+1048576` | 0.308 ± 0.051 | - | 1.330 ± 2.550 | 0.434 ± 0.013 | 0.347 ± 0.044 | 0.481 ± 0.074 | - |
-| cpu/indexing_layout | `dynamic_slice` | f64 | 1 | `4194304 -> 2097152` | 0.436 ± 0.035 | - | 0.432 ± 0.015 | 0.608 ± 0.077 | 0.607 ± 0.121 | 0.527 ± 0.051 | - |
-| cpu/indexing_layout | `dynamic_slice` | f64 | 4 | `4194304 -> 2097152` | 0.413 ± 0.174 | - | 0.360 ± 1.135 | 0.342 ± 0.113 | 0.462 ± 0.198 | 0.430 ± 0.030 | - |
-| cpu/indexing_layout | `dynamic_update_slice` | f64 | 1 | `2097152` | 0.818 ± 0.094 | - | unsupported | 0.903 ± 0.025 | 0.594 ± 0.062 | 0.675 ± 0.180 | - |
-| cpu/indexing_layout | `dynamic_update_slice` | f64 | 4 | `2097152` | 0.379 ± 0.020 | - | unsupported | 0.695 ± 0.099 | 0.595 ± 0.107 | 0.641 ± 0.029 | - |
-| cpu/indexing_layout | `gather` | f64 | 1 | `262144` | 0.324 ± 0.050 | - | 0.508 ± 0.107 | 0.297 ± 0.018 | 0.358 ± 0.093 | 1.128 ± 0.050 | - |
-| cpu/indexing_layout | `gather` | f64 | 4 | `262144` | 0.319 ± 0.014 | - | 0.356 ± 0.025 | 0.270 ± 0.057 | 0.464 ± 0.224 | 0.658 ± 0.044 | - |
-| cpu/indexing_layout | `pad` | f64 | 1 | `2097152` | 0.429 ± 0.029 | - | 0.445 ± 0.046 | 0.850 ± 0.077 | 0.621 ± 0.045 | - | - |
-| cpu/indexing_layout | `pad` | f64 | 4 | `2097152` | 0.248 ± 1.226 | - | 0.234 ± 0.013 | 0.551 ± 0.035 | 0.662 ± 0.055 | - | - |
-| cpu/indexing_layout | `reverse` | f64 | 1 | `2097152` | 0.709 ± 0.027 | - | 0.644 ± 0.092 | 0.611 ± 0.019 | 0.651 ± 0.074 | 1.156 ± 0.239 | - |
-| cpu/indexing_layout | `reverse` | f64 | 4 | `2097152` | 0.315 ± 0.049 | - | 2.512 ± 3.129 | 0.408 ± 0.048 | 0.604 ± 0.026 | 1.293 ± 0.206 | - |
-| cpu/indexing_layout | `scatter` | f64 | 1 | `262144` | 0.610 ± 0.166 | - | 0.671 ± 0.246 | 0.380 ± 0.014 | 0.367 ± 0.014 | 0.326 ± 0.064 | - |
-| cpu/indexing_layout | `scatter` | f64 | 4 | `262144` | 0.541 ± 0.047 | - | 0.698 ± 2.587 | 0.467 ± 0.062 | 0.474 ± 0.123 | 0.309 ± 0.403 | - |
-| cpu/indexing_layout | `slice` | f64 | 1 | `4194304 -> 2096128` | 1.098 ± 0.097 | - | 0.002 ± 0.000 | 0.766 ± 0.074 | 0.775 ± 0.037 | 1.377 ± 0.117 | - |
-| cpu/indexing_layout | `slice` | f64 | 4 | `4194304 -> 2096128` | 0.472 ± 0.031 | - | 0.002 ± 0.001 | 0.435 ± 0.028 | 0.628 ± 0.060 | 1.110 ± 0.077 | - |
-| cpu/linalg_batch_families | `batched_cholesky` | f64 | 1 | `1024x2x2` | 0.061 ± 0.001 | - | 0.069 ± 0.005 | 0.205 ± 0.009 | 0.117 ± 0.014 | - | - |
-| cpu/linalg_batch_families | `batched_cholesky` | f64 | 1 | `1024x4x4` | 0.099 ± 0.002 | - | 0.109 ± 0.012 | 0.214 ± 0.031 | 0.120 ± 0.009 | - | - |
-| cpu/linalg_batch_families | `batched_cholesky` | f64 | 1 | `1024x8x8` | 0.213 ± 0.001 | - | 0.236 ± 0.006 | 0.320 ± 0.027 | 0.225 ± 0.042 | - | - |
-| cpu/linalg_batch_families | `batched_cholesky` | f64 | 1 | `1x128x128` | 0.019 ± 0.001 | - | 0.025 ± 0.003 | 0.028 ± 0.003 | 0.058 ± 0.005 | - | - |
-| cpu/linalg_batch_families | `batched_cholesky` | f64 | 1 | `1x2x2` | 0.001 ± 0.000 | - | 0.004 ± 0.001 | 0.004 ± 0.000 | 0.007 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_cholesky` | f64 | 1 | `1x32x32` | 0.002 ± 0.000 | - | 0.005 ± 0.000 | 0.006 ± 0.000 | 0.038 ± 0.011 | - | - |
-| cpu/linalg_batch_families | `batched_cholesky` | f64 | 1 | `1x4x4` | 0.001 ± 0.000 | - | 0.004 ± 0.000 | 0.004 ± 0.000 | 0.007 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_cholesky` | f64 | 1 | `1x8x8` | 0.001 ± 0.000 | - | 0.004 ± 0.000 | 0.004 ± 0.000 | 0.008 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_cholesky` | f64 | 1 | `3x2x2` | 0.001 ± 0.000 | - | 0.004 ± 0.000 | 0.005 ± 0.000 | 0.007 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_cholesky` | f64 | 1 | `3x4x4` | 0.001 ± 0.000 | - | 0.004 ± 0.000 | 0.005 ± 0.000 | 0.007 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_cholesky` | f64 | 1 | `3x8x8` | 0.001 ± 0.000 | - | 0.005 ± 0.000 | 0.005 ± 0.000 | 0.007 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_cholesky` | f64 | 1 | `4x2x2` | 0.001 ± 0.000 | - | 0.004 ± 0.000 | 0.005 ± 0.000 | 0.007 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_cholesky` | f64 | 1 | `4x4x4` | 0.001 ± 0.000 | - | 0.004 ± 0.000 | 0.005 ± 0.000 | 0.007 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_cholesky` | f64 | 1 | `4x8x8` | 0.002 ± 0.000 | - | 0.005 ± 0.000 | 0.005 ± 0.000 | 0.038 ± 0.009 | - | - |
-| cpu/linalg_batch_families | `batched_cholesky` | f64 | 1 | `8x128x128` | 0.129 ± 0.008 | - | 0.171 ± 0.005 | 0.186 ± 0.017 | 0.222 ± 0.006 | - | - |
-| cpu/linalg_batch_families | `batched_cholesky` | f64 | 1 | `8x2x2` | 0.001 ± 0.000 | - | 0.004 ± 0.000 | 0.005 ± 0.000 | 0.007 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_cholesky` | f64 | 1 | `8x32x32` | 0.011 ± 0.000 | - | 0.017 ± 0.001 | 0.017 ± 0.000 | 0.053 ± 0.006 | - | - |
-| cpu/linalg_batch_families | `batched_cholesky` | f64 | 1 | `8x4x4` | 0.001 ± 0.000 | - | 0.005 ± 0.000 | 0.006 ± 0.000 | 0.007 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_cholesky` | f64 | 1 | `8x8x8` | 0.002 ± 0.000 | - | 0.006 ± 0.000 | 0.006 ± 0.000 | 0.051 ± 0.015 | - | - |
-| cpu/linalg_batch_families | `batched_cholesky` | f64 | 4 | `1024x2x2` | 0.061 ± 0.005 | - | 0.065 ± 0.000 | 0.153 ± 0.013 | 0.094 ± 0.013 | - | - |
-| cpu/linalg_batch_families | `batched_cholesky` | f64 | 4 | `1024x4x4` | 0.085 ± 0.009 | - | 0.099 ± 0.006 | 0.155 ± 0.031 | 0.162 ± 0.014 | - | - |
-| cpu/linalg_batch_families | `batched_cholesky` | f64 | 4 | `1024x8x8` | 0.194 ± 0.001 | - | 0.230 ± 0.003 | 0.225 ± 0.030 | 0.249 ± 0.015 | - | - |
-| cpu/linalg_batch_families | `batched_cholesky` | f64 | 4 | `1x128x128` | 0.018 ± 0.001 | - | 0.027 ± 0.003 | 0.126 ± 0.017 | 0.097 ± 0.013 | - | - |
-| cpu/linalg_batch_families | `batched_cholesky` | f64 | 4 | `1x2x2` | 0.001 ± 0.000 | - | 0.009 ± 0.001 | 0.059 ± 0.009 | 0.007 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_cholesky` | f64 | 4 | `1x32x32` | 0.002 ± 0.000 | - | 0.006 ± 0.000 | 0.085 ± 0.027 | 0.058 ± 0.010 | - | - |
-| cpu/linalg_batch_families | `batched_cholesky` | f64 | 4 | `1x4x4` | 0.002 ± 0.000 | - | 0.005 ± 0.000 | 0.087 ± 0.018 | 0.007 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_cholesky` | f64 | 4 | `1x8x8` | 0.002 ± 0.001 | - | 0.005 ± 0.000 | 0.064 ± 0.021 | 0.007 ± 0.003 | - | - |
-| cpu/linalg_batch_families | `batched_cholesky` | f64 | 4 | `3x2x2` | 0.002 ± 0.000 | - | 0.005 ± 0.000 | 0.049 ± 0.014 | 0.007 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_cholesky` | f64 | 4 | `3x4x4` | 0.002 ± 0.000 | - | 0.010 ± 0.000 | 0.076 ± 0.025 | 0.007 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_cholesky` | f64 | 4 | `3x8x8` | 0.002 ± 0.000 | - | 0.005 ± 0.000 | 0.085 ± 0.024 | 0.009 ± 0.004 | - | - |
-| cpu/linalg_batch_families | `batched_cholesky` | f64 | 4 | `4x2x2` | 0.002 ± 0.000 | - | 0.005 ± 0.000 | 0.052 ± 0.012 | 0.007 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_cholesky` | f64 | 4 | `4x4x4` | 0.002 ± 0.000 | - | 0.005 ± 0.000 | 0.067 ± 0.022 | 0.007 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_cholesky` | f64 | 4 | `4x8x8` | 0.002 ± 0.000 | - | 0.006 ± 0.000 | 0.079 ± 0.007 | 0.081 ± 0.017 | - | - |
-| cpu/linalg_batch_families | `batched_cholesky` | f64 | 4 | `8x128x128` | 0.112 ± 0.001 | - | 0.151 ± 0.003 | 0.215 ± 0.041 | 0.222 ± 0.029 | - | - |
-| cpu/linalg_batch_families | `batched_cholesky` | f64 | 4 | `8x2x2` | 0.002 ± 0.000 | - | 0.005 ± 0.000 | 0.075 ± 0.029 | 0.006 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_cholesky` | f64 | 4 | `8x32x32` | 0.011 ± 0.001 | - | 0.018 ± 0.001 | 0.092 ± 0.011 | 0.086 ± 0.020 | - | - |
-| cpu/linalg_batch_families | `batched_cholesky` | f64 | 4 | `8x4x4` | 0.002 ± 0.000 | - | 0.005 ± 0.000 | 0.088 ± 0.027 | 0.007 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_cholesky` | f64 | 4 | `8x8x8` | 0.003 ± 0.000 | - | 0.006 ± 0.000 | 0.077 ± 0.029 | 0.067 ± 0.008 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | c64 | 1 | `1024x2x2` | 0.335 ± 0.034 | - | 0.313 ± 0.040 | 0.488 ± 0.030 | 0.837 ± 0.027 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | c64 | 1 | `1024x4x4` | 1.625 ± 0.121 | - | 1.711 ± 0.112 | 1.877 ± 0.913 | 2.230 ± 0.096 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | c64 | 1 | `1024x8x8` | 5.892 ± 0.172 | - | 5.893 ± 0.340 | 6.172 ± 1.174 | 6.165 ± 0.157 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | c64 | 1 | `1x128x128` | 4.702 ± 0.111 | - | 4.656 ± 0.456 | 3.509 ± 0.170 | 3.209 ± 0.132 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | c64 | 1 | `1x2x2` | 0.002 ± 0.000 | - | 0.004 ± 0.000 | 0.005 ± 0.001 | 0.009 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | c64 | 1 | `1x32x32` | 0.088 ± 0.021 | - | 0.088 ± 0.037 | 0.089 ± 0.004 | 0.156 ± 0.029 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | c64 | 1 | `1x4x4` | 0.003 ± 0.000 | - | 0.005 ± 0.000 | 0.006 ± 0.000 | 0.012 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | c64 | 1 | `1x8x8` | 0.006 ± 0.000 | - | 0.009 ± 0.000 | 0.020 ± 0.022 | 0.017 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | c64 | 1 | `3x2x2` | 0.002 ± 0.000 | - | 0.005 ± 0.000 | 0.006 ± 0.000 | 0.011 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | c64 | 1 | `3x4x4` | 0.007 ± 0.002 | - | 0.008 ± 0.000 | 0.009 ± 0.000 | 0.013 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | c64 | 1 | `3x8x8` | 0.016 ± 0.005 | - | 0.019 ± 0.000 | 0.038 ± 0.008 | 0.067 ± 0.019 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | c64 | 1 | `4x2x2` | 0.002 ± 0.000 | - | 0.005 ± 0.000 | 0.007 ± 0.002 | 0.011 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | c64 | 1 | `4x4x4` | 0.009 ± 0.002 | - | 0.012 ± 0.003 | 0.013 ± 0.003 | 0.016 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | c64 | 1 | `4x8x8` | 0.021 ± 0.005 | - | 0.024 ± 0.000 | 0.030 ± 0.007 | 0.058 ± 0.020 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | c64 | 1 | `8x128x128` | 36.749 ± 1.468 | - | 34.939 ± 0.866 | 27.505 ± 2.662 | 24.020 ± 1.998 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | c64 | 1 | `8x2x2` | 0.004 ± 0.000 | - | 0.008 ± 0.000 | 0.008 ± 0.000 | 0.017 ± 0.004 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | c64 | 1 | `8x32x32` | 0.707 ± 0.054 | - | 0.719 ± 0.049 | 0.716 ± 0.028 | 1.003 ± 0.070 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | c64 | 1 | `8x4x4` | 0.013 ± 0.004 | - | 0.015 ± 0.005 | 0.021 ± 0.002 | 0.023 ± 0.003 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | c64 | 1 | `8x8x8` | 0.042 ± 0.013 | - | 0.055 ± 0.004 | 0.059 ± 0.015 | 0.094 ± 0.034 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | c64 | 4 | `1024x2x2` | 0.314 ± 0.004 | - | 0.315 ± 0.010 | 0.488 ± 0.039 | 0.784 ± 0.092 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | c64 | 4 | `1024x4x4` | 1.598 ± 0.047 | - | 1.531 ± 0.078 | 1.750 ± 0.131 | 1.060 ± 0.222 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | c64 | 4 | `1024x8x8` | 6.086 ± 0.345 | - | 6.102 ± 0.205 | 5.855 ± 0.368 | 3.236 ± 0.039 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | c64 | 4 | `1x128x128` | 5.004 ± 0.500 | - | 6.210 ± 2.845 | 3.591 ± 0.210 | 3.206 ± 0.037 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | c64 | 4 | `1x2x2` | 0.002 ± 0.000 | - | 0.005 ± 0.000 | 0.004 ± 0.001 | 0.009 ± 0.005 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | c64 | 4 | `1x32x32` | 0.104 ± 0.006 | - | 0.093 ± 0.016 | 0.083 ± 0.005 | 0.158 ± 0.007 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | c64 | 4 | `1x4x4` | 0.003 ± 0.000 | - | 0.006 ± 0.000 | 0.005 ± 0.000 | 0.010 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | c64 | 4 | `1x8x8` | 0.007 ± 0.000 | - | 0.010 ± 0.003 | 0.009 ± 0.002 | 0.013 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | c64 | 4 | `3x2x2` | 0.003 ± 0.000 | - | 0.006 ± 0.000 | 0.005 ± 0.000 | 0.010 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | c64 | 4 | `3x4x4` | 0.008 ± 0.002 | - | 0.009 ± 0.000 | 0.008 ± 0.000 | 0.015 ± 0.003 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | c64 | 4 | `3x8x8` | 0.017 ± 0.000 | - | 0.019 ± 0.004 | 0.020 ± 0.001 | 0.070 ± 0.011 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | c64 | 4 | `4x2x2` | 0.004 ± 0.000 | - | 0.006 ± 0.000 | 0.006 ± 0.000 | 0.011 ± 0.005 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | c64 | 4 | `4x4x4` | 0.007 ± 0.000 | - | 0.010 ± 0.000 | 0.010 ± 0.000 | 0.018 ± 0.020 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | c64 | 4 | `4x8x8` | 0.022 ± 0.000 | - | 0.024 ± 0.000 | 0.025 ± 0.005 | 0.098 ± 0.035 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | c64 | 4 | `8x128x128` | 37.664 ± 1.293 | - | 36.851 ± 0.560 | 26.973 ± 1.488 | 12.554 ± 0.434 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | c64 | 4 | `8x2x2` | 0.005 ± 0.000 | - | 0.009 ± 0.001 | 0.007 ± 0.000 | 0.013 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | c64 | 4 | `8x32x32` | 0.685 ± 0.060 | - | 0.697 ± 0.049 | 0.710 ± 0.120 | 0.533 ± 0.069 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | c64 | 4 | `8x4x4` | 0.017 ± 0.001 | - | 0.021 ± 0.001 | 0.016 ± 0.001 | 0.024 ± 0.006 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | c64 | 4 | `8x8x8` | 0.042 ± 0.000 | - | 0.045 ± 0.011 | 0.046 ± 0.004 | 0.098 ± 0.006 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | f64 | 1 | `1024x2x2` | 0.296 ± 0.026 | - | 0.311 ± 0.032 | 0.294 ± 0.032 | 0.615 ± 0.022 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | f64 | 1 | `1024x4x4` | 1.377 ± 0.136 | - | 1.280 ± 0.087 | 1.329 ± 0.482 | 1.624 ± 0.145 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | f64 | 1 | `1024x8x8` | 4.749 ± 0.089 | - | 4.937 ± 0.423 | 4.780 ± 0.309 | 5.126 ± 0.560 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | f64 | 1 | `1x128x128` | 0.983 ± 0.084 | - | 0.986 ± 0.076 | 1.038 ± 0.339 | 0.985 ± 0.033 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | f64 | 1 | `1x2x2` | 0.002 ± 0.000 | - | 0.004 ± 0.000 | 0.004 ± 0.000 | 0.010 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | f64 | 1 | `1x32x32` | 0.066 ± 0.009 | - | 0.068 ± 0.004 | 0.069 ± 0.005 | 0.102 ± 0.015 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | f64 | 1 | `1x4x4` | 0.003 ± 0.001 | - | 0.006 ± 0.001 | 0.005 ± 0.000 | 0.009 ± 0.004 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | f64 | 1 | `1x8x8` | 0.005 ± 0.001 | - | 0.009 ± 0.003 | 0.011 ± 0.004 | 0.012 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | f64 | 1 | `3x2x2` | 0.002 ± 0.000 | - | 0.004 ± 0.000 | 0.005 ± 0.000 | 0.010 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | f64 | 1 | `3x4x4` | 0.005 ± 0.000 | - | 0.007 ± 0.000 | 0.008 ± 0.000 | 0.014 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | f64 | 1 | `3x8x8` | 0.015 ± 0.004 | - | 0.017 ± 0.004 | 0.022 ± 0.006 | 0.024 ± 0.007 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | f64 | 1 | `4x2x2` | 0.003 ± 0.000 | - | 0.006 ± 0.000 | 0.005 ± 0.000 | 0.010 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | f64 | 1 | `4x4x4` | 0.006 ± 0.002 | - | 0.011 ± 0.001 | 0.009 ± 0.000 | 0.015 ± 0.006 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | f64 | 1 | `4x8x8` | 0.018 ± 0.000 | - | 0.021 ± 0.000 | 0.042 ± 0.012 | 0.028 ± 0.004 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | f64 | 1 | `8x128x128` | 7.790 ± 0.378 | - | 7.949 ± 0.344 | 7.888 ± 0.717 | 8.205 ± 0.332 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | f64 | 1 | `8x2x2` | 0.003 ± 0.000 | - | 0.006 ± 0.000 | 0.006 ± 0.000 | 0.013 ± 0.003 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | f64 | 1 | `8x32x32` | 0.512 ± 0.005 | - | 0.522 ± 0.006 | 0.472 ± 0.031 | 0.577 ± 0.065 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | f64 | 1 | `8x4x4` | 0.012 ± 0.003 | - | 0.013 ± 0.000 | 0.013 ± 0.004 | 0.021 ± 0.004 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | f64 | 1 | `8x8x8` | 0.040 ± 0.007 | - | 0.039 ± 0.007 | 0.072 ± 0.014 | 0.071 ± 0.006 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | f64 | 4 | `1024x2x2` | 0.346 ± 0.029 | - | 0.320 ± 0.038 | 0.286 ± 0.018 | 0.608 ± 0.043 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | f64 | 4 | `1024x4x4` | 1.302 ± 0.162 | - | 1.327 ± 0.058 | 1.250 ± 0.052 | 1.071 ± 0.077 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | f64 | 4 | `1024x8x8` | 4.764 ± 0.120 | - | 4.771 ± 0.267 | 4.465 ± 0.132 | 2.482 ± 1.018 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | f64 | 4 | `1x128x128` | 0.896 ± 0.016 | - | 0.977 ± 0.017 | 0.895 ± 0.011 | 0.941 ± 0.014 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | f64 | 4 | `1x2x2` | 0.002 ± 0.001 | - | 0.005 ± 0.000 | 0.005 ± 0.001 | 0.008 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | f64 | 4 | `1x32x32` | 0.061 ± 0.002 | - | 0.069 ± 0.001 | 0.062 ± 0.004 | 0.124 ± 0.032 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | f64 | 4 | `1x4x4` | 0.003 ± 0.001 | - | 0.005 ± 0.000 | 0.005 ± 0.000 | 0.009 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | f64 | 4 | `1x8x8` | 0.007 ± 0.000 | - | 0.021 ± 0.001 | 0.007 ± 0.000 | 0.014 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | f64 | 4 | `3x2x2` | 0.003 ± 0.001 | - | 0.005 ± 0.000 | 0.004 ± 0.000 | 0.008 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | f64 | 4 | `3x4x4` | 0.005 ± 0.000 | - | 0.008 ± 0.002 | 0.009 ± 0.002 | 0.012 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | f64 | 4 | `3x8x8` | 0.036 ± 0.014 | - | 0.023 ± 0.001 | 0.016 ± 0.000 | 0.026 ± 0.008 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | f64 | 4 | `4x2x2` | 0.004 ± 0.005 | - | 0.005 ± 0.000 | 0.005 ± 0.001 | 0.010 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | f64 | 4 | `4x4x4` | 0.007 ± 0.000 | - | 0.009 ± 0.003 | 0.009 ± 0.003 | 0.017 ± 0.003 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | f64 | 4 | `4x8x8` | 0.024 ± 0.002 | - | 0.028 ± 0.007 | 0.020 ± 0.000 | 0.025 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | f64 | 4 | `8x128x128` | 7.756 ± 0.725 | - | 7.887 ± 0.139 | 8.028 ± 0.650 | 3.913 ± 0.112 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | f64 | 4 | `8x2x2` | 0.004 ± 0.000 | - | 0.009 ± 0.001 | 0.006 ± 0.001 | 0.015 ± 0.003 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | f64 | 4 | `8x32x32` | 0.472 ± 0.009 | - | 0.516 ± 0.012 | 0.473 ± 0.005 | 0.261 ± 0.027 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | f64 | 4 | `8x4x4` | 0.011 ± 0.000 | - | 0.014 ± 0.002 | 0.013 ± 0.001 | 0.018 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_eigh` | f64 | 4 | `8x8x8` | 0.046 ± 0.002 | - | 0.038 ± 0.000 | 0.036 ± 0.000 | 0.106 ± 0.050 | - | - |
-| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 1 | `1024x2x2` | 0.143 ± 0.023 | - | 0.137 ± 0.017 | 0.131 ± 0.002 | 0.619 ± 0.031 | - | - |
-| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 1 | `1024x4x4` | 0.691 ± 0.007 | - | 0.728 ± 0.052 | 0.690 ± 0.024 | 1.517 ± 0.055 | - | - |
-| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 1 | `1024x8x8` | 2.149 ± 0.087 | - | 2.199 ± 0.164 | 2.407 ± 0.093 | 5.337 ± 0.286 | - | - |
-| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 1 | `1x128x128` | 0.482 ± 0.018 | - | 0.459 ± 0.023 | 0.516 ± 0.096 | 0.989 ± 0.056 | - | - |
-| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 1 | `1x2x2` | 0.001 ± 0.001 | - | 0.004 ± 0.000 | 0.005 ± 0.000 | 0.008 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 1 | `1x32x32` | 0.022 ± 0.000 | - | 0.025 ± 0.004 | 0.026 ± 0.000 | 0.106 ± 0.017 | - | - |
-| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 1 | `1x4x4` | 0.002 ± 0.000 | - | 0.004 ± 0.000 | 0.006 ± 0.002 | 0.008 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 1 | `1x8x8` | 0.003 ± 0.000 | - | 0.005 ± 0.001 | 0.007 ± 0.002 | 0.010 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 1 | `3x2x2` | 0.002 ± 0.000 | - | 0.004 ± 0.000 | 0.006 ± 0.001 | 0.007 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 1 | `3x4x4` | 0.003 ± 0.000 | - | 0.005 ± 0.000 | 0.006 ± 0.000 | 0.013 ± 0.005 | - | - |
-| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 1 | `3x8x8` | 0.007 ± 0.000 | - | 0.010 ± 0.000 | 0.011 ± 0.003 | 0.022 ± 0.004 | - | - |
-| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 1 | `4x2x2` | 0.001 ± 0.000 | - | 0.004 ± 0.000 | 0.006 ± 0.001 | 0.009 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 1 | `4x4x4` | 0.004 ± 0.000 | - | 0.007 ± 0.001 | 0.007 ± 0.000 | 0.012 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 1 | `4x8x8` | 0.012 ± 0.002 | - | 0.015 ± 0.003 | 0.014 ± 0.003 | 0.025 ± 0.006 | - | - |
-| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 1 | `8x128x128` | 3.829 ± 0.184 | - | 3.801 ± 0.072 | 3.966 ± 0.290 | 8.516 ± 0.226 | - | - |
-| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 1 | `8x2x2` | 0.002 ± 0.000 | - | 0.004 ± 0.000 | 0.005 ± 0.000 | 0.013 ± 0.004 | - | - |
-| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 1 | `8x32x32` | 0.185 ± 0.013 | - | 0.181 ± 0.021 | 0.191 ± 0.026 | 0.564 ± 0.042 | - | - |
-| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 1 | `8x4x4` | 0.006 ± 0.000 | - | 0.008 ± 0.000 | 0.010 ± 0.000 | 0.017 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 1 | `8x8x8` | 0.019 ± 0.005 | - | 0.024 ± 0.004 | 0.025 ± 0.005 | 0.084 ± 0.011 | - | - |
-| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 4 | `1024x2x2` | 0.134 ± 0.016 | - | 0.146 ± 0.022 | 0.140 ± 0.014 | 0.601 ± 0.024 | - | - |
-| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 4 | `1024x4x4` | 0.732 ± 0.137 | - | 0.801 ± 0.100 | 0.725 ± 0.053 | 1.060 ± 0.102 | - | - |
-| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 4 | `1024x8x8` | 2.236 ± 0.062 | - | 2.466 ± 1.127 | 2.259 ± 0.251 | 2.498 ± 1.042 | - | - |
-| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 4 | `1x128x128` | 0.491 ± 0.044 | - | 0.494 ± 0.037 | 0.566 ± 0.037 | 1.087 ± 0.031 | - | - |
-| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 4 | `1x2x2` | 0.002 ± 0.001 | - | 0.005 ± 0.000 | 0.005 ± 0.001 | 0.006 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 4 | `1x32x32` | 0.024 ± 0.006 | - | 0.033 ± 0.003 | 0.044 ± 0.004 | 0.116 ± 0.011 | - | - |
-| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 4 | `1x4x4` | 0.003 ± 0.000 | - | 0.006 ± 0.002 | 0.006 ± 0.002 | 0.007 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 4 | `1x8x8` | 0.003 ± 0.001 | - | 0.006 ± 0.000 | 0.007 ± 0.002 | 0.010 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 4 | `3x2x2` | 0.003 ± 0.000 | - | 0.005 ± 0.000 | 0.004 ± 0.000 | 0.010 ± 0.004 | - | - |
-| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 4 | `3x4x4` | 0.004 ± 0.001 | - | 0.008 ± 0.002 | 0.008 ± 0.002 | 0.011 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 4 | `3x8x8` | 0.010 ± 0.002 | - | 0.010 ± 0.003 | 0.011 ± 0.000 | 0.020 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 4 | `4x2x2` | 0.002 ± 0.001 | - | 0.004 ± 0.001 | 0.004 ± 0.000 | 0.008 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 4 | `4x4x4` | 0.005 ± 0.000 | - | 0.009 ± 0.000 | 0.007 ± 0.000 | 0.012 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 4 | `4x8x8` | 0.013 ± 0.002 | - | 0.017 ± 0.000 | 0.013 ± 0.000 | 0.025 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 4 | `8x128x128` | 4.137 ± 0.184 | - | 4.080 ± 0.204 | 4.648 ± 0.375 | 4.170 ± 0.113 | - | - |
-| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 4 | `8x2x2` | 0.004 ± 0.001 | - | 0.006 ± 0.000 | 0.005 ± 0.000 | 0.010 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 4 | `8x32x32` | 0.210 ± 0.044 | - | 0.204 ± 0.020 | 0.189 ± 0.004 | 0.369 ± 0.071 | - | - |
-| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 4 | `8x4x4` | 0.009 ± 0.000 | - | 0.009 ± 0.000 | 0.009 ± 0.000 | 0.021 ± 0.003 | - | - |
-| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 4 | `8x8x8` | 0.024 ± 0.001 | - | 0.027 ± 0.002 | 0.021 ± 0.000 | 0.101 ± 0.055 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `1024x2x2` | 0.131 ± 0.023 | - | 0.123 ± 0.021 | 0.301 ± 0.042 | 0.211 ± 0.059 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `1024x4x4` | 0.237 ± 0.037 | - | 0.226 ± 0.015 | 0.394 ± 0.040 | 0.269 ± 0.046 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `1024x8x8` | 0.509 ± 0.064 | - | 0.569 ± 0.087 | 0.684 ± 0.095 | 0.545 ± 0.049 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `1x128x128` | 0.065 ± 0.011 | - | 0.071 ± 0.006 | 0.065 ± 0.006 | 0.109 ± 0.011 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `1x2x2` | 0.003 ± 0.000 | - | 0.004 ± 0.000 | 0.007 ± 0.002 | 0.008 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `1x32x32` | 0.006 ± 0.001 | - | 0.008 ± 0.000 | 0.011 ± 0.001 | 0.046 ± 0.011 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `1x4x4` | 0.003 ± 0.001 | - | 0.004 ± 0.000 | 0.009 ± 0.002 | 0.008 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `1x64x24` | 0.008 ± 0.001 | - | 0.011 ± 0.000 | 0.013 ± 0.004 | 0.059 ± 0.042 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `1x8x8` | 0.003 ± 0.000 | - | 0.004 ± 0.000 | 0.009 ± 0.000 | 0.011 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `3x2x2` | 0.003 ± 0.000 | - | 0.005 ± 0.001 | 0.008 ± 0.002 | 0.009 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `3x4x4` | 0.002 ± 0.000 | - | 0.004 ± 0.000 | 0.008 ± 0.000 | 0.009 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `3x8x8` | 0.004 ± 0.002 | - | 0.007 ± 0.000 | 0.009 ± 0.000 | 0.039 ± 0.027 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `4x2x2` | 0.003 ± 0.001 | - | 0.004 ± 0.000 | 0.008 ± 0.000 | 0.008 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `4x4x4` | 0.003 ± 0.000 | - | 0.005 ± 0.004 | 0.009 ± 0.000 | 0.009 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `4x8x8` | 0.003 ± 0.000 | - | 0.006 ± 0.003 | 0.011 ± 0.003 | 0.039 ± 0.004 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `8x128x128` | 0.468 ± 0.021 | - | 0.503 ± 0.031 | 0.467 ± 0.280 | 0.540 ± 0.055 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `8x2x2` | 0.003 ± 0.000 | - | 0.006 ± 0.005 | 0.009 ± 0.003 | 0.014 ± 0.005 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `8x32x32` | 0.034 ± 0.004 | - | 0.037 ± 0.005 | 0.038 ± 0.004 | 0.105 ± 0.038 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `8x4x4` | 0.004 ± 0.001 | - | 0.005 ± 0.000 | 0.010 ± 0.000 | 0.036 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `8x8x8` | 0.005 ± 0.000 | - | 0.008 ± 0.000 | 0.015 ± 0.001 | 0.048 ± 0.006 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `1024x2x2` | 0.108 ± 0.013 | - | 0.117 ± 0.022 | 0.232 ± 0.023 | 0.263 ± 0.044 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `1024x4x4` | 0.233 ± 0.013 | - | 0.240 ± 0.011 | 0.298 ± 0.028 | 0.368 ± 0.046 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `1024x8x8` | 0.489 ± 0.036 | - | 0.512 ± 0.029 | 0.552 ± 0.041 | 0.389 ± 0.027 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `1x128x128` | 0.057 ± 0.001 | - | 0.064 ± 0.001 | 0.137 ± 0.019 | 0.105 ± 0.007 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `1x2x2` | 0.003 ± 0.001 | - | 0.005 ± 0.000 | 0.088 ± 0.010 | 0.008 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `1x32x32` | 0.007 ± 0.001 | - | 0.009 ± 0.000 | 0.098 ± 0.012 | 0.061 ± 0.003 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `1x4x4` | 0.002 ± 0.000 | - | 0.005 ± 0.000 | 0.060 ± 0.010 | 0.021 ± 0.005 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `1x64x24` | 0.010 ± 0.002 | - | 0.012 ± 0.000 | 0.071 ± 0.012 | 0.066 ± 0.047 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `1x8x8` | 0.004 ± 0.000 | - | 0.005 ± 0.000 | 0.082 ± 0.046 | 0.009 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `3x2x2` | 0.003 ± 0.000 | - | 0.005 ± 0.000 | 0.090 ± 0.038 | 0.009 ± 0.007 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `3x4x4` | 0.003 ± 0.001 | - | 0.005 ± 0.000 | 0.061 ± 0.015 | 0.016 ± 0.008 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `3x8x8` | 0.004 ± 0.001 | - | 0.006 ± 0.000 | 0.061 ± 0.015 | 0.103 ± 0.061 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `4x2x2` | 0.003 ± 0.001 | - | 0.005 ± 0.000 | 0.085 ± 0.012 | 0.009 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `4x4x4` | 0.003 ± 0.000 | - | 0.005 ± 0.001 | 0.066 ± 0.010 | 0.010 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `4x8x8` | 0.004 ± 0.000 | - | 0.006 ± 0.000 | 0.060 ± 0.015 | 0.083 ± 0.050 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `8x128x128` | 0.455 ± 0.009 | - | 0.451 ± 0.009 | 0.418 ± 0.049 | 0.520 ± 0.074 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `8x2x2` | 0.003 ± 0.000 | - | 0.007 ± 0.002 | 0.117 ± 0.029 | 0.012 ± 0.005 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `8x32x32` | 0.031 ± 0.000 | - | 0.035 ± 0.000 | 0.157 ± 0.012 | 0.171 ± 0.024 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `8x4x4` | 0.004 ± 0.000 | - | 0.008 ± 0.000 | 0.084 ± 0.016 | 0.123 ± 0.067 | - | - |
-| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `8x8x8` | 0.007 ± 0.002 | - | 0.008 ± 0.000 | 0.098 ± 0.031 | 0.058 ± 0.039 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `1024x2x2` | 0.261 ± 0.008 | - | 0.245 ± 0.019 | 0.338 ± 0.022 | 0.409 ± 0.089 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `1024x4x4` | 0.572 ± 0.056 | - | 0.596 ± 0.048 | 0.680 ± 0.134 | 0.793 ± 0.079 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `1024x8x8` | 1.296 ± 0.175 | - | 1.280 ± 0.079 | 1.329 ± 1.045 | 1.444 ± 0.056 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `1x128x128` | 0.288 ± 0.009 | - | 0.316 ± 0.027 | 0.328 ± 0.028 | 0.324 ± 0.036 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `1x2x2` | 0.002 ± 0.000 | - | 0.004 ± 0.000 | 0.003 ± 0.000 | 0.011 ± 0.000 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `1x32x32` | 0.011 ± 0.000 | - | 0.014 ± 0.001 | 0.013 ± 0.000 | 0.048 ± 0.020 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `1x4x4` | 0.002 ± 0.000 | - | 0.004 ± 0.000 | 0.004 ± 0.000 | 0.008 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `1x64x24` | 0.013 ± 0.000 | - | 0.016 ± 0.000 | 0.016 ± 0.000 | 0.051 ± 0.003 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `1x8x8` | 0.003 ± 0.000 | - | 0.006 ± 0.002 | 0.004 ± 0.000 | 0.010 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `3x2x2` | 0.002 ± 0.000 | - | 0.004 ± 0.001 | 0.005 ± 0.001 | 0.012 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `3x4x4` | 0.003 ± 0.000 | - | 0.005 ± 0.000 | 0.005 ± 0.000 | 0.010 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `3x8x8` | 0.005 ± 0.000 | - | 0.007 ± 0.000 | 0.008 ± 0.002 | 0.012 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `4x2x2` | 0.003 ± 0.000 | - | 0.004 ± 0.000 | 0.004 ± 0.000 | 0.012 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `4x4x4` | 0.003 ± 0.001 | - | 0.008 ± 0.000 | 0.005 ± 0.000 | 0.010 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `4x8x8` | 0.006 ± 0.000 | - | 0.011 ± 0.003 | 0.010 ± 0.000 | 0.013 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `8x128x128` | 2.312 ± 0.092 | - | 2.287 ± 0.083 | 2.564 ± 0.064 | 2.561 ± 0.324 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `8x2x2` | 0.004 ± 0.000 | - | 0.007 ± 0.000 | 0.006 ± 0.000 | 0.011 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `8x32x32` | 0.089 ± 0.012 | - | 0.093 ± 0.015 | 0.086 ± 0.016 | 0.133 ± 0.009 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `8x4x4` | 0.006 ± 0.000 | - | 0.008 ± 0.003 | 0.008 ± 0.000 | 0.013 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `8x8x8` | 0.011 ± 0.003 | - | 0.013 ± 0.000 | 0.013 ± 0.000 | 0.019 ± 0.008 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `1024x2x2` | 0.233 ± 0.019 | - | 0.237 ± 0.001 | 0.309 ± 0.011 | 0.343 ± 0.006 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `1024x4x4` | 0.560 ± 0.044 | - | 0.536 ± 0.011 | 0.601 ± 0.029 | 0.651 ± 0.025 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `1024x8x8` | 1.286 ± 0.117 | - | 1.439 ± 0.156 | 1.348 ± 0.045 | 0.835 ± 0.152 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `1x128x128` | 0.276 ± 0.018 | - | 0.301 ± 0.030 | 0.340 ± 0.033 | 0.374 ± 0.054 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `1x2x2` | 0.002 ± 0.000 | - | 0.005 ± 0.000 | 0.051 ± 0.012 | 0.008 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `1x32x32` | 0.011 ± 0.000 | - | 0.015 ± 0.000 | 0.029 ± 0.003 | 0.058 ± 0.042 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `1x4x4` | 0.002 ± 0.000 | - | 0.005 ± 0.000 | 0.041 ± 0.008 | 0.008 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `1x64x24` | 0.016 ± 0.005 | - | 0.017 ± 0.003 | 0.056 ± 0.012 | 0.087 ± 0.020 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `1x8x8` | 0.003 ± 0.001 | - | 0.005 ± 0.000 | 0.051 ± 0.017 | 0.008 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `3x2x2` | 0.003 ± 0.000 | - | 0.005 ± 0.000 | 0.035 ± 0.021 | 0.008 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `3x4x4` | 0.004 ± 0.000 | - | 0.007 ± 0.002 | 0.036 ± 0.015 | 0.009 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `3x8x8` | 0.007 ± 0.000 | - | 0.008 ± 0.003 | 0.052 ± 0.007 | 0.012 ± 0.005 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `4x2x2` | 0.003 ± 0.001 | - | 0.005 ± 0.000 | 0.050 ± 0.014 | 0.009 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `4x4x4` | 0.004 ± 0.000 | - | 0.006 ± 0.000 | 0.049 ± 0.011 | 0.010 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `4x8x8` | 0.009 ± 0.000 | - | 0.009 ± 0.002 | 0.044 ± 0.014 | 0.013 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `8x128x128` | 2.377 ± 0.135 | - | 2.548 ± 2.489 | 2.512 ± 0.152 | 1.493 ± 0.027 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `8x2x2` | 0.004 ± 0.000 | - | 0.006 ± 0.000 | 0.048 ± 0.010 | 0.011 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `8x32x32` | 0.083 ± 0.013 | - | 0.232 ± 0.025 | 0.149 ± 0.023 | 0.188 ± 0.067 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `8x4x4` | 0.006 ± 0.000 | - | 0.011 ± 0.002 | 0.047 ± 0.015 | 0.012 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `8x8x8` | 0.011 ± 0.000 | - | 0.014 ± 0.000 | 0.039 ± 0.009 | 0.022 ± 0.009 | - | - |
-| cpu/linalg_batch_families | `batched_solve` | f64 | 1 | `1024x2x2,rhs=1` | 0.177 ± 0.017 | - | 0.172 ± 0.029 | 0.141 ± 0.022 | 0.228 ± 0.038 | - | - |
-| cpu/linalg_batch_families | `batched_solve` | f64 | 1 | `1024x4x4,rhs=1` | 0.296 ± 0.043 | - | 0.345 ± 0.215 | 0.209 ± 0.026 | 0.291 ± 0.039 | - | - |
-| cpu/linalg_batch_families | `batched_solve` | f64 | 1 | `1024x8x8,rhs=1` | 0.417 ± 0.022 | - | 0.425 ± 0.072 | 0.379 ± 0.027 | 0.551 ± 0.069 | - | - |
-| cpu/linalg_batch_families | `batched_solve` | f64 | 1 | `1x128x128,rhs=1` | 0.044 ± 0.005 | - | 0.056 ± 0.004 | 0.063 ± 0.001 | 0.105 ± 0.010 | - | - |
-| cpu/linalg_batch_families | `batched_solve` | f64 | 1 | `1x2x2,rhs=1` | 0.001 ± 0.000 | - | 0.015 ± 0.009 | 0.010 ± 0.001 | 0.009 ± 0.004 | - | - |
-| cpu/linalg_batch_families | `batched_solve` | f64 | 1 | `1x32x32,rhs=1` | 0.005 ± 0.000 | - | 0.010 ± 0.001 | 0.013 ± 0.000 | 0.045 ± 0.015 | - | - |
-| cpu/linalg_batch_families | `batched_solve` | f64 | 1 | `1x4x4,rhs=1` | 0.001 ± 0.000 | - | 0.007 ± 0.000 | 0.011 ± 0.003 | 0.008 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_solve` | f64 | 1 | `1x8x8,rhs=1` | 0.002 ± 0.000 | - | 0.019 ± 0.015 | 0.010 ± 0.000 | 0.007 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_solve` | f64 | 1 | `3x2x2,rhs=1` | 0.002 ± 0.000 | - | 0.006 ± 0.002 | 0.010 ± 0.000 | 0.008 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_solve` | f64 | 1 | `3x4x4,rhs=1` | 0.002 ± 0.000 | - | 0.005 ± 0.000 | 0.010 ± 0.004 | 0.008 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_solve` | f64 | 1 | `3x8x8,rhs=1` | 0.005 ± 0.013 | - | 0.009 ± 0.024 | 0.014 ± 0.001 | 0.012 ± 0.003 | - | - |
-| cpu/linalg_batch_families | `batched_solve` | f64 | 1 | `4x2x2,rhs=1` | 0.002 ± 0.000 | - | 0.005 ± 0.000 | 0.010 ± 0.000 | 0.010 ± 0.000 | - | - |
-| cpu/linalg_batch_families | `batched_solve` | f64 | 1 | `4x4x4,rhs=1` | 0.003 ± 0.000 | - | 0.009 ± 0.004 | 0.010 ± 0.002 | 0.008 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_solve` | f64 | 1 | `4x8x8,rhs=1` | 0.003 ± 0.000 | - | 0.006 ± 0.000 | 0.011 ± 0.003 | 0.010 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_solve` | f64 | 1 | `8x128x128,rhs=1` | 0.361 ± 0.021 | - | 0.419 ± 0.012 | 0.378 ± 0.007 | 0.486 ± 0.008 | - | - |
-| cpu/linalg_batch_families | `batched_solve` | f64 | 1 | `8x2x2,rhs=1` | 0.002 ± 0.000 | - | 0.006 ± 0.000 | 0.011 ± 0.003 | 0.010 ± 0.000 | - | - |
-| cpu/linalg_batch_families | `batched_solve` | f64 | 1 | `8x32x32,rhs=1` | 0.032 ± 0.001 | - | 0.036 ± 0.007 | 0.036 ± 0.000 | 0.085 ± 0.008 | - | - |
-| cpu/linalg_batch_families | `batched_solve` | f64 | 1 | `8x4x4,rhs=1` | 0.004 ± 0.003 | - | 0.012 ± 0.007 | 0.011 ± 0.000 | 0.010 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_solve` | f64 | 1 | `8x8x8,rhs=1` | 0.004 ± 0.000 | - | 0.007 ± 0.000 | 0.016 ± 0.001 | 0.012 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_solve` | f64 | 4 | `1024x2x2,rhs=1` | 0.165 ± 0.006 | - | 0.262 ± 0.002 | 0.179 ± 0.002 | 0.202 ± 0.010 | - | - |
-| cpu/linalg_batch_families | `batched_solve` | f64 | 4 | `1024x4x4,rhs=1` | 0.205 ± 0.032 | - | 0.213 ± 0.021 | 0.201 ± 0.004 | 0.310 ± 0.017 | - | - |
-| cpu/linalg_batch_families | `batched_solve` | f64 | 4 | `1024x8x8,rhs=1` | 0.362 ± 0.026 | - | 0.349 ± 0.020 | 0.349 ± 0.019 | 0.441 ± 0.079 | - | - |
-| cpu/linalg_batch_families | `batched_solve` | f64 | 4 | `1x128x128,rhs=1` | 0.046 ± 0.001 | - | 0.060 ± 0.001 | 0.064 ± 0.014 | 0.122 ± 0.016 | - | - |
-| cpu/linalg_batch_families | `batched_solve` | f64 | 4 | `1x2x2,rhs=1` | 0.004 ± 0.001 | - | 0.009 ± 0.004 | 0.008 ± 0.001 | 0.007 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_solve` | f64 | 4 | `1x32x32,rhs=1` | 0.005 ± 0.000 | - | 0.009 ± 0.000 | 0.012 ± 0.001 | 0.058 ± 0.016 | - | - |
-| cpu/linalg_batch_families | `batched_solve` | f64 | 4 | `1x4x4,rhs=1` | 0.002 ± 0.000 | - | 0.006 ± 0.000 | 0.011 ± 0.001 | 0.008 ± 0.004 | - | - |
-| cpu/linalg_batch_families | `batched_solve` | f64 | 4 | `1x8x8,rhs=1` | 0.002 ± 0.000 | - | 0.007 ± 0.002 | 0.009 ± 0.000 | 0.009 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_solve` | f64 | 4 | `3x2x2,rhs=1` | 0.004 ± 0.000 | - | 0.009 ± 0.002 | 0.008 ± 0.000 | 0.008 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_solve` | f64 | 4 | `3x4x4,rhs=1` | 0.003 ± 0.000 | - | 0.007 ± 0.000 | 0.009 ± 0.002 | 0.009 ± 0.003 | - | - |
-| cpu/linalg_batch_families | `batched_solve` | f64 | 4 | `3x8x8,rhs=1` | 0.003 ± 0.001 | - | 0.010 ± 0.001 | 0.009 ± 0.000 | 0.012 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_solve` | f64 | 4 | `4x2x2,rhs=1` | 0.006 ± 0.000 | - | 0.007 ± 0.000 | 0.009 ± 0.000 | 0.010 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_solve` | f64 | 4 | `4x4x4,rhs=1` | 0.003 ± 0.000 | - | 0.007 ± 0.000 | 0.009 ± 0.000 | 0.008 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_solve` | f64 | 4 | `4x8x8,rhs=1` | 0.004 ± 0.001 | - | 0.009 ± 0.003 | 0.010 ± 0.000 | 0.009 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_solve` | f64 | 4 | `8x128x128,rhs=1` | 0.361 ± 0.003 | - | 0.391 ± 0.012 | 0.284 ± 0.060 | 0.425 ± 0.077 | - | - |
-| cpu/linalg_batch_families | `batched_solve` | f64 | 4 | `8x2x2,rhs=1` | 0.003 ± 0.000 | - | 0.010 ± 0.003 | 0.058 ± 0.015 | 0.009 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_solve` | f64 | 4 | `8x32x32,rhs=1` | 0.025 ± 0.000 | - | 0.033 ± 0.000 | 0.072 ± 0.018 | 0.130 ± 0.025 | - | - |
-| cpu/linalg_batch_families | `batched_solve` | f64 | 4 | `8x4x4,rhs=1` | 0.003 ± 0.001 | - | 0.008 ± 0.000 | 0.054 ± 0.012 | 0.009 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_solve` | f64 | 4 | `8x8x8,rhs=1` | 0.004 ± 0.000 | - | 0.009 ± 0.000 | 0.068 ± 0.010 | 0.011 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `1024x2x2` | 1.248 ± 0.105 | - | 1.307 ± 0.186 | 1.278 ± 0.105 | 3.297 ± 0.205 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `1024x4x4` | 4.076 ± 0.484 | - | 4.450 ± 0.633 | 4.315 ± 0.428 | 5.829 ± 0.205 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `1024x8x8` | 13.880 ± 0.142 | - | 14.338 ± 0.924 | 13.764 ± 1.180 | 15.982 ± 1.408 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `1x128x128` | 4.224 ± 0.039 | - | 4.153 ± 0.113 | 4.145 ± 0.150 | 3.207 ± 0.091 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `1x2x2` | 0.004 ± 0.000 | - | 0.006 ± 0.000 | 0.007 ± 0.000 | 0.017 ± 0.005 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `1x32x32` | 0.198 ± 0.013 | - | 0.189 ± 0.015 | 0.180 ± 0.010 | 0.259 ± 0.015 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `1x4x4` | 0.006 ± 0.000 | - | 0.008 ± 0.000 | 0.009 ± 0.001 | 0.020 ± 0.004 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `1x64x24` | 0.181 ± 0.004 | - | 0.180 ± 0.013 | 0.178 ± 0.013 | 0.311 ± 0.038 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `1x8x8` | 0.014 ± 0.000 | - | 0.017 ± 0.000 | 0.024 ± 0.006 | 0.026 ± 0.008 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `3x2x2` | 0.006 ± 0.001 | - | 0.010 ± 0.002 | 0.009 ± 0.002 | 0.024 ± 0.003 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `3x4x4` | 0.014 ± 0.003 | - | 0.015 ± 0.000 | 0.016 ± 0.002 | 0.027 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `3x8x8` | 0.038 ± 0.000 | - | 0.041 ± 0.000 | 0.043 ± 0.001 | 0.054 ± 0.010 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `4x2x2` | 0.007 ± 0.000 | - | 0.011 ± 0.003 | 0.010 ± 0.000 | 0.026 ± 0.003 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `4x4x4` | 0.017 ± 0.000 | - | 0.020 ± 0.004 | 0.022 ± 0.005 | 0.035 ± 0.008 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `4x8x8` | 0.056 ± 0.006 | - | 0.062 ± 0.009 | 0.062 ± 0.010 | 0.067 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `8x128x128` | 34.641 ± 1.056 | - | 35.947 ± 4.620 | 32.614 ± 0.780 | 28.157 ± 0.701 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `8x2x2` | 0.011 ± 0.004 | - | 0.018 ± 0.003 | 0.015 ± 0.000 | 0.039 ± 0.004 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `8x32x32` | 1.566 ± 0.140 | - | 1.567 ± 0.047 | 1.495 ± 0.076 | 1.567 ± 0.027 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `8x4x4` | 0.032 ± 0.006 | - | 0.042 ± 0.005 | 0.042 ± 0.008 | 0.060 ± 0.007 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `8x8x8` | 0.106 ± 0.010 | - | 0.107 ± 0.015 | 0.117 ± 0.014 | 0.167 ± 0.027 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `1024x2x2` | 1.234 ± 0.114 | - | 1.314 ± 0.081 | 1.494 ± 0.153 | 3.331 ± 0.339 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `1024x4x4` | 4.228 ± 0.306 | - | 4.241 ± 0.181 | 4.659 ± 0.812 | 2.395 ± 0.304 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `1024x8x8` | 13.355 ± 0.818 | - | 13.241 ± 1.546 | 15.119 ± 1.914 | 7.543 ± 2.570 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `1x128x128` | 3.870 ± 0.269 | - | 4.035 ± 0.233 | 4.215 ± 0.053 | 3.556 ± 0.079 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `1x2x2` | 0.005 ± 0.002 | - | 0.006 ± 0.000 | 0.006 ± 0.002 | 0.014 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `1x32x32` | 0.183 ± 0.016 | - | 0.197 ± 0.012 | 0.211 ± 0.019 | 0.268 ± 0.055 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `1x4x4` | 0.008 ± 0.002 | - | 0.012 ± 0.001 | 0.009 ± 0.002 | 0.017 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `1x64x24` | 0.166 ± 0.012 | - | 0.180 ± 0.008 | 0.174 ± 0.002 | 0.320 ± 0.081 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `1x8x8` | 0.015 ± 0.001 | - | 0.018 ± 0.000 | 0.018 ± 0.000 | 0.025 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `3x2x2` | 0.008 ± 0.001 | - | 0.009 ± 0.003 | 0.011 ± 0.003 | 0.020 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `3x4x4` | 0.014 ± 0.003 | - | 0.017 ± 0.000 | 0.016 ± 0.000 | 0.028 ± 0.006 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `3x8x8` | 0.040 ± 0.003 | - | 0.042 ± 0.000 | 0.050 ± 0.009 | 0.055 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `4x2x2` | 0.007 ± 0.000 | - | 0.010 ± 0.000 | 0.011 ± 0.003 | 0.024 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `4x4x4` | 0.018 ± 0.000 | - | 0.020 ± 0.006 | 0.025 ± 0.006 | 0.034 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `4x8x8` | 0.064 ± 0.009 | - | 0.056 ± 0.010 | 0.064 ± 0.003 | 0.069 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `8x128x128` | 32.691 ± 1.108 | - | 32.345 ± 0.354 | 34.044 ± 1.982 | 14.165 ± 3.514 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `8x2x2` | 0.012 ± 0.001 | - | 0.015 ± 0.004 | 0.014 ± 0.001 | 0.034 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `8x32x32` | 1.518 ± 0.034 | - | 1.483 ± 0.030 | 1.560 ± 0.094 | 0.966 ± 0.051 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `8x4x4` | 0.034 ± 0.000 | - | 0.036 ± 0.000 | 0.048 ± 0.003 | 0.057 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `8x8x8` | 0.116 ± 0.012 | - | 0.104 ± 0.004 | 0.118 ± 0.017 | 0.192 ± 0.028 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `1024x2x2` | 0.663 ± 0.082 | - | 0.689 ± 0.068 | 0.693 ± 0.081 | 2.636 ± 0.277 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `1024x4x4` | 2.867 ± 0.222 | - | 2.771 ± 0.201 | 2.982 ± 0.423 | 4.893 ± 0.571 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `1024x8x8` | 9.751 ± 0.532 | - | 9.421 ± 0.669 | 9.625 ± 0.886 | 11.013 ± 0.762 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `1x128x128` | 1.597 ± 0.123 | - | 1.590 ± 0.066 | 1.419 ± 0.035 | 1.502 ± 0.051 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `1x2x2` | 0.003 ± 0.000 | - | 0.006 ± 0.001 | 0.008 ± 0.001 | 0.016 ± 0.008 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `1x32x32` | 0.111 ± 0.012 | - | 0.121 ± 0.005 | 0.102 ± 0.003 | 0.151 ± 0.025 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `1x4x4` | 0.004 ± 0.000 | - | 0.009 ± 0.001 | 0.008 ± 0.001 | 0.017 ± 0.006 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `1x64x24` | 0.097 ± 0.006 | - | 0.098 ± 0.002 | 0.104 ± 0.012 | 0.145 ± 0.013 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `1x8x8` | 0.010 ± 0.000 | - | 0.013 ± 0.000 | 0.019 ± 0.004 | 0.031 ± 0.014 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `3x2x2` | 0.004 ± 0.000 | - | 0.006 ± 0.002 | 0.009 ± 0.000 | 0.021 ± 0.007 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `3x4x4` | 0.012 ± 0.003 | - | 0.015 ± 0.003 | 0.013 ± 0.000 | 0.026 ± 0.004 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `3x8x8` | 0.024 ± 0.000 | - | 0.027 ± 0.000 | 0.034 ± 0.008 | 0.052 ± 0.013 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `4x2x2` | 0.006 ± 0.000 | - | 0.009 ± 0.001 | 0.008 ± 0.000 | 0.024 ± 0.006 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `4x4x4` | 0.012 ± 0.000 | - | 0.014 ± 0.000 | 0.015 ± 0.000 | 0.026 ± 0.012 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `4x8x8` | 0.041 ± 0.007 | - | 0.036 ± 0.000 | 0.046 ± 0.011 | 0.058 ± 0.011 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `8x128x128` | 12.236 ± 0.273 | - | 12.289 ± 0.835 | 12.423 ± 0.515 | 12.645 ± 0.943 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `8x2x2` | 0.009 ± 0.001 | - | 0.012 ± 0.003 | 0.013 ± 0.000 | 0.035 ± 0.004 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `8x32x32` | 0.872 ± 0.042 | - | 0.842 ± 0.038 | 0.798 ± 0.029 | 0.953 ± 0.098 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `8x4x4` | 0.022 ± 0.000 | - | 0.032 ± 0.001 | 0.025 ± 0.000 | 0.042 ± 0.003 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `8x8x8` | 0.072 ± 0.009 | - | 0.083 ± 0.014 | 0.077 ± 0.012 | 0.145 ± 0.032 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `1024x2x2` | 0.671 ± 0.061 | - | 0.679 ± 0.071 | 0.795 ± 0.181 | 2.199 ± 0.060 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `1024x4x4` | 2.829 ± 0.122 | - | 2.869 ± 0.238 | 3.327 ± 1.304 | 1.570 ± 0.262 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `1024x8x8` | 9.713 ± 0.163 | - | 9.193 ± 1.082 | 9.939 ± 0.485 | 3.938 ± 1.287 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `1x128x128` | 1.554 ± 0.053 | - | 1.652 ± 0.405 | 1.606 ± 0.098 | 1.753 ± 0.090 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `1x2x2` | 0.004 ± 0.000 | - | 0.007 ± 0.001 | 0.011 ± 0.005 | 0.012 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `1x32x32` | 0.099 ± 0.002 | - | 0.108 ± 0.000 | 0.121 ± 0.004 | 0.175 ± 0.064 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `1x4x4` | 0.005 ± 0.000 | - | 0.007 ± 0.000 | 0.007 ± 0.001 | 0.014 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `1x64x24` | 0.093 ± 0.012 | - | 0.095 ± 0.001 | 0.097 ± 0.009 | 0.138 ± 0.021 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `1x8x8` | 0.011 ± 0.002 | - | 0.017 ± 0.004 | 0.022 ± 0.003 | 0.021 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `3x2x2` | 0.006 ± 0.000 | - | 0.009 ± 0.003 | 0.010 ± 0.012 | 0.017 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `3x4x4` | 0.009 ± 0.000 | - | 0.012 ± 0.000 | 0.016 ± 0.002 | 0.022 ± 0.003 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `3x8x8` | 0.034 ± 0.014 | - | 0.036 ± 0.007 | 0.092 ± 0.030 | 0.039 ± 0.003 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `4x2x2` | 0.006 ± 0.001 | - | 0.007 ± 0.000 | 0.010 ± 0.007 | 0.019 ± 0.005 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `4x4x4` | 0.013 ± 0.001 | - | 0.015 ± 0.005 | 0.020 ± 0.003 | 0.027 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `4x8x8` | 0.045 ± 0.009 | - | 0.037 ± 0.003 | 0.051 ± 0.029 | 0.050 ± 0.004 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `8x128x128` | 12.196 ± 0.315 | - | 12.403 ± 0.199 | 12.800 ± 1.043 | 5.221 ± 2.717 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `8x2x2` | 0.009 ± 0.002 | - | 0.010 ± 0.000 | 0.015 ± 0.011 | 0.027 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `8x32x32` | 0.779 ± 0.018 | - | 0.827 ± 0.016 | 0.860 ± 0.042 | 0.554 ± 0.094 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `8x4x4` | 0.022 ± 0.000 | - | 0.025 ± 0.000 | 0.032 ± 0.015 | 0.042 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `8x8x8` | 0.066 ± 0.012 | - | 0.069 ± 0.000 | 0.077 ± 0.008 | 0.133 ± 0.005 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `1024x2x2` | 0.239 ± 0.036 | - | unsupported | 0.254 ± 0.055 | 1.572 ± 0.122 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `1024x4x4` | 1.433 ± 0.071 | - | unsupported | 1.419 ± 0.090 | 2.653 ± 0.128 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `1024x8x8` | 4.232 ± 2.372 | - | unsupported | 4.017 ± 0.317 | 5.414 ± 0.288 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `1x128x128` | 1.184 ± 0.268 | - | unsupported | 0.958 ± 0.049 | 0.880 ± 0.025 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `1x2x2` | 0.002 ± 0.000 | - | unsupported | 0.005 ± 0.000 | 0.010 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `1x32x32` | 0.043 ± 0.010 | - | unsupported | 0.040 ± 0.013 | 0.042 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `1x4x4` | 0.003 ± 0.002 | - | unsupported | 0.008 ± 0.000 | 0.014 ± 0.004 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `1x64x24` | 0.037 ± 0.008 | - | unsupported | 0.049 ± 0.009 | 0.040 ± 0.003 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `1x8x8` | 0.004 ± 0.000 | - | unsupported | 0.008 ± 0.000 | 0.012 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `3x2x2` | 0.002 ± 0.001 | - | unsupported | 0.005 ± 0.000 | 0.013 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `3x4x4` | 0.005 ± 0.001 | - | unsupported | 0.008 ± 0.000 | 0.018 ± 0.004 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `3x8x8` | 0.011 ± 0.000 | - | unsupported | 0.015 ± 0.000 | 0.025 ± 0.005 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `4x2x2` | 0.002 ± 0.001 | - | unsupported | 0.005 ± 0.000 | 0.013 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `4x4x4` | 0.008 ± 0.002 | - | unsupported | 0.013 ± 0.002 | 0.022 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `4x8x8` | 0.017 ± 0.005 | - | unsupported | 0.023 ± 0.004 | 0.029 ± 0.003 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `8x128x128` | 7.864 ± 0.197 | - | unsupported | 7.969 ± 0.630 | 7.838 ± 0.359 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `8x2x2` | 0.003 ± 0.000 | - | unsupported | 0.006 ± 0.000 | 0.023 ± 0.004 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `8x32x32` | 0.280 ± 0.018 | - | unsupported | 0.298 ± 0.024 | 0.339 ± 0.025 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `8x4x4` | 0.011 ± 0.002 | - | unsupported | 0.019 ± 0.001 | 0.034 ± 0.009 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `8x8x8` | 0.033 ± 0.006 | - | unsupported | 0.032 ± 0.004 | 0.046 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `1024x2x2` | 0.239 ± 0.027 | - | unsupported | 0.275 ± 0.041 | 1.465 ± 0.075 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `1024x4x4` | 1.438 ± 0.113 | - | unsupported | 1.478 ± 0.085 | 1.143 ± 0.210 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `1024x8x8` | 3.843 ± 0.151 | - | unsupported | 4.013 ± 0.340 | 2.364 ± 0.723 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `1x128x128` | 0.872 ± 0.097 | - | unsupported | 0.851 ± 0.032 | 0.992 ± 0.107 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `1x2x2` | 0.002 ± 0.001 | - | unsupported | 0.004 ± 0.000 | 0.013 ± 0.005 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `1x32x32` | 0.035 ± 0.001 | - | unsupported | 0.037 ± 0.007 | 0.043 ± 0.005 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `1x4x4` | 0.004 ± 0.000 | - | unsupported | 0.005 ± 0.000 | 0.010 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `1x64x24` | 0.029 ± 0.001 | - | unsupported | 0.032 ± 0.001 | 0.040 ± 0.003 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `1x8x8` | 0.005 ± 0.001 | - | unsupported | 0.010 ± 0.001 | 0.012 ± 0.006 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `3x2x2` | 0.002 ± 0.000 | - | unsupported | 0.005 ± 0.000 | 0.012 ± 0.008 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `3x4x4` | 0.007 ± 0.000 | - | unsupported | 0.010 ± 0.000 | 0.015 ± 0.007 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `3x8x8` | 0.011 ± 0.003 | - | unsupported | 0.019 ± 0.004 | 0.022 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `4x2x2` | 0.002 ± 0.000 | - | unsupported | 0.005 ± 0.000 | 0.013 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `4x4x4` | 0.008 ± 0.000 | - | unsupported | 0.009 ± 0.000 | 0.017 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `4x8x8` | 0.015 ± 0.000 | - | unsupported | 0.022 ± 0.005 | 0.027 ± 0.001 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `8x128x128` | 7.278 ± 0.618 | - | unsupported | 6.810 ± 0.544 | 2.954 ± 1.305 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `8x2x2` | 0.003 ± 0.000 | - | unsupported | 0.006 ± 0.000 | 0.019 ± 0.002 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `8x32x32` | 0.294 ± 0.021 | - | unsupported | 0.265 ± 0.022 | 0.258 ± 0.054 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `8x4x4` | 0.011 ± 0.000 | - | unsupported | 0.014 ± 0.000 | 0.029 ± 0.004 | - | - |
-| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `8x8x8` | 0.036 ± 0.008 | - | unsupported | 0.032 ± 0.000 | 0.046 ± 0.002 | - | - |
-| cpu/linalg_batched | `batched_lu_factor` | f64 | 1 | `1024x16x16,rhs=1` | 0.864 ± 0.149 | - | unsupported | 0.877 ± 0.051 | 0.997 ± 0.053 | 2.704 ± 1.088 | - |
-| cpu/linalg_batched | `batched_lu_factor` | f64 | 1 | `1024x2x2,rhs=1` | 0.082 ± 0.002 | - | unsupported | 0.106 ± 0.013 | 0.252 ± 0.043 | 0.084 ± 0.028 | - |
-| cpu/linalg_batched | `batched_lu_factor` | f64 | 1 | `1024x4x4,rhs=1` | 0.146 ± 0.009 | - | unsupported | 0.178 ± 0.030 | 0.236 ± 0.013 | 0.157 ± 0.032 | - |
-| cpu/linalg_batched | `batched_lu_factor` | f64 | 1 | `1024x8x8,rhs=1` | 0.333 ± 0.008 | - | unsupported | 0.350 ± 0.054 | 0.385 ± 0.025 | 0.771 ± 0.099 | - |
-| cpu/linalg_batched | `batched_lu_factor` | f64 | 4 | `1024x16x16,rhs=1` | 0.903 ± 0.088 | - | unsupported | 0.496 ± 0.052 | 0.932 ± 0.082 | 2.166 ± 0.193 | - |
-| cpu/linalg_batched | `batched_lu_factor` | f64 | 4 | `1024x2x2,rhs=1` | 0.086 ± 0.097 | - | unsupported | 0.136 ± 0.053 | 0.193 ± 0.011 | 0.080 ± 0.005 | - |
-| cpu/linalg_batched | `batched_lu_factor` | f64 | 4 | `1024x4x4,rhs=1` | 0.178 ± 0.040 | - | unsupported | 0.131 ± 0.012 | 0.255 ± 0.045 | 0.144 ± 0.013 | - |
-| cpu/linalg_batched | `batched_lu_factor` | f64 | 4 | `1024x8x8,rhs=1` | 0.335 ± 0.013 | - | unsupported | 0.248 ± 0.033 | 0.445 ± 0.196 | 0.521 ± 0.021 | - |
-| cpu/linalg_batched | `batched_lu_solve` | f64 | 1 | `1024x16x16,rhs=1` | 0.199 ± 0.028 | - | unsupported | 0.173 ± 0.007 | 0.455 ± 0.084 | 0.427 ± 0.038 | - |
-| cpu/linalg_batched | `batched_lu_solve` | f64 | 1 | `1024x2x2,rhs=1` | 0.071 ± 0.009 | - | unsupported | 0.053 ± 0.014 | 0.092 ± 0.015 | 0.064 ± 0.000 | - |
-| cpu/linalg_batched | `batched_lu_solve` | f64 | 1 | `1024x4x4,rhs=1` | 0.055 ± 0.000 | - | unsupported | 0.060 ± 0.004 | 0.096 ± 0.027 | 0.110 ± 0.025 | - |
-| cpu/linalg_batched | `batched_lu_solve` | f64 | 1 | `1024x8x8,rhs=1` | 0.081 ± 0.003 | - | unsupported | 0.078 ± 0.014 | 0.153 ± 0.018 | 0.228 ± 0.049 | - |
-| cpu/linalg_batched | `batched_lu_solve` | f64 | 4 | `1024x16x16,rhs=1` | 0.226 ± 0.019 | - | unsupported | 0.172 ± 0.026 | 0.462 ± 0.118 | 0.324 ± 0.034 | - |
-| cpu/linalg_batched | `batched_lu_solve` | f64 | 4 | `1024x2x2,rhs=1` | 0.109 ± 0.002 | - | unsupported | 0.053 ± 0.018 | 0.092 ± 0.009 | 0.060 ± 0.000 | - |
-| cpu/linalg_batched | `batched_lu_solve` | f64 | 4 | `1024x4x4,rhs=1` | 0.142 ± 0.001 | - | unsupported | 0.045 ± 0.003 | 0.139 ± 0.021 | 0.076 ± 0.001 | - |
-| cpu/linalg_batched | `batched_lu_solve` | f64 | 4 | `1024x8x8,rhs=1` | 0.206 ± 0.001 | - | unsupported | 0.074 ± 0.004 | 0.208 ± 0.029 | 0.149 ± 0.001 | - |
-| cpu/linalg_batched | `batched_triangular_solve` | f64 | 1 | `1024x16x16,rhs=1` | 0.102 ± 0.013 | - | 0.164 ± 0.017 | 0.081 ± 0.014 | 0.154 ± 0.004 | 0.236 ± 0.043 | - |
-| cpu/linalg_batched | `batched_triangular_solve` | f64 | 1 | `1024x2x2,rhs=1` | 0.071 ± 0.008 | - | 0.052 ± 0.012 | 0.021 ± 0.018 | 0.022 ± 0.002 | 0.047 ± 0.005 | - |
-| cpu/linalg_batched | `batched_triangular_solve` | f64 | 1 | `1024x4x4,rhs=1` | 0.040 ± 0.013 | - | 0.057 ± 0.009 | 0.024 ± 0.002 | 0.027 ± 0.001 | 0.047 ± 0.001 | - |
-| cpu/linalg_batched | `batched_triangular_solve` | f64 | 1 | `1024x8x8,rhs=1` | 0.054 ± 0.011 | - | 0.079 ± 0.010 | 0.036 ± 0.009 | 0.053 ± 0.002 | 0.129 ± 0.023 | - |
-| cpu/linalg_batched | `batched_triangular_solve` | f64 | 4 | `1024x16x16,rhs=1` | 0.099 ± 0.013 | - | 0.155 ± 0.012 | 0.070 ± 0.001 | 0.248 ± 0.029 | 0.170 ± 0.011 | - |
-| cpu/linalg_batched | `batched_triangular_solve` | f64 | 4 | `1024x2x2,rhs=1` | 0.055 ± 0.005 | - | 0.100 ± 0.003 | 0.022 ± 0.009 | 0.028 ± 0.007 | 0.034 ± 0.000 | - |
-| cpu/linalg_batched | `batched_triangular_solve` | f64 | 4 | `1024x4x4,rhs=1` | 0.041 ± 0.006 | - | 0.051 ± 0.006 | 0.024 ± 0.001 | 0.029 ± 0.003 | 0.049 ± 0.000 | - |
-| cpu/linalg_batched | `batched_triangular_solve` | f64 | 4 | `1024x8x8,rhs=1` | 0.053 ± 0.000 | - | 0.070 ± 0.013 | 0.034 ± 0.001 | 0.088 ± 0.024 | 0.090 ± 0.021 | - |
-| cpu/linalg_uncovered | `cholesky` | f64 | 1 | `1536x1536` | 7.095 ± 0.495 | - | 6.794 ± 0.721 | 24.501 ± 1.365 | 16.310 ± 1.441 | 38.021 ± 12.957 | - |
-| cpu/linalg_uncovered | `cholesky` | f64 | 4 | `1536x1536` | 6.777 ± 0.171 | - | 7.020 ± 0.865 | 12.420 ± 0.839 | 12.309 ± 1.105 | 12.319 ± 6.021 | - |
-| cpu/linalg_uncovered | `det` | f64 | 1 | `1024x1024` | 6.053 ± 0.112 | - | 6.606 ± 0.149 | 6.191 ± 0.945 | 5.552 ± 1.180 | 20.473 ± 2.710 | - |
-| cpu/linalg_uncovered | `det` | f64 | 4 | `1024x1024` | 6.839 ± 0.879 | - | 6.151 ± 0.609 | 5.457 ± 0.326 | 5.911 ± 0.898 | 6.389 ± 0.246 | - |
-| cpu/linalg_uncovered | `eig` | f64 | 1 | `160x160` | 6.338 ± 0.153 | - | 6.397 ± 1.216 | 6.603 ± 0.381 | 9.073 ± 0.578 | 7.093 ± 0.519 | - |
-| cpu/linalg_uncovered | `eig` | f64 | 4 | `160x160` | 6.293 ± 0.817 | - | 6.455 ± 0.093 | 6.446 ± 0.100 | 8.909 ± 0.285 | 6.166 ± 0.156 | - |
-| cpu/linalg_uncovered | `eigvals` | f64 | 1 | `192x192` | 7.172 ± 0.512 | - | 7.418 ± 0.260 | 7.836 ± 0.278 | 7.290 ± 1.235 | 6.491 ± 0.314 | - |
-| cpu/linalg_uncovered | `eigvals` | f64 | 4 | `192x192` | 7.431 ± 0.186 | - | 7.445 ± 0.616 | 7.744 ± 0.730 | 7.495 ± 0.686 | 6.475 ± 0.207 | - |
-| cpu/linalg_uncovered | `eigvalsh` | f64 | 1 | `512x512` | 16.241 ± 0.162 | - | 16.311 ± 0.202 | 18.653 ± 0.800 | 24.124 ± 3.146 | 12.421 ± 0.847 | - |
-| cpu/linalg_uncovered | `eigvalsh` | f64 | 4 | `512x512` | 18.066 ± 0.523 | - | 18.117 ± 0.568 | 17.438 ± 1.699 | 22.762 ± 0.439 | 8.279 ± 0.299 | - |
-| cpu/linalg_uncovered | `householder_qr` | f64 | 1 | `256x128` | 0.263 ± 0.003 | 0.292 ± 0.025 | unsupported | 0.281 ± 0.030 | 0.306 ± 0.025 | - | - |
-| cpu/linalg_uncovered | `householder_qr` | f64 | 1 | `768x384` | 3.176 ± 0.092 | 3.292 ± 0.324 | unsupported | 3.360 ± 0.100 | 4.100 ± 0.065 | - | - |
-| cpu/linalg_uncovered | `householder_qr` | f64 | 4 | `256x128` | 0.246 ± 0.006 | 0.263 ± 0.011 | unsupported | 0.250 ± 0.002 | 0.356 ± 0.031 | - | - |
-| cpu/linalg_uncovered | `householder_qr` | f64 | 4 | `768x384` | 3.174 ± 0.135 | 3.590 ± 0.659 | unsupported | 3.152 ± 0.243 | 3.372 ± 0.097 | - | - |
-| cpu/linalg_uncovered | `inv` | f64 | 1 | `768x768` | 7.249 ± 0.054 | - | 7.765 ± 0.783 | 9.197 ± 2.413 | 7.250 ± 0.962 | 26.107 ± 1.354 | - |
-| cpu/linalg_uncovered | `inv` | f64 | 4 | `768x768` | 7.497 ± 0.152 | - | 7.651 ± 6.671 | 7.206 ± 0.962 | 7.279 ± 0.149 | 9.558 ± 1.359 | - |
-| cpu/linalg_uncovered | `lstsq` | f64 | 1 | `768x384,rhs=16` | - | 7.684 ± 0.718 | 7.603 ± 0.122 | 4.707 ± 0.319 | 23.474 ± 1.186 | 8.163 ± 4.792 | - |
-| cpu/linalg_uncovered | `lstsq` | f64 | 4 | `768x384,rhs=16` | - | 13.603 ± 5.865 | 14.754 ± 6.907 | 4.528 ± 0.243 | 21.463 ± 2.190 | 4.800 ± 0.325 | - |
-| cpu/linalg_uncovered | `lu` | f64 | 1 | `1024x1024` | 6.668 ± 0.219 | - | 6.959 ± 0.585 | 10.880 ± 0.707 | 9.467 ± 1.094 | 30.411 ± 8.008 | - |
-| cpu/linalg_uncovered | `lu` | f64 | 4 | `1024x1024` | 5.853 ± 0.101 | - | 7.078 ± 0.754 | 8.425 ± 0.488 | 6.072 ± 0.647 | 11.287 ± 3.821 | - |
-| cpu/linalg_uncovered | `norm_fro` | f64 | 1 | `2048x2048` | 0.718 ± 0.071 | - | 0.784 ± 0.057 | 2.316 ± 0.577 | 6.282 ± 0.315 | 5.728 ± 0.701 | - |
-| cpu/linalg_uncovered | `norm_fro` | f64 | 4 | `2048x2048` | 0.445 ± 0.023 | - | 1.728 ± 1.773 | 2.020 ± 0.089 | 2.398 ± 0.502 | 5.211 ± 0.042 | - |
-| cpu/linalg_uncovered | `pinv` | f64 | 1 | `512x256` | 9.885 ± 0.377 | - | 9.390 ± 0.556 | 9.851 ± 1.799 | 10.726 ± 1.241 | 19.186 ± 3.002 | - |
-| cpu/linalg_uncovered | `pinv` | f64 | 4 | `512x256` | 13.031 ± 4.460 | - | 8.964 ± 0.885 | 9.178 ± 1.081 | 11.752 ± 0.756 | 15.709 ± 0.796 | - |
-| cpu/linalg_uncovered | `pinv_with_rtol` | f64 | 1 | `512x256` | 9.404 ± 0.086 | - | 9.241 ± 0.532 | 10.043 ± 0.812 | 11.383 ± 0.474 | 20.042 ± 1.601 | - |
-| cpu/linalg_uncovered | `pinv_with_rtol` | f64 | 4 | `512x256` | 14.084 ± 4.663 | - | 9.463 ± 1.365 | 9.669 ± 0.397 | 9.262 ± 0.485 | 15.264 ± 2.975 | - |
-| cpu/linalg_uncovered | `rank_revealing_qr` | f64 | 1 | `256x128` | 1.576 ± 0.136 | 1.605 ± 0.093 | unsupported | unsupported | unsupported | - | - |
-| cpu/linalg_uncovered | `rank_revealing_qr` | f64 | 1 | `768x384` | 10.867 ± 0.474 | 10.646 ± 0.201 | unsupported | unsupported | unsupported | - | - |
-| cpu/linalg_uncovered | `rank_revealing_qr` | f64 | 4 | `256x128` | 1.386 ± 0.096 | 1.410 ± 0.025 | unsupported | unsupported | unsupported | - | - |
-| cpu/linalg_uncovered | `rank_revealing_qr` | f64 | 4 | `768x384` | 11.541 ± 1.680 | 16.940 ± 1.614 | unsupported | unsupported | unsupported | - | - |
-| cpu/linalg_uncovered | `rank_revealing_qr_deficient` | f64 | 1 | `256x128` | 1.497 ± 0.095 | 1.445 ± 0.064 | unsupported | unsupported | unsupported | - | - |
-| cpu/linalg_uncovered | `rank_revealing_qr_deficient` | f64 | 1 | `768x384` | 9.311 ± 0.424 | 9.708 ± 0.300 | unsupported | unsupported | unsupported | - | - |
-| cpu/linalg_uncovered | `rank_revealing_qr_deficient` | f64 | 4 | `256x128` | 1.430 ± 0.031 | 1.424 ± 0.112 | unsupported | unsupported | unsupported | - | - |
-| cpu/linalg_uncovered | `rank_revealing_qr_deficient` | f64 | 4 | `768x384` | 9.722 ± 0.412 | 12.539 ± 1.118 | unsupported | unsupported | unsupported | - | - |
-| cpu/linalg_uncovered | `slogdet` | f64 | 1 | `1024x1024` | 7.082 ± 0.211 | - | 6.628 ± 0.309 | 7.252 ± 0.529 | 5.504 ± 0.135 | 19.316 ± 1.272 | - |
-| cpu/linalg_uncovered | `slogdet` | f64 | 4 | `1024x1024` | 6.718 ± 0.246 | - | 6.086 ± 2.117 | 5.668 ± 0.248 | 6.502 ± 1.269 | 6.532 ± 0.166 | - |
-| cpu/linalg_uncovered | `svd_full` | f64 | 1 | `768x384` | - | 29.584 ± 4.215 | 29.085 ± 1.989 | 29.097 ± 3.604 | 30.808 ± 3.145 | 67.066 ± 3.899 | - |
-| cpu/linalg_uncovered | `svd_full` | f64 | 4 | `768x384` | - | 35.817 ± 4.489 | 33.642 ± 6.870 | 32.093 ± 3.917 | 28.486 ± 4.003 | 47.441 ± 2.758 | - |
-| cpu/linalg_uncovered | `triangular_solve` | f64 | 1 | `4096x4096,rhs=64` | 12.860 ± 1.099 | - | 18.146 ± 2.629 | 11.333 ± 0.268 | 58.499 ± 5.189 | 29.105 ± 3.722 | - |
-| cpu/linalg_uncovered | `triangular_solve` | f64 | 4 | `4096x4096,rhs=64` | 13.414 ± 0.812 | - | 15.488 ± 1.367 | 10.374 ± 0.886 | 29.041 ± 4.780 | 9.269 ± 0.243 | - |
-| cpu/neural_public_api | `erf` | f32 | 1 | `1024x64` | 0.174 ± 0.007 | 0.188 ± 0.015 | unsupported | 0.056 ± 0.009 | 0.036 ± 0.004 | - | - |
-| cpu/neural_public_api | `erf` | f32 | 1 | `4096x256` | 2.820 ± 0.114 | 2.989 ± 0.265 | unsupported | 0.830 ± 0.083 | 0.474 ± 0.036 | - | - |
-| cpu/neural_public_api | `erf` | f32 | 4 | `1024x64` | 0.181 ± 0.010 | 0.182 ± 0.009 | unsupported | 0.059 ± 0.026 | 0.035 ± 0.027 | - | - |
-| cpu/neural_public_api | `erf` | f32 | 4 | `4096x256` | 0.722 ± 0.064 | 0.673 ± 0.069 | unsupported | 0.434 ± 0.042 | 0.344 ± 0.048 | - | - |
-| cpu/neural_public_api | `gelu` | f32 | 1 | `1024x64` | 0.078 ± 0.002 | 0.073 ± 0.007 | unsupported | 0.085 ± 0.006 | 0.179 ± 0.010 | - | - |
-| cpu/neural_public_api | `gelu` | f32 | 1 | `4096x256` | 1.257 ± 0.029 | 1.282 ± 0.058 | unsupported | 1.374 ± 0.038 | 2.421 ± 0.194 | - | - |
-| cpu/neural_public_api | `gelu` | f32 | 4 | `1024x64` | 0.028 ± 0.006 | 0.030 ± 0.023 | unsupported | 0.101 ± 0.005 | 0.141 ± 0.009 | - | - |
-| cpu/neural_public_api | `gelu` | f32 | 4 | `4096x256` | 0.295 ± 0.013 | 0.349 ± 0.057 | unsupported | 0.633 ± 0.036 | 1.292 ± 0.358 | - | - |
-| cpu/neural_public_api | `gelu_tanh` | f32 | 1 | `1024x64` | 0.255 ± 0.023 | 0.275 ± 0.018 | unsupported | 0.332 ± 0.046 | 0.088 ± 0.011 | - | - |
-| cpu/neural_public_api | `gelu_tanh` | f32 | 1 | `4096x256` | 4.621 ± 0.503 | 4.301 ± 0.244 | unsupported | 4.787 ± 0.108 | 0.844 ± 0.065 | - | - |
-| cpu/neural_public_api | `gelu_tanh` | f32 | 4 | `1024x64` | 0.080 ± 0.027 | 0.116 ± 0.189 | unsupported | 0.194 ± 0.015 | 0.116 ± 0.048 | - | - |
-| cpu/neural_public_api | `gelu_tanh` | f32 | 4 | `4096x256` | 1.035 ± 0.200 | 1.105 ± 0.134 | unsupported | 1.932 ± 0.076 | 0.896 ± 0.076 | - | - |
-| cpu/neural_public_api | `layer_norm` | f32 | 1 | `1024x64` | 0.045 ± 0.002 | 0.071 ± 0.013 | unsupported | 0.048 ± 0.003 | 0.066 ± 0.009 | - | - |
-| cpu/neural_public_api | `layer_norm` | f32 | 1 | `4096x256` | 0.547 ± 0.036 | 0.570 ± 0.029 | unsupported | 0.504 ± 0.016 | 0.555 ± 0.016 | - | - |
-| cpu/neural_public_api | `layer_norm` | f32 | 4 | `1024x64` | 0.047 ± 0.001 | 0.067 ± 0.001 | unsupported | 0.054 ± 0.002 | 0.115 ± 0.033 | - | - |
-| cpu/neural_public_api | `layer_norm` | f32 | 4 | `4096x256` | 0.556 ± 0.198 | 0.564 ± 0.216 | unsupported | 0.207 ± 0.051 | 0.644 ± 0.107 | - | - |
-| cpu/neural_public_api | `log_softmax` | f32 | 1 | `1024x64` | 0.091 ± 0.015 | 0.105 ± 0.004 | unsupported | 0.087 ± 0.007 | 0.097 ± 0.011 | - | - |
-| cpu/neural_public_api | `log_softmax` | f32 | 1 | `4096x256` | 1.141 ± 0.110 | 1.221 ± 0.066 | unsupported | 1.355 ± 0.125 | 1.137 ± 0.088 | - | - |
-| cpu/neural_public_api | `log_softmax` | f32 | 4 | `1024x64` | 0.101 ± 0.012 | 0.125 ± 0.019 | unsupported | 0.098 ± 0.013 | 0.125 ± 0.048 | - | - |
-| cpu/neural_public_api | `log_softmax` | f32 | 4 | `4096x256` | 0.566 ± 0.063 | 0.683 ± 0.281 | unsupported | 0.446 ± 0.181 | 0.964 ± 0.282 | - | - |
-| cpu/neural_public_api | `masked_softmax` | f32 | 1 | `1024x64` | 0.130 ± 0.010 | 0.148 ± 0.030 | unsupported | unsupported | 0.110 ± 0.002 | - | - |
-| cpu/neural_public_api | `masked_softmax` | f32 | 1 | `4096x256` | 1.837 ± 0.259 | 1.867 ± 0.054 | unsupported | unsupported | 1.612 ± 0.118 | - | - |
-| cpu/neural_public_api | `masked_softmax` | f32 | 4 | `1024x64` | 0.121 ± 0.006 | 0.149 ± 0.015 | unsupported | unsupported | 0.131 ± 0.035 | - | - |
-| cpu/neural_public_api | `masked_softmax` | f32 | 4 | `4096x256` | 0.904 ± 0.385 | 1.189 ± 0.479 | unsupported | unsupported | 1.832 ± 0.363 | - | - |
-| cpu/neural_public_api | `reduce_mean` | f32 | 1 | `1024x64` | 0.012 ± 0.000 | 0.017 ± 0.001 | unsupported | 0.008 ± 0.001 | 0.047 ± 0.012 | - | - |
-| cpu/neural_public_api | `reduce_mean` | f32 | 1 | `4096x256` | 0.115 ± 0.008 | 0.107 ± 0.009 | unsupported | 0.058 ± 0.005 | 0.193 ± 0.011 | - | - |
-| cpu/neural_public_api | `reduce_mean` | f32 | 4 | `1024x64` | 0.015 ± 0.001 | 0.021 ± 0.002 | unsupported | 0.039 ± 0.004 | 0.046 ± 0.012 | - | - |
-| cpu/neural_public_api | `reduce_mean` | f32 | 4 | `4096x256` | 0.068 ± 0.008 | 0.074 ± 0.015 | unsupported | 0.070 ± 0.004 | 0.233 ± 0.050 | - | - |
-| cpu/neural_public_api | `rms_norm` | f32 | 1 | `1024x64` | 0.025 ± 0.001 | 0.038 ± 0.003 | unsupported | 0.027 ± 0.003 | 0.070 ± 0.006 | - | - |
-| cpu/neural_public_api | `rms_norm` | f32 | 1 | `4096x256` | 0.321 ± 0.027 | 0.325 ± 0.029 | unsupported | 0.310 ± 0.030 | 0.521 ± 0.037 | - | - |
-| cpu/neural_public_api | `rms_norm` | f32 | 4 | `1024x64` | 0.023 ± 0.000 | 0.037 ± 0.001 | unsupported | 0.142 ± 0.030 | 0.110 ± 0.031 | - | - |
-| cpu/neural_public_api | `rms_norm` | f32 | 4 | `4096x256` | 0.289 ± 0.031 | 0.273 ± 0.089 | unsupported | 0.365 ± 0.012 | 0.493 ± 0.179 | - | - |
-| cpu/neural_public_api | `sigmoid` | f32 | 1 | `1024x64` | 0.048 ± 0.002 | 0.049 ± 0.003 | unsupported | 0.081 ± 0.004 | 0.073 ± 0.015 | - | - |
-| cpu/neural_public_api | `sigmoid` | f32 | 1 | `4096x256` | 0.804 ± 0.040 | 0.850 ± 0.051 | unsupported | 1.143 ± 0.096 | 0.734 ± 0.014 | - | - |
-| cpu/neural_public_api | `sigmoid` | f32 | 4 | `1024x64` | 0.015 ± 0.003 | 0.014 ± 0.083 | unsupported | 0.081 ± 0.003 | 0.095 ± 0.037 | - | - |
-| cpu/neural_public_api | `sigmoid` | f32 | 4 | `4096x256` | 0.185 ± 0.053 | 0.198 ± 0.021 | unsupported | 0.557 ± 0.047 | 0.515 ± 0.038 | - | - |
-| cpu/neural_public_api | `silu` | f32 | 1 | `1024x64` | 0.048 ± 0.002 | 0.051 ± 0.003 | unsupported | 0.078 ± 0.007 | 0.085 ± 0.004 | - | - |
-| cpu/neural_public_api | `silu` | f32 | 1 | `4096x256` | 0.821 ± 0.044 | 0.794 ± 0.114 | unsupported | 1.174 ± 0.045 | 0.780 ± 0.033 | - | - |
-| cpu/neural_public_api | `silu` | f32 | 4 | `1024x64` | 0.021 ± 0.005 | 0.019 ± 0.192 | unsupported | 0.084 ± 0.003 | 0.080 ± 0.041 | - | - |
-| cpu/neural_public_api | `silu` | f32 | 4 | `4096x256` | 0.194 ± 0.019 | 0.188 ± 0.047 | unsupported | 0.615 ± 0.063 | 0.599 ± 0.155 | - | - |
-| cpu/neural_public_api | `softmax` | f32 | 1 | `1024x64` | 0.091 ± 0.005 | 0.109 ± 0.013 | unsupported | 0.094 ± 0.008 | 0.097 ± 0.003 | - | - |
-| cpu/neural_public_api | `softmax` | f32 | 1 | `4096x256` | 1.157 ± 0.082 | 1.068 ± 0.171 | unsupported | 1.580 ± 0.125 | 1.068 ± 0.115 | - | - |
-| cpu/neural_public_api | `softmax` | f32 | 4 | `1024x64` | 0.107 ± 0.009 | 0.122 ± 0.005 | unsupported | 0.100 ± 0.008 | 0.123 ± 0.010 | - | - |
-| cpu/neural_public_api | `softmax` | f32 | 4 | `4096x256` | 0.552 ± 0.274 | 0.598 ± 0.559 | unsupported | 0.783 ± 0.081 | 0.902 ± 0.057 | - | - |
-| cpu/neural_public_api | `softplus` | f32 | 1 | `1024x64` | 0.215 ± 0.014 | 0.214 ± 0.018 | unsupported | 0.290 ± 0.018 | 0.287 ± 0.017 | - | - |
-| cpu/neural_public_api | `softplus` | f32 | 1 | `4096x256` | 3.692 ± 0.593 | 3.912 ± 0.150 | unsupported | 4.253 ± 0.192 | 3.862 ± 0.117 | - | - |
-| cpu/neural_public_api | `softplus` | f32 | 4 | `1024x64` | 0.069 ± 0.006 | 0.073 ± 0.083 | unsupported | 0.177 ± 0.022 | 0.223 ± 0.027 | - | - |
-| cpu/neural_public_api | `softplus` | f32 | 4 | `4096x256` | 0.866 ± 0.098 | 0.837 ± 0.168 | unsupported | 1.849 ± 0.088 | 2.098 ± 0.121 | - | - |
-| cpu/neural_public_api | `take_along_axis` | f32 | 1 | `1024x64` | 0.524 ± 0.015 | 0.669 ± 0.042 | unsupported | 0.115 ± 0.012 | 0.089 ± 0.013 | - | - |
-| cpu/neural_public_api | `take_along_axis` | f32 | 1 | `4096x256` | 8.511 ± 0.635 | 9.764 ± 0.271 | unsupported | 1.674 ± 0.092 | 0.809 ± 0.130 | - | - |
-| cpu/neural_public_api | `take_along_axis` | f32 | 4 | `1024x64` | 0.472 ± 0.041 | 0.626 ± 0.055 | unsupported | 0.131 ± 0.007 | 0.111 ± 0.005 | - | - |
-| cpu/neural_public_api | `take_along_axis` | f32 | 4 | `4096x256` | 3.711 ± 1.155 | 5.259 ± 0.594 | unsupported | 0.847 ± 0.032 | 0.752 ± 0.201 | - | - |
-| cpu/output_reuse | `add_into` | f64 | 1 | `33554432` | 13.915 ± 1.969 | - | unsupported | 11.835 ± 1.764 | - | 12.617 ± 1.478 | 13.943 ± 0.663 |
-| cpu/output_reuse | `add_into` | f64 | 4 | `33554432` | 7.749 ± 0.411 | - | unsupported | 6.613 ± 0.325 | - | 9.991 ± 0.041 | 5.563 ± 0.164 |
-| cpu/output_reuse | `conj_into` | c64 | 1 | `16777216` | 9.047 ± 0.356 | - | unsupported | 8.432 ± 2.284 | - | 8.252 ± 0.763 | 8.932 ± 0.833 |
-| cpu/output_reuse | `conj_into` | c64 | 4 | `16777216` | 5.329 ± 1.782 | - | unsupported | 4.715 ± 0.466 | - | 6.928 ± 0.138 | 3.504 ± 0.508 |
-| cpu/output_reuse | `copy_read_into` | f64 | 1 | `33554432` | 7.256 ± 0.869 | - | unsupported | 8.719 ± 0.392 | - | 6.232 ± 0.453 | - |
-| cpu/output_reuse | `copy_read_into` | f64 | 4 | `33554432` | 5.287 ± 1.680 | - | unsupported | 5.566 ± 0.892 | - | 5.485 ± 0.199 | - |
-| cpu/output_reuse | `div_into` | f64 | 1 | `33554432` | 13.430 ± 0.881 | - | unsupported | 13.439 ± 0.818 | - | 12.356 ± 0.575 | 14.328 ± 1.673 |
-| cpu/output_reuse | `div_into` | f64 | 4 | `33554432` | 8.014 ± 0.691 | - | unsupported | 8.758 ± 0.901 | - | 9.949 ± 0.441 | 5.729 ± 1.371 |
-| cpu/output_reuse | `dot_general_read_into` | f64 | 1 | `1024x1024` | 7.964 ± 0.271 | - | unsupported | 8.137 ± 1.221 | - | 47.621 ± 1.320 | - |
-| cpu/output_reuse | `dot_general_read_into` | f64 | 4 | `1024x1024` | 7.790 ± 0.904 | - | unsupported | 6.813 ± 0.459 | - | 11.427 ± 0.485 | - |
-| cpu/output_reuse | `dot_general_read_into_accum` | f64 | 1 | `1024x1024` | 8.135 ± 0.319 | - | unsupported | 8.788 ± 1.611 | - | 59.436 ± 5.392 | - |
-| cpu/output_reuse | `dot_general_read_into_accum` | f64 | 4 | `1024x1024` | 8.007 ± 1.316 | - | unsupported | 8.214 ± 1.196 | - | 12.429 ± 0.864 | - |
-| cpu/output_reuse | `mul_into` | f64 | 1 | `33554432` | 11.913 ± 2.143 | - | unsupported | 13.237 ± 0.759 | - | 12.110 ± 0.984 | 14.532 ± 2.088 |
-| cpu/output_reuse | `mul_into` | f64 | 4 | `33554432` | 6.757 ± 1.781 | - | unsupported | 6.814 ± 0.236 | - | 9.889 ± 0.159 | 6.732 ± 1.064 |
-| cpu/output_reuse | `neg_into` | f64 | 1 | `33554432` | 8.928 ± 0.339 | - | unsupported | 8.975 ± 0.762 | - | 8.238 ± 0.532 | 12.392 ± 1.038 |
-| cpu/output_reuse | `neg_into` | f64 | 4 | `33554432` | 3.700 ± 0.183 | - | unsupported | 4.973 ± 1.365 | - | 6.709 ± 0.073 | 3.628 ± 0.137 |
-| cpu/output_reuse | `solve_read_into` | f64 | 1 | `256x256,rhs=16` | 0.178 ± 0.004 | unsupported | unsupported | 0.223 ± 0.009 | unsupported | - | - |
-| cpu/output_reuse | `solve_read_into` | f64 | 1 | `768x768,rhs=16` | 2.166 ± 0.134 | unsupported | unsupported | 2.694 ± 0.139 | unsupported | - | - |
-| cpu/output_reuse | `solve_read_into` | f64 | 4 | `256x256,rhs=16` | 0.168 ± 0.007 | unsupported | unsupported | 0.240 ± 0.041 | unsupported | - | - |
-| cpu/output_reuse | `solve_read_into` | f64 | 4 | `768x768,rhs=16` | 2.171 ± 0.102 | unsupported | unsupported | 2.278 ± 0.085 | unsupported | - | - |
-| cpu/output_reuse | `sub_into` | f64 | 1 | `33554432` | 13.623 ± 1.597 | - | unsupported | 12.996 ± 0.773 | - | 11.552 ± 0.968 | 15.065 ± 1.534 |
-| cpu/output_reuse | `sub_into` | f64 | 4 | `33554432` | 7.956 ± 1.121 | - | unsupported | 6.839 ± 0.760 | - | 10.055 ± 0.542 | 5.273 ± 0.066 |
-| cpu/structural_shape | `broadcast_in_dim` | f64 | 1 | `8192x1 -> 8192x4096` | 7.850 ± 2.032 | - | 0.003 ± 0.000 | 5.673 ± 0.635 | 5.474 ± 0.443 | 13.030 ± 0.885 | - |
-| cpu/structural_shape | `broadcast_in_dim` | f64 | 4 | `8192x1 -> 8192x4096` | 5.081 ± 0.741 | - | 0.003 ± 0.001 | 3.610 ± 0.099 | 3.400 ± 1.510 | 12.533 ± 1.889 | - |
-| cpu/structural_shape | `cast_f64_f32` | f64->f32 | 1 | `33554432` | 7.976 ± 0.550 | - | 16.289 ± 0.832 | 7.271 ± 0.383 | 8.539 ± 1.036 | 7.550 ± 0.486 | - |
-| cpu/structural_shape | `cast_f64_f32` | f64->f32 | 4 | `33554432` | 4.446 ± 1.123 | - | 9.423 ± 1.687 | 4.241 ± 0.108 | 5.060 ± 0.069 | 6.856 ± 0.484 | - |
-| cpu/structural_shape | `embed_diagonal` | f64 | 1 | `8192 -> 8192x8192` | 10.437 ± 1.323 | - | 11.042 ± 0.397 | 11.099 ± 0.514 | 15.176 ± 0.520 | 11.070 ± 0.815 | - |
-| cpu/structural_shape | `embed_diagonal` | f64 | 4 | `8192 -> 8192x8192` | 6.854 ± 1.489 | - | 6.187 ± 1.797 | 7.160 ± 2.175 | 7.077 ± 2.884 | 8.895 ± 0.440 | - |
-| cpu/structural_shape | `extract_diagonal` | f64 | 1 | `8388608x2x2 -> 8388608x2` | 3.558 ± 0.255 | - | 3.735 ± 0.218 | 9.246 ± 1.379 | 7.548 ± 0.366 | - | - |
-| cpu/structural_shape | `extract_diagonal` | f64 | 4 | `8388608x2x2 -> 8388608x2` | 2.234 ± 0.572 | - | 1.970 ± 0.264 | 4.415 ± 0.178 | 4.962 ± 1.197 | - | - |
-| cpu/structural_shape | `reshape` | f64 | 1 | `33554432 -> 8192x4096` | 8.481 ± 2.462 | - | 0.002 ± 0.000 | 8.775 ± 0.903 | 6.953 ± 0.208 | 6.742 ± 0.362 | - |
-| cpu/structural_shape | `reshape` | f64 | 4 | `33554432 -> 8192x4096` | 4.705 ± 0.647 | - | 0.002 ± 0.000 | 4.390 ± 0.262 | 4.752 ± 0.564 | 5.480 ± 0.497 | - |
-| cpu/structural_shape | `transpose` | f64 | 1 | `4096x4096` | 39.824 ± 2.541 | - | 0.002 ± 0.002 | 50.567 ± 1.824 | 47.870 ± 1.230 | 90.534 ± 6.182 | 31.377 ± 3.586 |
-| cpu/structural_shape | `transpose` | f64 | 4 | `4096x4096` | 15.397 ± 0.895 | - | 0.003 ± 0.007 | 49.026 ± 2.103 | 16.124 ± 2.631 | 88.552 ± 6.142 | 10.592 ± 0.816 |
-| cpu/structural_shape | `tril` | f64 | 1 | `4096x4096` | 6.430 ± 0.408 | - | 6.949 ± 0.318 | 6.960 ± 0.431 | 3.939 ± 0.384 | 6.359 ± 0.564 | - |
-| cpu/structural_shape | `tril` | f64 | 4 | `4096x4096` | 3.069 ± 0.756 | - | 2.738 ± 0.442 | 2.929 ± 0.136 | 3.100 ± 0.121 | 4.991 ± 0.092 | - |
-| cpu/structural_shape | `triu` | f64 | 1 | `4096x4096` | 7.027 ± 0.954 | - | 7.377 ± 0.751 | 6.616 ± 0.518 | 4.215 ± 0.354 | 6.459 ± 0.389 | - |
-| cpu/structural_shape | `triu` | f64 | 4 | `4096x4096` | 2.829 ± 0.167 | - | 3.102 ± 0.885 | 2.855 ± 0.087 | 2.771 ± 0.196 | 6.144 ± 0.158 | - |
+| cpu/complex | `cholesky` | c64 | 1 | `448x448` | 3.749 ± 0.158 | - | 3.837 ± 0.285 | 3.863 ± 0.468 | 1.579 ± 0.052 | 7.613 ± 0.853 | - |
+| cpu/complex | `cholesky` | c64 | 4 | `448x448` | 3.888 ± 0.483 | - | 3.941 ± 0.325 | 4.417 ± 0.388 | 1.365 ± 0.065 | 75.740 ± 13.878 | - |
+| cpu/complex | `conj` | c64 | 1 | `16777216` | 13.474 ± 2.466 | - | 12.483 ± 0.576 | 11.770 ± 1.030 | 12.561 ± 0.249 | 16.299 ± 9.275 | 10.449 ± 0.351 |
+| cpu/complex | `conj` | c64 | 4 | `16777216` | 11.003 ± 2.056 | - | 11.289 ± 3.706 | 17.626 ± 4.671 | 14.646 ± 1.065 | 12.195 ± 3.128 | 13.851 ± 1.204 |
+| cpu/complex | `div` | c64 | 1 | `8388608` | 48.940 ± 5.639 | - | 45.302 ± 1.679 | 18.384 ± 3.273 | 36.917 ± 1.384 | 58.509 ± 5.574 | 55.251 ± 3.592 |
+| cpu/complex | `div` | c64 | 4 | `8388608` | 23.880 ± 2.291 | - | 20.029 ± 7.732 | 10.909 ± 2.959 | 18.997 ± 4.349 | 52.333 ± 7.495 | 28.646 ± 15.274 |
+| cpu/complex | `dot_general` | c64 | 1 | `640x640` | 10.950 ± 2.937 | - | 10.030 ± 0.448 | 9.895 ± 0.860 | 56.695 ± 13.715 | 64.113 ± 4.036 | - |
+| cpu/complex | `dot_general` | c64 | 4 | `640x640` | 10.053 ± 0.741 | - | 10.836 ± 0.690 | 11.444 ± 0.476 | 22.022 ± 4.857 | 40.135 ± 21.973 | - |
+| cpu/complex | `dot_general_with_conj` | c64 | 1 | `640x640` | 11.420 ± 1.517 | - | unsupported | 10.541 ± 2.586 | 59.950 ± 9.584 | 83.290 ± 23.114 | - |
+| cpu/complex | `dot_general_with_conj` | c64 | 4 | `640x640` | 13.081 ± 0.961 | - | unsupported | 11.264 ± 1.232 | 17.849 ± 1.687 | 53.619 ± 18.746 | - |
+| cpu/complex | `eig` | c64 | 1 | `112x112` | 11.931 ± 0.638 | - | 12.099 ± 1.481 | 11.187 ± 0.946 | 22.849 ± 1.380 | 9.049 ± 1.195 | - |
+| cpu/complex | `eig` | c64 | 4 | `112x112` | 11.475 ± 1.413 | - | 11.404 ± 5.830 | 11.951 ± 1.265 | 21.269 ± 1.414 | 508.308 ± 598.234 | - |
+| cpu/complex | `exp` | c64 | 1 | `4194304` | 37.716 ± 3.622 | - | 37.422 ± 5.362 | 37.123 ± 5.923 | 47.050 ± 5.295 | 54.896 ± 8.201 | 54.588 ± 5.838 |
+| cpu/complex | `exp` | c64 | 4 | `4194304` | 14.095 ± 2.362 | - | 16.079 ± 3.281 | 20.480 ± 8.964 | 31.739 ± 13.988 | 47.602 ± 2.726 | 22.694 ± 13.505 |
+| cpu/complex | `log` | c64 | 1 | `4194304` | 47.177 ± 2.625 | - | 49.042 ± 3.156 | 65.796 ± 5.453 | 94.479 ± 8.979 | 77.559 ± 10.610 | 76.081 ± 2.306 |
+| cpu/complex | `log` | c64 | 4 | `4194304` | 22.356 ± 0.844 | - | 21.815 ± 1.063 | 26.527 ± 4.052 | 43.320 ± 16.364 | 80.184 ± 5.996 | 49.939 ± 12.251 |
+| cpu/complex | `mul` | c64 | 1 | `8388608` | 10.180 ± 0.896 | - | 8.947 ± 1.002 | 10.549 ± 1.591 | 9.086 ± 0.851 | 10.551 ± 1.015 | 10.424 ± 1.114 |
+| cpu/complex | `mul` | c64 | 4 | `8388608` | 8.306 ± 1.330 | - | 8.644 ± 1.468 | 10.291 ± 0.882 | 11.805 ± 1.744 | 11.028 ± 0.854 | 11.313 ± 2.066 |
+| cpu/complex | `norm_fro` | c64 | 1 | `2048x1536` | 1.265 ± 0.109 | - | 7.600 ± 0.265 | 6.296 ± 0.641 | 5.298 ± 0.732 | 8.933 ± 0.696 | - |
+| cpu/complex | `norm_fro` | c64 | 4 | `2048x1536` | 0.904 ± 0.019 | - | 5.334 ± 1.378 | 3.581 ± 0.367 | 2.801 ± 0.112 | 9.085 ± 5.099 | - |
+| cpu/complex | `qr` | c64 | 1 | `256x256` | 8.334 ± 0.499 | - | 7.633 ± 0.671 | 7.260 ± 0.755 | 7.312 ± 0.964 | 10.490 ± 4.796 | - |
+| cpu/complex | `qr` | c64 | 4 | `256x256` | 8.794 ± 0.794 | - | 7.442 ± 0.091 | 7.601 ± 0.223 | 6.965 ± 0.865 | 175.469 ± 52.941 | - |
+| cpu/complex | `solve` | c64 | 1 | `384x384,rhs=8` | 5.074 ± 0.229 | - | 5.309 ± 0.349 | 4.980 ± 0.435 | 2.332 ± 0.091 | 7.285 ± 2.016 | - |
+| cpu/complex | `solve` | c64 | 4 | `384x384,rhs=8` | 5.896 ± 0.205 | - | 6.123 ± 0.535 | 5.835 ± 0.330 | 2.517 ± 0.363 | 151.977 ± 32.992 | - |
+| cpu/complex | `svd` | c64 | 1 | `160x160` | 8.493 ± 0.798 | - | 7.630 ± 0.141 | 7.161 ± 0.140 | 7.210 ± 0.465 | 11.254 ± 3.407 | - |
+| cpu/complex | `svd` | c64 | 4 | `160x160` | 7.890 ± 0.144 | - | 7.882 ± 0.629 | 7.473 ± 0.296 | 6.495 ± 0.805 | 624.846 ± 40.052 | - |
+| cpu/complex | `tensordot` | c64 | 1 | `640x640` | 11.908 ± 1.208 | - | 12.864 ± 0.761 | 10.244 ± 0.345 | 63.137 ± 10.945 | 74.488 ± 10.821 | - |
+| cpu/complex | `tensordot` | c64 | 4 | `640x640` | 10.675 ± 0.655 | - | 11.727 ± 1.197 | 10.703 ± 0.806 | 16.668 ± 2.043 | 49.306 ± 27.067 | - |
+| cpu/einsum_concrete | `einsum_ij_jk_ik` | f64 | 1 | `1024x1024` | 13.772 ± 2.830 | - | unsupported | 16.480 ± 2.130 | 63.283 ± 10.031 | - | - |
+| cpu/einsum_concrete | `einsum_ij_jk_ik` | f64 | 4 | `1024x1024` | 16.684 ± 4.665 | - | unsupported | 12.834 ± 2.791 | 27.072 ± 4.163 | - | - |
+| cpu/elementwise_reduction | `abs` | f64 | 1 | `33554432` | 16.430 ± 2.862 | - | 13.018 ± 3.137 | 12.243 ± 1.484 | 21.326 ± 6.345 | 12.343 ± 2.493 | 13.769 ± 0.854 |
+| cpu/elementwise_reduction | `abs` | f64 | 4 | `33554432` | 14.088 ± 0.899 | - | 13.584 ± 1.932 | 12.501 ± 2.439 | 10.573 ± 1.407 | 15.243 ± 4.072 | 12.617 ± 4.077 |
+| cpu/elementwise_reduction | `add` | f64 | 1 | `33554432` | 19.620 ± 7.262 | - | 21.284 ± 8.114 | 20.251 ± 3.678 | 25.920 ± 2.544 | 22.633 ± 23.114 | 28.980 ± 6.417 |
+| cpu/elementwise_reduction | `add` | f64 | 4 | `33554432` | 20.196 ± 3.859 | - | 23.640 ± 7.479 | 21.360 ± 3.175 | 28.177 ± 2.627 | 30.199 ± 36.448 | 21.354 ± 5.771 |
+| cpu/elementwise_reduction | `chain_log1p_exp_mul` | f64 | 1 | `4194304` | 39.416 ± 13.782 | - | 39.101 ± 4.132 | 39.465 ± 1.320 | 30.588 ± 1.518 | 53.909 ± 6.226 | 69.440 ± 11.128 |
+| cpu/elementwise_reduction | `chain_log1p_exp_mul` | f64 | 4 | `4194304` | 14.525 ± 7.467 | - | 17.588 ± 2.336 | 18.418 ± 1.930 | 17.323 ± 5.831 | 47.524 ± 7.443 | 26.447 ± 4.188 |
+| cpu/elementwise_reduction | `clamp` | f64 | 1 | `8388608` | 11.567 ± 2.997 | - | 7.186 ± 0.782 | 9.130 ± 2.337 | 7.098 ± 1.631 | 7.796 ± 2.705 | 7.707 ± 35.526 |
+| cpu/elementwise_reduction | `clamp` | f64 | 4 | `8388608` | 7.179 ± 2.151 | - | 6.106 ± 1.228 | 7.162 ± 1.478 | 7.857 ± 1.505 | 7.490 ± 1.522 | 7.991 ± 4.132 |
+| cpu/elementwise_reduction | `compare_lt` | f64 | 1 | `33554432` | 14.258 ± 1.661 | - | 10.790 ± 0.835 | 20.000 ± 1.311 | 20.529 ± 1.865 | 26.692 ± 10.388 | - |
+| cpu/elementwise_reduction | `compare_lt` | f64 | 4 | `33554432` | 14.129 ± 1.507 | - | 13.432 ± 1.132 | 12.778 ± 1.292 | 15.566 ± 1.639 | 25.620 ± 10.616 | - |
+| cpu/elementwise_reduction | `cos` | f64 | 1 | `8388608` | 37.014 ± 5.564 | - | 31.950 ± 6.027 | 34.509 ± 1.475 | 28.816 ± 1.475 | 52.202 ± 5.522 | 44.037 ± 23.791 |
+| cpu/elementwise_reduction | `cos` | f64 | 4 | `8388608` | 20.888 ± 7.402 | - | 14.042 ± 2.193 | 18.706 ± 5.633 | 14.883 ± 1.836 | 38.741 ± 11.643 | 14.242 ± 1.792 |
+| cpu/elementwise_reduction | `div` | f64 | 1 | `33554432` | 18.354 ± 1.905 | - | 19.920 ± 2.474 | 19.669 ± 1.579 | 37.267 ± 4.909 | 17.481 ± 3.780 | 17.768 ± 5.650 |
+| cpu/elementwise_reduction | `div` | f64 | 4 | `33554432` | 23.248 ± 3.421 | - | 23.891 ± 2.969 | 16.989 ± 2.825 | 25.296 ± 3.594 | 28.557 ± 25.993 | 19.890 ± 4.347 |
+| cpu/elementwise_reduction | `exp` | f64 | 1 | `8388608` | 21.118 ± 3.620 | - | 21.017 ± 5.858 | 40.931 ± 12.790 | 16.195 ± 3.287 | 44.020 ± 2.869 | 36.665 ± 2.984 |
+| cpu/elementwise_reduction | `exp` | f64 | 4 | `8388608` | 10.840 ± 7.493 | - | 12.246 ± 5.357 | 13.005 ± 1.697 | 9.047 ± 0.389 | 34.336 ± 1.581 | 18.627 ± 3.131 |
+| cpu/elementwise_reduction | `expm1` | f64 | 1 | `4194304` | 28.340 ± 4.736 | - | 27.529 ± 0.562 | 25.954 ± 2.411 | 17.473 ± 1.494 | 33.747 ± 6.582 | 58.461 ± 18.586 |
+| cpu/elementwise_reduction | `expm1` | f64 | 4 | `4194304` | 15.292 ± 2.592 | - | 11.091 ± 0.673 | 16.205 ± 2.167 | 9.642 ± 1.841 | 24.197 ± 1.439 | 10.981 ± 2.421 |
+| cpu/elementwise_reduction | `log` | f64 | 1 | `8388608` | 36.855 ± 11.693 | - | 40.171 ± 7.414 | 44.040 ± 5.040 | 31.494 ± 7.016 | 48.574 ± 13.657 | 47.009 ± 5.072 |
+| cpu/elementwise_reduction | `log` | f64 | 4 | `8388608` | 19.738 ± 3.264 | - | 21.864 ± 6.081 | 24.959 ± 5.264 | 13.869 ± 1.476 | 46.497 ± 1.011 | 19.529 ± 6.246 |
+| cpu/elementwise_reduction | `log1p` | f64 | 1 | `4194304` | 18.811 ± 1.848 | - | 20.175 ± 7.610 | 20.238 ± 2.512 | 20.506 ± 2.134 | 36.856 ± 22.536 | 40.202 ± 43.112 |
+| cpu/elementwise_reduction | `log1p` | f64 | 4 | `4194304` | 7.847 ± 0.456 | - | 7.796 ± 0.368 | 11.920 ± 4.867 | 10.320 ± 0.373 | 20.647 ± 2.046 | 14.541 ± 5.541 |
+| cpu/elementwise_reduction | `masked_log_softmax_axis1` | f64 | 1 | `1024x64` | 0.278 ± 0.021 | 0.260 ± 0.028 | unsupported | unsupported | 0.305 ± 0.153 | - | - |
+| cpu/elementwise_reduction | `masked_log_softmax_axis1` | f64 | 4 | `1024x64` | 0.397 ± 0.256 | 0.372 ± 0.079 | unsupported | unsupported | 0.202 ± 0.017 | - | - |
+| cpu/elementwise_reduction | `maximum` | f64 | 1 | `33554432` | 19.722 ± 1.529 | - | 18.214 ± 3.500 | 24.044 ± 7.239 | 35.171 ± 4.574 | 31.549 ± 51.381 | 18.353 ± 3.657 |
+| cpu/elementwise_reduction | `maximum` | f64 | 4 | `33554432` | 20.657 ± 3.699 | - | 22.608 ± 2.227 | 16.313 ± 4.805 | 25.048 ± 2.873 | 115.035 ± 202.376 | 21.974 ± 8.838 |
+| cpu/elementwise_reduction | `minimum` | f64 | 1 | `33554432` | 17.958 ± 2.349 | - | 16.940 ± 2.570 | 25.348 ± 2.959 | 34.997 ± 1.503 | 23.132 ± 9.423 | 20.874 ± 3.657 |
+| cpu/elementwise_reduction | `minimum` | f64 | 4 | `33554432` | 22.920 ± 6.346 | - | 20.212 ± 3.252 | 16.640 ± 2.215 | 25.171 ± 1.015 | 23.972 ± 9.325 | 26.999 ± 10.648 |
+| cpu/elementwise_reduction | `mul` | f64 | 1 | `33554432` | 23.624 ± 9.448 | - | 21.541 ± 5.668 | 19.779 ± 1.647 | 32.152 ± 4.821 | 24.416 ± 6.402 | 18.939 ± 2.549 |
+| cpu/elementwise_reduction | `mul` | f64 | 4 | `33554432` | 20.439 ± 6.171 | - | 21.696 ± 1.771 | 19.117 ± 2.610 | 23.097 ± 2.144 | 17.589 ± 5.495 | 20.498 ± 5.117 |
+| cpu/elementwise_reduction | `neg` | f64 | 1 | `33554432` | 11.792 ± 2.347 | - | 17.297 ± 7.896 | 10.702 ± 1.865 | 20.931 ± 5.652 | 12.630 ± 2.525 | 14.961 ± 0.996 |
+| cpu/elementwise_reduction | `neg` | f64 | 4 | `33554432` | 15.515 ± 3.811 | - | 11.756 ± 1.385 | 14.714 ± 3.557 | 13.077 ± 2.905 | 19.792 ± 16.569 | 12.725 ± 3.032 |
+| cpu/elementwise_reduction | `pow` | f64 | 1 | `4194304` | 36.286 ± 4.171 | - | 35.833 ± 6.062 | 70.697 ± 1.554 | 44.404 ± 4.087 | 111.023 ± 33.561 | 80.085 ± 6.637 |
+| cpu/elementwise_reduction | `pow` | f64 | 4 | `4194304` | 21.674 ± 4.021 | - | 22.711 ± 6.237 | 32.900 ± 7.141 | 19.396 ± 3.132 | 80.113 ± 8.726 | 28.146 ± 4.224 |
+| cpu/elementwise_reduction | `reduce_max_all` | f64 | 1 | `8192x4096` | 15.983 ± 6.815 | - | 10.487 ± 5.982 | 12.911 ± 1.535 | 27.547 ± 3.023 | 8.227 ± 3.616 | - |
+| cpu/elementwise_reduction | `reduce_max_all` | f64 | 4 | `8192x4096` | 6.296 ± 0.973 | - | 6.976 ± 1.880 | 6.911 ± 0.417 | 12.706 ± 1.082 | 5.883 ± 0.410 | - |
+| cpu/elementwise_reduction | `reduce_max_axis0` | f64 | 1 | `2048x2048` | 1.009 ± 0.150 | - | 1.218 ± 0.277 | 13.517 ± 4.029 | 2.672 ± 0.161 | 0.924 ± 0.513 | - |
+| cpu/elementwise_reduction | `reduce_max_axis0` | f64 | 4 | `2048x2048` | 0.829 ± 0.119 | - | 0.915 ± 0.075 | 11.600 ± 1.002 | 1.778 ± 0.407 | 0.700 ± 0.134 | - |
+| cpu/elementwise_reduction | `reduce_max_axis1` | f64 | 1 | `2048x2048` | 0.909 ± 0.089 | - | 1.059 ± 0.062 | 1.729 ± 0.159 | 0.890 ± 0.169 | 0.803 ± 0.116 | - |
+| cpu/elementwise_reduction | `reduce_max_axis1` | f64 | 4 | `2048x2048` | 1.851 ± 0.230 | - | 2.107 ± 0.588 | 1.123 ± 0.226 | 0.803 ± 0.172 | 0.714 ± 0.033 | - |
+| cpu/elementwise_reduction | `reduce_min_all` | f64 | 1 | `8192x4096` | 10.025 ± 0.719 | - | 13.856 ± 6.424 | 12.181 ± 0.714 | 32.775 ± 9.975 | 6.777 ± 0.678 | - |
+| cpu/elementwise_reduction | `reduce_min_all` | f64 | 4 | `8192x4096` | 6.446 ± 4.404 | - | 5.870 ± 0.624 | 7.154 ± 0.494 | 13.427 ± 1.376 | 5.676 ± 0.506 | - |
+| cpu/elementwise_reduction | `reduce_min_axis0` | f64 | 1 | `2048x2048` | 1.010 ± 0.119 | - | 1.128 ± 0.148 | 15.797 ± 2.255 | 1.980 ± 0.231 | 0.683 ± 0.032 | - |
+| cpu/elementwise_reduction | `reduce_min_axis0` | f64 | 4 | `2048x2048` | 0.832 ± 0.134 | - | 0.767 ± 0.068 | 12.458 ± 2.838 | 1.780 ± 0.334 | 1.073 ± 0.305 | - |
+| cpu/elementwise_reduction | `reduce_min_axis1` | f64 | 1 | `4096x4096` | 4.238 ± 0.257 | - | 4.077 ± 1.189 | 5.837 ± 0.353 | 3.439 ± 0.554 | 4.039 ± 1.457 | - |
+| cpu/elementwise_reduction | `reduce_min_axis1` | f64 | 4 | `4096x4096` | 6.028 ± 1.472 | - | 6.234 ± 1.254 | 4.454 ± 1.846 | 4.206 ± 1.897 | 3.128 ± 0.183 | - |
+| cpu/elementwise_reduction | `reduce_prod_all` | f64 | 1 | `8192x4096` | 8.760 ± 1.142 | - | 10.099 ± 2.110 | 6.657 ± 0.242 | 52.238 ± 2.665 | 6.947 ± 0.607 | - |
+| cpu/elementwise_reduction | `reduce_prod_all` | f64 | 4 | `8192x4096` | 6.625 ± 1.207 | - | 7.660 ± 3.417 | 5.699 ± 0.251 | 19.880 ± 2.281 | 5.558 ± 1.626 | - |
+| cpu/elementwise_reduction | `reduce_prod_axis0` | f64 | 1 | `2048x2048` | 1.116 ± 0.118 | - | 1.133 ± 0.288 | 4.352 ± 0.280 | 2.387 ± 0.495 | 0.705 ± 0.086 | - |
+| cpu/elementwise_reduction | `reduce_prod_axis0` | f64 | 4 | `2048x2048` | 1.531 ± 0.791 | - | 0.982 ± 0.297 | 2.477 ± 0.117 | 1.399 ± 0.219 | 0.931 ± 0.277 | - |
+| cpu/elementwise_reduction | `reduce_prod_axis1` | f64 | 1 | `2048x2048` | 0.949 ± 0.209 | - | 1.224 ± 0.807 | 0.689 ± 0.073 | 1.076 ± 0.272 | 0.734 ± 0.038 | - |
+| cpu/elementwise_reduction | `reduce_prod_axis1` | f64 | 4 | `2048x2048` | 1.632 ± 0.310 | - | 1.906 ± 1.007 | 0.839 ± 0.084 | 0.843 ± 0.079 | 0.939 ± 0.067 | - |
+| cpu/elementwise_reduction | `reduce_sum_all` | f64 | 1 | `8192x4096` | 7.018 ± 0.331 | - | 7.397 ± 1.869 | 6.786 ± 1.360 | 33.913 ± 11.783 | 6.691 ± 1.223 | - |
+| cpu/elementwise_reduction | `reduce_sum_all` | f64 | 4 | `8192x4096` | 6.757 ± 2.827 | - | 6.970 ± 1.132 | 5.266 ± 0.634 | 16.738 ± 0.188 | 6.909 ± 0.861 | - |
+| cpu/elementwise_reduction | `reduce_sum_axis0` | f64 | 1 | `2048x2048` | 1.074 ± 0.119 | - | 1.087 ± 0.083 | 4.546 ± 0.111 | 2.845 ± 0.708 | 1.004 ± 0.050 | - |
+| cpu/elementwise_reduction | `reduce_sum_axis0` | f64 | 4 | `2048x2048` | 0.816 ± 0.150 | - | 0.709 ± 0.049 | 2.600 ± 0.327 | 1.456 ± 0.539 | 0.840 ± 0.051 | - |
+| cpu/elementwise_reduction | `reduce_sum_axis1` | f64 | 1 | `2048x2048` | 1.056 ± 0.145 | - | 1.172 ± 0.202 | 0.626 ± 0.018 | 1.169 ± 0.080 | 0.804 ± 0.150 | - |
+| cpu/elementwise_reduction | `reduce_sum_axis1` | f64 | 4 | `2048x2048` | 1.662 ± 0.489 | - | 1.854 ± 0.344 | 0.827 ± 0.041 | 0.944 ± 0.110 | 0.969 ± 0.115 | - |
+| cpu/elementwise_reduction | `reduce_sum_squares_axis0` | f64 | 1 | `2048x2048` | 1.381 ± 0.284 | 1.165 ± 0.221 | unsupported | unsupported | unsupported | - | - |
+| cpu/elementwise_reduction | `reduce_sum_squares_axis0` | f64 | 4 | `2048x2048` | 0.899 ± 0.440 | 1.195 ± 0.178 | unsupported | unsupported | unsupported | - | - |
+| cpu/elementwise_reduction | `rem` | f64 | 1 | `8388608` | 33.486 ± 7.730 | - | 35.368 ± 3.175 | 32.652 ± 3.129 | 38.243 ± 2.419 | 30.262 ± 8.201 | 34.142 ± 1.184 |
+| cpu/elementwise_reduction | `rem` | f64 | 4 | `8388608` | 11.617 ± 0.382 | - | 11.274 ± 2.764 | 20.858 ± 6.836 | 22.027 ± 1.613 | 28.903 ± 25.458 | 12.873 ± 3.348 |
+| cpu/elementwise_reduction | `rsqrt` | f64 | 1 | `33554432` | 24.715 ± 7.147 | - | 24.173 ± 6.709 | 19.666 ± 1.886 | 43.557 ± 5.713 | 44.633 ± 5.168 | 49.047 ± 3.384 |
+| cpu/elementwise_reduction | `rsqrt` | f64 | 4 | `33554432` | 11.274 ± 2.917 | - | 11.528 ± 1.588 | 13.608 ± 2.823 | 31.851 ± 11.198 | 41.149 ± 4.973 | 31.097 ± 17.073 |
+| cpu/elementwise_reduction | `select` | f64 | 1 | `33554432` | 27.224 ± 2.767 | - | 28.100 ± 6.182 | 25.682 ± 2.418 | 31.153 ± 5.688 | 32.951 ± 7.875 | - |
+| cpu/elementwise_reduction | `select` | f64 | 4 | `33554432` | 25.608 ± 1.842 | - | 25.924 ± 5.614 | 19.335 ± 1.968 | 23.733 ± 1.728 | 114.900 ± 188.446 | - |
+| cpu/elementwise_reduction | `sign` | f64 | 1 | `33554432` | 12.208 ± 3.438 | - | 12.432 ± 0.962 | 12.643 ± 0.701 | 21.723 ± 3.413 | 11.332 ± 3.855 | 22.114 ± 1.394 |
+| cpu/elementwise_reduction | `sign` | f64 | 4 | `33554432` | 13.096 ± 1.117 | - | 14.548 ± 2.075 | 14.046 ± 3.099 | 14.367 ± 2.291 | 44.353 ± 176.628 | 14.374 ± 1.892 |
+| cpu/elementwise_reduction | `sin` | f64 | 1 | `8388608` | 28.781 ± 5.609 | - | 28.187 ± 5.538 | 29.908 ± 2.271 | 27.748 ± 2.136 | 31.049 ± 2.620 | 35.134 ± 3.815 |
+| cpu/elementwise_reduction | `sin` | f64 | 4 | `8388608` | 15.445 ± 6.581 | - | 16.986 ± 10.030 | 14.774 ± 3.307 | 13.661 ± 0.812 | 29.288 ± 5.745 | 11.951 ± 1.058 |
+| cpu/elementwise_reduction | `sqrt` | f64 | 1 | `33554432` | 16.204 ± 1.564 | - | 17.660 ± 3.194 | 13.570 ± 1.677 | 22.317 ± 3.394 | 32.704 ± 4.517 | 29.699 ± 20.819 |
+| cpu/elementwise_reduction | `sqrt` | f64 | 4 | `33554432` | 11.703 ± 1.608 | - | 10.330 ± 1.843 | 14.443 ± 2.072 | 17.180 ± 2.947 | 30.931 ± 3.333 | 15.444 ± 4.002 |
+| cpu/elementwise_reduction | `sub` | f64 | 1 | `33554432` | 35.861 ± 13.143 | - | 25.288 ± 6.967 | 17.441 ± 2.148 | 26.661 ± 3.892 | 27.753 ± 41.895 | 18.987 ± 5.303 |
+| cpu/elementwise_reduction | `sub` | f64 | 4 | `33554432` | 23.000 ± 4.801 | - | 21.469 ± 2.840 | 22.879 ± 2.639 | 23.292 ± 3.633 | 18.267 ± 40.481 | 18.744 ± 3.476 |
+| cpu/elementwise_reduction | `tanh` | f64 | 1 | `8388608` | 69.594 ± 4.935 | - | 68.086 ± 11.723 | 73.616 ± 6.830 | 12.807 ± 0.461 | 48.355 ± 7.636 | 64.114 ± 24.059 |
+| cpu/elementwise_reduction | `tanh` | f64 | 4 | `8388608` | 25.101 ± 0.408 | - | 33.843 ± 6.554 | 36.144 ± 8.639 | 7.303 ± 0.398 | 44.907 ± 1.719 | 16.943 ± 1.954 |
+| cpu/elementwise_reduction | `where_select` | f64 | 1 | `33554432` | 39.835 ± 24.018 | 35.105 ± 6.182 | unsupported | 33.074 ± 8.109 | 31.565 ± 8.158 | - | - |
+| cpu/elementwise_reduction | `where_select` | f64 | 4 | `33554432` | 26.443 ± 1.584 | 26.957 ± 2.011 | unsupported | 21.574 ± 3.075 | 37.089 ± 7.788 | - | - |
+| cpu/indexing_layout | `concatenate` | f64 | 1 | `1048576+1048576` | 0.910 ± 0.056 | - | 0.885 ± 0.055 | 0.689 ± 0.167 | 0.748 ± 0.333 | 0.791 ± 0.125 | - |
+| cpu/indexing_layout | `concatenate` | f64 | 4 | `1048576+1048576` | 0.698 ± 0.116 | - | 0.887 ± 0.301 | 1.005 ± 0.178 | 0.813 ± 0.057 | 0.770 ± 0.021 | - |
+| cpu/indexing_layout | `dynamic_slice` | f64 | 1 | `4194304 -> 2097152` | 0.825 ± 0.304 | - | 0.852 ± 0.335 | 0.723 ± 0.052 | 0.866 ± 0.128 | 0.871 ± 0.082 | - |
+| cpu/indexing_layout | `dynamic_slice` | f64 | 4 | `4194304 -> 2097152` | 0.729 ± 0.113 | - | 0.885 ± 0.483 | 0.737 ± 0.103 | 1.446 ± 0.785 | 0.866 ± 0.168 | - |
+| cpu/indexing_layout | `dynamic_update_slice` | f64 | 1 | `2097152` | 1.237 ± 0.144 | - | unsupported | 1.126 ± 0.180 | 1.188 ± 0.078 | 1.424 ± 0.284 | - |
+| cpu/indexing_layout | `dynamic_update_slice` | f64 | 4 | `2097152` | 1.209 ± 0.393 | - | unsupported | 1.465 ± 0.107 | 1.215 ± 0.115 | 1.133 ± 0.348 | - |
+| cpu/indexing_layout | `gather` | f64 | 1 | `262144` | 0.346 ± 0.016 | - | 0.372 ± 0.011 | 0.335 ± 0.233 | 0.308 ± 0.007 | 1.221 ± 0.097 | - |
+| cpu/indexing_layout | `gather` | f64 | 4 | `262144` | 0.611 ± 0.068 | - | 0.938 ± 0.430 | 0.335 ± 0.015 | 0.243 ± 0.039 | 1.306 ± 1.101 | - |
+| cpu/indexing_layout | `pad` | f64 | 1 | `2097152` | 0.738 ± 0.060 | - | 0.808 ± 0.100 | 0.874 ± 0.114 | 0.733 ± 0.070 | - | - |
+| cpu/indexing_layout | `pad` | f64 | 4 | `2097152` | 0.962 ± 0.251 | - | 0.709 ± 0.142 | 1.299 ± 0.064 | 0.880 ± 0.270 | - | - |
+| cpu/indexing_layout | `reverse` | f64 | 1 | `2097152` | 0.836 ± 0.223 | - | 0.863 ± 0.141 | 1.091 ± 0.086 | 0.793 ± 0.071 | 1.446 ± 0.366 | - |
+| cpu/indexing_layout | `reverse` | f64 | 4 | `2097152` | 0.956 ± 0.327 | - | 0.915 ± 0.081 | 1.013 ± 0.611 | 0.808 ± 0.110 | 1.485 ± 0.343 | - |
+| cpu/indexing_layout | `scatter` | f64 | 1 | `262144` | 0.609 ± 0.043 | - | 0.772 ± 0.129 | 0.450 ± 0.034 | 0.376 ± 0.034 | 0.350 ± 0.022 | - |
+| cpu/indexing_layout | `scatter` | f64 | 4 | `262144` | 2.659 ± 1.532 | - | 1.694 ± 1.923 | 0.545 ± 0.052 | 0.444 ± 0.072 | 1.195 ± 0.782 | - |
+| cpu/indexing_layout | `slice` | f64 | 1 | `4194304 -> 2096128` | 1.272 ± 0.211 | - | 0.002 ± 0.000 | 1.195 ± 0.180 | 1.202 ± 0.071 | 1.790 ± 0.412 | - |
+| cpu/indexing_layout | `slice` | f64 | 4 | `4194304 -> 2096128` | 1.537 ± 0.465 | - | 0.002 ± 0.000 | 1.368 ± 0.066 | 1.437 ± 0.064 | 1.530 ± 0.095 | - |
+| cpu/linalg_batch_families | `batched_cholesky` | f64 | 1 | `1024x2x2` | 0.051 ± 0.006 | - | 0.060 ± 0.001 | 0.269 ± 0.004 | 0.080 ± 0.003 | - | - |
+| cpu/linalg_batch_families | `batched_cholesky` | f64 | 1 | `1024x4x4` | 0.086 ± 0.006 | - | 0.097 ± 0.008 | 0.171 ± 0.019 | 0.136 ± 0.014 | - | - |
+| cpu/linalg_batch_families | `batched_cholesky` | f64 | 1 | `1024x8x8` | 0.232 ± 0.058 | - | 0.227 ± 0.037 | 0.456 ± 0.058 | 0.243 ± 0.025 | - | - |
+| cpu/linalg_batch_families | `batched_cholesky` | f64 | 1 | `1x128x128` | 0.025 ± 0.002 | - | 0.033 ± 0.000 | 0.095 ± 0.046 | 0.084 ± 0.074 | - | - |
+| cpu/linalg_batch_families | `batched_cholesky` | f64 | 1 | `1x2x2` | 0.001 ± 0.000 | - | 0.004 ± 0.000 | 0.004 ± 0.005 | 0.008 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_cholesky` | f64 | 1 | `1x32x32` | 0.002 ± 0.000 | - | 0.005 ± 0.000 | 0.007 ± 0.010 | 0.062 ± 0.041 | - | - |
+| cpu/linalg_batch_families | `batched_cholesky` | f64 | 1 | `1x4x4` | 0.001 ± 0.000 | - | 0.004 ± 0.000 | 0.011 ± 0.003 | 0.008 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_cholesky` | f64 | 1 | `1x8x8` | 0.001 ± 0.000 | - | 0.004 ± 0.001 | 0.005 ± 0.003 | 0.008 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_cholesky` | f64 | 1 | `3x2x2` | 0.001 ± 0.000 | - | 0.004 ± 0.000 | 0.004 ± 0.000 | 0.008 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_cholesky` | f64 | 1 | `3x4x4` | 0.001 ± 0.000 | - | 0.004 ± 0.002 | 0.012 ± 0.001 | 0.007 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_cholesky` | f64 | 1 | `3x8x8` | 0.001 ± 0.000 | - | 0.004 ± 0.000 | 0.005 ± 0.000 | 0.009 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_cholesky` | f64 | 1 | `4x2x2` | 0.001 ± 0.000 | - | 0.004 ± 0.000 | 0.004 ± 0.000 | 0.008 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_cholesky` | f64 | 1 | `4x4x4` | 0.001 ± 0.000 | - | 0.004 ± 0.001 | 0.012 ± 0.001 | 0.008 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_cholesky` | f64 | 1 | `4x8x8` | 0.002 ± 0.000 | - | 0.005 ± 0.000 | 0.005 ± 0.000 | 0.057 ± 0.399 | - | - |
+| cpu/linalg_batch_families | `batched_cholesky` | f64 | 1 | `8x128x128` | 0.152 ± 0.001 | - | 0.200 ± 0.001 | 0.317 ± 0.150 | 0.276 ± 0.036 | - | - |
+| cpu/linalg_batch_families | `batched_cholesky` | f64 | 1 | `8x2x2` | 0.001 ± 0.000 | - | 0.004 ± 0.000 | 0.005 ± 0.000 | 0.008 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_cholesky` | f64 | 1 | `8x32x32` | 0.010 ± 0.000 | - | 0.015 ± 0.001 | 0.037 ± 0.014 | 0.064 ± 0.019 | - | - |
+| cpu/linalg_batch_families | `batched_cholesky` | f64 | 1 | `8x4x4` | 0.001 ± 0.000 | - | 0.004 ± 0.000 | 0.012 ± 0.001 | 0.036 ± 0.014 | - | - |
+| cpu/linalg_batch_families | `batched_cholesky` | f64 | 1 | `8x8x8` | 0.002 ± 0.000 | - | 0.006 ± 0.000 | 0.006 ± 0.000 | 0.048 ± 0.034 | - | - |
+| cpu/linalg_batch_families | `batched_cholesky` | f64 | 4 | `1024x2x2` | 0.061 ± 0.009 | - | 0.065 ± 0.002 | 0.172 ± 0.003 | 0.118 ± 0.068 | - | - |
+| cpu/linalg_batch_families | `batched_cholesky` | f64 | 4 | `1024x4x4` | 0.100 ± 0.002 | - | 0.106 ± 0.006 | 0.230 ± 0.127 | 0.253 ± 0.069 | - | - |
+| cpu/linalg_batch_families | `batched_cholesky` | f64 | 4 | `1024x8x8` | 0.203 ± 0.014 | - | 0.227 ± 0.005 | 0.285 ± 0.017 | 0.251 ± 0.015 | - | - |
+| cpu/linalg_batch_families | `batched_cholesky` | f64 | 4 | `1x128x128` | 0.026 ± 0.001 | - | 0.040 ± 0.006 | 0.143 ± 0.045 | 0.090 ± 0.020 | - | - |
+| cpu/linalg_batch_families | `batched_cholesky` | f64 | 4 | `1x2x2` | 0.002 ± 0.000 | - | 0.006 ± 0.001 | 0.074 ± 0.011 | 0.008 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_cholesky` | f64 | 4 | `1x32x32` | 0.003 ± 0.000 | - | 0.006 ± 0.000 | 0.103 ± 0.017 | 0.007 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_cholesky` | f64 | 4 | `1x4x4` | 0.004 ± 0.007 | - | 0.005 ± 0.001 | 0.093 ± 0.055 | 0.008 ± 0.000 | - | - |
+| cpu/linalg_batch_families | `batched_cholesky` | f64 | 4 | `1x8x8` | 0.002 ± 0.000 | - | 0.005 ± 0.000 | 0.080 ± 0.011 | 0.008 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_cholesky` | f64 | 4 | `3x2x2` | 0.002 ± 0.000 | - | 0.006 ± 0.001 | 0.103 ± 0.034 | 0.008 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_cholesky` | f64 | 4 | `3x4x4` | 0.002 ± 0.000 | - | 0.005 ± 0.000 | 0.080 ± 0.051 | 0.008 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_cholesky` | f64 | 4 | `3x8x8` | 0.002 ± 0.000 | - | 0.006 ± 0.000 | 0.076 ± 0.009 | 0.009 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_cholesky` | f64 | 4 | `4x2x2` | 0.002 ± 0.000 | - | 0.006 ± 0.000 | 0.081 ± 0.007 | 0.008 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_cholesky` | f64 | 4 | `4x4x4` | 0.002 ± 0.000 | - | 0.006 ± 0.000 | 0.064 ± 0.051 | 0.009 ± 0.006 | - | - |
+| cpu/linalg_batch_families | `batched_cholesky` | f64 | 4 | `4x8x8` | 0.002 ± 0.000 | - | 0.006 ± 0.001 | 0.075 ± 0.050 | 0.053 ± 0.022 | - | - |
+| cpu/linalg_batch_families | `batched_cholesky` | f64 | 4 | `8x128x128` | 0.176 ± 0.021 | - | 0.343 ± 0.117 | 0.474 ± 0.093 | 0.229 ± 0.114 | - | - |
+| cpu/linalg_batch_families | `batched_cholesky` | f64 | 4 | `8x2x2` | 0.002 ± 0.000 | - | 0.006 ± 0.000 | 0.080 ± 0.006 | 0.008 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_cholesky` | f64 | 4 | `8x32x32` | 0.012 ± 0.001 | - | 0.018 ± 0.001 | 0.105 ± 0.039 | 0.032 ± 0.003 | - | - |
+| cpu/linalg_batch_families | `batched_cholesky` | f64 | 4 | `8x4x4` | 0.002 ± 0.003 | - | 0.006 ± 0.001 | 0.119 ± 0.029 | 0.009 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_cholesky` | f64 | 4 | `8x8x8` | 0.003 ± 0.000 | - | 0.007 ± 0.000 | 0.110 ± 0.037 | 0.008 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | c64 | 1 | `1024x2x2` | 0.289 ± 0.009 | - | 0.296 ± 0.029 | 0.452 ± 0.028 | 0.771 ± 0.072 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | c64 | 1 | `1024x4x4` | 1.586 ± 0.039 | - | 1.506 ± 0.169 | 1.886 ± 0.784 | 2.159 ± 0.267 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | c64 | 1 | `1024x8x8` | 7.428 ± 2.109 | - | 6.341 ± 0.160 | 7.215 ± 1.238 | 7.939 ± 2.066 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | c64 | 1 | `1x128x128` | 6.119 ± 0.690 | - | 4.523 ± 0.230 | 4.289 ± 0.912 | 4.317 ± 0.367 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | c64 | 1 | `1x2x2` | 0.002 ± 0.000 | - | 0.004 ± 0.000 | 0.006 ± 0.000 | 0.011 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | c64 | 1 | `1x32x32` | 0.086 ± 0.001 | - | 0.109 ± 0.010 | 0.093 ± 0.002 | 0.132 ± 0.011 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | c64 | 1 | `1x4x4` | 0.003 ± 0.000 | - | 0.019 ± 0.018 | 0.006 ± 0.000 | 0.012 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | c64 | 1 | `1x8x8` | 0.007 ± 0.000 | - | 0.010 ± 0.000 | 0.011 ± 0.000 | 0.017 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | c64 | 1 | `3x2x2` | 0.002 ± 0.000 | - | 0.005 ± 0.000 | 0.006 ± 0.000 | 0.017 ± 0.008 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | c64 | 1 | `3x4x4` | 0.016 ± 0.000 | - | 0.027 ± 0.000 | 0.010 ± 0.005 | 0.019 ± 0.003 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | c64 | 1 | `3x8x8` | 0.019 ± 0.004 | - | 0.025 ± 0.006 | 0.028 ± 0.006 | 0.088 ± 0.022 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | c64 | 1 | `4x2x2` | 0.002 ± 0.000 | - | 0.005 ± 0.000 | 0.007 ± 0.000 | 0.015 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | c64 | 1 | `4x4x4` | 0.020 ± 0.000 | - | 0.031 ± 0.000 | 0.014 ± 0.003 | 0.017 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | c64 | 1 | `4x8x8` | 0.027 ± 0.007 | - | 0.028 ± 0.000 | 0.034 ± 0.006 | 0.108 ± 0.188 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | c64 | 1 | `8x128x128` | 53.452 ± 3.573 | - | 37.991 ± 1.223 | 29.083 ± 2.231 | 28.671 ± 1.658 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | c64 | 1 | `8x2x2` | 0.003 ± 0.000 | - | 0.006 ± 0.000 | 0.008 ± 0.000 | 0.016 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | c64 | 1 | `8x32x32` | 0.673 ± 0.019 | - | 0.697 ± 0.119 | 0.780 ± 0.092 | 0.922 ± 0.051 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | c64 | 1 | `8x4x4` | 0.036 ± 0.000 | - | 0.018 ± 0.004 | 0.018 ± 0.004 | 0.025 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | c64 | 1 | `8x8x8` | 0.050 ± 0.019 | - | 0.053 ± 0.002 | 0.055 ± 0.002 | 0.103 ± 0.101 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | c64 | 4 | `1024x2x2` | 0.239 ± 0.009 | - | 0.246 ± 0.018 | 1.153 ± 0.517 | 0.856 ± 0.046 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | c64 | 4 | `1024x4x4` | 1.430 ± 0.043 | - | 1.417 ± 0.009 | 1.913 ± 0.419 | 1.427 ± 0.101 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | c64 | 4 | `1024x8x8` | 5.917 ± 0.378 | - | 6.310 ± 0.324 | 9.934 ± 1.073 | 4.190 ± 0.762 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | c64 | 4 | `1x128x128` | 7.038 ± 0.264 | - | 4.858 ± 0.315 | 3.780 ± 0.726 | 4.383 ± 1.357 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | c64 | 4 | `1x2x2` | 0.002 ± 0.000 | - | 0.006 ± 0.000 | 0.018 ± 0.001 | 0.014 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | c64 | 4 | `1x32x32` | 0.091 ± 0.021 | - | 0.095 ± 0.002 | 0.098 ± 0.006 | 0.127 ± 0.010 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | c64 | 4 | `1x4x4` | 0.004 ± 0.000 | - | 0.007 ± 0.000 | 0.007 ± 0.002 | 0.016 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | c64 | 4 | `1x8x8` | 0.009 ± 0.001 | - | 0.011 ± 0.000 | 0.011 ± 0.000 | 0.017 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | c64 | 4 | `3x2x2` | 0.003 ± 0.000 | - | 0.006 ± 0.000 | 0.021 ± 0.001 | 0.013 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | c64 | 4 | `3x4x4` | 0.007 ± 0.001 | - | 0.010 ± 0.002 | 0.012 ± 0.003 | 0.017 ± 0.003 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | c64 | 4 | `3x8x8` | 0.018 ± 0.000 | - | 0.022 ± 0.000 | 0.023 ± 0.003 | 0.117 ± 0.052 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | c64 | 4 | `4x2x2` | 0.003 ± 0.000 | - | 0.007 ± 0.001 | 0.022 ± 0.001 | 0.043 ± 0.021 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | c64 | 4 | `4x4x4` | 0.008 ± 0.002 | - | 0.011 ± 0.000 | 0.011 ± 0.003 | 0.021 ± 0.004 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | c64 | 4 | `4x8x8` | 0.024 ± 0.001 | - | 0.027 ± 0.000 | 0.036 ± 0.158 | 0.078 ± 0.025 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | c64 | 4 | `8x128x128` | 50.848 ± 7.908 | - | 40.437 ± 11.139 | 39.670 ± 7.346 | 16.685 ± 1.236 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | c64 | 4 | `8x2x2` | 0.004 ± 0.000 | - | 0.007 ± 0.001 | 0.027 ± 0.002 | 0.022 ± 0.005 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | c64 | 4 | `8x32x32` | 0.699 ± 0.033 | - | 0.748 ± 0.060 | 0.727 ± 0.030 | 0.525 ± 0.022 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | c64 | 4 | `8x4x4` | 0.013 ± 0.002 | - | 0.017 ± 0.000 | 0.022 ± 0.001 | 0.027 ± 0.004 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | c64 | 4 | `8x8x8` | 0.047 ± 0.002 | - | 0.053 ± 0.001 | 0.101 ± 0.025 | 0.226 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | f64 | 1 | `1024x2x2` | 0.220 ± 0.001 | - | 0.224 ± 0.001 | 0.264 ± 0.221 | 0.566 ± 0.034 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | f64 | 1 | `1024x4x4` | 1.148 ± 0.013 | - | 1.233 ± 0.102 | 1.586 ± 0.387 | 1.472 ± 0.195 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | f64 | 1 | `1024x8x8` | 5.425 ± 0.611 | - | 5.708 ± 0.365 | 6.814 ± 2.241 | 5.112 ± 0.633 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | f64 | 1 | `1x128x128` | 0.873 ± 0.029 | - | 0.865 ± 0.016 | 1.438 ± 0.540 | 1.130 ± 0.068 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | f64 | 1 | `1x2x2` | 0.002 ± 0.000 | - | 0.004 ± 0.000 | 0.005 ± 0.001 | 0.012 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | f64 | 1 | `1x32x32` | 0.069 ± 0.003 | - | 0.074 ± 0.002 | 0.079 ± 0.011 | 0.144 ± 0.036 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | f64 | 1 | `1x4x4` | 0.002 ± 0.000 | - | 0.005 ± 0.000 | 0.006 ± 0.000 | 0.012 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | f64 | 1 | `1x8x8` | 0.005 ± 0.000 | - | 0.008 ± 0.000 | 0.009 ± 0.003 | 0.018 ± 0.006 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | f64 | 1 | `3x2x2` | 0.002 ± 0.000 | - | 0.004 ± 0.000 | 0.005 ± 0.000 | 0.011 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | f64 | 1 | `3x4x4` | 0.005 ± 0.000 | - | 0.007 ± 0.000 | 0.010 ± 0.002 | 0.014 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | f64 | 1 | `3x8x8` | 0.015 ± 0.000 | - | 0.018 ± 0.004 | 0.019 ± 0.002 | 0.024 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | f64 | 1 | `4x2x2` | 0.002 ± 0.000 | - | 0.004 ± 0.000 | 0.006 ± 0.001 | 0.014 ± 0.003 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | f64 | 1 | `4x4x4` | 0.006 ± 0.000 | - | 0.008 ± 0.000 | 0.013 ± 0.017 | 0.017 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | f64 | 1 | `4x8x8` | 0.020 ± 0.004 | - | 0.023 ± 0.000 | 0.023 ± 0.001 | 0.029 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | f64 | 1 | `8x128x128` | 7.755 ± 0.547 | - | 8.133 ± 0.748 | 9.721 ± 5.274 | 8.959 ± 0.755 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | f64 | 1 | `8x2x2` | 0.003 ± 0.000 | - | 0.005 ± 0.000 | 0.006 ± 0.000 | 0.015 ± 0.003 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | f64 | 1 | `8x32x32` | 0.519 ± 0.041 | - | 0.526 ± 0.084 | 0.576 ± 0.335 | 0.557 ± 0.122 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | f64 | 1 | `8x4x4` | 0.010 ± 0.000 | - | 0.012 ± 0.000 | 0.043 ± 0.002 | 0.029 ± 0.010 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | f64 | 1 | `8x8x8` | 0.038 ± 0.000 | - | 0.041 ± 0.001 | 0.050 ± 0.010 | 0.081 ± 0.010 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | f64 | 4 | `1024x2x2` | 0.222 ± 0.021 | - | 0.225 ± 0.001 | 0.260 ± 0.034 | 0.937 ± 0.791 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | f64 | 4 | `1024x4x4` | 1.158 ± 0.042 | - | 1.199 ± 0.121 | 1.714 ± 0.860 | 1.012 ± 0.386 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | f64 | 4 | `1024x8x8` | 4.490 ± 0.083 | - | 4.536 ± 0.319 | 6.237 ± 2.109 | 2.843 ± 0.178 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | f64 | 4 | `1x128x128` | 1.022 ± 0.172 | - | 1.151 ± 0.165 | 1.030 ± 0.050 | 1.074 ± 0.128 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | f64 | 4 | `1x2x2` | 0.002 ± 0.000 | - | 0.005 ± 0.000 | 0.004 ± 0.001 | 0.011 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | f64 | 4 | `1x32x32` | 0.059 ± 0.000 | - | 0.063 ± 0.002 | 0.074 ± 0.151 | 0.125 ± 0.004 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | f64 | 4 | `1x4x4` | 0.003 ± 0.000 | - | 0.007 ± 0.001 | 0.006 ± 0.000 | 0.015 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | f64 | 4 | `1x8x8` | 0.007 ± 0.001 | - | 0.009 ± 0.000 | 0.009 ± 0.000 | 0.014 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | f64 | 4 | `3x2x2` | 0.003 ± 0.000 | - | 0.005 ± 0.002 | 0.005 ± 0.000 | 0.011 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | f64 | 4 | `3x4x4` | 0.006 ± 0.001 | - | 0.009 ± 0.000 | 0.010 ± 0.002 | 0.015 ± 0.004 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | f64 | 4 | `3x8x8` | 0.015 ± 0.002 | - | 0.018 ± 0.000 | 0.019 ± 0.000 | 0.025 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | f64 | 4 | `4x2x2` | 0.003 ± 0.000 | - | 0.005 ± 0.002 | 0.005 ± 0.000 | 0.011 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | f64 | 4 | `4x4x4` | 0.008 ± 0.001 | - | 0.010 ± 0.000 | 0.009 ± 0.000 | 0.016 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | f64 | 4 | `4x8x8` | 0.019 ± 0.000 | - | 0.024 ± 0.007 | 0.029 ± 0.002 | 0.029 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | f64 | 4 | `8x128x128` | 7.985 ± 0.087 | - | 7.892 ± 1.431 | 12.667 ± 12.526 | 4.660 ± 0.422 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | f64 | 4 | `8x2x2` | 0.004 ± 0.000 | - | 0.006 ± 0.000 | 0.006 ± 0.000 | 0.014 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | f64 | 4 | `8x32x32` | 0.454 ± 0.015 | - | 0.460 ± 0.001 | 0.624 ± 0.317 | 0.377 ± 0.021 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | f64 | 4 | `8x4x4` | 0.011 ± 0.002 | - | 0.015 ± 0.000 | 0.013 ± 0.000 | 0.026 ± 0.005 | - | - |
+| cpu/linalg_batch_families | `batched_eigh` | f64 | 4 | `8x8x8` | 0.038 ± 0.007 | - | 0.040 ± 0.002 | 0.043 ± 0.007 | 0.206 ± 0.066 | - | - |
+| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 1 | `1024x2x2` | 0.103 ± 0.001 | - | 0.107 ± 0.000 | 0.129 ± 0.029 | 0.792 ± 0.082 | - | - |
+| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 1 | `1024x4x4` | 0.782 ± 0.103 | - | 0.680 ± 0.006 | 0.765 ± 0.035 | 1.706 ± 0.262 | - | - |
+| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 1 | `1024x8x8` | 2.540 ± 0.349 | - | 2.843 ± 0.585 | 2.484 ± 0.105 | 4.927 ± 0.147 | - | - |
+| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 1 | `1x128x128` | 0.457 ± 0.026 | - | 0.451 ± 0.015 | 0.491 ± 0.014 | 0.962 ± 0.033 | - | - |
+| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 1 | `1x2x2` | 0.001 ± 0.001 | - | 0.003 ± 0.000 | 0.005 ± 0.000 | 0.008 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 1 | `1x32x32` | 0.025 ± 0.000 | - | 0.033 ± 0.006 | 0.032 ± 0.006 | 0.168 ± 0.032 | - | - |
+| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 1 | `1x4x4` | 0.002 ± 0.000 | - | 0.004 ± 0.000 | 0.008 ± 0.002 | 0.009 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 1 | `1x8x8` | 0.003 ± 0.000 | - | 0.005 ± 0.000 | 0.010 ± 0.000 | 0.012 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 1 | `3x2x2` | 0.001 ± 0.000 | - | 0.004 ± 0.000 | 0.006 ± 0.008 | 0.009 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 1 | `3x4x4` | 0.003 ± 0.000 | - | 0.005 ± 0.000 | 0.007 ± 0.000 | 0.016 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 1 | `3x8x8` | 0.007 ± 0.000 | - | 0.010 ± 0.000 | 0.013 ± 0.001 | 0.026 ± 0.005 | - | - |
+| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 1 | `4x2x2` | 0.001 ± 0.000 | - | 0.004 ± 0.000 | 0.011 ± 0.012 | 0.009 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 1 | `4x4x4` | 0.004 ± 0.000 | - | 0.006 ± 0.000 | 0.008 ± 0.000 | 0.015 ± 0.003 | - | - |
+| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 1 | `4x8x8` | 0.009 ± 0.000 | - | 0.012 ± 0.000 | 0.016 ± 0.003 | 0.033 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 1 | `8x128x128` | 4.006 ± 1.122 | - | 3.905 ± 0.385 | 4.153 ± 0.647 | 9.035 ± 0.447 | - | - |
+| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 1 | `8x2x2` | 0.002 ± 0.000 | - | 0.004 ± 0.000 | 0.022 ± 0.025 | 0.013 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 1 | `8x32x32` | 0.211 ± 0.014 | - | 0.217 ± 0.012 | 0.204 ± 0.008 | 0.509 ± 0.007 | - | - |
+| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 1 | `8x4x4` | 0.006 ± 0.000 | - | 0.009 ± 0.000 | 0.011 ± 0.000 | 0.018 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 1 | `8x8x8` | 0.018 ± 0.000 | - | 0.020 ± 0.000 | 0.024 ± 0.001 | 0.091 ± 0.026 | - | - |
+| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 4 | `1024x2x2` | 0.163 ± 0.053 | - | 0.184 ± 0.017 | 0.148 ± 0.030 | 0.618 ± 0.048 | - | - |
+| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 4 | `1024x4x4` | 0.857 ± 0.058 | - | 0.899 ± 0.145 | 0.816 ± 0.089 | 1.169 ± 0.073 | - | - |
+| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 4 | `1024x8x8` | 2.729 ± 0.142 | - | 2.689 ± 0.453 | 2.757 ± 1.435 | 2.667 ± 0.082 | - | - |
+| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 4 | `1x128x128` | 0.558 ± 0.034 | - | 0.557 ± 0.004 | 1.165 ± 0.220 | 1.011 ± 0.016 | - | - |
+| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 4 | `1x2x2` | 0.003 ± 0.001 | - | 0.007 ± 0.000 | 0.042 ± 0.035 | 0.008 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 4 | `1x32x32` | 0.030 ± 0.006 | - | 0.033 ± 0.000 | 0.031 ± 0.001 | 0.132 ± 0.010 | - | - |
+| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 4 | `1x4x4` | 0.003 ± 0.001 | - | 0.018 ± 0.000 | 0.006 ± 0.001 | 0.010 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 4 | `1x8x8` | 0.004 ± 0.000 | - | 0.009 ± 0.003 | 0.032 ± 0.011 | 0.016 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 4 | `3x2x2` | 0.003 ± 0.000 | - | 0.015 ± 0.000 | 0.012 ± 0.019 | 0.010 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 4 | `3x4x4` | 0.005 ± 0.010 | - | 0.007 ± 0.000 | 0.007 ± 0.000 | 0.013 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 4 | `3x8x8` | 0.009 ± 0.001 | - | 0.014 ± 0.004 | 0.040 ± 0.050 | 0.023 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 4 | `4x2x2` | 0.006 ± 0.000 | - | 0.008 ± 0.001 | 0.016 ± 0.084 | 0.013 ± 0.006 | - | - |
+| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 4 | `4x4x4` | 0.005 ± 0.000 | - | 0.008 ± 0.000 | 0.008 ± 0.000 | 0.014 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 4 | `4x8x8` | 0.011 ± 0.003 | - | 0.017 ± 0.004 | 0.015 ± 0.003 | 0.027 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 4 | `8x128x128` | 4.625 ± 0.921 | - | 5.337 ± 2.577 | 4.842 ± 2.983 | 4.455 ± 0.712 | - | - |
+| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 4 | `8x2x2` | 0.008 ± 0.000 | - | 0.006 ± 0.000 | 0.006 ± 0.001 | 0.011 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 4 | `8x32x32` | 0.210 ± 0.037 | - | 0.225 ± 0.009 | 0.203 ± 0.016 | 0.342 ± 0.045 | - | - |
+| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 4 | `8x4x4` | 0.007 ± 0.000 | - | 0.013 ± 0.001 | 0.010 ± 0.000 | 0.024 ± 0.003 | - | - |
+| cpu/linalg_batch_families | `batched_eigvalsh` | f64 | 4 | `8x8x8` | 0.020 ± 0.007 | - | 0.031 ± 0.024 | 0.025 ± 0.013 | 0.062 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `1024x2x2` | 0.094 ± 0.007 | - | 0.093 ± 0.001 | 0.184 ± 0.028 | 0.149 ± 0.045 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `1024x4x4` | 0.184 ± 0.004 | - | 0.196 ± 0.008 | 0.257 ± 0.001 | 0.273 ± 0.042 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `1024x8x8` | 0.500 ± 0.134 | - | 0.469 ± 0.048 | 0.526 ± 0.065 | 0.412 ± 0.003 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `1x128x128` | 0.061 ± 0.002 | - | 0.066 ± 0.005 | 0.068 ± 0.002 | 0.145 ± 0.022 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `1x2x2` | 0.003 ± 0.000 | - | 0.005 ± 0.001 | 0.008 ± 0.001 | 0.010 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `1x32x32` | 0.005 ± 0.000 | - | 0.008 ± 0.000 | 0.011 ± 0.000 | 0.059 ± 0.024 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `1x4x4` | 0.002 ± 0.000 | - | 0.004 ± 0.000 | 0.007 ± 0.000 | 0.012 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `1x64x24` | 0.011 ± 0.003 | - | 0.014 ± 0.003 | 0.013 ± 0.002 | 0.055 ± 0.003 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `1x8x8` | 0.002 ± 0.000 | - | 0.004 ± 0.000 | 0.007 ± 0.000 | 0.010 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `3x2x2` | 0.003 ± 0.000 | - | 0.004 ± 0.000 | 0.009 ± 0.000 | 0.010 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `3x4x4` | 0.002 ± 0.000 | - | 0.005 ± 0.001 | 0.008 ± 0.000 | 0.013 ± 0.004 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `3x8x8` | 0.003 ± 0.000 | - | 0.005 ± 0.000 | 0.009 ± 0.000 | 0.041 ± 0.004 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `4x2x2` | 0.003 ± 0.000 | - | 0.004 ± 0.000 | 0.009 ± 0.000 | 0.010 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `4x4x4` | 0.003 ± 0.000 | - | 0.006 ± 0.001 | 0.009 ± 0.000 | 0.010 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `4x8x8` | 0.003 ± 0.000 | - | 0.006 ± 0.000 | 0.010 ± 0.002 | 0.039 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `8x128x128` | 0.508 ± 0.028 | - | 0.539 ± 0.234 | 0.450 ± 0.045 | 0.701 ± 0.209 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `8x2x2` | 0.003 ± 0.000 | - | 0.005 ± 0.000 | 0.009 ± 0.000 | 0.011 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `8x32x32` | 0.032 ± 0.013 | - | 0.042 ± 0.002 | 0.039 ± 0.001 | 0.093 ± 0.037 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `8x4x4` | 0.004 ± 0.001 | - | 0.007 ± 0.000 | 0.009 ± 0.000 | 0.058 ± 0.029 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 1 | `8x8x8` | 0.005 ± 0.000 | - | 0.007 ± 0.000 | 0.011 ± 0.003 | 0.041 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `1024x2x2` | 0.088 ± 0.001 | - | 0.090 ± 0.002 | 0.301 ± 0.024 | 0.168 ± 0.130 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `1024x4x4` | 0.213 ± 0.015 | - | 0.229 ± 0.010 | 0.307 ± 0.065 | 0.237 ± 0.049 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `1024x8x8` | 0.417 ± 0.007 | - | 0.433 ± 0.025 | 0.546 ± 0.095 | 0.577 ± 0.187 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `1x128x128` | 0.059 ± 0.006 | - | 0.064 ± 0.004 | 0.138 ± 0.040 | 0.165 ± 0.067 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `1x2x2` | 0.003 ± 0.000 | - | 0.005 ± 0.000 | 0.081 ± 0.033 | 0.013 ± 0.003 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `1x32x32` | 0.007 ± 0.001 | - | 0.009 ± 0.000 | 0.076 ± 0.018 | 0.064 ± 0.018 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `1x4x4` | 0.003 ± 0.000 | - | 0.007 ± 0.001 | 0.074 ± 0.017 | 0.022 ± 0.037 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `1x64x24` | 0.012 ± 0.003 | - | 0.013 ± 0.003 | 0.049 ± 0.029 | 0.071 ± 0.014 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `1x8x8` | 0.003 ± 0.000 | - | 0.007 ± 0.000 | 0.093 ± 0.073 | 0.009 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `3x2x2` | 0.003 ± 0.000 | - | 0.006 ± 0.002 | 0.084 ± 0.028 | 0.011 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `3x4x4` | 0.004 ± 0.000 | - | 0.006 ± 0.000 | 0.066 ± 0.011 | 0.030 ± 0.024 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `3x8x8` | 0.004 ± 0.001 | - | 0.006 ± 0.000 | 0.073 ± 0.056 | 0.067 ± 0.010 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `4x2x2` | 0.003 ± 0.000 | - | 0.007 ± 0.001 | 0.044 ± 0.042 | 0.010 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `4x4x4` | 0.004 ± 0.000 | - | 0.007 ± 0.001 | 0.062 ± 0.009 | 0.011 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `4x8x8` | 0.005 ± 0.001 | - | 0.007 ± 0.002 | 0.070 ± 0.014 | 0.038 ± 0.048 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `8x128x128` | 0.456 ± 0.046 | - | 0.502 ± 0.009 | 0.548 ± 0.320 | 0.511 ± 0.047 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `8x2x2` | 0.003 ± 0.000 | - | 0.006 ± 0.000 | 0.088 ± 0.043 | 0.022 ± 0.015 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `8x32x32` | 0.032 ± 0.001 | - | 0.037 ± 0.001 | 0.196 ± 0.046 | 0.122 ± 0.007 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `8x4x4` | 0.004 ± 0.000 | - | 0.007 ± 0.002 | 0.106 ± 0.029 | 0.059 ± 0.008 | - | - |
+| cpu/linalg_batch_families | `batched_lu` | f64 | 4 | `8x8x8` | 0.006 ± 0.001 | - | 0.008 ± 0.001 | 0.153 ± 0.081 | 0.021 ± 0.003 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `1024x2x2` | 0.198 ± 0.022 | - | 0.221 ± 0.025 | 0.407 ± 0.095 | 0.307 ± 0.017 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `1024x4x4` | 0.553 ± 0.065 | - | 0.597 ± 0.052 | 1.474 ± 0.270 | 0.623 ± 0.118 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `1024x8x8` | 1.175 ± 0.186 | - | 1.159 ± 0.007 | 2.272 ± 1.179 | 1.602 ± 0.224 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `1x128x128` | 0.276 ± 0.001 | - | 0.285 ± 0.009 | 0.369 ± 0.050 | 0.397 ± 0.021 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `1x2x2` | 0.001 ± 0.000 | - | 0.004 ± 0.000 | 0.003 ± 0.000 | 0.010 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `1x32x32` | 0.011 ± 0.000 | - | 0.014 ± 0.000 | 0.014 ± 0.000 | 0.084 ± 0.024 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `1x4x4` | 0.002 ± 0.000 | - | 0.005 ± 0.000 | 0.005 ± 0.011 | 0.010 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `1x64x24` | 0.019 ± 0.005 | - | 0.020 ± 0.004 | 0.055 ± 0.011 | 0.132 ± 0.022 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `1x8x8` | 0.003 ± 0.000 | - | 0.005 ± 0.001 | 0.005 ± 0.000 | 0.011 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `3x2x2` | 0.002 ± 0.000 | - | 0.004 ± 0.000 | 0.004 ± 0.000 | 0.010 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `3x4x4` | 0.003 ± 0.000 | - | 0.006 ± 0.000 | 0.025 ± 0.008 | 0.011 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `3x8x8` | 0.005 ± 0.002 | - | 0.008 ± 0.002 | 0.009 ± 0.001 | 0.016 ± 0.007 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `4x2x2` | 0.002 ± 0.000 | - | 0.004 ± 0.000 | 0.004 ± 0.000 | 0.011 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `4x4x4` | 0.004 ± 0.001 | - | 0.007 ± 0.000 | 0.028 ± 0.002 | 0.015 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `4x8x8` | 0.006 ± 0.000 | - | 0.009 ± 0.000 | 0.009 ± 0.000 | 0.015 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `8x128x128` | 2.194 ± 0.033 | - | 2.291 ± 0.345 | 4.801 ± 3.063 | 2.698 ± 0.288 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `8x2x2` | 0.003 ± 0.000 | - | 0.005 ± 0.000 | 0.007 ± 0.002 | 0.013 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `8x32x32` | 0.081 ± 0.000 | - | 0.085 ± 0.000 | 0.094 ± 0.022 | 0.440 ± 0.158 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `8x4x4` | 0.006 ± 0.001 | - | 0.009 ± 0.001 | 0.034 ± 0.016 | 0.015 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 1 | `8x8x8` | 0.011 ± 0.003 | - | 0.014 ± 0.001 | 0.015 ± 0.003 | 0.023 ± 0.005 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `1024x2x2` | 0.349 ± 0.317 | - | 0.298 ± 0.077 | 0.423 ± 0.067 | 0.376 ± 0.027 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `1024x4x4` | 0.593 ± 0.157 | - | 0.665 ± 0.294 | 0.778 ± 0.186 | 0.679 ± 0.061 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `1024x8x8` | 1.800 ± 0.864 | - | 1.709 ± 0.272 | 1.826 ± 1.151 | 0.832 ± 0.074 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `1x128x128` | 0.309 ± 0.025 | - | 0.311 ± 0.009 | 0.846 ± 0.779 | 0.418 ± 0.049 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `1x2x2` | 0.002 ± 0.003 | - | 0.010 ± 0.002 | 0.067 ± 0.014 | 0.016 ± 0.020 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `1x32x32` | 0.019 ± 0.003 | - | 0.029 ± 0.004 | 0.097 ± 0.028 | 0.136 ± 0.083 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `1x4x4` | 0.004 ± 0.001 | - | 0.011 ± 0.003 | 0.030 ± 0.005 | 0.011 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `1x64x24` | 0.014 ± 0.000 | - | 0.018 ± 0.000 | 0.045 ± 0.041 | 0.089 ± 0.026 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `1x8x8` | 0.013 ± 0.005 | - | 0.009 ± 0.004 | 0.080 ± 0.029 | 0.013 ± 0.003 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `3x2x2` | 0.004 ± 0.001 | - | 0.011 ± 0.004 | 0.061 ± 0.019 | 0.011 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `3x4x4` | 0.004 ± 0.000 | - | 0.007 ± 0.000 | 0.065 ± 0.031 | 0.039 ± 0.004 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `3x8x8` | 0.009 ± 0.002 | - | 0.012 ± 0.005 | 0.071 ± 0.025 | 0.017 ± 0.008 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `4x2x2` | 0.004 ± 0.002 | - | 0.009 ± 0.008 | 0.074 ± 0.026 | 0.011 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `4x4x4` | 0.004 ± 0.001 | - | 0.008 ± 0.002 | 0.046 ± 0.056 | 0.014 ± 0.007 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `4x8x8` | 0.010 ± 0.003 | - | 0.010 ± 0.000 | 0.066 ± 0.005 | 0.016 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `8x128x128` | 2.740 ± 0.499 | - | 2.305 ± 0.048 | 3.261 ± 1.430 | 2.233 ± 0.827 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `8x2x2` | 0.004 ± 0.001 | - | 0.008 ± 0.002 | 0.050 ± 0.056 | 0.012 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `8x32x32` | 0.146 ± 0.083 | - | 0.142 ± 0.024 | 0.197 ± 0.013 | 0.153 ± 0.139 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `8x4x4` | 0.008 ± 0.001 | - | 0.009 ± 0.002 | 0.039 ± 0.029 | 0.042 ± 0.018 | - | - |
+| cpu/linalg_batch_families | `batched_qr` | f64 | 4 | `8x8x8` | 0.019 ± 0.070 | - | 0.053 ± 0.008 | 0.086 ± 0.051 | 0.022 ± 0.005 | - | - |
+| cpu/linalg_batch_families | `batched_solve` | f64 | 1 | `1024x2x2,rhs=1` | 0.131 ± 0.000 | - | 0.127 ± 0.011 | 0.159 ± 0.224 | 0.195 ± 0.079 | - | - |
+| cpu/linalg_batch_families | `batched_solve` | f64 | 1 | `1024x4x4,rhs=1` | 0.192 ± 0.017 | - | 0.172 ± 0.001 | 0.182 ± 0.100 | 0.255 ± 0.018 | - | - |
+| cpu/linalg_batch_families | `batched_solve` | f64 | 1 | `1024x8x8,rhs=1` | 0.349 ± 0.038 | - | 0.408 ± 0.057 | 0.498 ± 0.147 | 0.511 ± 0.038 | - | - |
+| cpu/linalg_batch_families | `batched_solve` | f64 | 1 | `1x128x128,rhs=1` | 0.047 ± 0.000 | - | 0.054 ± 0.000 | 0.069 ± 0.173 | 0.103 ± 0.010 | - | - |
+| cpu/linalg_batch_families | `batched_solve` | f64 | 1 | `1x2x2,rhs=1` | 0.001 ± 0.000 | - | 0.006 ± 0.006 | 0.011 ± 0.003 | 0.010 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_solve` | f64 | 1 | `1x32x32,rhs=1` | 0.005 ± 0.000 | - | 0.009 ± 0.000 | 0.035 ± 0.024 | 0.045 ± 0.008 | - | - |
+| cpu/linalg_batch_families | `batched_solve` | f64 | 1 | `1x4x4,rhs=1` | 0.001 ± 0.000 | - | 0.005 ± 0.000 | 0.057 ± 0.053 | 0.008 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_solve` | f64 | 1 | `1x8x8,rhs=1` | 0.001 ± 0.000 | - | 0.005 ± 0.000 | 0.011 ± 0.008 | 0.011 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_solve` | f64 | 1 | `3x2x2,rhs=1` | 0.002 ± 0.000 | - | 0.005 ± 0.000 | 0.011 ± 0.008 | 0.011 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_solve` | f64 | 1 | `3x4x4,rhs=1` | 0.002 ± 0.000 | - | 0.007 ± 0.000 | 0.011 ± 0.000 | 0.009 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_solve` | f64 | 1 | `3x8x8,rhs=1` | 0.002 ± 0.000 | - | 0.006 ± 0.000 | 0.035 ± 0.003 | 0.014 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_solve` | f64 | 1 | `4x2x2,rhs=1` | 0.002 ± 0.000 | - | 0.005 ± 0.000 | 0.013 ± 0.003 | 0.009 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_solve` | f64 | 1 | `4x4x4,rhs=1` | 0.002 ± 0.000 | - | 0.006 ± 0.000 | 0.011 ± 0.000 | 0.010 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_solve` | f64 | 1 | `4x8x8,rhs=1` | 0.002 ± 0.000 | - | 0.006 ± 0.000 | 0.012 ± 0.001 | 0.014 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_solve` | f64 | 1 | `8x128x128,rhs=1` | 0.361 ± 0.020 | - | 0.358 ± 0.080 | 1.035 ± 0.456 | 0.666 ± 0.080 | - | - |
+| cpu/linalg_batch_families | `batched_solve` | f64 | 1 | `8x2x2,rhs=1` | 0.002 ± 0.000 | - | 0.006 ± 0.000 | 0.012 ± 0.003 | 0.010 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_solve` | f64 | 1 | `8x32x32,rhs=1` | 0.029 ± 0.005 | - | 0.034 ± 0.000 | 0.095 ± 0.040 | 0.092 ± 0.008 | - | - |
+| cpu/linalg_batch_families | `batched_solve` | f64 | 1 | `8x4x4,rhs=1` | 0.003 ± 0.000 | - | 0.006 ± 0.000 | 0.012 ± 0.000 | 0.013 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_solve` | f64 | 1 | `8x8x8,rhs=1` | 0.004 ± 0.000 | - | 0.008 ± 0.000 | 0.013 ± 0.004 | 0.017 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_solve` | f64 | 4 | `1024x2x2,rhs=1` | 0.131 ± 0.006 | - | 0.115 ± 0.004 | 0.159 ± 0.001 | 0.218 ± 0.078 | - | - |
+| cpu/linalg_batch_families | `batched_solve` | f64 | 4 | `1024x4x4,rhs=1` | 0.203 ± 0.023 | - | 0.182 ± 0.012 | 0.228 ± 0.004 | 0.256 ± 0.027 | - | - |
+| cpu/linalg_batch_families | `batched_solve` | f64 | 4 | `1024x8x8,rhs=1` | 0.347 ± 0.035 | - | 0.316 ± 0.004 | 0.415 ± 0.049 | 0.672 ± 0.344 | - | - |
+| cpu/linalg_batch_families | `batched_solve` | f64 | 4 | `1x128x128,rhs=1` | 0.044 ± 0.001 | - | 0.053 ± 0.001 | 0.174 ± 0.141 | 0.131 ± 0.005 | - | - |
+| cpu/linalg_batch_families | `batched_solve` | f64 | 4 | `1x2x2,rhs=1` | 0.002 ± 0.000 | - | 0.009 ± 0.007 | 0.010 ± 0.001 | 0.013 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_solve` | f64 | 4 | `1x32x32,rhs=1` | 0.006 ± 0.001 | - | 0.010 ± 0.000 | 0.013 ± 0.002 | 0.063 ± 0.011 | - | - |
+| cpu/linalg_batch_families | `batched_solve` | f64 | 4 | `1x4x4,rhs=1` | 0.002 ± 0.000 | - | 0.007 ± 0.000 | 0.009 ± 0.000 | 0.009 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_solve` | f64 | 4 | `1x8x8,rhs=1` | 0.002 ± 0.000 | - | 0.007 ± 0.000 | 0.010 ± 0.000 | 0.030 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_solve` | f64 | 4 | `3x2x2,rhs=1` | 0.002 ± 0.000 | - | 0.007 ± 0.000 | 0.009 ± 0.000 | 0.011 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_solve` | f64 | 4 | `3x4x4,rhs=1` | 0.002 ± 0.000 | - | 0.008 ± 0.002 | 0.010 ± 0.000 | 0.009 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_solve` | f64 | 4 | `3x8x8,rhs=1` | 0.003 ± 0.000 | - | 0.008 ± 0.000 | 0.012 ± 0.002 | 0.012 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_solve` | f64 | 4 | `4x2x2,rhs=1` | 0.003 ± 0.000 | - | 0.008 ± 0.001 | 0.010 ± 0.000 | 0.012 ± 0.003 | - | - |
+| cpu/linalg_batch_families | `batched_solve` | f64 | 4 | `4x4x4,rhs=1` | 0.003 ± 0.000 | - | 0.008 ± 0.000 | 0.010 ± 0.000 | 0.010 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_solve` | f64 | 4 | `4x8x8,rhs=1` | 0.003 ± 0.000 | - | 0.008 ± 0.000 | 0.011 ± 0.001 | 0.011 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_solve` | f64 | 4 | `8x128x128,rhs=1` | 0.339 ± 0.009 | - | 0.508 ± 0.028 | 0.523 ± 0.066 | 0.551 ± 0.171 | - | - |
+| cpu/linalg_batch_families | `batched_solve` | f64 | 4 | `8x2x2,rhs=1` | 0.003 ± 0.000 | - | 0.008 ± 0.000 | 0.066 ± 0.001 | 0.010 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_solve` | f64 | 4 | `8x32x32,rhs=1` | 0.026 ± 0.001 | - | 0.032 ± 0.000 | 0.135 ± 0.068 | 0.165 ± 0.029 | - | - |
+| cpu/linalg_batch_families | `batched_solve` | f64 | 4 | `8x4x4,rhs=1` | 0.004 ± 0.000 | - | 0.008 ± 0.000 | 0.066 ± 0.002 | 0.012 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_solve` | f64 | 4 | `8x8x8,rhs=1` | 0.005 ± 0.001 | - | 0.010 ± 0.000 | 0.038 ± 0.004 | 0.013 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `1024x2x2` | 1.741 ± 0.772 | - | 1.427 ± 0.169 | 1.467 ± 0.490 | 3.372 ± 0.509 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `1024x4x4` | 4.563 ± 0.832 | - | 4.895 ± 2.854 | 4.770 ± 0.363 | 5.884 ± 0.345 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `1024x8x8` | 17.897 ± 3.839 | - | 16.244 ± 10.188 | 15.447 ± 1.195 | 16.932 ± 0.675 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `1x128x128` | 5.321 ± 2.200 | - | 5.950 ± 0.425 | 4.745 ± 0.507 | 5.496 ± 0.744 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `1x2x2` | 0.005 ± 0.003 | - | 0.006 ± 0.000 | 0.021 ± 0.008 | 0.018 ± 0.003 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `1x32x32` | 0.203 ± 0.016 | - | 0.198 ± 0.012 | 0.193 ± 0.011 | 0.582 ± 0.407 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `1x4x4` | 0.008 ± 0.000 | - | 0.011 ± 0.003 | 0.012 ± 0.002 | 0.025 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `1x64x24` | 0.164 ± 0.003 | - | 0.167 ± 0.003 | 0.174 ± 0.016 | 0.272 ± 0.436 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `1x8x8` | 0.020 ± 0.004 | - | 0.020 ± 0.000 | 0.026 ± 0.004 | 0.034 ± 0.011 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `3x2x2` | 0.021 ± 0.005 | - | 0.008 ± 0.000 | 0.038 ± 0.040 | 0.023 ± 0.004 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `3x4x4` | 0.014 ± 0.000 | - | 0.017 ± 0.004 | 0.022 ± 0.003 | 0.031 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `3x8x8` | 0.046 ± 0.001 | - | 0.052 ± 0.006 | 0.050 ± 0.001 | 0.060 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `4x2x2` | 0.007 ± 0.001 | - | 0.010 ± 0.002 | 0.033 ± 0.033 | 0.026 ± 0.004 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `4x4x4` | 0.018 ± 0.000 | - | 0.022 ± 0.000 | 0.025 ± 0.004 | 0.037 ± 0.005 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `4x8x8` | 0.065 ± 0.008 | - | 0.070 ± 0.009 | 0.069 ± 0.010 | 0.086 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `8x128x128` | 48.058 ± 11.559 | - | 46.791 ± 2.007 | 36.851 ± 1.824 | 40.650 ± 5.538 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `8x2x2` | 0.012 ± 0.002 | - | 0.015 ± 0.001 | 0.025 ± 0.020 | 0.035 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `8x32x32` | 1.707 ± 0.576 | - | 1.434 ± 0.039 | 1.515 ± 0.058 | 1.766 ± 0.184 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `8x4x4` | 0.035 ± 0.001 | - | 0.041 ± 0.007 | 0.044 ± 0.007 | 0.057 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 1 | `8x8x8` | 0.130 ± 0.014 | - | 0.151 ± 0.045 | 0.131 ± 0.015 | 0.179 ± 0.008 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `1024x2x2` | 1.254 ± 0.073 | - | 1.226 ± 0.010 | 1.761 ± 0.323 | 2.774 ± 0.096 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `1024x4x4` | 4.589 ± 0.224 | - | 4.596 ± 0.200 | 6.964 ± 3.921 | 2.615 ± 0.498 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `1024x8x8` | 15.490 ± 0.535 | - | 16.221 ± 1.486 | 16.832 ± 10.286 | 15.966 ± 8.474 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `1x128x128` | 4.872 ± 0.141 | - | 6.236 ± 0.418 | 4.836 ± 0.183 | 6.606 ± 1.695 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `1x2x2` | 0.005 ± 0.000 | - | 0.009 ± 0.000 | 0.008 ± 0.001 | 0.016 ± 0.006 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `1x32x32` | 0.164 ± 0.003 | - | 0.166 ± 0.002 | 0.204 ± 0.015 | 0.291 ± 0.153 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `1x4x4` | 0.007 ± 0.002 | - | 0.010 ± 0.000 | 0.014 ± 0.001 | 0.019 ± 0.004 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `1x64x24` | 0.169 ± 0.002 | - | 0.173 ± 0.001 | 0.179 ± 0.012 | 0.265 ± 0.026 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `1x8x8` | 0.018 ± 0.003 | - | 0.022 ± 0.005 | 0.025 ± 0.021 | 0.040 ± 0.010 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `3x2x2` | 0.006 ± 0.000 | - | 0.009 ± 0.000 | 0.009 ± 0.001 | 0.021 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `3x4x4` | 0.018 ± 0.003 | - | 0.019 ± 0.001 | 0.019 ± 0.003 | 0.030 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `3x8x8` | 0.046 ± 0.007 | - | 0.053 ± 0.011 | 0.051 ± 0.029 | 0.108 ± 0.133 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `4x2x2` | 0.009 ± 0.002 | - | 0.013 ± 0.002 | 0.011 ± 0.000 | 0.023 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `4x4x4` | 0.020 ± 0.004 | - | 0.025 ± 0.005 | 0.022 ± 0.004 | 0.045 ± 0.009 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `4x8x8` | 0.063 ± 0.009 | - | 0.069 ± 0.007 | 0.077 ± 0.007 | 0.082 ± 0.010 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `8x128x128` | 38.663 ± 3.260 | - | 53.276 ± 5.175 | 37.325 ± 5.803 | 38.158 ± 8.632 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `8x2x2` | 0.012 ± 0.003 | - | 0.015 ± 0.004 | 0.015 ± 0.001 | 0.034 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `8x32x32` | 1.409 ± 0.055 | - | 1.440 ± 0.026 | 1.615 ± 1.832 | 1.302 ± 0.289 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `8x4x4` | 0.036 ± 0.004 | - | 0.039 ± 0.004 | 0.046 ± 0.009 | 0.101 ± 0.013 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | c64 | 4 | `8x8x8` | 0.118 ± 0.010 | - | 0.130 ± 0.011 | 0.144 ± 0.009 | 0.246 ± 0.065 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `1024x2x2` | 0.624 ± 0.102 | - | 0.610 ± 0.026 | 0.800 ± 0.478 | 2.091 ± 0.159 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `1024x4x4` | 2.896 ± 0.143 | - | 3.093 ± 0.581 | 3.617 ± 0.959 | 4.503 ± 0.528 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `1024x8x8` | 11.287 ± 0.506 | - | 11.028 ± 0.643 | 11.985 ± 0.998 | 13.513 ± 0.890 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `1x128x128` | 1.572 ± 0.027 | - | 1.668 ± 0.141 | 1.564 ± 0.075 | 2.190 ± 1.920 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `1x2x2` | 0.003 ± 0.001 | - | 0.006 ± 0.001 | 0.008 ± 0.001 | 0.015 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `1x32x32` | 0.122 ± 0.004 | - | 0.150 ± 0.040 | 0.126 ± 0.001 | 0.236 ± 0.096 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `1x4x4` | 0.005 ± 0.000 | - | 0.009 ± 0.002 | 0.011 ± 0.001 | 0.016 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `1x64x24` | 0.167 ± 0.064 | - | 0.179 ± 0.206 | 0.132 ± 0.045 | 0.186 ± 0.054 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `1x8x8` | 0.013 ± 0.003 | - | 0.015 ± 0.004 | 0.019 ± 0.003 | 0.025 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `3x2x2` | 0.005 ± 0.000 | - | 0.006 ± 0.000 | 0.010 ± 0.001 | 0.020 ± 0.006 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `3x4x4` | 0.010 ± 0.045 | - | 0.014 ± 0.003 | 0.015 ± 0.002 | 0.023 ± 0.006 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `3x8x8` | 0.029 ± 0.005 | - | 0.037 ± 0.006 | 0.038 ± 0.008 | 0.054 ± 0.003 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `4x2x2` | 0.004 ± 0.000 | - | 0.007 ± 0.000 | 0.010 ± 0.000 | 0.021 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `4x4x4` | 0.014 ± 0.006 | - | 0.018 ± 0.002 | 0.023 ± 0.005 | 0.034 ± 0.003 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `4x8x8` | 0.108 ± 0.002 | - | 0.043 ± 0.000 | 0.049 ± 0.005 | 0.075 ± 0.053 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `8x128x128` | 13.377 ± 0.584 | - | 14.754 ± 1.624 | 13.572 ± 1.042 | 13.721 ± 0.829 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `8x2x2` | 0.007 ± 0.002 | - | 0.009 ± 0.000 | 0.035 ± 0.023 | 0.025 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `8x32x32` | 0.998 ± 0.430 | - | 1.001 ± 0.024 | 1.009 ± 0.063 | 1.335 ± 0.471 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `8x4x4` | 0.024 ± 0.005 | - | 0.028 ± 0.006 | 0.030 ± 0.004 | 0.043 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 1 | `8x8x8` | 0.080 ± 0.003 | - | 0.081 ± 0.000 | 0.099 ± 0.008 | 0.145 ± 0.030 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `1024x2x2` | 0.744 ± 0.011 | - | 0.777 ± 0.017 | 0.602 ± 0.431 | 1.936 ± 0.117 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `1024x4x4` | 2.939 ± 0.195 | - | 2.600 ± 0.541 | 3.135 ± 0.476 | 1.786 ± 0.160 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `1024x8x8` | 9.705 ± 0.245 | - | 10.702 ± 0.217 | 13.331 ± 2.701 | 6.697 ± 0.238 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `1x128x128` | 1.569 ± 0.038 | - | 1.720 ± 0.321 | 1.655 ± 0.163 | 1.655 ± 0.070 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `1x2x2` | 0.010 ± 0.002 | - | 0.012 ± 0.002 | 0.037 ± 0.011 | 0.014 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `1x32x32` | 0.117 ± 0.002 | - | 0.127 ± 0.007 | 0.134 ± 0.381 | 0.259 ± 0.046 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `1x4x4` | 0.005 ± 0.000 | - | 0.011 ± 0.000 | 0.009 ± 0.001 | 0.020 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `1x64x24` | 0.099 ± 0.005 | - | 0.103 ± 0.010 | 0.107 ± 0.019 | 0.158 ± 0.016 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `1x8x8` | 0.012 ± 0.000 | - | 0.016 ± 0.001 | 0.017 ± 0.004 | 0.028 ± 0.005 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `3x2x2` | 0.007 ± 0.001 | - | 0.024 ± 0.000 | 0.068 ± 0.031 | 0.018 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `3x4x4` | 0.012 ± 0.003 | - | 0.014 ± 0.000 | 0.014 ± 0.000 | 0.024 ± 0.004 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `3x8x8` | 0.028 ± 0.001 | - | 0.032 ± 0.007 | 0.034 ± 0.001 | 0.045 ± 0.003 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `4x2x2` | 0.007 ± 0.000 | - | 0.025 ± 0.000 | 0.026 ± 0.001 | 0.019 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `4x4x4` | 0.014 ± 0.000 | - | 0.016 ± 0.005 | 0.017 ± 0.000 | 0.029 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `4x8x8` | 0.039 ± 0.001 | - | 0.043 ± 0.006 | 0.045 ± 0.001 | 0.068 ± 0.005 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `8x128x128` | 10.710 ± 0.638 | - | 10.937 ± 1.436 | 14.959 ± 4.665 | 6.159 ± 0.180 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `8x2x2` | 0.009 ± 0.000 | - | 0.015 ± 0.003 | 0.031 ± 0.001 | 0.026 ± 0.005 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `8x32x32` | 0.939 ± 0.023 | - | 0.977 ± 0.033 | 1.089 ± 0.405 | 0.603 ± 0.031 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `8x4x4` | 0.024 ± 0.005 | - | 0.027 ± 0.000 | 0.027 ± 0.001 | 0.043 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_svd` | f64 | 4 | `8x8x8` | 0.076 ± 0.008 | - | 0.077 ± 0.000 | 0.233 ± 0.022 | 0.171 ± 0.078 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `1024x2x2` | 0.209 ± 0.017 | - | unsupported | 0.228 ± 0.028 | 1.385 ± 0.093 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `1024x4x4` | 1.446 ± 0.041 | - | unsupported | 1.509 ± 0.193 | 2.478 ± 0.360 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `1024x8x8` | 4.828 ± 0.841 | - | unsupported | 4.117 ± 0.046 | 5.123 ± 0.674 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `1x128x128` | 0.782 ± 0.068 | - | unsupported | 0.884 ± 0.061 | 1.044 ± 0.102 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `1x2x2` | 0.001 ± 0.000 | - | unsupported | 0.005 ± 0.001 | 0.012 ± 0.003 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `1x32x32` | 0.045 ± 0.006 | - | unsupported | 0.040 ± 0.000 | 0.046 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `1x4x4` | 0.002 ± 0.000 | - | unsupported | 0.006 ± 0.000 | 0.013 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `1x64x24` | 0.029 ± 0.001 | - | unsupported | 0.038 ± 0.005 | 0.041 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `1x8x8` | 0.005 ± 0.000 | - | unsupported | 0.009 ± 0.002 | 0.013 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `3x2x2` | 0.002 ± 0.000 | - | unsupported | 0.007 ± 0.001 | 0.014 ± 0.004 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `3x4x4` | 0.005 ± 0.001 | - | unsupported | 0.009 ± 0.000 | 0.020 ± 0.005 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `3x8x8` | 0.012 ± 0.000 | - | unsupported | 0.018 ± 0.003 | 0.022 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `4x2x2` | 0.002 ± 0.000 | - | unsupported | 0.006 ± 0.001 | 0.014 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `4x4x4` | 0.006 ± 0.000 | - | unsupported | 0.010 ± 0.000 | 0.023 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `4x8x8` | 0.016 ± 0.000 | - | unsupported | 0.025 ± 0.003 | 0.033 ± 0.009 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `8x128x128` | 6.983 ± 0.974 | - | unsupported | 6.524 ± 0.428 | 5.899 ± 0.703 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `8x2x2` | 0.003 ± 0.000 | - | unsupported | 0.007 ± 0.002 | 0.018 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `8x32x32` | 0.344 ± 0.077 | - | unsupported | 0.281 ± 0.004 | 0.290 ± 0.004 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `8x4x4` | 0.012 ± 0.002 | - | unsupported | 0.015 ± 0.003 | 0.075 ± 0.003 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 1 | `8x8x8` | 0.030 ± 0.000 | - | unsupported | 0.040 ± 0.003 | 0.044 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `1024x2x2` | 0.210 ± 0.010 | - | unsupported | 0.258 ± 0.060 | 1.815 ± 0.457 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `1024x4x4` | 1.519 ± 0.180 | - | unsupported | 1.380 ± 0.054 | 1.659 ± 0.676 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `1024x8x8` | 4.469 ± 0.660 | - | unsupported | 3.958 ± 0.325 | 2.619 ± 0.072 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `1x128x128` | 1.018 ± 0.269 | - | unsupported | 0.708 ± 0.010 | 0.799 ± 0.073 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `1x2x2` | 0.002 ± 0.001 | - | unsupported | 0.006 ± 0.001 | 0.011 ± 0.002 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `1x32x32` | 0.039 ± 0.004 | - | unsupported | 0.044 ± 0.009 | 0.074 ± 0.013 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `1x4x4` | 0.003 ± 0.000 | - | unsupported | 0.008 ± 0.001 | 0.019 ± 0.009 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `1x64x24` | 0.030 ± 0.007 | - | unsupported | 0.033 ± 0.001 | 0.110 ± 0.054 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `1x8x8` | 0.006 ± 0.000 | - | unsupported | 0.011 ± 0.002 | 0.013 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `3x2x2` | 0.003 ± 0.000 | - | unsupported | 0.005 ± 0.000 | 0.012 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `3x4x4` | 0.006 ± 0.000 | - | unsupported | 0.010 ± 0.002 | 0.037 ± 0.014 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `3x8x8` | 0.014 ± 0.000 | - | unsupported | 0.016 ± 0.000 | 0.029 ± 0.006 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `4x2x2` | 0.003 ± 0.000 | - | unsupported | 0.006 ± 0.000 | 0.022 ± 0.021 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `4x4x4` | 0.007 ± 0.000 | - | unsupported | 0.010 ± 0.000 | 0.051 ± 0.015 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `4x8x8` | 0.018 ± 0.001 | - | unsupported | 0.019 ± 0.000 | 0.028 ± 0.001 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `8x128x128` | 6.549 ± 0.184 | - | unsupported | 6.819 ± 0.721 | 3.806 ± 0.778 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `8x2x2` | 0.003 ± 0.000 | - | unsupported | 0.006 ± 0.000 | 0.019 ± 0.003 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `8x32x32` | 0.676 ± 0.133 | - | unsupported | 0.271 ± 0.000 | 0.233 ± 0.014 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `8x4x4` | 0.012 ± 0.000 | - | unsupported | 0.015 ± 0.000 | 0.035 ± 0.004 | - | - |
+| cpu/linalg_batch_families | `batched_svdvals` | f64 | 4 | `8x8x8` | 0.033 ± 0.000 | - | unsupported | 0.033 ± 0.000 | 0.044 ± 0.001 | - | - |
+| cpu/linalg_batched | `batched_lu_factor` | f64 | 1 | `1024x16x16,rhs=1` | 0.885 ± 0.041 | - | unsupported | 1.065 ± 0.215 | 0.881 ± 0.028 | 2.850 ± 1.170 | - |
+| cpu/linalg_batched | `batched_lu_factor` | f64 | 1 | `1024x2x2,rhs=1` | 0.059 ± 0.004 | - | unsupported | 0.085 ± 0.019 | 0.133 ± 0.015 | 0.082 ± 0.004 | - |
+| cpu/linalg_batched | `batched_lu_factor` | f64 | 1 | `1024x4x4,rhs=1` | 0.128 ± 0.009 | - | unsupported | 0.130 ± 0.008 | 0.198 ± 0.026 | 0.140 ± 0.016 | - |
+| cpu/linalg_batched | `batched_lu_factor` | f64 | 1 | `1024x8x8,rhs=1` | 0.316 ± 0.019 | - | unsupported | 0.375 ± 0.075 | 0.383 ± 0.027 | 0.690 ± 0.081 | - |
+| cpu/linalg_batched | `batched_lu_factor` | f64 | 4 | `1024x16x16,rhs=1` | 1.096 ± 0.624 | - | unsupported | 0.713 ± 0.016 | 1.226 ± 0.414 | 3.364 ± 0.526 | - |
+| cpu/linalg_batched | `batched_lu_factor` | f64 | 4 | `1024x2x2,rhs=1` | 0.056 ± 0.002 | - | unsupported | 0.133 ± 0.012 | 0.182 ± 0.048 | 0.076 ± 0.014 | - |
+| cpu/linalg_batched | `batched_lu_factor` | f64 | 4 | `1024x4x4,rhs=1` | 0.109 ± 0.000 | - | unsupported | 0.179 ± 0.018 | 0.207 ± 0.012 | 0.216 ± 0.014 | - |
+| cpu/linalg_batched | `batched_lu_factor` | f64 | 4 | `1024x8x8,rhs=1` | 0.254 ± 0.049 | - | unsupported | 0.324 ± 0.030 | 0.474 ± 0.359 | 0.795 ± 0.065 | - |
+| cpu/linalg_batched | `batched_lu_solve` | f64 | 1 | `1024x16x16,rhs=1` | 0.227 ± 0.027 | - | unsupported | 0.297 ± 0.059 | 0.516 ± 0.034 | 0.571 ± 0.055 | - |
+| cpu/linalg_batched | `batched_lu_solve` | f64 | 1 | `1024x2x2,rhs=1` | 0.067 ± 0.007 | - | unsupported | 0.055 ± 0.005 | 0.080 ± 0.003 | 0.069 ± 0.001 | - |
+| cpu/linalg_batched | `batched_lu_solve` | f64 | 1 | `1024x4x4,rhs=1` | 0.094 ± 0.011 | - | unsupported | 0.072 ± 0.131 | 0.109 ± 0.008 | 0.108 ± 0.011 | - |
+| cpu/linalg_batched | `batched_lu_solve` | f64 | 1 | `1024x8x8,rhs=1` | 0.105 ± 0.011 | - | unsupported | 0.120 ± 0.035 | 0.155 ± 0.013 | 0.263 ± 0.026 | - |
+| cpu/linalg_batched | `batched_lu_solve` | f64 | 4 | `1024x16x16,rhs=1` | 0.261 ± 0.057 | - | unsupported | 0.199 ± 0.018 | 0.536 ± 0.083 | 0.535 ± 0.101 | - |
+| cpu/linalg_batched | `batched_lu_solve` | f64 | 4 | `1024x2x2,rhs=1` | 0.122 ± 0.113 | - | unsupported | 0.044 ± 0.002 | 0.199 ± 0.080 | 0.074 ± 0.010 | - |
+| cpu/linalg_batched | `batched_lu_solve` | f64 | 4 | `1024x4x4,rhs=1` | 0.083 ± 0.004 | - | unsupported | 0.051 ± 0.003 | 0.087 ± 0.009 | 0.099 ± 0.005 | - |
+| cpu/linalg_batched | `batched_lu_solve` | f64 | 4 | `1024x8x8,rhs=1` | 0.128 ± 0.070 | - | unsupported | 0.094 ± 0.033 | 0.211 ± 0.047 | 0.239 ± 0.006 | - |
+| cpu/linalg_batched | `batched_triangular_solve` | f64 | 1 | `1024x16x16,rhs=1` | 0.135 ± 0.039 | - | 0.220 ± 0.065 | 0.086 ± 0.011 | 0.189 ± 0.016 | 0.340 ± 0.032 | - |
+| cpu/linalg_batched | `batched_triangular_solve` | f64 | 1 | `1024x2x2,rhs=1` | 0.046 ± 0.000 | - | 0.059 ± 0.016 | 0.040 ± 0.018 | 0.025 ± 0.006 | 0.050 ± 0.003 | - |
+| cpu/linalg_batched | `batched_triangular_solve` | f64 | 1 | `1024x4x4,rhs=1` | 0.044 ± 0.007 | - | 0.052 ± 0.000 | 0.029 ± 0.004 | 0.034 ± 0.006 | 0.055 ± 0.003 | - |
+| cpu/linalg_batched | `batched_triangular_solve` | f64 | 1 | `1024x8x8,rhs=1` | 0.056 ± 0.000 | - | 0.074 ± 0.001 | 0.038 ± 0.006 | 0.064 ± 0.007 | 0.150 ± 0.018 | - |
+| cpu/linalg_batched | `batched_triangular_solve` | f64 | 4 | `1024x16x16,rhs=1` | 0.103 ± 0.001 | - | 0.202 ± 0.051 | 0.094 ± 0.034 | 0.216 ± 0.012 | 0.255 ± 0.021 | - |
+| cpu/linalg_batched | `batched_triangular_solve` | f64 | 4 | `1024x2x2,rhs=1` | 0.151 ± 0.195 | - | 0.060 ± 0.011 | 0.033 ± 0.028 | 0.025 ± 0.001 | 0.041 ± 0.007 | - |
+| cpu/linalg_batched | `batched_triangular_solve` | f64 | 4 | `1024x4x4,rhs=1` | 0.052 ± 0.009 | - | 0.053 ± 0.000 | 0.027 ± 0.011 | 0.031 ± 0.002 | 0.048 ± 0.000 | - |
+| cpu/linalg_batched | `batched_triangular_solve` | f64 | 4 | `1024x8x8,rhs=1` | 0.089 ± 0.015 | - | 0.109 ± 0.061 | 0.041 ± 0.014 | 0.098 ± 0.045 | 0.097 ± 0.000 | - |
+| cpu/linalg_uncovered | `cholesky` | f64 | 1 | `1536x1536` | 10.876 ± 5.598 | - | 15.159 ± 3.350 | 26.335 ± 6.382 | 18.035 ± 4.388 | 39.873 ± 8.787 | - |
+| cpu/linalg_uncovered | `cholesky` | f64 | 4 | `1536x1536` | 16.451 ± 2.664 | - | 22.211 ± 11.187 | 17.528 ± 1.056 | 13.686 ± 0.759 | 348.422 ± 94.257 | - |
+| cpu/linalg_uncovered | `det` | f64 | 1 | `1024x1024` | 8.968 ± 0.560 | - | 7.519 ± 0.779 | 6.711 ± 1.244 | 9.296 ± 2.695 | 19.516 ± 8.839 | - |
+| cpu/linalg_uncovered | `det` | f64 | 4 | `1024x1024` | 9.835 ± 2.050 | - | 8.379 ± 1.230 | 6.665 ± 1.205 | 7.346 ± 0.426 | 246.081 ± 38.641 | - |
+| cpu/linalg_uncovered | `eig` | f64 | 1 | `160x160` | 6.971 ± 0.738 | - | 7.136 ± 0.614 | 6.733 ± 0.987 | 8.641 ± 3.562 | 8.133 ± 1.606 | - |
+| cpu/linalg_uncovered | `eig` | f64 | 4 | `160x160` | 8.021 ± 2.282 | - | 7.998 ± 1.847 | 6.982 ± 0.457 | 9.418 ± 3.712 | 294.197 ± 18.545 | - |
+| cpu/linalg_uncovered | `eigvals` | f64 | 1 | `192x192` | 7.973 ± 0.862 | - | 7.704 ± 1.331 | 8.206 ± 0.735 | 7.417 ± 0.574 | 10.739 ± 2.608 | - |
+| cpu/linalg_uncovered | `eigvals` | f64 | 4 | `192x192` | 8.665 ± 1.646 | - | 8.754 ± 0.899 | 8.131 ± 0.485 | 7.900 ± 0.782 | 250.631 ± 6.591 | - |
+| cpu/linalg_uncovered | `eigvalsh` | f64 | 1 | `512x512` | 21.255 ± 2.009 | - | 21.848 ± 2.251 | 22.354 ± 1.649 | 24.022 ± 4.820 | 12.341 ± 1.435 | - |
+| cpu/linalg_uncovered | `eigvalsh` | f64 | 4 | `512x512` | 21.628 ± 1.803 | - | 27.146 ± 13.054 | 21.780 ± 1.248 | 26.435 ± 3.749 | 834.916 ± 671.669 | - |
+| cpu/linalg_uncovered | `householder_qr` | f64 | 1 | `256x128` | 0.296 ± 0.053 | 0.304 ± 0.008 | unsupported | 0.304 ± 0.031 | 0.377 ± 0.045 | - | - |
+| cpu/linalg_uncovered | `householder_qr` | f64 | 1 | `768x384` | 3.681 ± 0.669 | 3.859 ± 0.429 | unsupported | 3.798 ± 0.445 | 5.303 ± 0.275 | - | - |
+| cpu/linalg_uncovered | `householder_qr` | f64 | 4 | `256x128` | 0.366 ± 0.073 | 0.323 ± 0.062 | unsupported | 0.324 ± 0.039 | 0.429 ± 0.024 | - | - |
+| cpu/linalg_uncovered | `householder_qr` | f64 | 4 | `768x384` | 3.986 ± 1.212 | 3.387 ± 0.431 | unsupported | 3.613 ± 0.329 | 4.761 ± 0.108 | - | - |
+| cpu/linalg_uncovered | `inv` | f64 | 1 | `768x768` | 8.814 ± 0.505 | - | 8.331 ± 1.120 | 8.295 ± 1.864 | 12.051 ± 0.742 | 30.176 ± 3.597 | - |
+| cpu/linalg_uncovered | `inv` | f64 | 4 | `768x768` | 8.732 ± 0.323 | - | 9.522 ± 2.114 | 10.032 ± 1.079 | 9.920 ± 1.111 | 408.992 ± 431.103 | - |
+| cpu/linalg_uncovered | `lstsq` | f64 | 1 | `768x384,rhs=16` | - | 8.158 ± 0.457 | 8.498 ± 2.008 | 5.457 ± 0.320 | 25.376 ± 1.060 | 9.604 ± 2.226 | - |
+| cpu/linalg_uncovered | `lstsq` | f64 | 4 | `768x384,rhs=16` | - | 11.301 ± 1.322 | 8.301 ± 0.575 | 5.052 ± 0.151 | 27.720 ± 2.676 | 141.532 ± 31.002 | - |
+| cpu/linalg_uncovered | `lu` | f64 | 1 | `1024x1024` | 8.266 ± 0.562 | - | 8.744 ± 0.464 | 13.650 ± 1.424 | 11.002 ± 2.689 | 42.135 ± 27.818 | - |
+| cpu/linalg_uncovered | `lu` | f64 | 4 | `1024x1024` | 6.906 ± 0.364 | - | 7.201 ± 0.958 | 10.903 ± 1.923 | 11.731 ± 6.202 | 227.964 ± 46.365 | - |
+| cpu/linalg_uncovered | `norm_fro` | f64 | 1 | `2048x2048` | 0.654 ± 0.104 | - | 0.797 ± 0.035 | 2.352 ± 0.380 | 6.891 ± 0.457 | 6.695 ± 0.161 | - |
+| cpu/linalg_uncovered | `norm_fro` | f64 | 4 | `2048x2048` | 0.840 ± 0.174 | - | 0.861 ± 0.093 | 2.489 ± 0.094 | 4.779 ± 1.166 | 8.915 ± 1.913 | - |
+| cpu/linalg_uncovered | `pinv` | f64 | 1 | `512x256` | 10.774 ± 0.282 | - | 10.164 ± 0.265 | 10.059 ± 1.398 | 13.603 ± 1.193 | 21.505 ± 4.015 | - |
+| cpu/linalg_uncovered | `pinv` | f64 | 4 | `512x256` | 11.518 ± 1.480 | - | 10.767 ± 0.648 | 12.323 ± 3.402 | 13.912 ± 4.070 | 1057.507 ± 180.901 | - |
+| cpu/linalg_uncovered | `pinv_with_rtol` | f64 | 1 | `512x256` | 10.218 ± 0.742 | - | 10.113 ± 0.713 | 9.674 ± 0.312 | 14.057 ± 0.712 | 23.483 ± 1.135 | - |
+| cpu/linalg_uncovered | `pinv_with_rtol` | f64 | 4 | `512x256` | 11.021 ± 0.338 | - | 10.299 ± 1.197 | 11.717 ± 0.872 | 15.693 ± 2.884 | 1002.548 ± 506.270 | - |
+| cpu/linalg_uncovered | `rank_revealing_qr` | f64 | 1 | `256x128` | 1.468 ± 0.130 | 1.490 ± 0.208 | unsupported | unsupported | unsupported | - | - |
+| cpu/linalg_uncovered | `rank_revealing_qr` | f64 | 1 | `768x384` | 13.606 ± 0.676 | 17.441 ± 2.913 | unsupported | unsupported | unsupported | - | - |
+| cpu/linalg_uncovered | `rank_revealing_qr` | f64 | 4 | `256x128` | 1.538 ± 0.159 | 1.427 ± 0.204 | unsupported | unsupported | unsupported | - | - |
+| cpu/linalg_uncovered | `rank_revealing_qr` | f64 | 4 | `768x384` | 14.730 ± 0.854 | 15.596 ± 2.211 | unsupported | unsupported | unsupported | - | - |
+| cpu/linalg_uncovered | `rank_revealing_qr_deficient` | f64 | 1 | `256x128` | 1.493 ± 0.076 | 1.488 ± 0.096 | unsupported | unsupported | unsupported | - | - |
+| cpu/linalg_uncovered | `rank_revealing_qr_deficient` | f64 | 1 | `768x384` | 12.107 ± 0.758 | 12.495 ± 0.992 | unsupported | unsupported | unsupported | - | - |
+| cpu/linalg_uncovered | `rank_revealing_qr_deficient` | f64 | 4 | `256x128` | 1.464 ± 0.048 | 1.428 ± 0.173 | unsupported | unsupported | unsupported | - | - |
+| cpu/linalg_uncovered | `rank_revealing_qr_deficient` | f64 | 4 | `768x384` | 17.442 ± 5.209 | 12.454 ± 0.518 | unsupported | unsupported | unsupported | - | - |
+| cpu/linalg_uncovered | `slogdet` | f64 | 1 | `1024x1024` | 9.412 ± 3.966 | - | 8.282 ± 1.490 | 7.671 ± 1.096 | 9.074 ± 0.758 | 22.214 ± 2.497 | - |
+| cpu/linalg_uncovered | `slogdet` | f64 | 4 | `1024x1024` | 10.427 ± 0.950 | - | 8.416 ± 2.573 | 7.207 ± 0.677 | 7.689 ± 0.525 | 217.482 ± 16.580 | - |
+| cpu/linalg_uncovered | `svd_full` | f64 | 1 | `768x384` | - | 38.221 ± 8.833 | 36.705 ± 2.520 | 35.134 ± 2.453 | 35.469 ± 1.945 | 74.908 ± 15.943 | - |
+| cpu/linalg_uncovered | `svd_full` | f64 | 4 | `768x384` | - | 36.083 ± 7.700 | 37.340 ± 4.770 | 37.380 ± 2.931 | 52.513 ± 11.016 | 1723.504 ± 1007.146 | - |
+| cpu/linalg_uncovered | `triangular_solve` | f64 | 1 | `4096x4096,rhs=64` | 15.098 ± 0.279 | - | 28.489 ± 4.101 | 12.686 ± 1.498 | 72.717 ± 4.642 | 27.942 ± 8.178 | - |
+| cpu/linalg_uncovered | `triangular_solve` | f64 | 4 | `4096x4096,rhs=64` | 18.398 ± 4.026 | - | 29.499 ± 14.117 | 12.832 ± 0.996 | 70.361 ± 13.903 | 25.770 ± 4.350 | - |
+| cpu/neural_public_api | `erf` | f32 | 1 | `1024x64` | 0.236 ± 0.076 | 0.166 ± 0.022 | unsupported | 0.063 ± 0.030 | 0.054 ± 0.028 | - | - |
+| cpu/neural_public_api | `erf` | f32 | 1 | `4096x256` | 4.332 ± 1.633 | 3.868 ± 1.967 | unsupported | 0.815 ± 0.016 | 0.514 ± 0.021 | - | - |
+| cpu/neural_public_api | `erf` | f32 | 4 | `1024x64` | 0.252 ± 0.138 | 0.188 ± 0.027 | unsupported | 0.120 ± 0.034 | 0.086 ± 0.050 | - | - |
+| cpu/neural_public_api | `erf` | f32 | 4 | `4096x256` | 1.370 ± 0.031 | 1.800 ± 0.126 | unsupported | 0.497 ± 0.160 | 0.396 ± 0.360 | - | - |
+| cpu/neural_public_api | `gelu` | f32 | 1 | `1024x64` | 0.074 ± 0.003 | 0.087 ± 0.005 | unsupported | 0.091 ± 0.002 | 0.209 ± 0.044 | - | - |
+| cpu/neural_public_api | `gelu` | f32 | 1 | `4096x256` | 1.638 ± 0.523 | 1.412 ± 0.047 | unsupported | 1.436 ± 0.082 | 2.198 ± 0.534 | - | - |
+| cpu/neural_public_api | `gelu` | f32 | 4 | `1024x64` | 0.126 ± 0.013 | 0.069 ± 0.061 | unsupported | 0.087 ± 0.020 | 0.161 ± 0.064 | - | - |
+| cpu/neural_public_api | `gelu` | f32 | 4 | `4096x256` | 0.817 ± 0.153 | 0.683 ± 0.042 | unsupported | 1.259 ± 0.590 | 1.454 ± 0.401 | - | - |
+| cpu/neural_public_api | `gelu_tanh` | f32 | 1 | `1024x64` | 0.290 ± 0.007 | 0.288 ± 0.021 | unsupported | 0.307 ± 0.006 | 0.100 ± 0.017 | - | - |
+| cpu/neural_public_api | `gelu_tanh` | f32 | 1 | `4096x256` | 4.516 ± 0.505 | 4.898 ± 0.733 | unsupported | 4.838 ± 0.108 | 0.917 ± 0.035 | - | - |
+| cpu/neural_public_api | `gelu_tanh` | f32 | 4 | `1024x64` | 0.196 ± 0.097 | 0.245 ± 0.078 | unsupported | 0.204 ± 0.069 | 0.070 ± 0.015 | - | - |
+| cpu/neural_public_api | `gelu_tanh` | f32 | 4 | `4096x256` | 2.423 ± 0.317 | 2.382 ± 0.084 | unsupported | 3.168 ± 0.415 | 0.540 ± 0.060 | - | - |
+| cpu/neural_public_api | `layer_norm` | f32 | 1 | `1024x64` | 0.052 ± 0.004 | 0.074 ± 0.008 | unsupported | 0.048 ± 0.003 | 0.083 ± 0.006 | - | - |
+| cpu/neural_public_api | `layer_norm` | f32 | 1 | `4096x256` | 0.647 ± 0.105 | 0.565 ± 0.049 | unsupported | 0.616 ± 0.084 | 0.743 ± 0.124 | - | - |
+| cpu/neural_public_api | `layer_norm` | f32 | 4 | `1024x64` | 0.054 ± 0.001 | 0.082 ± 0.015 | unsupported | 0.089 ± 0.040 | 0.076 ± 0.057 | - | - |
+| cpu/neural_public_api | `layer_norm` | f32 | 4 | `4096x256` | 0.869 ± 0.068 | 1.477 ± 0.849 | unsupported | 0.504 ± 0.065 | 0.635 ± 0.326 | - | - |
+| cpu/neural_public_api | `log_softmax` | f32 | 1 | `1024x64` | 0.094 ± 0.006 | 0.111 ± 0.003 | unsupported | 0.092 ± 0.006 | 0.118 ± 0.009 | - | - |
+| cpu/neural_public_api | `log_softmax` | f32 | 1 | `4096x256` | 1.347 ± 0.117 | 1.494 ± 0.179 | unsupported | 1.477 ± 0.171 | 1.368 ± 0.078 | - | - |
+| cpu/neural_public_api | `log_softmax` | f32 | 4 | `1024x64` | 0.111 ± 0.024 | 0.120 ± 0.004 | unsupported | 0.092 ± 0.021 | 0.134 ± 0.031 | - | - |
+| cpu/neural_public_api | `log_softmax` | f32 | 4 | `4096x256` | 1.260 ± 0.098 | 1.700 ± 0.377 | unsupported | 0.977 ± 0.288 | 0.754 ± 0.074 | - | - |
+| cpu/neural_public_api | `masked_softmax` | f32 | 1 | `1024x64` | 0.130 ± 0.007 | 0.167 ± 0.074 | unsupported | unsupported | 0.142 ± 0.013 | - | - |
+| cpu/neural_public_api | `masked_softmax` | f32 | 1 | `4096x256` | 1.947 ± 0.074 | 2.043 ± 0.196 | unsupported | unsupported | 1.744 ± 0.424 | - | - |
+| cpu/neural_public_api | `masked_softmax` | f32 | 4 | `1024x64` | 0.139 ± 0.006 | 0.163 ± 0.002 | unsupported | unsupported | 0.126 ± 0.020 | - | - |
+| cpu/neural_public_api | `masked_softmax` | f32 | 4 | `4096x256` | 1.498 ± 0.113 | 1.842 ± 0.516 | unsupported | unsupported | 1.122 ± 0.236 | - | - |
+| cpu/neural_public_api | `reduce_mean` | f32 | 1 | `1024x64` | 0.013 ± 0.000 | 0.024 ± 0.009 | unsupported | 0.008 ± 0.002 | 0.069 ± 0.050 | - | - |
+| cpu/neural_public_api | `reduce_mean` | f32 | 1 | `4096x256` | 0.117 ± 0.004 | 0.124 ± 0.024 | unsupported | 0.064 ± 0.013 | 0.265 ± 0.024 | - | - |
+| cpu/neural_public_api | `reduce_mean` | f32 | 4 | `1024x64` | 0.013 ± 0.000 | 0.019 ± 0.000 | unsupported | 0.032 ± 0.005 | 0.065 ± 0.033 | - | - |
+| cpu/neural_public_api | `reduce_mean` | f32 | 4 | `4096x256` | 0.111 ± 0.015 | 0.110 ± 0.015 | unsupported | 0.075 ± 0.011 | 0.149 ± 0.006 | - | - |
+| cpu/neural_public_api | `rms_norm` | f32 | 1 | `1024x64` | 0.025 ± 0.002 | 0.041 ± 0.003 | unsupported | 0.029 ± 0.003 | 0.075 ± 0.004 | - | - |
+| cpu/neural_public_api | `rms_norm` | f32 | 1 | `4096x256` | 0.285 ± 0.011 | 0.311 ± 0.068 | unsupported | 0.389 ± 0.099 | 0.737 ± 0.264 | - | - |
+| cpu/neural_public_api | `rms_norm` | f32 | 4 | `1024x64` | 0.028 ± 0.002 | 0.044 ± 0.004 | unsupported | 0.107 ± 0.024 | 0.097 ± 0.023 | - | - |
+| cpu/neural_public_api | `rms_norm` | f32 | 4 | `4096x256` | 0.604 ± 0.123 | 0.739 ± 0.156 | unsupported | 0.437 ± 0.139 | 1.172 ± 0.999 | - | - |
+| cpu/neural_public_api | `sigmoid` | f32 | 1 | `1024x64` | 0.046 ± 0.011 | 0.056 ± 0.009 | unsupported | 0.076 ± 0.004 | 0.106 ± 0.009 | - | - |
+| cpu/neural_public_api | `sigmoid` | f32 | 1 | `4096x256` | 0.889 ± 0.062 | 0.898 ± 0.229 | unsupported | 1.331 ± 0.241 | 1.019 ± 0.057 | - | - |
+| cpu/neural_public_api | `sigmoid` | f32 | 4 | `1024x64` | 0.091 ± 0.011 | 0.076 ± 0.060 | unsupported | 0.077 ± 0.011 | 0.078 ± 0.025 | - | - |
+| cpu/neural_public_api | `sigmoid` | f32 | 4 | `4096x256` | 0.654 ± 0.179 | 0.666 ± 0.154 | unsupported | 0.734 ± 0.094 | 0.733 ± 0.352 | - | - |
+| cpu/neural_public_api | `silu` | f32 | 1 | `1024x64` | 0.058 ± 0.003 | 0.059 ± 0.007 | unsupported | 0.087 ± 0.012 | 0.102 ± 0.019 | - | - |
+| cpu/neural_public_api | `silu` | f32 | 1 | `4096x256` | 0.918 ± 0.117 | 0.946 ± 0.303 | unsupported | 1.224 ± 0.136 | 0.956 ± 0.012 | - | - |
+| cpu/neural_public_api | `silu` | f32 | 4 | `1024x64` | 0.091 ± 0.021 | 0.030 ± 0.017 | unsupported | 0.078 ± 0.009 | 0.093 ± 0.012 | - | - |
+| cpu/neural_public_api | `silu` | f32 | 4 | `4096x256` | 0.657 ± 0.242 | 0.558 ± 0.091 | unsupported | 0.820 ± 0.369 | 0.633 ± 0.234 | - | - |
+| cpu/neural_public_api | `softmax` | f32 | 1 | `1024x64` | 0.096 ± 0.015 | 0.110 ± 0.008 | unsupported | 0.102 ± 0.005 | 0.186 ± 0.055 | - | - |
+| cpu/neural_public_api | `softmax` | f32 | 1 | `4096x256` | 1.249 ± 0.115 | 1.398 ± 0.167 | unsupported | 1.705 ± 0.028 | 1.440 ± 0.327 | - | - |
+| cpu/neural_public_api | `softmax` | f32 | 4 | `1024x64` | 0.102 ± 0.006 | 0.136 ± 0.079 | unsupported | 0.081 ± 0.026 | 0.124 ± 0.010 | - | - |
+| cpu/neural_public_api | `softmax` | f32 | 4 | `4096x256` | 1.001 ± 0.259 | 1.267 ± 0.098 | unsupported | 1.275 ± 0.211 | 0.768 ± 0.092 | - | - |
+| cpu/neural_public_api | `softplus` | f32 | 1 | `1024x64` | 0.255 ± 0.027 | 0.225 ± 0.016 | unsupported | 0.290 ± 0.006 | 0.314 ± 0.079 | - | - |
+| cpu/neural_public_api | `softplus` | f32 | 1 | `4096x256` | 4.908 ± 0.868 | 5.171 ± 1.389 | unsupported | 4.694 ± 0.655 | 4.495 ± 0.435 | - | - |
+| cpu/neural_public_api | `softplus` | f32 | 4 | `1024x64` | 0.171 ± 0.072 | 0.209 ± 0.083 | unsupported | 0.223 ± 0.140 | 0.354 ± 0.093 | - | - |
+| cpu/neural_public_api | `softplus` | f32 | 4 | `4096x256` | 2.140 ± 0.175 | 1.921 ± 0.082 | unsupported | 2.516 ± 0.307 | 3.156 ± 1.128 | - | - |
+| cpu/neural_public_api | `take_along_axis` | f32 | 1 | `1024x64` | 0.588 ± 0.057 | 0.786 ± 0.204 | unsupported | 0.124 ± 0.003 | 0.103 ± 0.013 | - | - |
+| cpu/neural_public_api | `take_along_axis` | f32 | 1 | `4096x256` | 9.966 ± 0.278 | 11.152 ± 1.531 | unsupported | 2.474 ± 0.252 | 1.803 ± 0.270 | - | - |
+| cpu/neural_public_api | `take_along_axis` | f32 | 4 | `1024x64` | 0.739 ± 0.060 | 0.911 ± 0.071 | unsupported | 0.198 ± 0.064 | 0.156 ± 0.015 | - | - |
+| cpu/neural_public_api | `take_along_axis` | f32 | 4 | `4096x256` | 10.141 ± 2.101 | 10.707 ± 3.121 | unsupported | 1.832 ± 0.227 | 1.115 ± 0.317 | - | - |
+| cpu/output_reuse | `add_into` | f64 | 1 | `33554432` | 30.723 ± 6.240 | - | unsupported | 18.877 ± 1.823 | - | 19.206 ± 2.472 | 18.594 ± 2.440 |
+| cpu/output_reuse | `add_into` | f64 | 4 | `33554432` | 19.220 ± 1.969 | - | unsupported | 20.410 ± 1.355 | - | 24.056 ± 2.787 | 22.604 ± 5.961 |
+| cpu/output_reuse | `conj_into` | c64 | 1 | `16777216` | 15.644 ± 6.386 | - | unsupported | 23.410 ± 11.049 | - | 12.141 ± 1.787 | 12.858 ± 1.352 |
+| cpu/output_reuse | `conj_into` | c64 | 4 | `16777216` | 16.702 ± 3.720 | - | unsupported | 13.005 ± 0.921 | - | 13.529 ± 1.337 | 13.994 ± 1.831 |
+| cpu/output_reuse | `copy_read_into` | f64 | 1 | `33554432` | 15.631 ± 3.451 | - | unsupported | 18.732 ± 7.008 | - | 10.299 ± 0.817 | - |
+| cpu/output_reuse | `copy_read_into` | f64 | 4 | `33554432` | 14.919 ± 4.657 | - | unsupported | 13.088 ± 2.260 | - | 13.532 ± 6.456 | - |
+| cpu/output_reuse | `div_into` | f64 | 1 | `33554432` | 27.912 ± 4.683 | - | unsupported | 22.984 ± 6.460 | - | 18.449 ± 3.118 | 22.076 ± 8.276 |
+| cpu/output_reuse | `div_into` | f64 | 4 | `33554432` | 20.110 ± 1.802 | - | unsupported | 22.769 ± 4.019 | - | 19.240 ± 1.634 | 17.772 ± 1.094 |
+| cpu/output_reuse | `dot_general_read_into` | f64 | 1 | `1024x1024` | 14.876 ± 7.386 | - | unsupported | 14.003 ± 2.596 | - | 50.384 ± 3.776 | - |
+| cpu/output_reuse | `dot_general_read_into` | f64 | 4 | `1024x1024` | 11.840 ± 1.477 | - | unsupported | 12.247 ± 1.536 | - | 53.023 ± 5.578 | - |
+| cpu/output_reuse | `dot_general_read_into_accum` | f64 | 1 | `1024x1024` | 12.653 ± 1.812 | - | unsupported | 16.218 ± 5.035 | - | 53.032 ± 1.124 | - |
+| cpu/output_reuse | `dot_general_read_into_accum` | f64 | 4 | `1024x1024` | 15.229 ± 2.755 | - | unsupported | 15.253 ± 4.114 | - | 59.071 ± 17.729 | - |
+| cpu/output_reuse | `mul_into` | f64 | 1 | `33554432` | 34.212 ± 11.309 | - | unsupported | 19.767 ± 2.514 | - | 20.020 ± 1.390 | 23.133 ± 2.927 |
+| cpu/output_reuse | `mul_into` | f64 | 4 | `33554432` | 20.807 ± 2.416 | - | unsupported | 20.533 ± 2.512 | - | 23.417 ± 4.749 | 18.064 ± 6.707 |
+| cpu/output_reuse | `neg_into` | f64 | 1 | `33554432` | 17.939 ± 2.395 | - | unsupported | 12.085 ± 0.766 | - | 12.002 ± 0.635 | 12.946 ± 2.085 |
+| cpu/output_reuse | `neg_into` | f64 | 4 | `33554432` | 12.411 ± 1.013 | - | unsupported | 13.435 ± 2.616 | - | 12.145 ± 2.149 | 13.019 ± 1.281 |
+| cpu/output_reuse | `solve_read_into` | f64 | 1 | `256x256,rhs=16` | 0.249 ± 0.023 | unsupported | unsupported | 0.250 ± 0.031 | unsupported | - | - |
+| cpu/output_reuse | `solve_read_into` | f64 | 1 | `768x768,rhs=16` | 3.451 ± 0.259 | unsupported | unsupported | 3.482 ± 0.354 | unsupported | - | - |
+| cpu/output_reuse | `solve_read_into` | f64 | 4 | `256x256,rhs=16` | 0.210 ± 0.014 | unsupported | unsupported | 0.361 ± 0.047 | unsupported | - | - |
+| cpu/output_reuse | `solve_read_into` | f64 | 4 | `768x768,rhs=16` | 2.804 ± 0.485 | unsupported | unsupported | 3.217 ± 0.109 | unsupported | - | - |
+| cpu/output_reuse | `sub_into` | f64 | 1 | `33554432` | 30.088 ± 9.796 | - | unsupported | 18.933 ± 2.156 | - | 19.285 ± 1.080 | 20.027 ± 2.394 |
+| cpu/output_reuse | `sub_into` | f64 | 4 | `33554432` | 22.166 ± 1.788 | - | unsupported | 19.279 ± 4.335 | - | 24.862 ± 3.113 | 21.033 ± 1.264 |
+| cpu/structural_shape | `broadcast_in_dim` | f64 | 1 | `8192x1 -> 8192x4096` | 8.667 ± 2.163 | - | 0.002 ± 0.000 | 5.659 ± 0.628 | 5.671 ± 0.457 | 16.219 ± 3.749 | - |
+| cpu/structural_shape | `broadcast_in_dim` | f64 | 4 | `8192x1 -> 8192x4096` | 13.033 ± 4.861 | - | 0.002 ± 0.000 | 6.232 ± 0.720 | 5.242 ± 0.325 | 15.466 ± 1.175 | - |
+| cpu/structural_shape | `cast_f64_f32` | f64->f32 | 1 | `33554432` | 8.450 ± 0.326 | - | 28.782 ± 7.293 | 10.179 ± 0.770 | 9.749 ± 1.216 | 9.304 ± 1.511 | - |
+| cpu/structural_shape | `cast_f64_f32` | f64->f32 | 4 | `33554432` | 10.508 ± 2.027 | - | 21.195 ± 5.868 | 10.623 ± 0.711 | 9.941 ± 1.956 | 17.185 ± 6.804 | - |
+| cpu/structural_shape | `embed_diagonal` | f64 | 1 | `8192 -> 8192x8192` | 13.548 ± 2.598 | - | 17.084 ± 10.940 | 13.454 ± 0.915 | 17.179 ± 0.876 | 11.702 ± 0.647 | - |
+| cpu/structural_shape | `embed_diagonal` | f64 | 4 | `8192 -> 8192x8192` | 12.681 ± 1.692 | - | 10.786 ± 0.999 | 12.555 ± 0.840 | 12.925 ± 4.100 | 17.730 ± 5.786 | - |
+| cpu/structural_shape | `extract_diagonal` | f64 | 1 | `8388608x2x2 -> 8388608x2` | 7.476 ± 1.273 | - | 8.991 ± 1.821 | 10.844 ± 1.207 | 10.109 ± 1.107 | - | - |
+| cpu/structural_shape | `extract_diagonal` | f64 | 4 | `8388608x2x2 -> 8388608x2` | 5.886 ± 0.532 | - | 5.545 ± 0.183 | 11.836 ± 2.026 | 8.897 ± 0.646 | - | - |
+| cpu/structural_shape | `reshape` | f64 | 1 | `33554432 -> 8192x4096` | 15.387 ± 3.222 | - | 0.002 ± 0.000 | 11.526 ± 0.236 | 12.591 ± 1.039 | 13.546 ± 3.282 | - |
+| cpu/structural_shape | `reshape` | f64 | 4 | `33554432 -> 8192x4096` | 14.312 ± 3.160 | - | 0.017 ± 0.006 | 14.818 ± 3.564 | 9.841 ± 0.500 | 22.280 ± 5.571 | - |
+| cpu/structural_shape | `transpose` | f64 | 1 | `4096x4096` | 43.501 ± 3.744 | - | 0.003 ± 0.011 | 46.027 ± 3.032 | 67.198 ± 12.773 | 230.907 ± 41.815 | 31.036 ± 4.602 |
+| cpu/structural_shape | `transpose` | f64 | 4 | `4096x4096` | 28.343 ± 2.476 | - | 0.006 ± 0.014 | 48.062 ± 8.074 | 30.906 ± 12.162 | 206.789 ± 43.981 | 30.013 ± 13.029 |
+| cpu/structural_shape | `tril` | f64 | 1 | `4096x4096` | 7.473 ± 1.923 | - | 7.228 ± 0.698 | 10.168 ± 1.110 | 7.039 ± 1.297 | 10.187 ± 2.498 | - |
+| cpu/structural_shape | `tril` | f64 | 4 | `4096x4096` | 6.179 ± 0.370 | - | 6.207 ± 1.407 | 6.632 ± 0.770 | 6.113 ± 1.345 | 10.763 ± 3.518 | - |
+| cpu/structural_shape | `triu` | f64 | 1 | `4096x4096` | 6.991 ± 0.285 | - | 8.004 ± 0.959 | 8.425 ± 1.315 | 5.731 ± 0.566 | 10.777 ± 1.614 | - |
+| cpu/structural_shape | `triu` | f64 | 4 | `4096x4096` | 5.374 ± 0.756 | - | 5.782 ± 0.582 | 6.215 ± 1.185 | 5.408 ± 0.342 | 10.522 ± 2.210 | - |
 | cpu/view_metadata | `broadcast_in_dim_view` | f64 | 1 | `8192x1 -> 8192x4096` | 0.000 ± 0.000 | - | unsupported | 0.001 ± 0.000 | - | - | - |
 | cpu/view_metadata | `broadcast_in_dim_view` | f64 | 4 | `8192x1 -> 8192x4096` | 0.000 ± 0.000 | - | unsupported | 0.001 ± 0.000 | - | - | - |
-| cpu/view_metadata | `reshape_view` | f64 | 1 | `33554432 -> 8192x4096` | 0.000 ± 0.000 | - | unsupported | 0.001 ± 0.000 | - | 0.000 ± 0.000 | - |
-| cpu/view_metadata | `reshape_view` | f64 | 4 | `33554432 -> 8192x4096` | 0.000 ± 0.000 | - | unsupported | 0.001 ± 0.000 | - | 0.000 ± 0.000 | - |
+| cpu/view_metadata | `reshape_view` | f64 | 1 | `33554432 -> 8192x4096` | 0.002 ± 0.003 | - | unsupported | 0.001 ± 0.000 | - | 0.000 ± 0.000 | - |
+| cpu/view_metadata | `reshape_view` | f64 | 4 | `33554432 -> 8192x4096` | 0.005 ± 0.007 | - | unsupported | 0.001 ± 0.000 | - | 0.000 ± 0.000 | - |
 | cpu/view_metadata | `slice_view` | f64 | 1 | `4194304 -> 2096128` | 0.000 ± 0.000 | - | unsupported | 0.001 ± 0.000 | - | 0.000 ± 0.000 | - |
 | cpu/view_metadata | `slice_view` | f64 | 4 | `4194304 -> 2096128` | 0.000 ± 0.000 | - | unsupported | 0.001 ± 0.000 | - | 0.000 ± 0.000 | - |
 | cpu/view_metadata | `transpose_view` | f64 | 1 | `4096x4096` | 0.000 ± 0.000 | - | unsupported | 0.001 ± 0.000 | - | 0.000 ± 0.000 | - |
@@ -791,399 +791,481 @@ Total batch duration and normalized ns/op are shown without rounding sub-microse
 
 | Operation | Dtype | Shape | Threads | Backend | Operations/batch | Median batch ms | Median ns/op |
 |---|---|---|---:|---|---:|---:|---:|
-| masked_log_softmax_axis1 | f64 | `1024x64` | 1 | JAX Python (XLA CPU) (ms) | 16 | 3.652209 | 228263.06 |
-| masked_log_softmax_axis1 | f64 | `1024x64` | 1 | tenferro-rs direct API (ms) | 16 | 4.413375 | 275835.94 |
-| masked_log_softmax_axis1 | f64 | `1024x64` | 1 | tenferro-rs eager mode (ms) | 16 | 4.754250 | 297140.62 |
-| masked_log_softmax_axis1 | f64 | `1024x64` | 4 | JAX Python (XLA CPU) (ms) | 16 | 2.887958 | 180497.38 |
-| masked_log_softmax_axis1 | f64 | `1024x64` | 4 | tenferro-rs direct API (ms) | 16 | 4.135042 | 258440.13 |
-| masked_log_softmax_axis1 | f64 | `1024x64` | 4 | tenferro-rs eager mode (ms) | 16 | 4.591834 | 286989.62 |
-| reduce_sum_squares_axis0 | f64 | `2048x2048` | 1 | tenferro-rs direct API (ms) | 16 | 12.623500 | 788968.75 |
-| reduce_sum_squares_axis0 | f64 | `2048x2048` | 1 | tenferro-rs eager mode (ms) | 16 | 12.809750 | 800609.38 |
-| reduce_sum_squares_axis0 | f64 | `2048x2048` | 4 | tenferro-rs direct API (ms) | 16 | 6.597458 | 412341.12 |
-| reduce_sum_squares_axis0 | f64 | `2048x2048` | 4 | tenferro-rs eager mode (ms) | 16 | 6.685958 | 417872.38 |
-| householder_qr | f64 | `256x128` | 1 | JAX Python (XLA CPU) (ms) | 16 | 4.902375 | 306398.44 |
-| householder_qr | f64 | `256x128` | 1 | PyTorch Python (ms) | 16 | 4.493708 | 280856.75 |
-| householder_qr | f64 | `256x128` | 1 | tenferro-rs direct API (ms) | 16 | 4.204250 | 262765.62 |
-| householder_qr | f64 | `256x128` | 1 | tenferro-rs eager mode (ms) | 16 | 4.676500 | 292281.25 |
-| householder_qr | f64 | `768x384` | 1 | JAX Python (XLA CPU) (ms) | 16 | 65.597834 | 4099864.63 |
-| householder_qr | f64 | `768x384` | 1 | PyTorch Python (ms) | 16 | 53.753708 | 3359606.75 |
-| householder_qr | f64 | `768x384` | 1 | tenferro-rs direct API (ms) | 16 | 50.813041 | 3175815.06 |
-| householder_qr | f64 | `768x384` | 1 | tenferro-rs eager mode (ms) | 16 | 52.674667 | 3292166.69 |
-| householder_qr | f64 | `256x128` | 4 | JAX Python (XLA CPU) (ms) | 16 | 5.690166 | 355635.38 |
-| householder_qr | f64 | `256x128` | 4 | PyTorch Python (ms) | 16 | 4.001500 | 250093.75 |
-| householder_qr | f64 | `256x128` | 4 | tenferro-rs direct API (ms) | 16 | 3.943458 | 246466.12 |
-| householder_qr | f64 | `256x128` | 4 | tenferro-rs eager mode (ms) | 16 | 4.200292 | 262518.25 |
-| householder_qr | f64 | `768x384` | 4 | JAX Python (XLA CPU) (ms) | 16 | 53.944708 | 3371544.25 |
-| householder_qr | f64 | `768x384` | 4 | PyTorch Python (ms) | 16 | 50.428250 | 3151765.62 |
-| householder_qr | f64 | `768x384` | 4 | tenferro-rs direct API (ms) | 16 | 50.790625 | 3174414.06 |
-| householder_qr | f64 | `768x384` | 4 | tenferro-rs eager mode (ms) | 16 | 57.443416 | 3590213.50 |
-| rank_revealing_qr | f64 | `256x128` | 1 | tenferro-rs direct API (ms) | 16 | 25.209125 | 1575570.31 |
-| rank_revealing_qr | f64 | `256x128` | 1 | tenferro-rs eager mode (ms) | 16 | 25.682209 | 1605138.06 |
-| rank_revealing_qr | f64 | `768x384` | 1 | tenferro-rs direct API (ms) | 16 | 173.865458 | 10866591.12 |
-| rank_revealing_qr | f64 | `768x384` | 1 | tenferro-rs eager mode (ms) | 16 | 170.329584 | 10645599.00 |
-| rank_revealing_qr | f64 | `256x128` | 4 | tenferro-rs direct API (ms) | 16 | 22.178917 | 1386182.31 |
-| rank_revealing_qr | f64 | `256x128` | 4 | tenferro-rs eager mode (ms) | 16 | 22.562416 | 1410151.00 |
-| rank_revealing_qr | f64 | `768x384` | 4 | tenferro-rs direct API (ms) | 16 | 184.651667 | 11540729.19 |
-| rank_revealing_qr | f64 | `768x384` | 4 | tenferro-rs eager mode (ms) | 16 | 271.047583 | 16940473.94 |
-| rank_revealing_qr_deficient | f64 | `256x128` | 1 | tenferro-rs direct API (ms) | 16 | 23.947750 | 1496734.38 |
-| rank_revealing_qr_deficient | f64 | `256x128` | 1 | tenferro-rs eager mode (ms) | 16 | 23.127667 | 1445479.19 |
-| rank_revealing_qr_deficient | f64 | `768x384` | 1 | tenferro-rs direct API (ms) | 16 | 148.973250 | 9310828.12 |
-| rank_revealing_qr_deficient | f64 | `768x384` | 1 | tenferro-rs eager mode (ms) | 16 | 155.321333 | 9707583.31 |
-| rank_revealing_qr_deficient | f64 | `256x128` | 4 | tenferro-rs direct API (ms) | 16 | 22.887417 | 1430463.56 |
-| rank_revealing_qr_deficient | f64 | `256x128` | 4 | tenferro-rs eager mode (ms) | 16 | 22.779584 | 1423724.00 |
-| rank_revealing_qr_deficient | f64 | `768x384` | 4 | tenferro-rs direct API (ms) | 16 | 155.546542 | 9721658.88 |
-| rank_revealing_qr_deficient | f64 | `768x384` | 4 | tenferro-rs eager mode (ms) | 16 | 200.617750 | 12538609.38 |
-| erf | f32 | `1024x64` | 1 | JAX Python (XLA CPU) (ms) | 64 | 2.275417 | 35553.39 |
-| erf | f32 | `1024x64` | 1 | PyTorch Python (ms) | 64 | 3.610125 | 56408.20 |
-| erf | f32 | `1024x64` | 1 | tenferro-rs direct API (ms) | 64 | 11.118000 | 173718.75 |
-| erf | f32 | `1024x64` | 1 | tenferro-rs eager mode (ms) | 64 | 12.053334 | 188333.34 |
-| erf | f32 | `4096x256` | 1 | JAX Python (XLA CPU) (ms) | 8 | 3.791166 | 473895.75 |
-| erf | f32 | `4096x256` | 1 | PyTorch Python (ms) | 8 | 6.638250 | 829781.25 |
-| erf | f32 | `4096x256` | 1 | tenferro-rs direct API (ms) | 8 | 22.559375 | 2819921.88 |
-| erf | f32 | `4096x256` | 1 | tenferro-rs eager mode (ms) | 8 | 23.909584 | 2988698.00 |
-| erf | f32 | `1024x64` | 4 | JAX Python (XLA CPU) (ms) | 64 | 2.272000 | 35500.00 |
-| erf | f32 | `1024x64` | 4 | PyTorch Python (ms) | 64 | 3.755583 | 58680.98 |
-| erf | f32 | `1024x64` | 4 | tenferro-rs direct API (ms) | 64 | 11.592584 | 181134.12 |
-| erf | f32 | `1024x64` | 4 | tenferro-rs eager mode (ms) | 64 | 11.679041 | 182485.02 |
-| erf | f32 | `4096x256` | 4 | JAX Python (XLA CPU) (ms) | 8 | 2.748125 | 343515.62 |
-| erf | f32 | `4096x256` | 4 | PyTorch Python (ms) | 8 | 3.473709 | 434213.62 |
-| erf | f32 | `4096x256` | 4 | tenferro-rs direct API (ms) | 8 | 5.778458 | 722307.25 |
-| erf | f32 | `4096x256` | 4 | tenferro-rs eager mode (ms) | 8 | 5.382625 | 672828.12 |
-| gelu | f32 | `1024x64` | 1 | JAX Python (XLA CPU) (ms) | 64 | 11.438708 | 178729.81 |
-| gelu | f32 | `1024x64` | 1 | PyTorch Python (ms) | 64 | 5.438167 | 84971.36 |
-| gelu | f32 | `1024x64` | 1 | tenferro-rs direct API (ms) | 64 | 4.999792 | 78121.75 |
-| gelu | f32 | `1024x64` | 1 | tenferro-rs eager mode (ms) | 64 | 4.650917 | 72670.58 |
-| gelu | f32 | `4096x256` | 1 | JAX Python (XLA CPU) (ms) | 8 | 19.367417 | 2420927.12 |
-| gelu | f32 | `4096x256` | 1 | PyTorch Python (ms) | 8 | 10.994375 | 1374296.88 |
-| gelu | f32 | `4096x256` | 1 | tenferro-rs direct API (ms) | 8 | 10.054375 | 1256796.88 |
-| gelu | f32 | `4096x256` | 1 | tenferro-rs eager mode (ms) | 8 | 10.253708 | 1281713.50 |
-| gelu | f32 | `1024x64` | 4 | JAX Python (XLA CPU) (ms) | 64 | 8.997166 | 140580.72 |
-| gelu | f32 | `1024x64` | 4 | PyTorch Python (ms) | 64 | 6.488834 | 101388.03 |
-| gelu | f32 | `1024x64` | 4 | tenferro-rs direct API (ms) | 64 | 1.820083 | 28438.80 |
-| gelu | f32 | `1024x64` | 4 | tenferro-rs eager mode (ms) | 64 | 1.919958 | 29999.34 |
-| gelu | f32 | `4096x256` | 4 | JAX Python (XLA CPU) (ms) | 8 | 10.335291 | 1291911.38 |
-| gelu | f32 | `4096x256` | 4 | PyTorch Python (ms) | 8 | 5.062125 | 632765.62 |
-| gelu | f32 | `4096x256` | 4 | tenferro-rs direct API (ms) | 8 | 2.361792 | 295224.00 |
-| gelu | f32 | `4096x256` | 4 | tenferro-rs eager mode (ms) | 8 | 2.791416 | 348927.00 |
-| gelu_tanh | f32 | `1024x64` | 1 | JAX Python (XLA CPU) (ms) | 64 | 5.633541 | 88024.08 |
-| gelu_tanh | f32 | `1024x64` | 1 | PyTorch Python (ms) | 64 | 21.273708 | 332401.69 |
-| gelu_tanh | f32 | `1024x64` | 1 | tenferro-rs direct API (ms) | 64 | 16.313459 | 254897.80 |
-| gelu_tanh | f32 | `1024x64` | 1 | tenferro-rs eager mode (ms) | 64 | 17.570375 | 274537.11 |
-| gelu_tanh | f32 | `4096x256` | 1 | JAX Python (XLA CPU) (ms) | 8 | 6.755209 | 844401.12 |
-| gelu_tanh | f32 | `4096x256` | 1 | PyTorch Python (ms) | 8 | 38.296584 | 4787073.00 |
-| gelu_tanh | f32 | `4096x256` | 1 | tenferro-rs direct API (ms) | 8 | 36.970792 | 4621349.00 |
-| gelu_tanh | f32 | `4096x256` | 1 | tenferro-rs eager mode (ms) | 8 | 34.408542 | 4301067.75 |
-| gelu_tanh | f32 | `1024x64` | 4 | JAX Python (XLA CPU) (ms) | 64 | 7.441541 | 116274.08 |
-| gelu_tanh | f32 | `1024x64` | 4 | PyTorch Python (ms) | 64 | 12.394333 | 193661.45 |
-| gelu_tanh | f32 | `1024x64` | 4 | tenferro-rs direct API (ms) | 64 | 5.141959 | 80343.11 |
-| gelu_tanh | f32 | `1024x64` | 4 | tenferro-rs eager mode (ms) | 64 | 7.405000 | 115703.12 |
-| gelu_tanh | f32 | `4096x256` | 4 | JAX Python (XLA CPU) (ms) | 8 | 7.164792 | 895599.00 |
-| gelu_tanh | f32 | `4096x256` | 4 | PyTorch Python (ms) | 8 | 15.453625 | 1931703.12 |
-| gelu_tanh | f32 | `4096x256` | 4 | tenferro-rs direct API (ms) | 8 | 8.277250 | 1034656.25 |
-| gelu_tanh | f32 | `4096x256` | 4 | tenferro-rs eager mode (ms) | 8 | 8.838042 | 1104755.25 |
-| layer_norm | f32 | `1024x64` | 1 | JAX Python (XLA CPU) (ms) | 64 | 4.243417 | 66303.39 |
-| layer_norm | f32 | `1024x64` | 1 | PyTorch Python (ms) | 64 | 3.094083 | 48345.05 |
-| layer_norm | f32 | `1024x64` | 1 | tenferro-rs direct API (ms) | 64 | 2.878500 | 44976.56 |
-| layer_norm | f32 | `1024x64` | 1 | tenferro-rs eager mode (ms) | 64 | 4.513750 | 70527.34 |
-| layer_norm | f32 | `4096x256` | 1 | JAX Python (XLA CPU) (ms) | 8 | 4.439500 | 554937.50 |
-| layer_norm | f32 | `4096x256` | 1 | PyTorch Python (ms) | 8 | 4.030417 | 503802.12 |
-| layer_norm | f32 | `4096x256` | 1 | tenferro-rs direct API (ms) | 8 | 4.379042 | 547380.25 |
-| layer_norm | f32 | `4096x256` | 1 | tenferro-rs eager mode (ms) | 8 | 4.561833 | 570229.12 |
-| layer_norm | f32 | `1024x64` | 4 | JAX Python (XLA CPU) (ms) | 64 | 7.339083 | 114673.17 |
-| layer_norm | f32 | `1024x64` | 4 | PyTorch Python (ms) | 64 | 3.443500 | 53804.69 |
-| layer_norm | f32 | `1024x64` | 4 | tenferro-rs direct API (ms) | 64 | 3.018334 | 47161.47 |
-| layer_norm | f32 | `1024x64` | 4 | tenferro-rs eager mode (ms) | 64 | 4.278667 | 66854.17 |
-| layer_norm | f32 | `4096x256` | 4 | JAX Python (XLA CPU) (ms) | 8 | 5.154125 | 644265.62 |
-| layer_norm | f32 | `4096x256` | 4 | PyTorch Python (ms) | 8 | 1.658625 | 207328.12 |
-| layer_norm | f32 | `4096x256` | 4 | tenferro-rs direct API (ms) | 8 | 4.450875 | 556359.38 |
-| layer_norm | f32 | `4096x256` | 4 | tenferro-rs eager mode (ms) | 8 | 4.514042 | 564255.25 |
-| log_softmax | f32 | `1024x64` | 1 | JAX Python (XLA CPU) (ms) | 64 | 6.178625 | 96541.02 |
-| log_softmax | f32 | `1024x64` | 1 | PyTorch Python (ms) | 64 | 5.599959 | 87499.36 |
-| log_softmax | f32 | `1024x64` | 1 | tenferro-rs direct API (ms) | 64 | 5.847500 | 91367.19 |
-| log_softmax | f32 | `1024x64` | 1 | tenferro-rs eager mode (ms) | 64 | 6.721000 | 105015.62 |
-| log_softmax | f32 | `4096x256` | 1 | JAX Python (XLA CPU) (ms) | 8 | 9.094000 | 1136750.00 |
-| log_softmax | f32 | `4096x256` | 1 | PyTorch Python (ms) | 8 | 10.837833 | 1354729.12 |
-| log_softmax | f32 | `4096x256` | 1 | tenferro-rs direct API (ms) | 8 | 9.126750 | 1140843.75 |
-| log_softmax | f32 | `4096x256` | 1 | tenferro-rs eager mode (ms) | 8 | 9.764250 | 1220531.25 |
-| log_softmax | f32 | `1024x64` | 4 | JAX Python (XLA CPU) (ms) | 64 | 8.030000 | 125468.75 |
-| log_softmax | f32 | `1024x64` | 4 | PyTorch Python (ms) | 64 | 6.246917 | 97608.08 |
-| log_softmax | f32 | `1024x64` | 4 | tenferro-rs direct API (ms) | 64 | 6.488209 | 101378.27 |
-| log_softmax | f32 | `1024x64` | 4 | tenferro-rs eager mode (ms) | 64 | 8.008084 | 125126.31 |
-| log_softmax | f32 | `4096x256` | 4 | JAX Python (XLA CPU) (ms) | 8 | 7.711625 | 963953.12 |
-| log_softmax | f32 | `4096x256` | 4 | PyTorch Python (ms) | 8 | 3.568583 | 446072.88 |
-| log_softmax | f32 | `4096x256` | 4 | tenferro-rs direct API (ms) | 8 | 4.528708 | 566088.50 |
-| log_softmax | f32 | `4096x256` | 4 | tenferro-rs eager mode (ms) | 8 | 5.460875 | 682609.38 |
-| masked_softmax | f32 | `1024x64` | 1 | JAX Python (XLA CPU) (ms) | 64 | 7.010208 | 109534.50 |
-| masked_softmax | f32 | `1024x64` | 1 | tenferro-rs direct API (ms) | 64 | 8.293708 | 129589.19 |
-| masked_softmax | f32 | `1024x64` | 1 | tenferro-rs eager mode (ms) | 64 | 9.496084 | 148376.31 |
-| masked_softmax | f32 | `4096x256` | 1 | JAX Python (XLA CPU) (ms) | 8 | 12.898000 | 1612250.00 |
-| masked_softmax | f32 | `4096x256` | 1 | tenferro-rs direct API (ms) | 8 | 14.693000 | 1836625.00 |
-| masked_softmax | f32 | `4096x256` | 1 | tenferro-rs eager mode (ms) | 8 | 14.932375 | 1866546.88 |
-| masked_softmax | f32 | `1024x64` | 4 | JAX Python (XLA CPU) (ms) | 64 | 8.363125 | 130673.83 |
-| masked_softmax | f32 | `1024x64` | 4 | tenferro-rs direct API (ms) | 64 | 7.758416 | 121225.25 |
-| masked_softmax | f32 | `1024x64` | 4 | tenferro-rs eager mode (ms) | 64 | 9.523834 | 148809.91 |
-| masked_softmax | f32 | `4096x256` | 4 | JAX Python (XLA CPU) (ms) | 8 | 14.657958 | 1832244.75 |
-| masked_softmax | f32 | `4096x256` | 4 | tenferro-rs direct API (ms) | 8 | 7.230417 | 903802.12 |
-| masked_softmax | f32 | `4096x256` | 4 | tenferro-rs eager mode (ms) | 8 | 9.515625 | 1189453.12 |
-| reduce_mean | f32 | `1024x64` | 1 | JAX Python (XLA CPU) (ms) | 64 | 2.999500 | 46867.19 |
-| reduce_mean | f32 | `1024x64` | 1 | PyTorch Python (ms) | 64 | 0.515792 | 8059.25 |
-| reduce_mean | f32 | `1024x64` | 1 | tenferro-rs direct API (ms) | 64 | 0.740916 | 11576.81 |
-| reduce_mean | f32 | `1024x64` | 1 | tenferro-rs eager mode (ms) | 64 | 1.100042 | 17188.16 |
-| reduce_mean | f32 | `4096x256` | 1 | JAX Python (XLA CPU) (ms) | 8 | 1.545250 | 193156.25 |
-| reduce_mean | f32 | `4096x256` | 1 | PyTorch Python (ms) | 8 | 0.460375 | 57546.88 |
-| reduce_mean | f32 | `4096x256` | 1 | tenferro-rs direct API (ms) | 8 | 0.919334 | 114916.75 |
-| reduce_mean | f32 | `4096x256` | 1 | tenferro-rs eager mode (ms) | 8 | 0.857292 | 107161.50 |
-| reduce_mean | f32 | `1024x64` | 4 | JAX Python (XLA CPU) (ms) | 64 | 2.962750 | 46292.97 |
-| reduce_mean | f32 | `1024x64` | 4 | PyTorch Python (ms) | 64 | 2.475417 | 38678.39 |
-| reduce_mean | f32 | `1024x64` | 4 | tenferro-rs direct API (ms) | 64 | 0.963333 | 15052.08 |
-| reduce_mean | f32 | `1024x64` | 4 | tenferro-rs eager mode (ms) | 64 | 1.321625 | 20650.39 |
-| reduce_mean | f32 | `4096x256` | 4 | JAX Python (XLA CPU) (ms) | 8 | 1.864084 | 233010.50 |
-| reduce_mean | f32 | `4096x256` | 4 | PyTorch Python (ms) | 8 | 0.561042 | 70130.25 |
-| reduce_mean | f32 | `4096x256` | 4 | tenferro-rs direct API (ms) | 8 | 0.543708 | 67963.50 |
-| reduce_mean | f32 | `4096x256` | 4 | tenferro-rs eager mode (ms) | 8 | 0.592375 | 74046.88 |
-| rms_norm | f32 | `1024x64` | 1 | JAX Python (XLA CPU) (ms) | 64 | 4.457583 | 69649.73 |
-| rms_norm | f32 | `1024x64` | 1 | PyTorch Python (ms) | 64 | 1.759708 | 27495.44 |
-| rms_norm | f32 | `1024x64` | 1 | tenferro-rs direct API (ms) | 64 | 1.617166 | 25268.22 |
-| rms_norm | f32 | `1024x64` | 1 | tenferro-rs eager mode (ms) | 64 | 2.456500 | 38382.81 |
-| rms_norm | f32 | `4096x256` | 1 | JAX Python (XLA CPU) (ms) | 8 | 4.170000 | 521250.00 |
-| rms_norm | f32 | `4096x256` | 1 | PyTorch Python (ms) | 8 | 2.480292 | 310036.50 |
-| rms_norm | f32 | `4096x256` | 1 | tenferro-rs direct API (ms) | 8 | 2.568458 | 321057.25 |
-| rms_norm | f32 | `4096x256` | 1 | tenferro-rs eager mode (ms) | 8 | 2.596292 | 324536.50 |
-| rms_norm | f32 | `1024x64` | 4 | JAX Python (XLA CPU) (ms) | 64 | 7.015541 | 109617.83 |
-| rms_norm | f32 | `1024x64` | 4 | PyTorch Python (ms) | 64 | 9.064708 | 141636.06 |
-| rms_norm | f32 | `1024x64` | 4 | tenferro-rs direct API (ms) | 64 | 1.445000 | 22578.12 |
-| rms_norm | f32 | `1024x64` | 4 | tenferro-rs eager mode (ms) | 64 | 2.358042 | 36844.41 |
-| rms_norm | f32 | `4096x256` | 4 | JAX Python (XLA CPU) (ms) | 8 | 3.947083 | 493385.38 |
-| rms_norm | f32 | `4096x256` | 4 | PyTorch Python (ms) | 8 | 2.920042 | 365005.25 |
-| rms_norm | f32 | `4096x256` | 4 | tenferro-rs direct API (ms) | 8 | 2.311375 | 288921.88 |
-| rms_norm | f32 | `4096x256` | 4 | tenferro-rs eager mode (ms) | 8 | 2.187500 | 273437.50 |
-| sigmoid | f32 | `1024x64` | 1 | JAX Python (XLA CPU) (ms) | 64 | 4.644750 | 72574.22 |
-| sigmoid | f32 | `1024x64` | 1 | PyTorch Python (ms) | 64 | 5.167500 | 80742.19 |
-| sigmoid | f32 | `1024x64` | 1 | tenferro-rs direct API (ms) | 64 | 3.078458 | 48100.91 |
-| sigmoid | f32 | `1024x64` | 1 | tenferro-rs eager mode (ms) | 64 | 3.156667 | 49322.92 |
-| sigmoid | f32 | `4096x256` | 1 | JAX Python (XLA CPU) (ms) | 8 | 5.872833 | 734104.12 |
-| sigmoid | f32 | `4096x256` | 1 | PyTorch Python (ms) | 8 | 9.141667 | 1142708.38 |
-| sigmoid | f32 | `4096x256` | 1 | tenferro-rs direct API (ms) | 8 | 6.434083 | 804260.38 |
-| sigmoid | f32 | `4096x256` | 1 | tenferro-rs eager mode (ms) | 8 | 6.800166 | 850020.75 |
-| sigmoid | f32 | `1024x64` | 4 | JAX Python (XLA CPU) (ms) | 64 | 6.066833 | 94794.27 |
-| sigmoid | f32 | `1024x64` | 4 | PyTorch Python (ms) | 64 | 5.202750 | 81292.97 |
-| sigmoid | f32 | `1024x64` | 4 | tenferro-rs direct API (ms) | 64 | 0.964209 | 15065.77 |
-| sigmoid | f32 | `1024x64` | 4 | tenferro-rs eager mode (ms) | 64 | 0.927875 | 14498.05 |
-| sigmoid | f32 | `4096x256` | 4 | JAX Python (XLA CPU) (ms) | 8 | 4.117209 | 514651.12 |
-| sigmoid | f32 | `4096x256` | 4 | PyTorch Python (ms) | 8 | 4.459584 | 557448.00 |
-| sigmoid | f32 | `4096x256` | 4 | tenferro-rs direct API (ms) | 8 | 1.477458 | 184682.25 |
-| sigmoid | f32 | `4096x256` | 4 | tenferro-rs eager mode (ms) | 8 | 1.583667 | 197958.38 |
-| silu | f32 | `1024x64` | 1 | JAX Python (XLA CPU) (ms) | 64 | 5.429833 | 84841.14 |
-| silu | f32 | `1024x64` | 1 | PyTorch Python (ms) | 64 | 4.964500 | 77570.31 |
-| silu | f32 | `1024x64` | 1 | tenferro-rs direct API (ms) | 64 | 3.103708 | 48495.44 |
-| silu | f32 | `1024x64` | 1 | tenferro-rs eager mode (ms) | 64 | 3.288958 | 51389.97 |
-| silu | f32 | `4096x256` | 1 | JAX Python (XLA CPU) (ms) | 8 | 6.240834 | 780104.25 |
-| silu | f32 | `4096x256` | 1 | PyTorch Python (ms) | 8 | 9.395375 | 1174421.88 |
-| silu | f32 | `4096x256` | 1 | tenferro-rs direct API (ms) | 8 | 6.571125 | 821390.62 |
-| silu | f32 | `4096x256` | 1 | tenferro-rs eager mode (ms) | 8 | 6.353667 | 794208.38 |
-| silu | f32 | `1024x64` | 4 | JAX Python (XLA CPU) (ms) | 64 | 5.143292 | 80363.94 |
-| silu | f32 | `1024x64` | 4 | PyTorch Python (ms) | 64 | 5.380500 | 84070.31 |
-| silu | f32 | `1024x64` | 4 | tenferro-rs direct API (ms) | 64 | 1.336750 | 20886.72 |
-| silu | f32 | `1024x64` | 4 | tenferro-rs eager mode (ms) | 64 | 1.243042 | 19422.53 |
-| silu | f32 | `4096x256` | 4 | JAX Python (XLA CPU) (ms) | 8 | 4.789959 | 598744.88 |
-| silu | f32 | `4096x256` | 4 | PyTorch Python (ms) | 8 | 4.918459 | 614807.38 |
-| silu | f32 | `4096x256` | 4 | tenferro-rs direct API (ms) | 8 | 1.554375 | 194296.88 |
-| silu | f32 | `4096x256` | 4 | tenferro-rs eager mode (ms) | 8 | 1.502166 | 187770.75 |
-| softmax | f32 | `1024x64` | 1 | JAX Python (XLA CPU) (ms) | 64 | 6.225083 | 97266.92 |
-| softmax | f32 | `1024x64` | 1 | PyTorch Python (ms) | 64 | 6.021334 | 94083.34 |
-| softmax | f32 | `1024x64` | 1 | tenferro-rs direct API (ms) | 64 | 5.848750 | 91386.72 |
-| softmax | f32 | `1024x64` | 1 | tenferro-rs eager mode (ms) | 64 | 7.001292 | 109395.19 |
-| softmax | f32 | `4096x256` | 1 | JAX Python (XLA CPU) (ms) | 8 | 8.541042 | 1067630.25 |
-| softmax | f32 | `4096x256` | 1 | PyTorch Python (ms) | 8 | 12.642167 | 1580270.88 |
-| softmax | f32 | `4096x256` | 1 | tenferro-rs direct API (ms) | 8 | 9.254917 | 1156864.62 |
-| softmax | f32 | `4096x256` | 1 | tenferro-rs eager mode (ms) | 8 | 8.544000 | 1068000.00 |
-| softmax | f32 | `1024x64` | 4 | JAX Python (XLA CPU) (ms) | 64 | 7.901209 | 123456.39 |
-| softmax | f32 | `1024x64` | 4 | PyTorch Python (ms) | 64 | 6.415833 | 100247.39 |
-| softmax | f32 | `1024x64` | 4 | tenferro-rs direct API (ms) | 64 | 6.856458 | 107132.16 |
-| softmax | f32 | `1024x64` | 4 | tenferro-rs eager mode (ms) | 64 | 7.790875 | 121732.42 |
-| softmax | f32 | `4096x256` | 4 | JAX Python (XLA CPU) (ms) | 8 | 7.214958 | 901869.75 |
-| softmax | f32 | `4096x256` | 4 | PyTorch Python (ms) | 8 | 6.266500 | 783312.50 |
-| softmax | f32 | `4096x256` | 4 | tenferro-rs direct API (ms) | 8 | 4.417834 | 552229.25 |
-| softmax | f32 | `4096x256` | 4 | tenferro-rs eager mode (ms) | 8 | 4.783959 | 597994.88 |
-| softplus | f32 | `1024x64` | 1 | JAX Python (XLA CPU) (ms) | 64 | 18.372459 | 287069.67 |
-| softplus | f32 | `1024x64` | 1 | PyTorch Python (ms) | 64 | 18.564208 | 290065.75 |
-| softplus | f32 | `1024x64` | 1 | tenferro-rs direct API (ms) | 64 | 13.733125 | 214580.08 |
-| softplus | f32 | `1024x64` | 1 | tenferro-rs eager mode (ms) | 64 | 13.713291 | 214270.17 |
-| softplus | f32 | `4096x256` | 1 | JAX Python (XLA CPU) (ms) | 8 | 30.896833 | 3862104.12 |
-| softplus | f32 | `4096x256` | 1 | PyTorch Python (ms) | 8 | 34.022291 | 4252786.38 |
-| softplus | f32 | `4096x256` | 1 | tenferro-rs direct API (ms) | 8 | 29.537875 | 3692234.38 |
-| softplus | f32 | `4096x256` | 1 | tenferro-rs eager mode (ms) | 8 | 31.297125 | 3912140.62 |
-| softplus | f32 | `1024x64` | 4 | JAX Python (XLA CPU) (ms) | 64 | 14.283834 | 223184.91 |
-| softplus | f32 | `1024x64` | 4 | PyTorch Python (ms) | 64 | 11.323292 | 176926.44 |
-| softplus | f32 | `1024x64` | 4 | tenferro-rs direct API (ms) | 64 | 4.404709 | 68823.58 |
-| softplus | f32 | `1024x64` | 4 | tenferro-rs eager mode (ms) | 64 | 4.670542 | 72977.22 |
-| softplus | f32 | `4096x256` | 4 | JAX Python (XLA CPU) (ms) | 8 | 16.785541 | 2098192.62 |
-| softplus | f32 | `4096x256` | 4 | PyTorch Python (ms) | 8 | 14.791041 | 1848880.12 |
-| softplus | f32 | `4096x256` | 4 | tenferro-rs direct API (ms) | 8 | 6.929416 | 866177.00 |
-| softplus | f32 | `4096x256` | 4 | tenferro-rs eager mode (ms) | 8 | 6.698917 | 837364.62 |
-| take_along_axis | f32 | `1024x64` | 1 | JAX Python (XLA CPU) (ms) | 64 | 5.680250 | 88753.91 |
-| take_along_axis | f32 | `1024x64` | 1 | PyTorch Python (ms) | 64 | 7.381875 | 115341.80 |
-| take_along_axis | f32 | `1024x64` | 1 | tenferro-rs direct API (ms) | 64 | 33.524666 | 523822.91 |
-| take_along_axis | f32 | `1024x64` | 1 | tenferro-rs eager mode (ms) | 64 | 42.810834 | 668919.28 |
-| take_along_axis | f32 | `4096x256` | 1 | JAX Python (XLA CPU) (ms) | 8 | 6.470458 | 808807.25 |
-| take_along_axis | f32 | `4096x256` | 1 | PyTorch Python (ms) | 8 | 13.391916 | 1673989.50 |
-| take_along_axis | f32 | `4096x256` | 1 | tenferro-rs direct API (ms) | 8 | 68.088042 | 8511005.25 |
-| take_along_axis | f32 | `4096x256` | 1 | tenferro-rs eager mode (ms) | 8 | 78.115416 | 9764427.00 |
-| take_along_axis | f32 | `1024x64` | 4 | JAX Python (XLA CPU) (ms) | 64 | 7.120875 | 111263.67 |
-| take_along_axis | f32 | `1024x64` | 4 | PyTorch Python (ms) | 64 | 8.357042 | 130578.78 |
-| take_along_axis | f32 | `1024x64` | 4 | tenferro-rs direct API (ms) | 64 | 30.208292 | 472004.56 |
-| take_along_axis | f32 | `1024x64` | 4 | tenferro-rs eager mode (ms) | 64 | 40.084458 | 626319.66 |
-| take_along_axis | f32 | `4096x256` | 4 | JAX Python (XLA CPU) (ms) | 8 | 6.019083 | 752385.38 |
-| take_along_axis | f32 | `4096x256` | 4 | PyTorch Python (ms) | 8 | 6.776041 | 847005.12 |
-| take_along_axis | f32 | `4096x256` | 4 | tenferro-rs direct API (ms) | 8 | 29.686333 | 3710791.62 |
-| take_along_axis | f32 | `4096x256` | 4 | tenferro-rs eager mode (ms) | 8 | 42.073209 | 5259151.12 |
-| solve_read_into | f64 | `256x256,rhs=16` | 1 | PyTorch Python (ms) | 16 | 3.571875 | 223242.19 |
-| solve_read_into | f64 | `256x256,rhs=16` | 1 | tenferro-rs direct API (ms) | 16 | 2.847500 | 177968.75 |
-| solve_read_into | f64 | `768x768,rhs=16` | 1 | PyTorch Python (ms) | 16 | 43.098834 | 2693677.12 |
-| solve_read_into | f64 | `768x768,rhs=16` | 1 | tenferro-rs direct API (ms) | 16 | 34.653791 | 2165861.94 |
-| solve_read_into | f64 | `256x256,rhs=16` | 4 | PyTorch Python (ms) | 16 | 3.843083 | 240192.69 |
-| solve_read_into | f64 | `256x256,rhs=16` | 4 | tenferro-rs direct API (ms) | 16 | 2.684666 | 167791.62 |
-| solve_read_into | f64 | `768x768,rhs=16` | 4 | PyTorch Python (ms) | 16 | 36.455917 | 2278494.81 |
-| solve_read_into | f64 | `768x768,rhs=16` | 4 | tenferro-rs direct API (ms) | 16 | 34.730792 | 2170674.50 |
-| broadcast_in_dim_view | f64 | `8192x1 -> 8192x4096` | 1 | PyTorch Python (ms) | 16 | 0.014750 | 921.88 |
-| broadcast_in_dim_view | f64 | `8192x1 -> 8192x4096` | 1 | tenferro-rs direct API (ms) | 16 | 0.001708 | 106.75 |
-| broadcast_in_dim_view | f64 | `8192x1 -> 8192x4096` | 4 | PyTorch Python (ms) | 16 | 0.011458 | 716.12 |
-| broadcast_in_dim_view | f64 | `8192x1 -> 8192x4096` | 4 | tenferro-rs direct API (ms) | 16 | 0.001459 | 91.19 |
+| masked_log_softmax_axis1 | f64 | `1024x64` | 1 | JAX Python (XLA CPU) (ms) | 16 | 4.883958 | 305247.38 |
+| masked_log_softmax_axis1 | f64 | `1024x64` | 1 | tenferro-rs direct API (ms) | 16 | 4.449417 | 278088.56 |
+| masked_log_softmax_axis1 | f64 | `1024x64` | 1 | tenferro-rs eager mode (ms) | 16 | 4.165209 | 260325.56 |
+| masked_log_softmax_axis1 | f64 | `1024x64` | 4 | JAX Python (XLA CPU) (ms) | 16 | 3.231166 | 201947.88 |
+| masked_log_softmax_axis1 | f64 | `1024x64` | 4 | tenferro-rs direct API (ms) | 16 | 6.349417 | 396838.56 |
+| masked_log_softmax_axis1 | f64 | `1024x64` | 4 | tenferro-rs eager mode (ms) | 16 | 5.954916 | 372182.25 |
+| reduce_sum_squares_axis0 | f64 | `2048x2048` | 1 | tenferro-rs direct API (ms) | 16 | 22.092750 | 1380796.88 |
+| reduce_sum_squares_axis0 | f64 | `2048x2048` | 1 | tenferro-rs eager mode (ms) | 16 | 18.645959 | 1165372.44 |
+| reduce_sum_squares_axis0 | f64 | `2048x2048` | 4 | tenferro-rs direct API (ms) | 16 | 14.391667 | 899479.19 |
+| reduce_sum_squares_axis0 | f64 | `2048x2048` | 4 | tenferro-rs eager mode (ms) | 16 | 19.117416 | 1194838.50 |
+| householder_qr | f64 | `256x128` | 1 | JAX Python (XLA CPU) (ms) | 16 | 6.034209 | 377138.06 |
+| householder_qr | f64 | `256x128` | 1 | PyTorch Python (ms) | 16 | 4.862084 | 303880.25 |
+| householder_qr | f64 | `256x128` | 1 | tenferro-rs direct API (ms) | 16 | 4.732167 | 295760.44 |
+| householder_qr | f64 | `256x128` | 1 | tenferro-rs eager mode (ms) | 16 | 4.866000 | 304125.00 |
+| householder_qr | f64 | `768x384` | 1 | JAX Python (XLA CPU) (ms) | 16 | 84.845666 | 5302854.12 |
+| householder_qr | f64 | `768x384` | 1 | PyTorch Python (ms) | 16 | 60.768750 | 3798046.88 |
+| householder_qr | f64 | `768x384` | 1 | tenferro-rs direct API (ms) | 16 | 58.894417 | 3680901.06 |
+| householder_qr | f64 | `768x384` | 1 | tenferro-rs eager mode (ms) | 16 | 61.741416 | 3858838.50 |
+| householder_qr | f64 | `256x128` | 4 | JAX Python (XLA CPU) (ms) | 16 | 6.860541 | 428783.81 |
+| householder_qr | f64 | `256x128` | 4 | PyTorch Python (ms) | 16 | 5.185125 | 324070.31 |
+| householder_qr | f64 | `256x128` | 4 | tenferro-rs direct API (ms) | 16 | 5.850292 | 365643.25 |
+| householder_qr | f64 | `256x128` | 4 | tenferro-rs eager mode (ms) | 16 | 5.163041 | 322690.06 |
+| householder_qr | f64 | `768x384` | 4 | JAX Python (XLA CPU) (ms) | 16 | 76.174958 | 4760934.88 |
+| householder_qr | f64 | `768x384` | 4 | PyTorch Python (ms) | 16 | 57.801792 | 3612612.00 |
+| householder_qr | f64 | `768x384` | 4 | tenferro-rs direct API (ms) | 16 | 63.775417 | 3985963.56 |
+| householder_qr | f64 | `768x384` | 4 | tenferro-rs eager mode (ms) | 16 | 54.185042 | 3386565.12 |
+| rank_revealing_qr | f64 | `256x128` | 1 | tenferro-rs direct API (ms) | 16 | 23.491375 | 1468210.94 |
+| rank_revealing_qr | f64 | `256x128` | 1 | tenferro-rs eager mode (ms) | 16 | 23.842500 | 1490156.25 |
+| rank_revealing_qr | f64 | `768x384` | 1 | tenferro-rs direct API (ms) | 16 | 217.695750 | 13605984.38 |
+| rank_revealing_qr | f64 | `768x384` | 1 | tenferro-rs eager mode (ms) | 16 | 279.060500 | 17441281.25 |
+| rank_revealing_qr | f64 | `256x128` | 4 | tenferro-rs direct API (ms) | 16 | 24.601666 | 1537604.12 |
+| rank_revealing_qr | f64 | `256x128` | 4 | tenferro-rs eager mode (ms) | 16 | 22.826834 | 1426677.12 |
+| rank_revealing_qr | f64 | `768x384` | 4 | tenferro-rs direct API (ms) | 16 | 235.686791 | 14730424.44 |
+| rank_revealing_qr | f64 | `768x384` | 4 | tenferro-rs eager mode (ms) | 16 | 249.533667 | 15595854.19 |
+| rank_revealing_qr_deficient | f64 | `256x128` | 1 | tenferro-rs direct API (ms) | 16 | 23.888416 | 1493026.00 |
+| rank_revealing_qr_deficient | f64 | `256x128` | 1 | tenferro-rs eager mode (ms) | 16 | 23.815625 | 1488476.56 |
+| rank_revealing_qr_deficient | f64 | `768x384` | 1 | tenferro-rs direct API (ms) | 16 | 193.710667 | 12106916.69 |
+| rank_revealing_qr_deficient | f64 | `768x384` | 1 | tenferro-rs eager mode (ms) | 16 | 199.923375 | 12495210.94 |
+| rank_revealing_qr_deficient | f64 | `256x128` | 4 | tenferro-rs direct API (ms) | 16 | 23.430958 | 1464434.88 |
+| rank_revealing_qr_deficient | f64 | `256x128` | 4 | tenferro-rs eager mode (ms) | 16 | 22.843000 | 1427687.50 |
+| rank_revealing_qr_deficient | f64 | `768x384` | 4 | tenferro-rs direct API (ms) | 16 | 279.077417 | 17442338.56 |
+| rank_revealing_qr_deficient | f64 | `768x384` | 4 | tenferro-rs eager mode (ms) | 16 | 199.264375 | 12454023.44 |
+| erf | f32 | `1024x64` | 1 | JAX Python (XLA CPU) (ms) | 64 | 3.484959 | 54452.48 |
+| erf | f32 | `1024x64` | 1 | PyTorch Python (ms) | 64 | 4.015291 | 62738.92 |
+| erf | f32 | `1024x64` | 1 | tenferro-rs direct API (ms) | 64 | 15.134334 | 236473.97 |
+| erf | f32 | `1024x64` | 1 | tenferro-rs eager mode (ms) | 64 | 10.635167 | 166174.48 |
+| erf | f32 | `4096x256` | 1 | JAX Python (XLA CPU) (ms) | 8 | 4.109000 | 513625.00 |
+| erf | f32 | `4096x256` | 1 | PyTorch Python (ms) | 8 | 6.518458 | 814807.25 |
+| erf | f32 | `4096x256` | 1 | tenferro-rs direct API (ms) | 8 | 34.657791 | 4332223.88 |
+| erf | f32 | `4096x256` | 1 | tenferro-rs eager mode (ms) | 8 | 30.945334 | 3868166.75 |
+| erf | f32 | `1024x64` | 4 | JAX Python (XLA CPU) (ms) | 64 | 5.533416 | 86459.62 |
+| erf | f32 | `1024x64` | 4 | PyTorch Python (ms) | 64 | 7.666084 | 119782.56 |
+| erf | f32 | `1024x64` | 4 | tenferro-rs direct API (ms) | 64 | 16.100667 | 251572.92 |
+| erf | f32 | `1024x64` | 4 | tenferro-rs eager mode (ms) | 64 | 12.019667 | 187807.30 |
+| erf | f32 | `4096x256` | 4 | JAX Python (XLA CPU) (ms) | 8 | 3.166958 | 395869.75 |
+| erf | f32 | `4096x256` | 4 | PyTorch Python (ms) | 8 | 3.975916 | 496989.50 |
+| erf | f32 | `4096x256` | 4 | tenferro-rs direct API (ms) | 8 | 10.961709 | 1370213.62 |
+| erf | f32 | `4096x256` | 4 | tenferro-rs eager mode (ms) | 8 | 14.402500 | 1800312.50 |
+| gelu | f32 | `1024x64` | 1 | JAX Python (XLA CPU) (ms) | 64 | 13.350875 | 208607.42 |
+| gelu | f32 | `1024x64` | 1 | PyTorch Python (ms) | 64 | 5.834417 | 91162.77 |
+| gelu | f32 | `1024x64` | 1 | tenferro-rs direct API (ms) | 64 | 4.712333 | 73630.20 |
+| gelu | f32 | `1024x64` | 1 | tenferro-rs eager mode (ms) | 64 | 5.587542 | 87305.34 |
+| gelu | f32 | `4096x256` | 1 | JAX Python (XLA CPU) (ms) | 8 | 17.587250 | 2198406.25 |
+| gelu | f32 | `4096x256` | 1 | PyTorch Python (ms) | 8 | 11.484583 | 1435572.88 |
+| gelu | f32 | `4096x256` | 1 | tenferro-rs direct API (ms) | 8 | 13.103167 | 1637895.88 |
+| gelu | f32 | `4096x256` | 1 | tenferro-rs eager mode (ms) | 8 | 11.296708 | 1412088.50 |
+| gelu | f32 | `1024x64` | 4 | JAX Python (XLA CPU) (ms) | 64 | 10.287833 | 160747.39 |
+| gelu | f32 | `1024x64` | 4 | PyTorch Python (ms) | 64 | 5.559792 | 86871.75 |
+| gelu | f32 | `1024x64` | 4 | tenferro-rs direct API (ms) | 64 | 8.092792 | 126449.87 |
+| gelu | f32 | `1024x64` | 4 | tenferro-rs eager mode (ms) | 64 | 4.434917 | 69295.58 |
+| gelu | f32 | `4096x256` | 4 | JAX Python (XLA CPU) (ms) | 8 | 11.630459 | 1453807.38 |
+| gelu | f32 | `4096x256` | 4 | PyTorch Python (ms) | 8 | 10.068375 | 1258546.88 |
+| gelu | f32 | `4096x256` | 4 | tenferro-rs direct API (ms) | 8 | 6.539750 | 817468.75 |
+| gelu | f32 | `4096x256` | 4 | tenferro-rs eager mode (ms) | 8 | 5.463625 | 682953.12 |
+| gelu_tanh | f32 | `1024x64` | 1 | JAX Python (XLA CPU) (ms) | 64 | 6.419834 | 100309.91 |
+| gelu_tanh | f32 | `1024x64` | 1 | PyTorch Python (ms) | 64 | 19.650875 | 307044.92 |
+| gelu_tanh | f32 | `1024x64` | 1 | tenferro-rs direct API (ms) | 64 | 18.574541 | 290227.20 |
+| gelu_tanh | f32 | `1024x64` | 1 | tenferro-rs eager mode (ms) | 64 | 18.439000 | 288109.38 |
+| gelu_tanh | f32 | `4096x256` | 1 | JAX Python (XLA CPU) (ms) | 8 | 7.335959 | 916994.88 |
+| gelu_tanh | f32 | `4096x256` | 1 | PyTorch Python (ms) | 8 | 38.700250 | 4837531.25 |
+| gelu_tanh | f32 | `4096x256` | 1 | tenferro-rs direct API (ms) | 8 | 36.129542 | 4516192.75 |
+| gelu_tanh | f32 | `4096x256` | 1 | tenferro-rs eager mode (ms) | 8 | 39.186250 | 4898281.25 |
+| gelu_tanh | f32 | `1024x64` | 4 | JAX Python (XLA CPU) (ms) | 64 | 4.449625 | 69525.39 |
+| gelu_tanh | f32 | `1024x64` | 4 | PyTorch Python (ms) | 64 | 13.066583 | 204165.36 |
+| gelu_tanh | f32 | `1024x64` | 4 | tenferro-rs direct API (ms) | 64 | 12.566292 | 196348.31 |
+| gelu_tanh | f32 | `1024x64` | 4 | tenferro-rs eager mode (ms) | 64 | 15.702042 | 245344.41 |
+| gelu_tanh | f32 | `4096x256` | 4 | JAX Python (XLA CPU) (ms) | 8 | 4.320375 | 540046.88 |
+| gelu_tanh | f32 | `4096x256` | 4 | PyTorch Python (ms) | 8 | 25.341208 | 3167651.00 |
+| gelu_tanh | f32 | `4096x256` | 4 | tenferro-rs direct API (ms) | 8 | 19.382666 | 2422833.25 |
+| gelu_tanh | f32 | `4096x256` | 4 | tenferro-rs eager mode (ms) | 8 | 19.056625 | 2382078.12 |
+| layer_norm | f32 | `1024x64` | 1 | JAX Python (XLA CPU) (ms) | 64 | 5.335709 | 83370.45 |
+| layer_norm | f32 | `1024x64` | 1 | PyTorch Python (ms) | 64 | 3.056250 | 47753.91 |
+| layer_norm | f32 | `1024x64` | 1 | tenferro-rs direct API (ms) | 64 | 3.341875 | 52216.80 |
+| layer_norm | f32 | `1024x64` | 1 | tenferro-rs eager mode (ms) | 64 | 4.717625 | 73712.89 |
+| layer_norm | f32 | `4096x256` | 1 | JAX Python (XLA CPU) (ms) | 8 | 5.945083 | 743135.38 |
+| layer_norm | f32 | `4096x256` | 1 | PyTorch Python (ms) | 8 | 4.927834 | 615979.25 |
+| layer_norm | f32 | `4096x256` | 1 | tenferro-rs direct API (ms) | 8 | 5.173959 | 646744.88 |
+| layer_norm | f32 | `4096x256` | 1 | tenferro-rs eager mode (ms) | 8 | 4.522500 | 565312.50 |
+| layer_norm | f32 | `1024x64` | 4 | JAX Python (XLA CPU) (ms) | 64 | 4.846666 | 75729.16 |
+| layer_norm | f32 | `1024x64` | 4 | PyTorch Python (ms) | 64 | 5.668375 | 88568.36 |
+| layer_norm | f32 | `1024x64` | 4 | tenferro-rs direct API (ms) | 64 | 3.484958 | 54452.47 |
+| layer_norm | f32 | `1024x64` | 4 | tenferro-rs eager mode (ms) | 64 | 5.267458 | 82304.03 |
+| layer_norm | f32 | `4096x256` | 4 | JAX Python (XLA CPU) (ms) | 8 | 5.083042 | 635380.25 |
+| layer_norm | f32 | `4096x256` | 4 | PyTorch Python (ms) | 8 | 4.031000 | 503875.00 |
+| layer_norm | f32 | `4096x256` | 4 | tenferro-rs direct API (ms) | 8 | 6.955125 | 869390.62 |
+| layer_norm | f32 | `4096x256` | 4 | tenferro-rs eager mode (ms) | 8 | 11.814667 | 1476833.38 |
+| log_softmax | f32 | `1024x64` | 1 | JAX Python (XLA CPU) (ms) | 64 | 7.581917 | 118467.45 |
+| log_softmax | f32 | `1024x64` | 1 | PyTorch Python (ms) | 64 | 5.912542 | 92383.47 |
+| log_softmax | f32 | `1024x64` | 1 | tenferro-rs direct API (ms) | 64 | 6.041292 | 94395.19 |
+| log_softmax | f32 | `1024x64` | 1 | tenferro-rs eager mode (ms) | 64 | 7.121500 | 111273.44 |
+| log_softmax | f32 | `4096x256` | 1 | JAX Python (XLA CPU) (ms) | 8 | 10.946917 | 1368364.62 |
+| log_softmax | f32 | `4096x256` | 1 | PyTorch Python (ms) | 8 | 11.818167 | 1477270.88 |
+| log_softmax | f32 | `4096x256` | 1 | tenferro-rs direct API (ms) | 8 | 10.779250 | 1347406.25 |
+| log_softmax | f32 | `4096x256` | 1 | tenferro-rs eager mode (ms) | 8 | 11.950792 | 1493849.00 |
+| log_softmax | f32 | `1024x64` | 4 | JAX Python (XLA CPU) (ms) | 64 | 8.552292 | 133629.56 |
+| log_softmax | f32 | `1024x64` | 4 | PyTorch Python (ms) | 64 | 5.890792 | 92043.62 |
+| log_softmax | f32 | `1024x64` | 4 | tenferro-rs direct API (ms) | 64 | 7.080584 | 110634.12 |
+| log_softmax | f32 | `1024x64` | 4 | tenferro-rs eager mode (ms) | 64 | 7.707458 | 120429.03 |
+| log_softmax | f32 | `4096x256` | 4 | JAX Python (XLA CPU) (ms) | 8 | 6.032542 | 754067.75 |
+| log_softmax | f32 | `4096x256` | 4 | PyTorch Python (ms) | 8 | 7.815625 | 976953.12 |
+| log_softmax | f32 | `4096x256` | 4 | tenferro-rs direct API (ms) | 8 | 10.077167 | 1259645.88 |
+| log_softmax | f32 | `4096x256` | 4 | tenferro-rs eager mode (ms) | 8 | 13.600541 | 1700067.62 |
+| masked_softmax | f32 | `1024x64` | 1 | JAX Python (XLA CPU) (ms) | 64 | 9.072750 | 141761.72 |
+| masked_softmax | f32 | `1024x64` | 1 | tenferro-rs direct API (ms) | 64 | 8.297250 | 129644.53 |
+| masked_softmax | f32 | `1024x64` | 1 | tenferro-rs eager mode (ms) | 64 | 10.693292 | 167082.69 |
+| masked_softmax | f32 | `4096x256` | 1 | JAX Python (XLA CPU) (ms) | 8 | 13.948833 | 1743604.12 |
+| masked_softmax | f32 | `4096x256` | 1 | tenferro-rs direct API (ms) | 8 | 15.573125 | 1946640.62 |
+| masked_softmax | f32 | `4096x256` | 1 | tenferro-rs eager mode (ms) | 8 | 16.347250 | 2043406.25 |
+| masked_softmax | f32 | `1024x64` | 4 | JAX Python (XLA CPU) (ms) | 64 | 8.044125 | 125689.45 |
+| masked_softmax | f32 | `1024x64` | 4 | tenferro-rs direct API (ms) | 64 | 8.922709 | 139417.33 |
+| masked_softmax | f32 | `1024x64` | 4 | tenferro-rs eager mode (ms) | 64 | 10.406625 | 162603.52 |
+| masked_softmax | f32 | `4096x256` | 4 | JAX Python (XLA CPU) (ms) | 8 | 8.973208 | 1121651.00 |
+| masked_softmax | f32 | `4096x256` | 4 | tenferro-rs direct API (ms) | 8 | 11.982416 | 1497802.00 |
+| masked_softmax | f32 | `4096x256` | 4 | tenferro-rs eager mode (ms) | 8 | 14.738333 | 1842291.62 |
+| reduce_mean | f32 | `1024x64` | 1 | JAX Python (XLA CPU) (ms) | 64 | 4.389417 | 68584.64 |
+| reduce_mean | f32 | `1024x64` | 1 | PyTorch Python (ms) | 64 | 0.522500 | 8164.06 |
+| reduce_mean | f32 | `1024x64` | 1 | tenferro-rs direct API (ms) | 64 | 0.813583 | 12712.23 |
+| reduce_mean | f32 | `1024x64` | 1 | tenferro-rs eager mode (ms) | 64 | 1.523291 | 23801.42 |
+| reduce_mean | f32 | `4096x256` | 1 | JAX Python (XLA CPU) (ms) | 8 | 2.117000 | 264625.00 |
+| reduce_mean | f32 | `4096x256` | 1 | PyTorch Python (ms) | 8 | 0.513041 | 64130.12 |
+| reduce_mean | f32 | `4096x256` | 1 | tenferro-rs direct API (ms) | 8 | 0.937750 | 117218.75 |
+| reduce_mean | f32 | `4096x256` | 1 | tenferro-rs eager mode (ms) | 8 | 0.994375 | 124296.88 |
+| reduce_mean | f32 | `1024x64` | 4 | JAX Python (XLA CPU) (ms) | 64 | 4.188875 | 65451.17 |
+| reduce_mean | f32 | `1024x64` | 4 | PyTorch Python (ms) | 64 | 2.042708 | 31917.31 |
+| reduce_mean | f32 | `1024x64` | 4 | tenferro-rs direct API (ms) | 64 | 0.823500 | 12867.19 |
+| reduce_mean | f32 | `1024x64` | 4 | tenferro-rs eager mode (ms) | 64 | 1.244833 | 19450.52 |
+| reduce_mean | f32 | `4096x256` | 4 | JAX Python (XLA CPU) (ms) | 8 | 1.194208 | 149276.00 |
+| reduce_mean | f32 | `4096x256` | 4 | PyTorch Python (ms) | 8 | 0.598166 | 74770.75 |
+| reduce_mean | f32 | `4096x256` | 4 | tenferro-rs direct API (ms) | 8 | 0.889792 | 111224.00 |
+| reduce_mean | f32 | `4096x256` | 4 | tenferro-rs eager mode (ms) | 8 | 0.877750 | 109718.75 |
+| rms_norm | f32 | `1024x64` | 1 | JAX Python (XLA CPU) (ms) | 64 | 4.772250 | 74566.41 |
+| rms_norm | f32 | `1024x64` | 1 | PyTorch Python (ms) | 64 | 1.825750 | 28527.34 |
+| rms_norm | f32 | `1024x64` | 1 | tenferro-rs direct API (ms) | 64 | 1.604083 | 25063.80 |
+| rms_norm | f32 | `1024x64` | 1 | tenferro-rs eager mode (ms) | 64 | 2.631333 | 41114.58 |
+| rms_norm | f32 | `4096x256` | 1 | JAX Python (XLA CPU) (ms) | 8 | 5.895625 | 736953.12 |
+| rms_norm | f32 | `4096x256` | 1 | PyTorch Python (ms) | 8 | 3.108542 | 388567.75 |
+| rms_norm | f32 | `4096x256` | 1 | tenferro-rs direct API (ms) | 8 | 2.282792 | 285349.00 |
+| rms_norm | f32 | `4096x256` | 1 | tenferro-rs eager mode (ms) | 8 | 2.485875 | 310734.38 |
+| rms_norm | f32 | `1024x64` | 4 | JAX Python (XLA CPU) (ms) | 64 | 6.216250 | 97128.91 |
+| rms_norm | f32 | `1024x64` | 4 | PyTorch Python (ms) | 64 | 6.869083 | 107329.42 |
+| rms_norm | f32 | `1024x64` | 4 | tenferro-rs direct API (ms) | 64 | 1.812000 | 28312.50 |
+| rms_norm | f32 | `1024x64` | 4 | tenferro-rs eager mode (ms) | 64 | 2.824917 | 44139.33 |
+| rms_norm | f32 | `4096x256` | 4 | JAX Python (XLA CPU) (ms) | 8 | 9.375916 | 1171989.50 |
+| rms_norm | f32 | `4096x256` | 4 | PyTorch Python (ms) | 8 | 3.496084 | 437010.50 |
+| rms_norm | f32 | `4096x256` | 4 | tenferro-rs direct API (ms) | 8 | 4.832292 | 604036.50 |
+| rms_norm | f32 | `4096x256` | 4 | tenferro-rs eager mode (ms) | 8 | 5.913583 | 739197.88 |
+| sigmoid | f32 | `1024x64` | 1 | JAX Python (XLA CPU) (ms) | 64 | 6.778583 | 105915.36 |
+| sigmoid | f32 | `1024x64` | 1 | PyTorch Python (ms) | 64 | 4.850333 | 75786.45 |
+| sigmoid | f32 | `1024x64` | 1 | tenferro-rs direct API (ms) | 64 | 2.952500 | 46132.81 |
+| sigmoid | f32 | `1024x64` | 1 | tenferro-rs eager mode (ms) | 64 | 3.582125 | 55970.70 |
+| sigmoid | f32 | `4096x256` | 1 | JAX Python (XLA CPU) (ms) | 8 | 8.154208 | 1019276.00 |
+| sigmoid | f32 | `4096x256` | 1 | PyTorch Python (ms) | 8 | 10.649167 | 1331145.88 |
+| sigmoid | f32 | `4096x256` | 1 | tenferro-rs direct API (ms) | 8 | 7.110959 | 888869.88 |
+| sigmoid | f32 | `4096x256` | 1 | tenferro-rs eager mode (ms) | 8 | 7.187291 | 898411.38 |
+| sigmoid | f32 | `1024x64` | 4 | JAX Python (XLA CPU) (ms) | 64 | 4.992250 | 78003.91 |
+| sigmoid | f32 | `1024x64` | 4 | PyTorch Python (ms) | 64 | 4.896167 | 76502.61 |
+| sigmoid | f32 | `1024x64` | 4 | tenferro-rs direct API (ms) | 64 | 5.794125 | 90533.20 |
+| sigmoid | f32 | `1024x64` | 4 | tenferro-rs eager mode (ms) | 64 | 4.886000 | 76343.75 |
+| sigmoid | f32 | `4096x256` | 4 | JAX Python (XLA CPU) (ms) | 8 | 5.864500 | 733062.50 |
+| sigmoid | f32 | `4096x256` | 4 | PyTorch Python (ms) | 8 | 5.868333 | 733541.62 |
+| sigmoid | f32 | `4096x256` | 4 | tenferro-rs direct API (ms) | 8 | 5.228667 | 653583.38 |
+| sigmoid | f32 | `4096x256` | 4 | tenferro-rs eager mode (ms) | 8 | 5.331875 | 666484.38 |
+| silu | f32 | `1024x64` | 1 | JAX Python (XLA CPU) (ms) | 64 | 6.499834 | 101559.91 |
+| silu | f32 | `1024x64` | 1 | PyTorch Python (ms) | 64 | 5.565916 | 86967.44 |
+| silu | f32 | `1024x64` | 1 | tenferro-rs direct API (ms) | 64 | 3.717000 | 58078.12 |
+| silu | f32 | `1024x64` | 1 | tenferro-rs eager mode (ms) | 64 | 3.782375 | 59099.61 |
+| silu | f32 | `4096x256` | 1 | JAX Python (XLA CPU) (ms) | 8 | 7.647750 | 955968.75 |
+| silu | f32 | `4096x256` | 1 | PyTorch Python (ms) | 8 | 9.790834 | 1223854.25 |
+| silu | f32 | `4096x256` | 1 | tenferro-rs direct API (ms) | 8 | 7.347917 | 918489.62 |
+| silu | f32 | `4096x256` | 1 | tenferro-rs eager mode (ms) | 8 | 7.571417 | 946427.12 |
+| silu | f32 | `1024x64` | 4 | JAX Python (XLA CPU) (ms) | 64 | 5.979542 | 93430.34 |
+| silu | f32 | `1024x64` | 4 | PyTorch Python (ms) | 64 | 4.971583 | 77680.98 |
+| silu | f32 | `1024x64` | 4 | tenferro-rs direct API (ms) | 64 | 5.820542 | 90945.97 |
+| silu | f32 | `1024x64` | 4 | tenferro-rs eager mode (ms) | 64 | 1.948250 | 30441.41 |
+| silu | f32 | `4096x256` | 4 | JAX Python (XLA CPU) (ms) | 8 | 5.066958 | 633369.75 |
+| silu | f32 | `4096x256` | 4 | PyTorch Python (ms) | 8 | 6.562209 | 820276.12 |
+| silu | f32 | `4096x256` | 4 | tenferro-rs direct API (ms) | 8 | 5.259000 | 657375.00 |
+| silu | f32 | `4096x256` | 4 | tenferro-rs eager mode (ms) | 8 | 4.467792 | 558474.00 |
+| softmax | f32 | `1024x64` | 1 | JAX Python (XLA CPU) (ms) | 64 | 11.899500 | 185929.69 |
+| softmax | f32 | `1024x64` | 1 | PyTorch Python (ms) | 64 | 6.511959 | 101749.36 |
+| softmax | f32 | `1024x64` | 1 | tenferro-rs direct API (ms) | 64 | 6.146792 | 96043.62 |
+| softmax | f32 | `1024x64` | 1 | tenferro-rs eager mode (ms) | 64 | 7.019375 | 109677.73 |
+| softmax | f32 | `4096x256` | 1 | JAX Python (XLA CPU) (ms) | 8 | 11.522792 | 1440349.00 |
+| softmax | f32 | `4096x256` | 1 | PyTorch Python (ms) | 8 | 13.641708 | 1705213.50 |
+| softmax | f32 | `4096x256` | 1 | tenferro-rs direct API (ms) | 8 | 9.994500 | 1249312.50 |
+| softmax | f32 | `4096x256` | 1 | tenferro-rs eager mode (ms) | 8 | 11.187458 | 1398432.25 |
+| softmax | f32 | `1024x64` | 4 | JAX Python (XLA CPU) (ms) | 64 | 7.961167 | 124393.23 |
+| softmax | f32 | `1024x64` | 4 | PyTorch Python (ms) | 64 | 5.210500 | 81414.06 |
+| softmax | f32 | `1024x64` | 4 | tenferro-rs direct API (ms) | 64 | 6.536375 | 102130.86 |
+| softmax | f32 | `1024x64` | 4 | tenferro-rs eager mode (ms) | 64 | 8.731334 | 136427.09 |
+| softmax | f32 | `4096x256` | 4 | JAX Python (XLA CPU) (ms) | 8 | 6.143167 | 767895.88 |
+| softmax | f32 | `4096x256` | 4 | PyTorch Python (ms) | 8 | 10.197333 | 1274666.62 |
+| softmax | f32 | `4096x256` | 4 | tenferro-rs direct API (ms) | 8 | 8.006458 | 1000807.25 |
+| softmax | f32 | `4096x256` | 4 | tenferro-rs eager mode (ms) | 8 | 10.139375 | 1267421.88 |
+| softplus | f32 | `1024x64` | 1 | JAX Python (XLA CPU) (ms) | 64 | 20.081500 | 313773.44 |
+| softplus | f32 | `1024x64` | 1 | PyTorch Python (ms) | 64 | 18.587250 | 290425.78 |
+| softplus | f32 | `1024x64` | 1 | tenferro-rs direct API (ms) | 64 | 16.316334 | 254942.72 |
+| softplus | f32 | `1024x64` | 1 | tenferro-rs eager mode (ms) | 64 | 14.377750 | 224652.34 |
+| softplus | f32 | `4096x256` | 1 | JAX Python (XLA CPU) (ms) | 8 | 35.962125 | 4495265.62 |
+| softplus | f32 | `4096x256` | 1 | PyTorch Python (ms) | 8 | 37.553458 | 4694182.25 |
+| softplus | f32 | `4096x256` | 1 | tenferro-rs direct API (ms) | 8 | 39.263750 | 4907968.75 |
+| softplus | f32 | `4096x256` | 1 | tenferro-rs eager mode (ms) | 8 | 41.365667 | 5170708.38 |
+| softplus | f32 | `1024x64` | 4 | JAX Python (XLA CPU) (ms) | 64 | 22.631042 | 353610.03 |
+| softplus | f32 | `1024x64` | 4 | PyTorch Python (ms) | 64 | 14.249792 | 222653.00 |
+| softplus | f32 | `1024x64` | 4 | tenferro-rs direct API (ms) | 64 | 10.964833 | 171325.52 |
+| softplus | f32 | `1024x64` | 4 | tenferro-rs eager mode (ms) | 64 | 13.369583 | 208899.73 |
+| softplus | f32 | `4096x256` | 4 | JAX Python (XLA CPU) (ms) | 8 | 25.245708 | 3155713.50 |
+| softplus | f32 | `4096x256` | 4 | PyTorch Python (ms) | 8 | 20.130958 | 2516369.75 |
+| softplus | f32 | `4096x256` | 4 | tenferro-rs direct API (ms) | 8 | 17.120375 | 2140046.88 |
+| softplus | f32 | `4096x256` | 4 | tenferro-rs eager mode (ms) | 8 | 15.367500 | 1920937.50 |
+| take_along_axis | f32 | `1024x64` | 1 | JAX Python (XLA CPU) (ms) | 64 | 6.577125 | 102767.58 |
+| take_along_axis | f32 | `1024x64` | 1 | PyTorch Python (ms) | 64 | 7.939792 | 124059.25 |
+| take_along_axis | f32 | `1024x64` | 1 | tenferro-rs direct API (ms) | 64 | 37.658750 | 588417.97 |
+| take_along_axis | f32 | `1024x64` | 1 | tenferro-rs eager mode (ms) | 64 | 50.311500 | 786117.19 |
+| take_along_axis | f32 | `4096x256` | 1 | JAX Python (XLA CPU) (ms) | 8 | 14.422958 | 1802869.75 |
+| take_along_axis | f32 | `4096x256` | 1 | PyTorch Python (ms) | 8 | 19.790750 | 2473843.75 |
+| take_along_axis | f32 | `4096x256` | 1 | tenferro-rs direct API (ms) | 8 | 79.729875 | 9966234.38 |
+| take_along_axis | f32 | `4096x256` | 1 | tenferro-rs eager mode (ms) | 8 | 89.214917 | 11151864.62 |
+| take_along_axis | f32 | `1024x64` | 4 | JAX Python (XLA CPU) (ms) | 64 | 9.981125 | 155955.08 |
+| take_along_axis | f32 | `1024x64` | 4 | PyTorch Python (ms) | 64 | 12.650125 | 197658.20 |
+| take_along_axis | f32 | `1024x64` | 4 | tenferro-rs direct API (ms) | 64 | 47.289208 | 738893.88 |
+| take_along_axis | f32 | `1024x64` | 4 | tenferro-rs eager mode (ms) | 64 | 58.282459 | 910663.42 |
+| take_along_axis | f32 | `4096x256` | 4 | JAX Python (XLA CPU) (ms) | 8 | 8.921917 | 1115239.62 |
+| take_along_axis | f32 | `4096x256` | 4 | PyTorch Python (ms) | 8 | 14.659125 | 1832390.62 |
+| take_along_axis | f32 | `4096x256` | 4 | tenferro-rs direct API (ms) | 8 | 81.125292 | 10140661.50 |
+| take_along_axis | f32 | `4096x256` | 4 | tenferro-rs eager mode (ms) | 8 | 85.658791 | 10707348.88 |
+| solve_read_into | f64 | `256x256,rhs=16` | 1 | PyTorch Python (ms) | 16 | 3.992792 | 249549.50 |
+| solve_read_into | f64 | `256x256,rhs=16` | 1 | tenferro-rs direct API (ms) | 16 | 3.989167 | 249322.94 |
+| solve_read_into | f64 | `768x768,rhs=16` | 1 | PyTorch Python (ms) | 16 | 55.707416 | 3481713.50 |
+| solve_read_into | f64 | `768x768,rhs=16` | 1 | tenferro-rs direct API (ms) | 16 | 55.219375 | 3451210.94 |
+| solve_read_into | f64 | `256x256,rhs=16` | 4 | PyTorch Python (ms) | 16 | 5.783417 | 361463.56 |
+| solve_read_into | f64 | `256x256,rhs=16` | 4 | tenferro-rs direct API (ms) | 16 | 3.354833 | 209677.06 |
+| solve_read_into | f64 | `768x768,rhs=16` | 4 | PyTorch Python (ms) | 16 | 51.478917 | 3217432.31 |
+| solve_read_into | f64 | `768x768,rhs=16` | 4 | tenferro-rs direct API (ms) | 16 | 44.858542 | 2803658.88 |
+| broadcast_in_dim_view | f64 | `8192x1 -> 8192x4096` | 1 | PyTorch Python (ms) | 16 | 0.014000 | 875.00 |
+| broadcast_in_dim_view | f64 | `8192x1 -> 8192x4096` | 1 | tenferro-rs direct API (ms) | 16 | 0.001292 | 80.75 |
+| broadcast_in_dim_view | f64 | `8192x1 -> 8192x4096` | 4 | PyTorch Python (ms) | 16 | 0.015750 | 984.38 |
+| broadcast_in_dim_view | f64 | `8192x1 -> 8192x4096` | 4 | tenferro-rs direct API (ms) | 16 | 0.001458 | 91.12 |
 | reshape_view | f64 | `33554432 -> 8192x4096` | 1 | Julia (Base/LinearAlgebra) (ms) | 16 | 0.000084 | 5.25 |
-| reshape_view | f64 | `33554432 -> 8192x4096` | 1 | PyTorch Python (ms) | 16 | 0.014166 | 885.38 |
-| reshape_view | f64 | `33554432 -> 8192x4096` | 1 | tenferro-rs direct API (ms) | 16 | 0.003834 | 239.62 |
-| reshape_view | f64 | `33554432 -> 8192x4096` | 4 | Julia (Base/LinearAlgebra) (ms) | 16 | 0.000167 | 10.44 |
-| reshape_view | f64 | `33554432 -> 8192x4096` | 4 | PyTorch Python (ms) | 16 | 0.011125 | 695.31 |
-| reshape_view | f64 | `33554432 -> 8192x4096` | 4 | tenferro-rs direct API (ms) | 16 | 0.003542 | 221.38 |
-| slice_view | f64 | `4194304 -> 2096128` | 1 | Julia (Base/LinearAlgebra) (ms) | 16 | 0.000125 | 7.81 |
-| slice_view | f64 | `4194304 -> 2096128` | 1 | PyTorch Python (ms) | 16 | 0.015250 | 953.12 |
-| slice_view | f64 | `4194304 -> 2096128` | 1 | tenferro-rs direct API (ms) | 16 | 0.003083 | 192.69 |
-| slice_view | f64 | `4194304 -> 2096128` | 4 | Julia (Base/LinearAlgebra) (ms) | 16 | 0.000083 | 5.19 |
-| slice_view | f64 | `4194304 -> 2096128` | 4 | PyTorch Python (ms) | 16 | 0.009084 | 567.75 |
-| slice_view | f64 | `4194304 -> 2096128` | 4 | tenferro-rs direct API (ms) | 16 | 0.002667 | 166.69 |
-| transpose_view | f64 | `4096x4096` | 1 | Julia (Base/LinearAlgebra) (ms) | 16 | 0.000083 | 5.19 |
-| transpose_view | f64 | `4096x4096` | 1 | PyTorch Python (ms) | 16 | 0.013125 | 820.31 |
-| transpose_view | f64 | `4096x4096` | 1 | tenferro-rs direct API (ms) | 16 | 0.002709 | 169.31 |
-| transpose_view | f64 | `4096x4096` | 4 | Julia (Base/LinearAlgebra) (ms) | 16 | 0.000125 | 7.81 |
-| transpose_view | f64 | `4096x4096` | 4 | PyTorch Python (ms) | 16 | 0.012208 | 763.00 |
-| transpose_view | f64 | `4096x4096` | 4 | tenferro-rs direct API (ms) | 16 | 0.002375 | 148.44 |
+| reshape_view | f64 | `33554432 -> 8192x4096` | 1 | PyTorch Python (ms) | 16 | 0.012209 | 763.06 |
+| reshape_view | f64 | `33554432 -> 8192x4096` | 1 | tenferro-rs direct API (ms) | 16 | 0.036917 | 2307.31 |
+| reshape_view | f64 | `33554432 -> 8192x4096` | 4 | Julia (Base/LinearAlgebra) (ms) | 16 | 0.000083 | 5.19 |
+| reshape_view | f64 | `33554432 -> 8192x4096` | 4 | PyTorch Python (ms) | 16 | 0.013833 | 864.56 |
+| reshape_view | f64 | `33554432 -> 8192x4096` | 4 | tenferro-rs direct API (ms) | 16 | 0.073875 | 4617.19 |
+| slice_view | f64 | `4194304 -> 2096128` | 1 | Julia (Base/LinearAlgebra) (ms) | 16 | 0.000084 | 5.25 |
+| slice_view | f64 | `4194304 -> 2096128` | 1 | PyTorch Python (ms) | 16 | 0.011208 | 700.50 |
+| slice_view | f64 | `4194304 -> 2096128` | 1 | tenferro-rs direct API (ms) | 16 | 0.002833 | 177.06 |
+| slice_view | f64 | `4194304 -> 2096128` | 4 | Julia (Base/LinearAlgebra) (ms) | 16 | 0.000125 | 7.81 |
+| slice_view | f64 | `4194304 -> 2096128` | 4 | PyTorch Python (ms) | 16 | 0.010250 | 640.62 |
+| slice_view | f64 | `4194304 -> 2096128` | 4 | tenferro-rs direct API (ms) | 16 | 0.002750 | 171.88 |
+| transpose_view | f64 | `4096x4096` | 1 | Julia (Base/LinearAlgebra) (ms) | 16 | 0.000209 | 13.06 |
+| transpose_view | f64 | `4096x4096` | 1 | PyTorch Python (ms) | 16 | 0.011541 | 721.31 |
+| transpose_view | f64 | `4096x4096` | 1 | tenferro-rs direct API (ms) | 16 | 0.002542 | 158.88 |
+| transpose_view | f64 | `4096x4096` | 4 | Julia (Base/LinearAlgebra) (ms) | 16 | 0.000084 | 5.25 |
+| transpose_view | f64 | `4096x4096` | 4 | PyTorch Python (ms) | 16 | 0.013209 | 825.56 |
+| transpose_view | f64 | `4096x4096` | 4 | tenferro-rs direct API (ms) | 16 | 0.002584 | 161.50 |
 
 ## Cross-Backend Spread Audit
 
 Rows with a successful cell more than 10x faster than the slowest successful cell are flagged for operation-specific review. This cross-backend spread check is a warning, not a correctness verdict.
 
-- `cpu/complex/norm_fro` (c64, threads=4, shape=`2048x1536`): `tenferro-direct` is 12.2x faster than the slowest successful cell (`julia-base`, 7.896 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/elementwise_reduction/reduce_max_axis0` (f64, threads=1, shape=`2048x2048`): `julia-base` is 23.9x faster than the slowest successful cell (`pytorch-cpu`, 17.135 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/elementwise_reduction/reduce_max_axis0` (f64, threads=1, shape=`2048x2048`): `tenferro-direct` is 17.8x faster than the slowest successful cell (`pytorch-cpu`, 17.135 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/elementwise_reduction/reduce_max_axis0` (f64, threads=1, shape=`2048x2048`): `tenferro-trace` is 17.8x faster than the slowest successful cell (`pytorch-cpu`, 17.135 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/elementwise_reduction/reduce_max_axis0` (f64, threads=4, shape=`2048x2048`): `julia-base` is 10.8x faster than the slowest successful cell (`pytorch-cpu`, 8.448 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/elementwise_reduction/reduce_max_axis0` (f64, threads=4, shape=`2048x2048`): `tenferro-direct` is 17.1x faster than the slowest successful cell (`pytorch-cpu`, 8.448 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/elementwise_reduction/reduce_max_axis0` (f64, threads=4, shape=`2048x2048`): `tenferro-trace` is 27.8x faster than the slowest successful cell (`pytorch-cpu`, 8.448 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/elementwise_reduction/reduce_min_axis0` (f64, threads=1, shape=`2048x2048`): `julia-base` is 28.4x faster than the slowest successful cell (`pytorch-cpu`, 17.316 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/elementwise_reduction/reduce_min_axis0` (f64, threads=1, shape=`2048x2048`): `tenferro-direct` is 18.6x faster than the slowest successful cell (`pytorch-cpu`, 17.316 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/elementwise_reduction/reduce_min_axis0` (f64, threads=1, shape=`2048x2048`): `tenferro-trace` is 19.3x faster than the slowest successful cell (`pytorch-cpu`, 17.316 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/elementwise_reduction/reduce_min_axis0` (f64, threads=4, shape=`2048x2048`): `julia-base` is 11.5x faster than the slowest successful cell (`pytorch-cpu`, 8.431 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/elementwise_reduction/reduce_min_axis0` (f64, threads=4, shape=`2048x2048`): `tenferro-direct` is 19.5x faster than the slowest successful cell (`pytorch-cpu`, 8.431 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/elementwise_reduction/reduce_min_axis0` (f64, threads=4, shape=`2048x2048`): `tenferro-trace` is 16.0x faster than the slowest successful cell (`pytorch-cpu`, 8.431 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/indexing_layout/slice` (f64, threads=1, shape=`4194304 -> 2096128`): `tenferro-trace` is 635.4x faster than the slowest successful cell (`julia-base`, 1.377 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/indexing_layout/slice` (f64, threads=4, shape=`4194304 -> 2096128`): `tenferro-trace` is 512.2x faster than the slowest successful cell (`julia-base`, 1.110 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=1, shape=`1x32x32`): `tenferro-direct` is 19.7x faster than the slowest successful cell (`jax-cpu`, 0.038 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=1, shape=`4x8x8`): `tenferro-direct` is 24.8x faster than the slowest successful cell (`jax-cpu`, 0.038 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=1, shape=`8x8x8`): `tenferro-direct` is 21.5x faster than the slowest successful cell (`jax-cpu`, 0.051 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`1x2x2`): `tenferro-direct` is 45.4x faster than the slowest successful cell (`pytorch-cpu`, 0.059 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`1x32x32`): `tenferro-direct` is 35.0x faster than the slowest successful cell (`pytorch-cpu`, 0.085 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`1x32x32`): `tenferro-trace` is 13.8x faster than the slowest successful cell (`pytorch-cpu`, 0.085 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`1x4x4`): `jax-cpu` is 11.8x faster than the slowest successful cell (`pytorch-cpu`, 0.087 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`1x4x4`): `tenferro-direct` is 50.8x faster than the slowest successful cell (`pytorch-cpu`, 0.087 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`1x4x4`): `tenferro-trace` is 18.6x faster than the slowest successful cell (`pytorch-cpu`, 0.087 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`1x8x8`): `tenferro-direct` is 35.4x faster than the slowest successful cell (`pytorch-cpu`, 0.064 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`1x8x8`): `tenferro-trace` is 13.4x faster than the slowest successful cell (`pytorch-cpu`, 0.064 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`3x2x2`): `tenferro-direct` is 30.0x faster than the slowest successful cell (`pytorch-cpu`, 0.049 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`3x4x4`): `jax-cpu` is 11.5x faster than the slowest successful cell (`pytorch-cpu`, 0.076 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`3x4x4`): `tenferro-direct` is 44.3x faster than the slowest successful cell (`pytorch-cpu`, 0.076 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`3x8x8`): `tenferro-direct` is 42.6x faster than the slowest successful cell (`pytorch-cpu`, 0.085 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`3x8x8`): `tenferro-trace` is 16.0x faster than the slowest successful cell (`pytorch-cpu`, 0.085 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`4x2x2`): `tenferro-direct` is 33.9x faster than the slowest successful cell (`pytorch-cpu`, 0.052 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`4x2x2`): `tenferro-trace` is 10.6x faster than the slowest successful cell (`pytorch-cpu`, 0.052 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`4x4x4`): `tenferro-direct` is 37.6x faster than the slowest successful cell (`pytorch-cpu`, 0.067 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`4x4x4`): `tenferro-trace` is 13.4x faster than the slowest successful cell (`pytorch-cpu`, 0.067 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`4x8x8`): `tenferro-direct` is 38.9x faster than the slowest successful cell (`jax-cpu`, 0.081 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`4x8x8`): `tenferro-trace` is 14.5x faster than the slowest successful cell (`jax-cpu`, 0.081 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`8x2x2`): `jax-cpu` is 11.6x faster than the slowest successful cell (`pytorch-cpu`, 0.075 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`8x2x2`): `tenferro-direct` is 42.0x faster than the slowest successful cell (`pytorch-cpu`, 0.075 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`8x2x2`): `tenferro-trace` is 14.5x faster than the slowest successful cell (`pytorch-cpu`, 0.075 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`8x4x4`): `jax-cpu` is 12.7x faster than the slowest successful cell (`pytorch-cpu`, 0.088 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`8x4x4`): `tenferro-direct` is 37.5x faster than the slowest successful cell (`pytorch-cpu`, 0.088 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`8x4x4`): `tenferro-trace` is 16.1x faster than the slowest successful cell (`pytorch-cpu`, 0.088 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`8x8x8`): `tenferro-direct` is 26.4x faster than the slowest successful cell (`pytorch-cpu`, 0.077 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`8x8x8`): `tenferro-trace` is 12.1x faster than the slowest successful cell (`pytorch-cpu`, 0.077 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_lu` (f64, threads=1, shape=`3x8x8`): `tenferro-direct` is 10.2x faster than the slowest successful cell (`jax-cpu`, 0.039 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_lu` (f64, threads=1, shape=`4x8x8`): `tenferro-direct` is 12.0x faster than the slowest successful cell (`jax-cpu`, 0.039 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`1x2x2`): `jax-cpu` is 10.6x faster than the slowest successful cell (`pytorch-cpu`, 0.088 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`1x2x2`): `tenferro-direct` is 34.7x faster than the slowest successful cell (`pytorch-cpu`, 0.088 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`1x2x2`): `tenferro-trace` is 18.9x faster than the slowest successful cell (`pytorch-cpu`, 0.088 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`1x32x32`): `tenferro-direct` is 13.5x faster than the slowest successful cell (`pytorch-cpu`, 0.098 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`1x32x32`): `tenferro-trace` is 11.3x faster than the slowest successful cell (`pytorch-cpu`, 0.098 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`1x4x4`): `tenferro-direct` is 25.4x faster than the slowest successful cell (`pytorch-cpu`, 0.060 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`1x4x4`): `tenferro-trace` is 13.0x faster than the slowest successful cell (`pytorch-cpu`, 0.060 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`1x8x8`): `tenferro-direct` is 23.5x faster than the slowest successful cell (`pytorch-cpu`, 0.082 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`1x8x8`): `tenferro-trace` is 17.0x faster than the slowest successful cell (`pytorch-cpu`, 0.082 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`3x2x2`): `tenferro-direct` is 34.9x faster than the slowest successful cell (`pytorch-cpu`, 0.090 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`3x2x2`): `tenferro-trace` is 18.8x faster than the slowest successful cell (`pytorch-cpu`, 0.090 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`3x4x4`): `tenferro-direct` is 19.1x faster than the slowest successful cell (`pytorch-cpu`, 0.061 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`3x4x4`): `tenferro-trace` is 12.2x faster than the slowest successful cell (`pytorch-cpu`, 0.061 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`3x8x8`): `tenferro-direct` is 29.5x faster than the slowest successful cell (`jax-cpu`, 0.103 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`3x8x8`): `tenferro-trace` is 17.4x faster than the slowest successful cell (`jax-cpu`, 0.103 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`4x2x2`): `tenferro-direct` is 32.5x faster than the slowest successful cell (`pytorch-cpu`, 0.085 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`4x2x2`): `tenferro-trace` is 17.3x faster than the slowest successful cell (`pytorch-cpu`, 0.085 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`4x4x4`): `tenferro-direct` is 21.3x faster than the slowest successful cell (`pytorch-cpu`, 0.066 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`4x4x4`): `tenferro-trace` is 12.5x faster than the slowest successful cell (`pytorch-cpu`, 0.066 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`4x8x8`): `tenferro-direct` is 21.7x faster than the slowest successful cell (`jax-cpu`, 0.083 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`4x8x8`): `tenferro-trace` is 13.3x faster than the slowest successful cell (`jax-cpu`, 0.083 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`8x2x2`): `tenferro-direct` is 36.9x faster than the slowest successful cell (`pytorch-cpu`, 0.117 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`8x2x2`): `tenferro-trace` is 16.7x faster than the slowest successful cell (`pytorch-cpu`, 0.117 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`8x4x4`): `tenferro-direct` is 33.5x faster than the slowest successful cell (`jax-cpu`, 0.123 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`8x4x4`): `tenferro-trace` is 16.2x faster than the slowest successful cell (`jax-cpu`, 0.123 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`8x8x8`): `tenferro-direct` is 13.7x faster than the slowest successful cell (`pytorch-cpu`, 0.098 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`8x8x8`): `tenferro-trace` is 11.9x faster than the slowest successful cell (`pytorch-cpu`, 0.098 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_qr` (f64, threads=4, shape=`1x2x2`): `tenferro-direct` is 28.2x faster than the slowest successful cell (`pytorch-cpu`, 0.051 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_qr` (f64, threads=4, shape=`1x2x2`): `tenferro-trace` is 11.1x faster than the slowest successful cell (`pytorch-cpu`, 0.051 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_qr` (f64, threads=4, shape=`1x4x4`): `tenferro-direct` is 18.2x faster than the slowest successful cell (`pytorch-cpu`, 0.041 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_qr` (f64, threads=4, shape=`1x8x8`): `tenferro-direct` is 16.0x faster than the slowest successful cell (`pytorch-cpu`, 0.051 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_qr` (f64, threads=4, shape=`3x2x2`): `tenferro-direct` is 10.3x faster than the slowest successful cell (`pytorch-cpu`, 0.035 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_qr` (f64, threads=4, shape=`3x4x4`): `tenferro-direct` is 10.3x faster than the slowest successful cell (`pytorch-cpu`, 0.036 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_qr` (f64, threads=4, shape=`4x2x2`): `tenferro-direct` is 14.5x faster than the slowest successful cell (`pytorch-cpu`, 0.050 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_qr` (f64, threads=4, shape=`4x4x4`): `tenferro-direct` is 12.6x faster than the slowest successful cell (`pytorch-cpu`, 0.049 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_qr` (f64, threads=4, shape=`8x2x2`): `tenferro-direct` is 12.4x faster than the slowest successful cell (`pytorch-cpu`, 0.048 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_solve` (f64, threads=1, shape=`1x2x2,rhs=1`): `tenferro-direct` is 11.7x faster than the slowest successful cell (`tenferro-trace`, 0.015 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_solve` (f64, threads=4, shape=`1x32x32,rhs=1`): `tenferro-direct` is 12.7x faster than the slowest successful cell (`jax-cpu`, 0.058 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_solve` (f64, threads=4, shape=`8x2x2,rhs=1`): `tenferro-direct` is 17.5x faster than the slowest successful cell (`pytorch-cpu`, 0.058 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_solve` (f64, threads=4, shape=`8x4x4,rhs=1`): `tenferro-direct` is 16.3x faster than the slowest successful cell (`pytorch-cpu`, 0.054 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_batch_families/batched_solve` (f64, threads=4, shape=`8x8x8,rhs=1`): `tenferro-direct` is 15.4x faster than the slowest successful cell (`pytorch-cpu`, 0.068 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/linalg_uncovered/norm_fro` (f64, threads=4, shape=`2048x2048`): `tenferro-direct` is 11.7x faster than the slowest successful cell (`julia-base`, 5.211 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/neural_public_api/take_along_axis` (f32, threads=1, shape=`4096x256`): `jax-cpu` is 12.1x faster than the slowest successful cell (`tenferro-eager`, 9.764 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/structural_shape/broadcast_in_dim` (f64, threads=1, shape=`8192x1 -> 8192x4096`): `tenferro-trace` is 4738.2x faster than the slowest successful cell (`julia-base`, 13.030 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/structural_shape/broadcast_in_dim` (f64, threads=4, shape=`8192x1 -> 8192x4096`): `tenferro-trace` is 4932.4x faster than the slowest successful cell (`julia-base`, 12.533 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/structural_shape/reshape` (f64, threads=1, shape=`33554432 -> 8192x4096`): `tenferro-trace` is 4129.4x faster than the slowest successful cell (`pytorch-cpu`, 8.775 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/structural_shape/reshape` (f64, threads=4, shape=`33554432 -> 8192x4096`): `tenferro-trace` is 2481.8x faster than the slowest successful cell (`julia-base`, 5.480 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/structural_shape/transpose` (f64, threads=1, shape=`4096x4096`): `tenferro-trace` is 39500.2x faster than the slowest successful cell (`julia-base`, 90.534 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/structural_shape/transpose` (f64, threads=4, shape=`4096x4096`): `tenferro-trace` is 33734.1x faster than the slowest successful cell (`julia-base`, 88.552 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/view_metadata/reshape_view` (f64, threads=1, shape=`33554432 -> 8192x4096`): `julia-base` is 177.0x faster than the slowest successful cell (`pytorch-cpu`, 0.001 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/view_metadata/reshape_view` (f64, threads=4, shape=`33554432 -> 8192x4096`): `julia-base` is 69.5x faster than the slowest successful cell (`pytorch-cpu`, 0.001 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/view_metadata/slice_view` (f64, threads=1, shape=`4194304 -> 2096128`): `julia-base` is 119.1x faster than the slowest successful cell (`pytorch-cpu`, 0.001 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/view_metadata/slice_view` (f64, threads=4, shape=`4194304 -> 2096128`): `julia-base` is 113.6x faster than the slowest successful cell (`pytorch-cpu`, 0.001 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/view_metadata/transpose_view` (f64, threads=1, shape=`4096x4096`): `julia-base` is 164.0x faster than the slowest successful cell (`pytorch-cpu`, 0.001 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/view_metadata/transpose_view` (f64, threads=4, shape=`4096x4096`): `julia-base` is 95.4x faster than the slowest successful cell (`pytorch-cpu`, 0.001 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/complex/cholesky` (c64, threads=4, shape=`448x448`): `jax-cpu` is 55.5x faster than the slowest successful cell (`julia-base`, 75.740 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/complex/cholesky` (c64, threads=4, shape=`448x448`): `pytorch-cpu` is 17.1x faster than the slowest successful cell (`julia-base`, 75.740 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/complex/cholesky` (c64, threads=4, shape=`448x448`): `tenferro-direct` is 19.5x faster than the slowest successful cell (`julia-base`, 75.740 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/complex/cholesky` (c64, threads=4, shape=`448x448`): `tenferro-trace` is 19.2x faster than the slowest successful cell (`julia-base`, 75.740 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/complex/eig` (c64, threads=4, shape=`112x112`): `jax-cpu` is 23.9x faster than the slowest successful cell (`julia-base`, 508.308 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/complex/eig` (c64, threads=4, shape=`112x112`): `pytorch-cpu` is 42.5x faster than the slowest successful cell (`julia-base`, 508.308 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/complex/eig` (c64, threads=4, shape=`112x112`): `tenferro-direct` is 44.3x faster than the slowest successful cell (`julia-base`, 508.308 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/complex/eig` (c64, threads=4, shape=`112x112`): `tenferro-trace` is 44.6x faster than the slowest successful cell (`julia-base`, 508.308 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/complex/norm_fro` (c64, threads=4, shape=`2048x1536`): `tenferro-direct` is 10.0x faster than the slowest successful cell (`julia-base`, 9.085 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/complex/qr` (c64, threads=4, shape=`256x256`): `jax-cpu` is 25.2x faster than the slowest successful cell (`julia-base`, 175.469 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/complex/qr` (c64, threads=4, shape=`256x256`): `pytorch-cpu` is 23.1x faster than the slowest successful cell (`julia-base`, 175.469 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/complex/qr` (c64, threads=4, shape=`256x256`): `tenferro-direct` is 20.0x faster than the slowest successful cell (`julia-base`, 175.469 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/complex/qr` (c64, threads=4, shape=`256x256`): `tenferro-trace` is 23.6x faster than the slowest successful cell (`julia-base`, 175.469 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/complex/solve` (c64, threads=4, shape=`384x384,rhs=8`): `jax-cpu` is 60.4x faster than the slowest successful cell (`julia-base`, 151.977 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/complex/solve` (c64, threads=4, shape=`384x384,rhs=8`): `pytorch-cpu` is 26.0x faster than the slowest successful cell (`julia-base`, 151.977 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/complex/solve` (c64, threads=4, shape=`384x384,rhs=8`): `tenferro-direct` is 25.8x faster than the slowest successful cell (`julia-base`, 151.977 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/complex/solve` (c64, threads=4, shape=`384x384,rhs=8`): `tenferro-trace` is 24.8x faster than the slowest successful cell (`julia-base`, 151.977 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/complex/svd` (c64, threads=4, shape=`160x160`): `jax-cpu` is 96.2x faster than the slowest successful cell (`julia-base`, 624.846 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/complex/svd` (c64, threads=4, shape=`160x160`): `pytorch-cpu` is 83.6x faster than the slowest successful cell (`julia-base`, 624.846 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/complex/svd` (c64, threads=4, shape=`160x160`): `tenferro-direct` is 79.2x faster than the slowest successful cell (`julia-base`, 624.846 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/complex/svd` (c64, threads=4, shape=`160x160`): `tenferro-trace` is 79.3x faster than the slowest successful cell (`julia-base`, 624.846 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/elementwise_reduction/reduce_max_axis0` (f64, threads=1, shape=`2048x2048`): `julia-base` is 14.6x faster than the slowest successful cell (`pytorch-cpu`, 13.517 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/elementwise_reduction/reduce_max_axis0` (f64, threads=1, shape=`2048x2048`): `tenferro-direct` is 13.4x faster than the slowest successful cell (`pytorch-cpu`, 13.517 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/elementwise_reduction/reduce_max_axis0` (f64, threads=1, shape=`2048x2048`): `tenferro-trace` is 11.1x faster than the slowest successful cell (`pytorch-cpu`, 13.517 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/elementwise_reduction/reduce_max_axis0` (f64, threads=4, shape=`2048x2048`): `julia-base` is 16.6x faster than the slowest successful cell (`pytorch-cpu`, 11.600 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/elementwise_reduction/reduce_max_axis0` (f64, threads=4, shape=`2048x2048`): `tenferro-direct` is 14.0x faster than the slowest successful cell (`pytorch-cpu`, 11.600 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/elementwise_reduction/reduce_max_axis0` (f64, threads=4, shape=`2048x2048`): `tenferro-trace` is 12.7x faster than the slowest successful cell (`pytorch-cpu`, 11.600 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/elementwise_reduction/reduce_min_axis0` (f64, threads=1, shape=`2048x2048`): `julia-base` is 23.1x faster than the slowest successful cell (`pytorch-cpu`, 15.797 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/elementwise_reduction/reduce_min_axis0` (f64, threads=1, shape=`2048x2048`): `tenferro-direct` is 15.6x faster than the slowest successful cell (`pytorch-cpu`, 15.797 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/elementwise_reduction/reduce_min_axis0` (f64, threads=1, shape=`2048x2048`): `tenferro-trace` is 14.0x faster than the slowest successful cell (`pytorch-cpu`, 15.797 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/elementwise_reduction/reduce_min_axis0` (f64, threads=4, shape=`2048x2048`): `julia-base` is 11.6x faster than the slowest successful cell (`pytorch-cpu`, 12.458 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/elementwise_reduction/reduce_min_axis0` (f64, threads=4, shape=`2048x2048`): `tenferro-direct` is 15.0x faster than the slowest successful cell (`pytorch-cpu`, 12.458 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/elementwise_reduction/reduce_min_axis0` (f64, threads=4, shape=`2048x2048`): `tenferro-trace` is 16.2x faster than the slowest successful cell (`pytorch-cpu`, 12.458 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/indexing_layout/slice` (f64, threads=1, shape=`4194304 -> 2096128`): `tenferro-trace` is 876.5x faster than the slowest successful cell (`julia-base`, 1.790 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/indexing_layout/slice` (f64, threads=4, shape=`4194304 -> 2096128`): `tenferro-trace` is 625.3x faster than the slowest successful cell (`tenferro-direct`, 1.537 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=1, shape=`1x2x2`): `tenferro-direct` is 11.2x faster than the slowest successful cell (`jax-cpu`, 0.008 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=1, shape=`1x32x32`): `tenferro-direct` is 32.5x faster than the slowest successful cell (`jax-cpu`, 0.062 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=1, shape=`1x32x32`): `tenferro-trace` is 11.8x faster than the slowest successful cell (`jax-cpu`, 0.062 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=1, shape=`1x4x4`): `tenferro-direct` is 14.2x faster than the slowest successful cell (`pytorch-cpu`, 0.011 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=1, shape=`3x4x4`): `tenferro-direct` is 11.2x faster than the slowest successful cell (`pytorch-cpu`, 0.012 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=1, shape=`4x4x4`): `tenferro-direct` is 10.7x faster than the slowest successful cell (`pytorch-cpu`, 0.012 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=1, shape=`4x8x8`): `pytorch-cpu` is 11.4x faster than the slowest successful cell (`jax-cpu`, 0.057 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=1, shape=`4x8x8`): `tenferro-direct` is 37.8x faster than the slowest successful cell (`jax-cpu`, 0.057 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=1, shape=`4x8x8`): `tenferro-trace` is 11.5x faster than the slowest successful cell (`jax-cpu`, 0.057 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=1, shape=`8x4x4`): `tenferro-direct` is 24.4x faster than the slowest successful cell (`jax-cpu`, 0.036 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=1, shape=`8x8x8`): `tenferro-direct` is 21.6x faster than the slowest successful cell (`jax-cpu`, 0.048 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`1x2x2`): `tenferro-direct` is 45.3x faster than the slowest successful cell (`pytorch-cpu`, 0.074 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`1x2x2`): `tenferro-trace` is 13.1x faster than the slowest successful cell (`pytorch-cpu`, 0.074 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`1x32x32`): `jax-cpu` is 14.1x faster than the slowest successful cell (`pytorch-cpu`, 0.103 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`1x32x32`): `tenferro-direct` is 37.9x faster than the slowest successful cell (`pytorch-cpu`, 0.103 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`1x32x32`): `tenferro-trace` is 15.8x faster than the slowest successful cell (`pytorch-cpu`, 0.103 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`1x4x4`): `jax-cpu` is 11.0x faster than the slowest successful cell (`pytorch-cpu`, 0.093 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`1x4x4`): `tenferro-direct` is 26.6x faster than the slowest successful cell (`pytorch-cpu`, 0.093 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`1x4x4`): `tenferro-trace` is 17.8x faster than the slowest successful cell (`pytorch-cpu`, 0.093 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`1x8x8`): `tenferro-direct` is 47.9x faster than the slowest successful cell (`pytorch-cpu`, 0.080 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`1x8x8`): `tenferro-trace` is 15.1x faster than the slowest successful cell (`pytorch-cpu`, 0.080 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`3x2x2`): `jax-cpu` is 12.7x faster than the slowest successful cell (`pytorch-cpu`, 0.103 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`3x2x2`): `tenferro-direct` is 61.8x faster than the slowest successful cell (`pytorch-cpu`, 0.103 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`3x2x2`): `tenferro-trace` is 17.7x faster than the slowest successful cell (`pytorch-cpu`, 0.103 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`3x4x4`): `jax-cpu` is 10.0x faster than the slowest successful cell (`pytorch-cpu`, 0.080 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`3x4x4`): `tenferro-direct` is 44.5x faster than the slowest successful cell (`pytorch-cpu`, 0.080 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`3x4x4`): `tenferro-trace` is 14.6x faster than the slowest successful cell (`pytorch-cpu`, 0.080 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`3x8x8`): `tenferro-direct` is 33.4x faster than the slowest successful cell (`pytorch-cpu`, 0.076 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`3x8x8`): `tenferro-trace` is 13.0x faster than the slowest successful cell (`pytorch-cpu`, 0.076 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`4x2x2`): `tenferro-direct` is 41.6x faster than the slowest successful cell (`pytorch-cpu`, 0.081 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`4x2x2`): `tenferro-trace` is 13.9x faster than the slowest successful cell (`pytorch-cpu`, 0.081 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`4x4x4`): `tenferro-direct` is 33.4x faster than the slowest successful cell (`pytorch-cpu`, 0.064 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`4x4x4`): `tenferro-trace` is 11.2x faster than the slowest successful cell (`pytorch-cpu`, 0.064 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`4x8x8`): `tenferro-direct` is 32.8x faster than the slowest successful cell (`pytorch-cpu`, 0.075 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`4x8x8`): `tenferro-trace` is 11.8x faster than the slowest successful cell (`pytorch-cpu`, 0.075 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`8x2x2`): `tenferro-direct` is 38.3x faster than the slowest successful cell (`pytorch-cpu`, 0.080 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`8x2x2`): `tenferro-trace` is 13.6x faster than the slowest successful cell (`pytorch-cpu`, 0.080 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`8x4x4`): `jax-cpu` is 13.1x faster than the slowest successful cell (`pytorch-cpu`, 0.119 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`8x4x4`): `tenferro-direct` is 52.0x faster than the slowest successful cell (`pytorch-cpu`, 0.119 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`8x4x4`): `tenferro-trace` is 19.3x faster than the slowest successful cell (`pytorch-cpu`, 0.119 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`8x8x8`): `jax-cpu` is 14.6x faster than the slowest successful cell (`pytorch-cpu`, 0.110 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`8x8x8`): `tenferro-direct` is 35.7x faster than the slowest successful cell (`pytorch-cpu`, 0.110 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_cholesky` (f64, threads=4, shape=`8x8x8`): `tenferro-trace` is 16.0x faster than the slowest successful cell (`pytorch-cpu`, 0.110 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_eigh` (c64, threads=4, shape=`4x2x2`): `tenferro-direct` is 13.5x faster than the slowest successful cell (`jax-cpu`, 0.043 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_eigvalsh` (f64, threads=1, shape=`8x2x2`): `tenferro-direct` is 12.4x faster than the slowest successful cell (`pytorch-cpu`, 0.022 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_eigvalsh` (f64, threads=4, shape=`1x2x2`): `tenferro-direct` is 16.8x faster than the slowest successful cell (`pytorch-cpu`, 0.042 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_lu` (f64, threads=1, shape=`1x32x32`): `tenferro-direct` is 11.1x faster than the slowest successful cell (`jax-cpu`, 0.059 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_lu` (f64, threads=1, shape=`3x8x8`): `tenferro-direct` is 14.3x faster than the slowest successful cell (`jax-cpu`, 0.041 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_lu` (f64, threads=1, shape=`4x8x8`): `tenferro-direct` is 12.2x faster than the slowest successful cell (`jax-cpu`, 0.039 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_lu` (f64, threads=1, shape=`8x4x4`): `tenferro-direct` is 14.4x faster than the slowest successful cell (`jax-cpu`, 0.058 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`1x2x2`): `tenferro-direct` is 31.8x faster than the slowest successful cell (`pytorch-cpu`, 0.081 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`1x2x2`): `tenferro-trace` is 15.3x faster than the slowest successful cell (`pytorch-cpu`, 0.081 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`1x32x32`): `tenferro-direct` is 10.7x faster than the slowest successful cell (`pytorch-cpu`, 0.076 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`1x4x4`): `tenferro-direct` is 27.8x faster than the slowest successful cell (`pytorch-cpu`, 0.074 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`1x4x4`): `tenferro-trace` is 10.9x faster than the slowest successful cell (`pytorch-cpu`, 0.074 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`1x8x8`): `tenferro-direct` is 29.8x faster than the slowest successful cell (`pytorch-cpu`, 0.093 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`1x8x8`): `tenferro-trace` is 13.5x faster than the slowest successful cell (`pytorch-cpu`, 0.093 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`3x2x2`): `tenferro-direct` is 24.8x faster than the slowest successful cell (`pytorch-cpu`, 0.084 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`3x2x2`): `tenferro-trace` is 15.1x faster than the slowest successful cell (`pytorch-cpu`, 0.084 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`3x4x4`): `tenferro-direct` is 17.4x faster than the slowest successful cell (`pytorch-cpu`, 0.066 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`3x4x4`): `tenferro-trace` is 11.6x faster than the slowest successful cell (`pytorch-cpu`, 0.066 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`3x8x8`): `tenferro-direct` is 20.3x faster than the slowest successful cell (`pytorch-cpu`, 0.073 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`3x8x8`): `tenferro-trace` is 11.2x faster than the slowest successful cell (`pytorch-cpu`, 0.073 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`4x2x2`): `tenferro-direct` is 15.3x faster than the slowest successful cell (`pytorch-cpu`, 0.044 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`4x4x4`): `tenferro-direct` is 16.8x faster than the slowest successful cell (`pytorch-cpu`, 0.062 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`4x8x8`): `tenferro-direct` is 14.2x faster than the slowest successful cell (`pytorch-cpu`, 0.070 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`8x2x2`): `tenferro-direct` is 27.4x faster than the slowest successful cell (`pytorch-cpu`, 0.088 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`8x2x2`): `tenferro-trace` is 14.9x faster than the slowest successful cell (`pytorch-cpu`, 0.088 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`8x4x4`): `tenferro-direct` is 24.0x faster than the slowest successful cell (`pytorch-cpu`, 0.106 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`8x4x4`): `tenferro-trace` is 15.3x faster than the slowest successful cell (`pytorch-cpu`, 0.106 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`8x8x8`): `tenferro-direct` is 27.7x faster than the slowest successful cell (`pytorch-cpu`, 0.153 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_lu` (f64, threads=4, shape=`8x8x8`): `tenferro-trace` is 18.1x faster than the slowest successful cell (`pytorch-cpu`, 0.153 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_qr` (f64, threads=4, shape=`1x2x2`): `tenferro-direct` is 32.0x faster than the slowest successful cell (`pytorch-cpu`, 0.067 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_qr` (f64, threads=4, shape=`3x2x2`): `tenferro-direct` is 16.7x faster than the slowest successful cell (`pytorch-cpu`, 0.061 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_qr` (f64, threads=4, shape=`3x4x4`): `tenferro-direct` is 15.2x faster than the slowest successful cell (`pytorch-cpu`, 0.065 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_qr` (f64, threads=4, shape=`4x2x2`): `tenferro-direct` is 18.4x faster than the slowest successful cell (`pytorch-cpu`, 0.074 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_qr` (f64, threads=4, shape=`4x4x4`): `tenferro-direct` is 10.3x faster than the slowest successful cell (`pytorch-cpu`, 0.046 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_qr` (f64, threads=4, shape=`8x2x2`): `tenferro-direct` is 11.2x faster than the slowest successful cell (`pytorch-cpu`, 0.050 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_solve` (f64, threads=1, shape=`1x4x4,rhs=1`): `tenferro-direct` is 41.5x faster than the slowest successful cell (`pytorch-cpu`, 0.057 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_solve` (f64, threads=1, shape=`1x4x4,rhs=1`): `tenferro-trace` is 10.9x faster than the slowest successful cell (`pytorch-cpu`, 0.057 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_solve` (f64, threads=1, shape=`3x8x8,rhs=1`): `tenferro-direct` is 16.8x faster than the slowest successful cell (`pytorch-cpu`, 0.035 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_solve` (f64, threads=4, shape=`1x32x32,rhs=1`): `tenferro-direct` is 11.1x faster than the slowest successful cell (`jax-cpu`, 0.063 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_solve` (f64, threads=4, shape=`1x8x8,rhs=1`): `tenferro-direct` is 13.9x faster than the slowest successful cell (`jax-cpu`, 0.030 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_solve` (f64, threads=4, shape=`8x2x2,rhs=1`): `tenferro-direct` is 22.8x faster than the slowest successful cell (`pytorch-cpu`, 0.066 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_batch_families/batched_solve` (f64, threads=4, shape=`8x4x4,rhs=1`): `tenferro-direct` is 15.7x faster than the slowest successful cell (`pytorch-cpu`, 0.066 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/cholesky` (f64, threads=4, shape=`1536x1536`): `jax-cpu` is 25.5x faster than the slowest successful cell (`julia-base`, 348.422 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/cholesky` (f64, threads=4, shape=`1536x1536`): `pytorch-cpu` is 19.9x faster than the slowest successful cell (`julia-base`, 348.422 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/cholesky` (f64, threads=4, shape=`1536x1536`): `tenferro-direct` is 21.2x faster than the slowest successful cell (`julia-base`, 348.422 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/cholesky` (f64, threads=4, shape=`1536x1536`): `tenferro-trace` is 15.7x faster than the slowest successful cell (`julia-base`, 348.422 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/det` (f64, threads=4, shape=`1024x1024`): `jax-cpu` is 33.5x faster than the slowest successful cell (`julia-base`, 246.081 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/det` (f64, threads=4, shape=`1024x1024`): `pytorch-cpu` is 36.9x faster than the slowest successful cell (`julia-base`, 246.081 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/det` (f64, threads=4, shape=`1024x1024`): `tenferro-direct` is 25.0x faster than the slowest successful cell (`julia-base`, 246.081 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/det` (f64, threads=4, shape=`1024x1024`): `tenferro-trace` is 29.4x faster than the slowest successful cell (`julia-base`, 246.081 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/eig` (f64, threads=4, shape=`160x160`): `jax-cpu` is 31.2x faster than the slowest successful cell (`julia-base`, 294.197 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/eig` (f64, threads=4, shape=`160x160`): `pytorch-cpu` is 42.1x faster than the slowest successful cell (`julia-base`, 294.197 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/eig` (f64, threads=4, shape=`160x160`): `tenferro-direct` is 36.7x faster than the slowest successful cell (`julia-base`, 294.197 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/eig` (f64, threads=4, shape=`160x160`): `tenferro-trace` is 36.8x faster than the slowest successful cell (`julia-base`, 294.197 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/eigvals` (f64, threads=4, shape=`192x192`): `jax-cpu` is 31.7x faster than the slowest successful cell (`julia-base`, 250.631 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/eigvals` (f64, threads=4, shape=`192x192`): `pytorch-cpu` is 30.8x faster than the slowest successful cell (`julia-base`, 250.631 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/eigvals` (f64, threads=4, shape=`192x192`): `tenferro-direct` is 28.9x faster than the slowest successful cell (`julia-base`, 250.631 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/eigvals` (f64, threads=4, shape=`192x192`): `tenferro-trace` is 28.6x faster than the slowest successful cell (`julia-base`, 250.631 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/eigvalsh` (f64, threads=4, shape=`512x512`): `jax-cpu` is 31.6x faster than the slowest successful cell (`julia-base`, 834.916 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/eigvalsh` (f64, threads=4, shape=`512x512`): `pytorch-cpu` is 38.3x faster than the slowest successful cell (`julia-base`, 834.916 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/eigvalsh` (f64, threads=4, shape=`512x512`): `tenferro-direct` is 38.6x faster than the slowest successful cell (`julia-base`, 834.916 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/eigvalsh` (f64, threads=4, shape=`512x512`): `tenferro-trace` is 30.8x faster than the slowest successful cell (`julia-base`, 834.916 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/inv` (f64, threads=4, shape=`768x768`): `jax-cpu` is 41.2x faster than the slowest successful cell (`julia-base`, 408.992 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/inv` (f64, threads=4, shape=`768x768`): `pytorch-cpu` is 40.8x faster than the slowest successful cell (`julia-base`, 408.992 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/inv` (f64, threads=4, shape=`768x768`): `tenferro-direct` is 46.8x faster than the slowest successful cell (`julia-base`, 408.992 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/inv` (f64, threads=4, shape=`768x768`): `tenferro-trace` is 43.0x faster than the slowest successful cell (`julia-base`, 408.992 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/lstsq` (f64, threads=4, shape=`768x384,rhs=16`): `pytorch-cpu` is 28.0x faster than the slowest successful cell (`julia-base`, 141.532 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/lstsq` (f64, threads=4, shape=`768x384,rhs=16`): `tenferro-eager` is 12.5x faster than the slowest successful cell (`julia-base`, 141.532 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/lstsq` (f64, threads=4, shape=`768x384,rhs=16`): `tenferro-trace` is 17.0x faster than the slowest successful cell (`julia-base`, 141.532 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/lu` (f64, threads=4, shape=`1024x1024`): `jax-cpu` is 19.4x faster than the slowest successful cell (`julia-base`, 227.964 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/lu` (f64, threads=4, shape=`1024x1024`): `pytorch-cpu` is 20.9x faster than the slowest successful cell (`julia-base`, 227.964 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/lu` (f64, threads=4, shape=`1024x1024`): `tenferro-direct` is 33.0x faster than the slowest successful cell (`julia-base`, 227.964 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/lu` (f64, threads=4, shape=`1024x1024`): `tenferro-trace` is 31.7x faster than the slowest successful cell (`julia-base`, 227.964 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/norm_fro` (f64, threads=1, shape=`2048x2048`): `tenferro-direct` is 10.5x faster than the slowest successful cell (`jax-cpu`, 6.891 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/norm_fro` (f64, threads=4, shape=`2048x2048`): `tenferro-direct` is 10.6x faster than the slowest successful cell (`julia-base`, 8.915 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/norm_fro` (f64, threads=4, shape=`2048x2048`): `tenferro-trace` is 10.4x faster than the slowest successful cell (`julia-base`, 8.915 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/pinv` (f64, threads=4, shape=`512x256`): `jax-cpu` is 76.0x faster than the slowest successful cell (`julia-base`, 1057.507 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/pinv` (f64, threads=4, shape=`512x256`): `pytorch-cpu` is 85.8x faster than the slowest successful cell (`julia-base`, 1057.507 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/pinv` (f64, threads=4, shape=`512x256`): `tenferro-direct` is 91.8x faster than the slowest successful cell (`julia-base`, 1057.507 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/pinv` (f64, threads=4, shape=`512x256`): `tenferro-trace` is 98.2x faster than the slowest successful cell (`julia-base`, 1057.507 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/pinv_with_rtol` (f64, threads=4, shape=`512x256`): `jax-cpu` is 63.9x faster than the slowest successful cell (`julia-base`, 1002.548 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/pinv_with_rtol` (f64, threads=4, shape=`512x256`): `pytorch-cpu` is 85.6x faster than the slowest successful cell (`julia-base`, 1002.548 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/pinv_with_rtol` (f64, threads=4, shape=`512x256`): `tenferro-direct` is 91.0x faster than the slowest successful cell (`julia-base`, 1002.548 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/pinv_with_rtol` (f64, threads=4, shape=`512x256`): `tenferro-trace` is 97.3x faster than the slowest successful cell (`julia-base`, 1002.548 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/slogdet` (f64, threads=4, shape=`1024x1024`): `jax-cpu` is 28.3x faster than the slowest successful cell (`julia-base`, 217.482 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/slogdet` (f64, threads=4, shape=`1024x1024`): `pytorch-cpu` is 30.2x faster than the slowest successful cell (`julia-base`, 217.482 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/slogdet` (f64, threads=4, shape=`1024x1024`): `tenferro-direct` is 20.9x faster than the slowest successful cell (`julia-base`, 217.482 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/slogdet` (f64, threads=4, shape=`1024x1024`): `tenferro-trace` is 25.8x faster than the slowest successful cell (`julia-base`, 217.482 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/svd_full` (f64, threads=4, shape=`768x384`): `jax-cpu` is 32.8x faster than the slowest successful cell (`julia-base`, 1723.504 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/svd_full` (f64, threads=4, shape=`768x384`): `pytorch-cpu` is 46.1x faster than the slowest successful cell (`julia-base`, 1723.504 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/svd_full` (f64, threads=4, shape=`768x384`): `tenferro-eager` is 47.8x faster than the slowest successful cell (`julia-base`, 1723.504 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/linalg_uncovered/svd_full` (f64, threads=4, shape=`768x384`): `tenferro-trace` is 46.2x faster than the slowest successful cell (`julia-base`, 1723.504 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/structural_shape/broadcast_in_dim` (f64, threads=1, shape=`8192x1 -> 8192x4096`): `tenferro-trace` is 7345.4x faster than the slowest successful cell (`julia-base`, 16.219 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/structural_shape/broadcast_in_dim` (f64, threads=4, shape=`8192x1 -> 8192x4096`): `tenferro-trace` is 6629.4x faster than the slowest successful cell (`julia-base`, 15.466 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/structural_shape/reshape` (f64, threads=1, shape=`33554432 -> 8192x4096`): `tenferro-trace` is 6716.4x faster than the slowest successful cell (`tenferro-direct`, 15.387 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/structural_shape/reshape` (f64, threads=4, shape=`33554432 -> 8192x4096`): `tenferro-trace` is 1336.7x faster than the slowest successful cell (`julia-base`, 22.280 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/structural_shape/transpose` (f64, threads=1, shape=`4096x4096`): `tenferro-trace` is 72910.5x faster than the slowest successful cell (`julia-base`, 230.907 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/structural_shape/transpose` (f64, threads=4, shape=`4096x4096`): `tenferro-trace` is 34464.9x faster than the slowest successful cell (`julia-base`, 206.789 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/view_metadata/broadcast_in_dim_view` (f64, threads=1, shape=`8192x1 -> 8192x4096`): `tenferro-direct` is 10.8x faster than the slowest successful cell (`pytorch-cpu`, 0.001 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/view_metadata/broadcast_in_dim_view` (f64, threads=4, shape=`8192x1 -> 8192x4096`): `tenferro-direct` is 10.8x faster than the slowest successful cell (`pytorch-cpu`, 0.001 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/view_metadata/reshape_view` (f64, threads=1, shape=`33554432 -> 8192x4096`): `julia-base` is 461.4x faster than the slowest successful cell (`tenferro-direct`, 0.002 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/view_metadata/reshape_view` (f64, threads=4, shape=`33554432 -> 8192x4096`): `julia-base` is 923.4x faster than the slowest successful cell (`tenferro-direct`, 0.005 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/view_metadata/slice_view` (f64, threads=1, shape=`4194304 -> 2096128`): `julia-base` is 140.2x faster than the slowest successful cell (`pytorch-cpu`, 0.001 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/view_metadata/slice_view` (f64, threads=4, shape=`4194304 -> 2096128`): `julia-base` is 80.1x faster than the slowest successful cell (`pytorch-cpu`, 0.001 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/view_metadata/transpose_view` (f64, threads=1, shape=`4096x4096`): `julia-base` is 55.5x faster than the slowest successful cell (`pytorch-cpu`, 0.001 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `cpu/view_metadata/transpose_view` (f64, threads=4, shape=`4096x4096`): `julia-base` is 165.2x faster than the slowest successful cell (`pytorch-cpu`, 0.001 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
 
 ## Physical Bound Audit
 
 This independent check derives minimum logical bytes from dtype and shape for materializing public API operations, plus conservative operation FLOPs for reductions, Frobenius norms, matrix products, triangular solves, and recognized dense linalg families. Decorated shapes (`->`, `rhs=`, and `+`) are parsed explicitly. Operations whose touched region cannot be inferred conservatively from the reported shape are left unmodeled. It assumes at most 100 GB/s and 50 GFLOP/s per requested CPU thread, capped at 1000 GB/s and 3200 GFLOP/s. A cell more than 10x faster than the resulting lower bound is flagged. These deliberately generous ceilings are a sanity screen, not a performance gate.
 
-- `cpu/indexing_layout/slice` (f64, threads=1, shape=`4194304 -> 2096128`), `tenferro-trace`: 16769024 minimum logical bytes imply 7738.4 GB/s at 0.002 ms. The conservative physical lower bound is 0.168 ms, so the cell is 77.4x faster than the bound.
-- `cpu/indexing_layout/slice` (f64, threads=4, shape=`4194304 -> 2096128`), `tenferro-trace`: 16769024 minimum logical bytes imply 7738.4 GB/s at 0.002 ms. The conservative physical lower bound is 0.042 ms, so the cell is 19.3x faster than the bound.
-- `cpu/structural_shape/broadcast_in_dim` (f64, threads=1, shape=`8192x1 -> 8192x4096`), `tenferro-trace`: 268435456 minimum logical bytes imply 97612.9 GB/s at 0.003 ms. The conservative physical lower bound is 2.684 ms, so the cell is 976.1x faster than the bound.
-- `cpu/structural_shape/broadcast_in_dim` (f64, threads=4, shape=`8192x1 -> 8192x4096`), `tenferro-trace`: 268435456 minimum logical bytes imply 105641.7 GB/s at 0.003 ms. The conservative physical lower bound is 0.671 ms, so the cell is 264.1x faster than the bound.
-- `cpu/structural_shape/reshape` (f64, threads=1, shape=`33554432 -> 8192x4096`), `tenferro-trace`: 268435456 minimum logical bytes imply 126322.6 GB/s at 0.002 ms. The conservative physical lower bound is 2.684 ms, so the cell is 1263.2x faster than the bound.
-- `cpu/structural_shape/reshape` (f64, threads=4, shape=`33554432 -> 8192x4096`), `tenferro-trace`: 268435456 minimum logical bytes imply 121574.0 GB/s at 0.002 ms. The conservative physical lower bound is 0.671 ms, so the cell is 303.9x faster than the bound.
-- `cpu/structural_shape/transpose` (f64, threads=1, shape=`4096x4096`), `tenferro-trace`: 134217728 minimum logical bytes imply 58559.2 GB/s at 0.002 ms. The conservative physical lower bound is 1.342 ms, so the cell is 585.6x faster than the bound.
-- `cpu/structural_shape/transpose` (f64, threads=4, shape=`4096x4096`), `tenferro-trace`: 134217728 minimum logical bytes imply 51130.6 GB/s at 0.003 ms. The conservative physical lower bound is 0.336 ms, so the cell is 127.8x faster than the bound.
+- `cpu/indexing_layout/slice` (f64, threads=1, shape=`4194304 -> 2096128`), `tenferro-trace`: 16769024 minimum logical bytes imply 8212.1 GB/s at 0.002 ms. The conservative physical lower bound is 0.168 ms, so the cell is 82.1x faster than the bound.
+- `cpu/indexing_layout/slice` (f64, threads=4, shape=`4194304 -> 2096128`), `tenferro-trace`: 16769024 minimum logical bytes imply 6822.2 GB/s at 0.002 ms. The conservative physical lower bound is 0.042 ms, so the cell is 17.1x faster than the bound.
+- `cpu/structural_shape/broadcast_in_dim` (f64, threads=1, shape=`8192x1 -> 8192x4096`), `tenferro-trace`: 268435456 minimum logical bytes imply 121574.0 GB/s at 0.002 ms. The conservative physical lower bound is 2.684 ms, so the cell is 1215.7x faster than the bound.
+- `cpu/structural_shape/broadcast_in_dim` (f64, threads=4, shape=`8192x1 -> 8192x4096`), `tenferro-trace`: 268435456 minimum logical bytes imply 115060.2 GB/s at 0.002 ms. The conservative physical lower bound is 0.671 ms, so the cell is 287.7x faster than the bound.
+- `cpu/structural_shape/reshape` (f64, threads=1, shape=`33554432 -> 8192x4096`), `tenferro-trace`: 268435456 minimum logical bytes imply 117169.6 GB/s at 0.002 ms. The conservative physical lower bound is 2.684 ms, so the cell is 1171.7x faster than the bound.
+- `cpu/structural_shape/reshape` (f64, threads=4, shape=`33554432 -> 8192x4096`), `tenferro-trace`: 268435456 minimum logical bytes imply 16105.8 GB/s at 0.017 ms. The conservative physical lower bound is 0.671 ms, so the cell is 40.3x faster than the bound.
+- `cpu/structural_shape/transpose` (f64, threads=1, shape=`4096x4096`), `tenferro-trace`: 134217728 minimum logical bytes imply 42380.1 GB/s at 0.003 ms. The conservative physical lower bound is 1.342 ms, so the cell is 423.8x faster than the bound.
+- `cpu/structural_shape/transpose` (f64, threads=4, shape=`4096x4096`), `tenferro-trace`: 134217728 minimum logical bytes imply 22369.6 GB/s at 0.006 ms. The conservative physical lower bound is 0.336 ms, so the cell is 55.9x faster than the bound.
