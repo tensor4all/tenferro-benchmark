@@ -28,11 +28,12 @@ import hashlib
 import json
 import math
 import os
+import re
 import shutil
 import subprocess
 import sys
 from dataclasses import dataclass, replace
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -537,6 +538,56 @@ def not_measured_cases(
     return result
 
 
+def row_status(row: dict[str, Any]) -> str:
+    """A row's recorded status; a row without one is an ``ok`` measurement."""
+    return str(row.get("status") or "ok")
+
+
+def non_ok_rows(rows: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Every row of a case whose status is not ``ok``, in the recorded order.
+
+    A case with one failed arm is still a case: the arm that failed keeps its row
+    and a ``fail`` badge, and every arm that ran keeps its number.  Dropping the
+    row would read as "nothing was measured here", which is a different claim.
+    """
+    return [row for row in rows if row_status(row) != "ok"]
+
+
+def non_ok_label(row: dict[str, Any]) -> str:
+    """``fail`` for a failed measurement, the recorded status name otherwise."""
+    status = row_status(row)
+    return status if status in ("unsupported", "skipped") else "fail"
+
+
+def non_ok_badge(row: dict[str, Any], *, with_backend: bool = True) -> str:
+    """One ``fail`` (or status) badge with the backend and the recorded reason."""
+    label = non_ok_label(row)
+    reason = str(row.get("reason") or "").strip()
+    text = f'<span class="fail">{esc(label)}</span>'
+    if with_backend:
+        text += f' <code>{esc(row.get("backend"))}</code>'
+    if reason:
+        text += f' <span class="muted">{esc(reason)}</span>'
+    return text
+
+
+def non_ok_cell(rows: Iterable[dict[str, Any]], already_shown: Iterable[dict[str, Any]] = ()) -> str:
+    """The table cell listing the arms of one case that produced no number.
+
+    ``already_shown`` are the policy skips the "not measured" cell already names, so
+    every non-ok row appears exactly once in its row.
+    """
+    shown = list(already_shown)
+    badges = [
+        non_ok_badge(row)
+        for row in non_ok_rows(rows)
+        if not any(row is other for other in shown)
+    ]
+    if not badges:
+        return '<td><span class="muted">-</span></td>'
+    return "<td>" + " · ".join(badges) + "</td>"
+
+
 def arm_median(rows: list[dict[str, Any]], arm: Arm) -> float | None:
     for backend in arm.backends:
         value = row_median(rows, backend)
@@ -716,6 +767,210 @@ def hardware_name(document: dict[str, Any] | None) -> str | None:
         return None
     hardware = document.get("hardware") or {}
     return hardware.get("gpu") or hardware.get("cpu") or hardware.get("host")
+
+
+# ---------------------------------------------------------------------------
+# Collection dates: when each suite was measured, and how old that is
+# ---------------------------------------------------------------------------
+#
+# One page aggregates suites collected weeks apart.  A single header date (the
+# newest one) reads as "the page's date", so every block carries its own date
+# instead.  Ages are measured from the newest collection on the page, never from
+# the build clock: the rendered HTML stays deterministic, and the reference the
+# reader is comparing against is printed next to the numbers it explains.
+
+# A suite collected more than this many days before the newest one is badged stale.
+STALE_AFTER_DAYS = 14
+# A page whose suites span more than this many days says so at the top.
+MIXED_DATES_NOTICE_DAYS = 7
+
+# A run directory stamp (`20261028_004719`) is the only date a legacy report body
+# records; it is used as an estimate and always labelled as one.
+RUN_STAMP = re.compile(r"\b(20\d{2})(\d{2})(\d{2})_\d{6}\b")
+
+
+def parse_timestamp(value: Any) -> datetime | None:
+    """A summary ``timestamp`` as an aware UTC datetime, or ``None``."""
+    if not value:
+        return None
+    text = str(value).strip()
+    if not text:
+        return None
+    try:
+        parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
+def collection_dates(documents: Iterable[dict[str, Any] | None]) -> list[datetime]:
+    """The distinct collection instants of ``documents``, oldest first."""
+    stamps = {parse_timestamp((document or {}).get("timestamp")) for document in documents}
+    return sorted(stamp for stamp in stamps if stamp is not None)
+
+
+def collection_reference(documents: Iterable[dict[str, Any] | None]) -> datetime | None:
+    """The newest collection in ``documents``: the instant every age is measured from."""
+    dates = collection_dates(documents)
+    return dates[-1] if dates else None
+
+
+def collection_count(documents: Iterable[dict[str, Any] | None]) -> int:
+    return sum(1 for document in documents if parse_timestamp((document or {}).get("timestamp")))
+
+
+def collection_days(documents: Iterable[dict[str, Any] | None]) -> list[date]:
+    """The distinct calendar days the documents were collected on, oldest first."""
+    return sorted({stamp.date() for stamp in collection_dates(documents)})
+
+
+def age_in_days(reference: datetime | None, collected: datetime | None) -> int | None:
+    """Whole days between two collection instants (UTC calendar days)."""
+    if reference is None or collected is None:
+        return None
+    return (reference.date() - collected.date()).days
+
+
+def day_label(moment: datetime) -> str:
+    return moment.date().isoformat()
+
+
+def date_range_label(days: list[date]) -> str:
+    """``2026-10-17 – 2026-11-05``, or one day when every suite shares it."""
+    if not days:
+        return ""
+    first, last = days[0].isoformat(), days[-1].isoformat()
+    return first if first == last else f"{first} – {last}"
+
+
+def stale_suites(
+    documents: Iterable[dict[str, Any] | None], reference: datetime | None
+) -> list[tuple[str, datetime, int]]:
+    """``(date, collected, age)`` for every suite older than ``STALE_AFTER_DAYS``."""
+    stale = []
+    for document in documents:
+        collected = parse_timestamp((document or {}).get("timestamp"))
+        age = age_in_days(reference, collected)
+        if collected is not None and age is not None and age > STALE_AFTER_DAYS:
+            stale.append((day_label(collected), collected, age))
+    return stale
+
+
+def collection_head_spans(
+    documents: Iterable[dict[str, Any] | None], reference: datetime | None
+) -> list[str]:
+    """Header spans for one profile: the date range and how much of it is old.
+
+    The range replaces the single ``date:`` line: on the GPU page the newest suite
+    (2026-11-05) used to stand for suites measured on 2026-10-17.
+    """
+    documents = [document for document in documents if document]
+    days = collection_days(documents)
+    if not days:
+        return []
+    suites = collection_count(documents)
+    spans = [
+        f"<span>dates: {esc(date_range_label(days))} · "
+        f"{suites} suite{'s' if suites != 1 else ''}</span>"
+    ]
+    if reference is not None and len(days) > 1:
+        stale = stale_suites(documents, reference)
+        if stale:
+            spans.append(
+                f'<span class="stale-count">{len(stale)} suite'
+                f'{"s" if len(stale) != 1 else ""} older than {STALE_AFTER_DAYS} days'
+                f" (ages from {esc(day_label(reference))})</span>"
+            )
+        else:
+            spans.append(
+                f"<span>all suites within {STALE_AFTER_DAYS} days of "
+                f"{esc(day_label(reference))}, the newest collection</span>"
+            )
+    return spans
+
+
+def collected_span(
+    document: dict[str, Any] | None, reference: datetime | None
+) -> str:
+    """The ``collected`` line of one suite block, with its age and a stale badge."""
+    if not document:
+        return (
+            '<span class="muted">collection date unrecorded: no summary sidecar records '
+            "when this report was collected</span>"
+        )
+    collected = parse_timestamp(document.get("timestamp"))
+    if collected is None:
+        return (
+            '<span class="muted">collection date unrecorded: its summary sidecar records '
+            "no timestamp</span>"
+        )
+    day = day_label(collected)
+    age = age_in_days(reference, collected)
+    if not age:
+        return f'<span class="collected">collected {esc(day)}</span>'
+    title = (
+        f"collected {age} days before the newest collection on this page, "
+        f"{day_label(reference) if reference else day}"
+    )
+    text = (
+        f'<span class="collected" title="{esc(title)}">collected {esc(day)} · {age} '
+        f'day{"s" if age != 1 else ""} old</span>'
+    )
+    if age > STALE_AFTER_DAYS:
+        text += f' <span class="stale" title="{esc(title)}">stale</span>'
+    return text
+
+
+def mixed_dates_notice(
+    documents: Iterable[dict[str, Any] | None], reference: datetime | None
+) -> str:
+    """One notice when the page's suites span more than ``MIXED_DATES_NOTICE_DAYS``."""
+    documents = [document for document in documents if document]
+    days = collection_days(documents)
+    if len(days) < 2 or reference is None:
+        return ""
+    span = (days[-1] - days[0]).days
+    if span <= MIXED_DATES_NOTICE_DAYS:
+        return ""
+    suites = collection_count(documents)
+    stale = stale_suites(documents, reference)
+    text = (
+        '<p class="notice"><strong>Mixed collection dates.</strong> This page mixes data '
+        "collected on different dates; each block carries its own date. They run "
+        f"{esc(date_range_label(days))} ({suites} suite{'s' if suites != 1 else ''} over "
+        f"{span} days), so the newest number on this page is not the date of every row."
+    )
+    if stale:
+        text += (
+            f" {len(stale)} of {suites} suites were collected more than "
+            f"{STALE_AFTER_DAYS} days before the newest ({esc(day_label(reference))})."
+        )
+    text += (
+        ' A block\'s date is when its suite ran and a <span class="fail">fail</span> badge '
+        "inside it is a case outcome from that same run, so an old suite's failure is not a "
+        "recent one.</p>"
+    )
+    return text
+
+
+def report_run_stamp(report: Path) -> str | None:
+    """The first ``YYYYMMDD_HHMMSS`` run stamp in a report body, as ``YYYY-MM-DD``.
+
+    It is the only date a legacy report records, and it names the run directory the
+    report was written from; the caller labels it an estimate.
+    """
+    try:
+        with report.open(encoding="utf-8", errors="replace") as handle:
+            head = [next(handle, "") for _ in range(40)]
+    except OSError:
+        return None
+    match = RUN_STAMP.search("".join(head))
+    if not match:
+        return None
+    year, month, day = match.groups()
+    return f"{year}-{month}-{day}"
 
 
 def previous_rows_for(
@@ -946,10 +1201,21 @@ def svg_case_chart(
     thin outlined whisker marks the estimated 95% CI from the case's ``runs``
     samples.  Tenferro arms are filled, reference arms are outlined, so a slow
     reference never dominates the picture.
+
+    An arm that did not produce a number is listed under the bars as ``fail`` with
+    its recorded reason: a failed arm never hides the arms that did run, and a
+    failed arm is never silently absent either.
     """
     points = case_points(rows)
+    failed = non_ok_rows(rows)
     if not points:
-        return '<p class="muted">No successful measurements.</p>'
+        if not failed:
+            return '<p class="muted">No successful measurements.</p>'
+        return (
+            '<p class="chart-legend">No successful measurements. '
+            + " · ".join(non_ok_badge(row) for row in failed)
+            + "</p>"
+        )
     reference = float(baseline["median"]) if baseline is not None else next(
         (value for backend, value, _ in points if not backend.startswith("tenferro")), None
     )
@@ -962,7 +1228,8 @@ def svg_case_chart(
         return BAR_LABEL_WIDTH + (math.log10(value) - low) / span * BAR_AREA_WIDTH
 
     top = 24
-    height = len(points) * (BAR_HEIGHT + BAR_GAP) + top + 8
+    rows_count = len(points) + len(failed)
+    height = rows_count * (BAR_HEIGHT + BAR_GAP) + top + 8
     parts = [
         f'<svg class="bars" viewBox="0 0 {BAR_CHART_WIDTH} {height}" '
         f'width="100%" role="img" aria-label="median by backend">'
@@ -996,6 +1263,17 @@ def svg_case_chart(
         if reference is not None and backend.startswith("tenferro"):
             label += f" · {value / reference:.2f}x"
         parts.append(f'<text x="{right + 6:.1f}" y="{y + 9}" class="chart-value">{esc(label)}</text>')
+    for index, row in enumerate(failed):
+        y = (len(points) + index) * (BAR_HEIGHT + BAR_GAP) + top
+        parts.append(
+            f'<text x="0" y="{y + 9}" class="chart-label">{esc(row.get("backend"))}</text>'
+        )
+        parts.append(
+            f'<text x="{BAR_LABEL_WIDTH + 6}" y="{y + 9}" class="chart-fail">'
+            f"{esc(non_ok_label(row))}"
+            + (f" · {esc(str(row.get('reason')).strip())}" if row.get("reason") else "")
+            + "</text>"
+        )
     parts.append("</svg>")
     return "".join(parts)
 
@@ -1049,11 +1327,30 @@ def svg_ratio_chart(cases: list[dict[str, Any]], baseline_label: str, unit: str 
     ratio CI from the case's sample count.  Each bar also carries the two
     medians in ``unit`` (contender / baseline) and a tooltip with both IQRs, so
     a ratio can be read against the absolute time it came from.
+
+    An arm that did not produce a number is drawn as a ``fail`` line under its
+    case, never by dropping the case: a case with one failed arm and one measured
+    arm keeps both.
     """
-    rows = [case for case in cases if case["contenders"]]
+    rows = [case for case in cases if case["contenders"] or case.get("not_ok")]
     if not rows:
         return ""
     ratios = [item["ratio"] for case in rows for item in case["contenders"]]
+    if not ratios:
+        # Nothing to plot, but the failures are still named.
+        return (
+            '<p class="chart-legend">No ratio could be computed and no measurement was '
+            "recorded as ok: "
+            + " · ".join(
+                f'<code>{esc(case["case"])}</code> '
+                + " ".join(
+                    f'<span class="fail">{esc(item["label"])}</span> <code>{esc(item["backend"])}</code>'
+                    for item in case.get("not_ok") or []
+                )
+                for case in rows
+            )
+            + "</p>"
+        )
     low = math.log10(min(ratios) / 1.15)
     high = math.log10(max(ratios) * 1.15)
     span = high - low or 1.0
@@ -1061,7 +1358,9 @@ def svg_ratio_chart(cases: list[dict[str, Any]], baseline_label: str, unit: str 
     def x_of(value: float) -> float:
         return BAR_LABEL_WIDTH + (math.log10(value) - low) / span * BAR_AREA_WIDTH
 
-    row_height = max(1, max(len(case["contenders"]) for case in rows)) * (BAR_HEIGHT + BAR_GAP) + 10
+    row_height = max(
+        1, max(len(case["contenders"]) + len(case.get("not_ok") or []) for case in rows)
+    ) * (BAR_HEIGHT + BAR_GAP) + 10
     height = len(rows) * row_height + 34
     parts = [
         f'<svg class="bars" viewBox="0 0 {RATIO_CHART_WIDTH} {height}" '
@@ -1071,7 +1370,8 @@ def svg_ratio_chart(cases: list[dict[str, Any]], baseline_label: str, unit: str 
         f'<text x="0" y="10" class="chart-note">bar = case median / {esc(baseline_label)} median · '
         f"label = contender / {esc(baseline_label)}, {esc(unit)} · "
         "dashed line = baseline (1.00x) · log scale · shorter (left) is faster · "
-        f"whisker = estimated 95% CI · {esc(noise_legend())}</text>"
+        f"whisker = estimated 95% CI · {esc(noise_legend())} · "
+        "fail = that arm produced no number, so it has no bar</text>"
     )
     parity = x_of(1.0)
     parts.append(
@@ -1107,6 +1407,16 @@ def svg_ratio_chart(cases: list[dict[str, Any]], baseline_label: str, unit: str 
                 + ('<tspan class="chart-noisy"> noisy</tspan>' if item.get("noisy") else "")
                 + "</text>"
             )
+        for index, bad in enumerate(case.get("not_ok") or [], start=len(case["contenders"])):
+            bar_y = y + index * (BAR_HEIGHT + BAR_GAP)
+            # No bar: no number was produced.  The arm is still named, with its
+            # recorded reason, in a slot that would otherwise read as "not measured".
+            parts.append(
+                f'<text x="{BAR_LABEL_WIDTH}" y="{bar_y + 9}" class="chart-fail">'
+                f'{esc(bad["label"])} · {esc(bad["backend"])}'
+                + (f' · {esc(bad["reason"])}' if bad.get("reason") else "")
+                + "</text>"
+            )
         y += row_height
     parts.append("</svg>")
     return "".join(parts)
@@ -1122,6 +1432,8 @@ STYLESHEET = """
   --card: #f6f8fa; --link: #0969da; --accent: #0969da;
   --faster: #1a7f37; --parity: #57606a; --slower: #9a6700; --much-slower: #cf222e;
   --bar-tenferro: #0969da; --bar-tenferro-alt: #8250df; --bar-reference: #8c959f; --flag-bg: #fff1e5; --flag-fg: #953800;
+  --stale-bg: #fff1e5; --stale-fg: #953800; --stale-line: #d4a72c;
+  --fail-bg: #ffebe9; --fail-fg: #cf222e;
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -1129,6 +1441,8 @@ STYLESHEET = """
     --card: #161b22; --link: #4493f8; --accent: #4493f8;
     --faster: #3fb950; --parity: #9198a1; --slower: #d29922; --much-slower: #f85149;
     --bar-tenferro: #4493f8; --bar-tenferro-alt: #a371f7; --bar-reference: #6e7681; --flag-bg: #3d1d00; --flag-fg: #ffa657;
+    --stale-bg: #3d1d00; --stale-fg: #ffa657; --stale-line: #9e6a03;
+    --fail-bg: #4c1114; --fail-fg: #ff7b72;
   }
 }
 * { box-sizing: border-box; }
@@ -1167,6 +1481,15 @@ thead th { position: sticky; top: 0; }
   border-radius: 999px; padding: 0 .5rem; font-size: .78rem; margin: 0 .15rem .15rem 0;
 }
 .not-measured { color: var(--muted); font-weight: 600; }
+.stale, .fail, .stale-count {
+  display: inline-block; border-radius: 999px; padding: 0 .5rem;
+  font-size: .78rem; font-weight: 600; white-space: nowrap;
+}
+.stale { background: var(--stale-bg); color: var(--stale-fg); border: 1px solid var(--stale-line); }
+.fail { background: var(--fail-bg); color: var(--fail-fg); }
+.stale-count { color: var(--stale-fg); font-weight: 600; }
+.collected { color: var(--muted); font-variant-numeric: tabular-nums; }
+.chart-fail { font-size: 11px; fill: var(--fail-fg); font-weight: 600; font-family: inherit; }
 .bars { display: block; max-width: 100%; height: auto; margin: .4rem 0 1.2rem; }
 .chart-label { font-size: 11px; fill: var(--fg); font-family: inherit; }
 .chart-value { font-size: 11px; fill: var(--muted); font-family: inherit; }
@@ -1236,7 +1559,6 @@ def profile_header(profile: str, summaries: dict[tuple[str, str], dict[str, Any]
     hardware = None
     for document in documents:
         hardware = hardware or hardware_name(document)
-    timestamp = max((str(doc.get("timestamp")) for doc in documents if doc.get("timestamp")), default=None)
     commit = None
     for document in documents:
         if document.get("tenferro_commit"):
@@ -1245,8 +1567,7 @@ def profile_header(profile: str, summaries: dict[tuple[str, str], dict[str, Any]
     pieces = [f"<strong>{esc(profile)}</strong>"]
     if hardware:
         pieces.append(f"hardware: {esc(hardware)}")
-    if timestamp:
-        pieces.append(f"date: {esc(timestamp[:19].replace('T', ' '))}Z")
+    pieces.extend(collection_head_spans(documents, collection_reference(documents)))
     if commit:
         pieces.append(f"tenferro: <code>{esc(commit[:12])}</code>")
     if not documents:
@@ -1375,7 +1696,12 @@ def outcome_counts(outcomes: dict[str, list[tuple[str, str]]]) -> str:
 def render_case_outcomes(
     outcomes: dict[str, list[tuple[str, str]]], qualified: bool = True
 ) -> str:
-    """Counts with the escaped case names behind them, one collapsible block per category."""
+    """Counts with the escaped case names behind them, one collapsible block per category.
+
+    The count is a summary, never a substitute for the row: every listed case keeps
+    its row in its suite's case table, where the failed backend and the reason are
+    named next to the arms that did run.
+    """
     blocks = []
     for kind in CASE_OUTCOME_KINDS:
         pairs = outcomes.get(kind) or []
@@ -1393,7 +1719,14 @@ def render_case_outcomes(
         )
     if not blocks:
         return ""
-    return '<div class="notice"><strong>Non-ok cases.</strong> ' + "".join(blocks) + "</div>"
+    hint = (
+        '<p class="chart-legend">A non-ok case keeps its row: its suite table names the '
+        'failed backend, the reason and <span class="fail">fail</span>, and the arms that did '
+        "run keep their numbers.</p>"
+        if qualified
+        else ""
+    )
+    return '<div class="notice"><strong>Non-ok cases.</strong> ' + "".join(blocks) + hint + "</div>"
 
 
 def partial_run_reason(view: SuiteView) -> str | None:
@@ -1586,7 +1919,22 @@ def case_ratio_row(
 ) -> dict[str, Any]:
     """Per-case contender ratios against the case baseline."""
     label, baseline = case_baseline(case, suite_id, reference_map, grouped)
-    item: dict[str, Any] = {"case": case.case, "baseline": label, "contenders": []}
+    item: dict[str, Any] = {
+        "case": case.case,
+        "baseline": label,
+        "contenders": [],
+        # A case keeps every arm it recorded: a failed arm becomes a ``fail`` line
+        # in the chart instead of removing the case from it.
+        "not_ok": [
+            {
+                "backend": str(row.get("backend")),
+                "status": row_status(row),
+                "label": non_ok_label(row),
+                "reason": str(row.get("reason") or "").strip(),
+            }
+            for row in non_ok_rows(case.rows)
+        ],
+    }
     if baseline is None:
         return item
     baseline_median = float(baseline["median"])
@@ -1679,6 +2027,13 @@ def how_to_read() -> str:
         "on separate pages and are never mixed. A regime is a workload class, not a measured "
         "compute- or bandwidth-bound classification, and a small workload is not evidence of "
         "slow compute.</dd>"
+        "<dt>collected</dt><dd>each suite block carries the date its suite was collected and "
+        "how many days older than the newest collection on the page that is; more than "
+        f"{STALE_AFTER_DAYS} days is badged <span class=\"stale\">stale</span>. Blocks are not "
+        "the same age: read a block's numbers against its own date.</dd>"
+        "<dt>fail</dt><dd>an arm that produced no number keeps its row and is marked "
+        "<span class=\"fail\">fail</span> with the recorded reason. The other arms of the same "
+        "case keep their numbers, so one failed backend never hides a measured one.</dd>"
         "</dl></section>"
     )
 
@@ -1690,16 +2045,82 @@ def family_notice(family: str) -> str:
     )
 
 
-def render_diagnostics(views: list[SuiteView], prefix: str) -> str:
+COMMIT_DATE_CACHE: dict[tuple[str, str], str | None] = {}
+
+
+def git_commit_date(git_repo: Path | None, path: Path) -> str | None:
+    """The commit date (UTC day) of ``path``, read from git history only.
+
+    A checkout stamps every file with the checkout time, so a modification time is
+    not a collection date; the commit that added the report is the closest recorded
+    evidence.  The caller labels it an estimate.
+    """
+    if git_repo is None:
+        return None
+    try:
+        relative = path.resolve().relative_to(git_repo.resolve()).as_posix()
+    except (OSError, ValueError):
+        return None
+    key = (str(git_repo.resolve()), relative)
+    if key not in COMMIT_DATE_CACHE:
+        value = None
+        try:
+            completed = subprocess.run(
+                ["git", "-C", str(git_repo), "log", "-1", "--format=%cs", "--", relative],
+                capture_output=True, text=True, timeout=10, check=False,
+            )
+        except (OSError, subprocess.SubprocessError):
+            value = None
+        else:
+            candidate = completed.stdout.strip()
+            if re.fullmatch(r"\d{4}-\d{2}-\d{2}", candidate or ""):
+                value = candidate
+        COMMIT_DATE_CACHE[key] = value
+    return COMMIT_DATE_CACHE[key]
+
+
+def diagnostic_date_label(view: SuiteView, git_repo: Path | None) -> str:
+    """How a diagnostic report's collection date is known, or why it is not.
+
+    ``collection date unrecorded`` on its own reads as "unknown, and nobody can say
+    why".  These reports predate the summary sidecar, which is the only place a
+    collection timestamp is written, so the label names that and then gives the best
+    recorded evidence (the run stamp in the report body, else the commit date) as an
+    explicit estimate.
+    """
+    collected = parse_timestamp((view.document or {}).get("timestamp"))
+    if collected is not None:
+        return f"collected {day_label(collected)}"
+    reason = (
+        "no collection date recorded: this report has no summary sidecar, which is where "
+        "the collection timestamp is written"
+        if not view.document
+        else "no collection date recorded: its summary sidecar carries no timestamp"
+    )
+    stamp = report_run_stamp(view.report)
+    if stamp:
+        return f"{reason} · estimated {stamp} from the run stamp in the report"
+    committed = git_commit_date(git_repo, view.report)
+    if committed:
+        return f"{reason} · estimated {committed} from its commit date"
+    return reason
+
+
+def render_diagnostics(
+    views: list[SuiteView], prefix: str, git_repo: Path | None = None
+) -> str:
     diagnostics = [view for view in views if (view.profile, view.suite_id) not in MAINTAINED]
     if not diagnostics:
         return ""
+    unrecorded = sum(
+        1 for view in diagnostics
+        if parse_timestamp((view.document or {}).get("timestamp")) is None
+    )
     groups = []
     for profile in ordered_profiles({view.profile for view in diagnostics}):
         rows = []
         for view in sorted((v for v in diagnostics if v.profile == profile), key=lambda v: v.suite_id):
-            collected = (view.document or {}).get("timestamp")
-            date_label = str(collected)[:10] if collected else "collection date unrecorded"
+            date_label = diagnostic_date_label(view, git_repo)
             suite_dir = view.suite_id.split("/", 1)[0]
             href = f"{prefix}{profile}/{suite_dir}/{view.report.stem}.html"
             rows.append(
@@ -1707,8 +2128,18 @@ def render_diagnostics(views: list[SuiteView], prefix: str) -> str:
                 f'<span class="muted">({esc(date_label)})</span></li>'
             )
         groups.append(f"<h3>{esc(profile)}</h3><ul>" + "".join(rows) + "</ul>")
+    legend = ""
+    if unrecorded:
+        legend = (
+            f'<p class="chart-legend">{unrecorded} of these {len(diagnostics)} reports carry no '
+            "recorded collection date: the date is written to the machine-readable summary "
+            "sidecar, and these reports have none. Where the report body or its commit names a "
+            "run, that date is shown and marked estimated; it is never used as a measurement "
+            "date anywhere else on the site.</p>"
+        )
     return (
         f'<details class="diag"><summary>Diagnostic reports ({len(diagnostics)})</summary>'
+        + legend
         + "".join(groups)
         + "</details>"
     )
@@ -1718,12 +2149,16 @@ def family_facts(views: list[SuiteView]) -> dict[str, Any]:
     maintained = [v for v in views if (v.profile, v.suite_id) in MAINTAINED]
     docs = [v.document for v in maintained if v.document]
     hardware = next((hardware_name(doc) for doc in docs if hardware_name(doc)), None)
-    timestamps = [str(doc.get("timestamp")) for doc in docs if doc.get("timestamp")]
+    days = collection_days(docs)
+    reference = collection_reference(docs)
     commit = next((str(doc["tenferro_commit"]) for doc in docs if doc.get("tenferro_commit")), None)
     return {
         "profiles": ordered_profiles({view.profile for view in views}),
         "hardware": hardware,
-        "timestamp": max(timestamps) if timestamps else None,
+        "dates": days,
+        "reference": reference,
+        "suites": collection_count(docs),
+        "stale": len(stale_suites(docs, reference)),
         "commit": commit,
         "throughput": sum(len(view.regime_cases(THROUGHPUT)) for view in maintained),
         "latency": sum(len(view.regime_cases(LATENCY)) for view in maintained),
@@ -1801,9 +2236,16 @@ def render_top(
             )
         if run_notes:
             pieces.append(f'<p class="facts">{esc(" · ".join(run_notes))}</p>')
-        if facts["timestamp"]:
+        if facts["dates"]:
+            label = date_range_label(facts["dates"])
+            suites = facts["suites"]
+            line = f'dates: {esc(label)} · {suites} suite{"s" if suites != 1 else ""}'
+            if facts["stale"]:
+                line += (
+                    f' · {facts["stale"]} older than {STALE_AFTER_DAYS} days'
+                )
             pieces.append(
-                f'<p class="facts">updated {esc(facts["timestamp"][:19].replace("T", " "))}Z'
+                f'<p class="facts">{line}'
                 + (f' · tenferro <code>{esc(facts["commit"][:12])}</code>' if facts["commit"] else "")
                 + "</p>"
             )
@@ -1820,16 +2262,17 @@ def render_top(
     return page("tenferro-benchmark results", "\n".join(body))
 
 
-def profile_header_from_views(profile: str, views: list[SuiteView]) -> str:
+def profile_header_from_views(
+    profile: str, views: list[SuiteView], reference: datetime | None = None
+) -> str:
+    """Profile head.  ``reference`` is the newest collection the ages are measured from."""
     documents = [view.document for view in views if view.document]
     hardware = next((hardware_name(doc) for doc in documents if hardware_name(doc)), None)
-    timestamps = [str(doc.get("timestamp")) for doc in documents if doc.get("timestamp")]
     commit = next((str(doc["tenferro_commit"]) for doc in documents if doc.get("tenferro_commit")), None)
     pieces = [f"<strong>{esc(profile_label(profile))}</strong>", f"<span>{esc(profile)}</span>"]
     if hardware:
         pieces.append(f"<span>hardware: {esc(hardware)}</span>")
-    if timestamps:
-        pieces.append(f"<span>date: {esc(max(timestamps)[:19].replace('T', ' '))}Z</span>")
+    pieces.extend(collection_head_spans(documents, reference or collection_reference(documents)))
     if commit:
         pieces.append(f"<span>tenferro: <code>{esc(commit[:12])}</code></span>")
     if not documents:
@@ -1909,12 +2352,25 @@ def render_family(
     regime: str,
     trend: list[dict[str, str]] | None = None,
     trend_prefix: str = "",
+    git_repo: Path | None = None,
 ) -> str:
     label = FAMILY_LABEL[family]
+    # What this page actually shows: the maintained suites with a case in this
+    # regime.  The collection dates below describe exactly those blocks, so a
+    # diagnostic report that is never rendered cannot set the page's date.
+    page_views = [
+        view for view in views
+        if (view.profile, view.suite_id) in MAINTAINED and view.regime_cases(regime)
+    ]
+    page_documents = [view.document for view in page_views if view.document]
+    page_reference = collection_reference(page_documents)
     body = [
         '<p><a href="../index.html">&larr; all results</a></p>',
         f"<h1>{esc(label)} {'latency results' if regime == LATENCY else 'benchmark results'}</h1>",
     ]
+    notice = mixed_dates_notice(page_documents, page_reference)
+    if notice:
+        body.append(notice)
     if regime == LATENCY:
         body.append(
             '<p class="notice"><strong>Latency and per-call overhead.</strong> These cases are '
@@ -1929,9 +2385,12 @@ def render_family(
         body.append('<p class="chart-legend"><a href="#trend">Trend across revisions</a></p>')
     for profile in ordered_profiles({view.profile for view in views}):
         profile_views = [view for view in views if view.profile == profile]
+        profile_shown = [view for view in page_views if view.profile == profile]
+        profile_documents = [view.document for view in profile_shown if view.document]
+        profile_reference = collection_reference(profile_documents) or page_reference
         body.append('<section class="profile-card">')
         body.append(f'<h2>{esc(profile_label(profile))}</h2>')
-        body.append(profile_header_from_views(profile, profile_views))
+        body.append(profile_header_from_views(profile, profile_shown or profile_views, profile_reference))
         if profile in GITHUB_HOSTED_PROFILES or any(is_hosted(view) for view in profile_views):
             body.append(f'<p class="notice">{REPORT_QUALITY_NOTICE}</p>')
         profile_maintained = [
@@ -1970,7 +2429,8 @@ def render_family(
             body.append('<details class="suite-block" open>')
             body.append(
                 f'<summary><code>{esc(view.suite_id)}</code> '
-                f'<span class="muted">{len(cases)} case{"s" if len(cases) != 1 else ""}{suffix}</span></summary>'
+                f'<span class="muted">{len(cases)} case{"s" if len(cases) != 1 else ""}{suffix}</span> '
+                f'{collected_span(view.document, profile_reference)}</summary>'
             )
             unit = document.get("unit", "ms")
             worst_baseline = max(
@@ -2020,7 +2480,7 @@ def render_family(
     prefix = "../../" if regime == LATENCY else "../"
     if family == "cpu":
         body.append(render_trend(shown_trend, trend_prefix))
-    body.append(render_diagnostics(views, prefix))
+    body.append(render_diagnostics(views, prefix, git_repo))
     body.append(
         '<footer>Generated by <code>scripts/generate_dashboard.py</code>. '
         "Suites and raw reports are linked from each block.</footer>"
@@ -2062,12 +2522,15 @@ def render_case_table(
             note = f'<span class="not-measured">not measured</span> <span class="muted">{reasons}</span>'
         else:
             note = '<span class="muted">-</span>'
+        # Every arm that produced no number keeps a row here, so a failed backend
+        # is visible next to the backends that did run for the same case.
+        not_ok_cell = non_ok_cell(rows_for_case, neutral.get((case, group), []))
         flags_text = flag_badges(flags.get((case, group), [])) or '<span class="muted">-</span>'
         rows.append(
             f"<tr><td><code>{esc(case)}</code></td>"
             f"<td>{esc(group or '-')}</td>"
             + "".join(cells)
-            + f"<td>{note}</td><td>{flags_text}</td></tr>"
+            + f"<td>{note}</td>{not_ok_cell}<td>{flags_text}</td></tr>"
         )
     if not rows:
         return ""
@@ -2075,7 +2538,7 @@ def render_case_table(
         '<div class="table-wrap"><table><thead><tr>'
         "<th>case</th><th>group</th>"
         + "".join(f"<th>{esc(rule.column)}</th>" for rule in rules)
-        + "<th>not measured</th><th>flags</th>"
+        + "<th>not measured</th><th>not ok</th><th>flags</th>"
         "</tr></thead><tbody>" + "".join(rows) + "</tbody></table></div>"
     )
 
@@ -2274,13 +2737,19 @@ def generate(
         family_dir = output_dir / family
         family_dir.mkdir(parents=True, exist_ok=True)
         (family_dir / "index.html").write_text(
-            render_family(family, family_views, previous_by_key, reference_map, THROUGHPUT, trend, "../"),
+            render_family(
+                family, family_views, previous_by_key, reference_map, THROUGHPUT, trend,
+                "../", git_repo,
+            ),
             encoding="utf-8",
         )
         latency_dir = family_dir / "latency"
         latency_dir.mkdir(parents=True, exist_ok=True)
         (latency_dir / "index.html").write_text(
-            render_family(family, family_views, previous_by_key, reference_map, LATENCY, trend, "../../"),
+            render_family(
+                family, family_views, previous_by_key, reference_map, LATENCY, trend,
+                "../../", git_repo,
+            ),
             encoding="utf-8",
         )
     has_history = False

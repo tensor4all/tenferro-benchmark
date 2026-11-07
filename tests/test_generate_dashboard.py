@@ -1027,7 +1027,7 @@ class PartialReceiptDashboardTests(unittest.TestCase):
         plain = self.generate("site-b")
 
         def updated(output):
-            return re.search(r"updated [^<]*", (output / "index.html").read_text()).group(0)
+            return re.search(r"dates: [^<]*", (output / "index.html").read_text()).group(0)
 
         self.assertEqual(updated(annotated), updated(plain))
         self.assertIn("2026-10-17", updated(annotated))
@@ -1083,6 +1083,159 @@ class DeclaredArmsTest(unittest.TestCase):
             [arms for _, arms in self.arms("gpu/dense")], [("eager", "trace"), ("eager", "trace")]
         )
         self.assertEqual(dashboard.undeclared_arm_labels("gpu/dense"), [])
+
+
+class CollectionDatesTest(unittest.TestCase):
+    """One page aggregates suites measured weeks apart; it says so per block.
+
+    The header used to print one ``date:`` (the newest suite) for the whole page,
+    which read as "everything here was measured then" while `gpu/permutation` and
+    friends were three weeks older.
+    """
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.result = self.root / "result"
+        self.benchmarks = self.root / "benchmarks" / "gpu"
+        self.benchmarks.mkdir(parents=True)
+        for suite_id in ("gpu/dense", "gpu/einsum"):
+            (self.benchmarks / f"{suite_id.split('/', 1)[1]}.yaml").write_text(
+                f"schema_version: 1\nsuite_id: {suite_id}\ndefaults:\n  regime: throughput\n"
+                "problems:\n  - {id: case_ok}\n"
+            )
+
+    def write_suite(self, suite_id, timestamp):
+        suite_dir = self.result / "nvidia-gpu" / suite_id.split("/", 1)[0]
+        suite_dir.mkdir(parents=True, exist_ok=True)
+        stem = suite_id.split("/", 1)[1]
+        report = suite_dir / f"{stem}.md"
+        report.write_text(f"# {suite_id}\n\nbody\n")
+        document = summary_document(
+            [
+                row("case_ok", "tenferro-cuda-eager", 20.0),
+                row("case_ok", "tenferro-cuda-trace", 30.0),
+                row("case_ok", "pytorch-cuda", 10.0),
+            ],
+            suite_id=suite_id,
+            timestamp=timestamp,
+        )
+        report.with_suffix(".summary.json").write_text(json.dumps(document))
+
+    def generate(self, name="site"):
+        output = self.root / name
+        self.assertEqual(
+            dashboard.generate(
+                self.result,
+                output,
+                baseline_dir=self.root / "baseline",
+                git_repo=None,
+                instances_dir=self.root / "instances",
+                benchmarks_dir=self.root / "benchmarks",
+                latest_profiles=None,
+            ),
+            0,
+        )
+        return output
+
+    def test_header_shows_the_range_and_the_old_suite_is_badged_stale(self):
+        self.write_suite("gpu/dense", "2026-10-17T10:53:37+00:00")
+        self.write_suite("gpu/einsum", "2026-11-05T03:43:18Z")
+        page = (self.generate() / "nvidia-gpu/gpu/dense.html").read_text()
+        family = (self.root / "site/gpu/index.html").read_text()
+
+        # The header is a range, not the newest suite standing for all of them.
+        self.assertIn("dates: 2026-10-17 – 2026-11-05 · 2 suites", family)
+        self.assertIn("1 suite older than 14 days (ages from 2026-11-05)", family)
+        self.assertNotIn("<span>date: ", family)
+        self.assertIn(
+            "This page mixes data collected on different dates; each block carries its own date.",
+            family,
+        )
+        self.assertIn("1 of 2 suites were collected more than 14 days before the newest", family)
+
+        # Each block carries its own date and age; only the old one is stale.
+        self.assertIn('collected 2026-10-17 · 19 days old</span> <span class="stale"', family)
+        self.assertIn('<span class="collected">collected 2026-11-05</span>', family)
+        self.assertEqual(family.count('<span class="stale" title='), 1)
+
+        # The suite page still prints its own date, and the numbers are untouched.
+        self.assertIn("2026-10-17", page)
+        self.assertIn('<span class="ratio ratio-much-slower">eager 2.00x</span>', page)
+
+    def test_two_generations_of_the_same_tree_are_byte_identical(self):
+        self.write_suite("gpu/dense", "2026-10-17T10:53:37+00:00")
+        self.write_suite("gpu/einsum", "2026-11-05T03:43:18Z")
+        first = self.generate("site-a")
+        second = self.generate("site-b")
+        for relative in ("index.html", "gpu/index.html", "gpu/latency/index.html"):
+            self.assertEqual(
+                (first / relative).read_bytes(),
+                (second / relative).read_bytes(),
+                relative,
+            )
+
+
+class FailedBackendTest(unittest.TestCase):
+    """A failed backend never removes the case, and never hides the arms that ran."""
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.result = self.root / "result"
+        self.benchmarks = self.root / "benchmarks" / "gpu"
+        self.benchmarks.mkdir(parents=True)
+        (self.benchmarks / "dense.yaml").write_text(
+            "schema_version: 1\nsuite_id: gpu/dense\ndefaults:\n  regime: throughput\n"
+            "problems:\n  - {id: case_ok}\n"
+        )
+        suite_dir = self.result / "nvidia-gpu" / "gpu"
+        suite_dir.mkdir(parents=True)
+        report = suite_dir / "dense.md"
+        report.write_text("# gpu/dense\n\nbody\n")
+        document = summary_document(
+            [
+                row("case_mixed", "tenferro-cuda-eager", 20.0),
+                row("case_mixed", "tenferro-cuda-trace", 0.0, status="failed",
+                    reason="CUDA error: misaligned address"),
+                row("case_mixed", "pytorch-cuda", 10.0),
+            ],
+            suite_id="gpu/dense",
+            timestamp="2026-10-17T00:00:00+00:00",
+        )
+        report.with_suffix(".summary.json").write_text(json.dumps(document))
+        output = self.root / "site"
+        dashboard.generate(
+            self.result,
+            output,
+            baseline_dir=self.root / "baseline",
+            git_repo=None,
+            instances_dir=self.root / "instances",
+            benchmarks_dir=self.root / "benchmarks",
+            latest_profiles=None,
+        )
+        self.suite_page = (output / "nvidia-gpu/gpu/dense.html").read_text()
+        self.family_page = (output / "gpu/index.html").read_text()
+
+    def test_the_case_keeps_its_row_and_the_successful_arm_keeps_its_number(self):
+        self.assertIn("<th>not ok</th>", self.suite_page)
+        self.assertIn("<code>case_mixed</code>", self.suite_page)
+        # The arm that ran is still a number, in the table and in the chart.
+        self.assertIn('<span class="ratio ratio-much-slower">eager 2.00x</span>', self.suite_page)
+        self.assertIn('class="bar-tenferro"', self.family_page)
+        # The arm that failed is named, with its reason, in the same row.
+        self.assertIn(
+            '<span class="fail">fail</span> <code>tenferro-cuda-trace</code> '
+            '<span class="muted">CUDA error: misaligned address</span>',
+            self.suite_page,
+        )
+        # And it is a fail line in the chart, not a silently missing bar.
+        self.assertIn(
+            'class="chart-fail">fail · tenferro-cuda-trace · CUDA error: misaligned address',
+            self.family_page,
+        )
 
 
 if __name__ == "__main__":

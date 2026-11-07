@@ -203,6 +203,24 @@ and the chart legend states the threshold and that the ratio is indicative.
 Either side being spread out is enough, since both medians feed the ratio. Set
 `DASHBOARD_NOISY_IQR_RATIO` to change the threshold for one generation.
 
+A page aggregates suites collected on different days, so the profile header reads
+`dates: 2026-10-17 – 2026-11-03 · 7 suites` plus `N suites older than 14 days`, and
+every suite block carries `collected <date> · <n> days old` with a `stale` badge
+past `14` days. Ages are measured from the newest collection on that page, which
+the header names, never from the build clock: the same committed results render
+the same HTML. When the page spans more than `7` days a top notice says the page
+mixes collection dates, and that a block's date and the `fail` badges inside it are
+two different axes. A report whose date was never recorded says so and names why
+(no summary sidecar) with the run stamp in its body or its commit date marked
+`estimated`.
+
+No case is dropped for an arm that failed. Every row whose `status` is not `ok`
+stays in the table's `not ok` column as a `fail` badge (or the recorded status name
+such as `unsupported`) with the backend and the reason, and the arms that did run
+keep their numbers and bars; the case is drawn in the chart with a `fail` line
+instead of a bar. `non-ok cases` counts are a summary of those rows, never a
+replacement for them.
+
 Anomaly flags are `eager/torch >= 1.5`, `eager/jax >= 3`, `trace/eager >= 1.3`,
 a genuine tenferro status anomaly (failed/error/verification failure/missing or
 an `unsupported` row without a recorded reason), or a `>= 1.25x` regression
