@@ -2324,6 +2324,8 @@ fn build_trace_graph_inner(
     gen: &str,
     upload_rt: Option<&CudaRuntime>,
 ) -> Result<(Vec<TracedTensor>, Vec<(TracedTensor, Tensor)>), TfError> {
+    // Every input of one graph must come from the same trace context.
+    let trace = TraceContext::new();
     // Helper: create a TracedTensor with concrete shape from tensor data.
     // If upload_rt is Some, the data is uploaded to GPU first.
     macro_rules! inp {
@@ -2334,7 +2336,7 @@ fn build_trace_graph_inner(
             } else {
                 cpu_d.duplicate()?
             };
-            let t = TracedTensor::from_tensor_concrete_shape(tensor)?;
+            let t = trace.from_tensor_concrete_shape(tensor)?;
             (t, cpu_d)
         }};
     }

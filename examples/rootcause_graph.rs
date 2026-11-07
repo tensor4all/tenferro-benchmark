@@ -2,13 +2,14 @@
 use std::{hint::black_box, time::Instant};
 use tenferro_ad::AdContext;
 use tenferro_linalg::TracedTensorLinalgExt;
-use tenferro_runtime::{GraphCompiler, TracedTensor};
+use tenferro_runtime::{GraphCompiler, TraceContext};
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ad = AdContext::builder()
         .with_semantic_extension_rules(tenferro_linalg::semantic_ad_rules()?)?
         .build()?;
-    let a = TracedTensor::from_vec_col_major(vec![2, 2], vec![3.0_f64, 0.2, 0.2, 4.0])?;
-    let b = TracedTensor::from_vec_col_major(vec![2, 1], vec![1.0_f64, 2.0])?;
+    let trace = TraceContext::new();
+    let a = trace.from_vec_col_major(vec![2, 2], vec![3.0_f64, 0.2, 0.2, 4.0])?;
+    let b = trace.from_vec_col_major(vec![2, 1], vec![1.0_f64, 2.0])?;
     let (q, r) = a.qr()?;
     let loss = (&q.reduce_sum(Some(&[0, 1]))? + &r.reduce_sum(Some(&[0, 1]))?)?;
     let qr_grad = ad.grad(&loss, &a)?;

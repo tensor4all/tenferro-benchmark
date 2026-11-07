@@ -1216,9 +1216,9 @@ fn run_small_latency_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
             "primal",
             "f64",
             &format!("{n}x{n}"),
-            || {
-                let a = traced_tensor(&[n, n], data_for_shape(&[n, n], 1));
-                let b = traced_tensor(&[n, n], data_for_shape(&[n, n], 2));
+            |trace| {
+                let a = traced_tensor(trace, &[n, n], data_for_shape(&[n, n], 1));
+                let b = traced_tensor(trace, &[n, n], data_for_shape(&[n, n], 2));
                 Ok(vec![traced_tensor::matmul(&a, &b)])
             },
         ));
@@ -1232,9 +1232,9 @@ fn run_small_latency_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
             "primal",
             "f64",
             &format!("{n}x{n}"),
-            || {
-                let a = traced_tensor(&[n, n], data_for_shape(&[n, n], 1));
-                let b = traced_tensor(&[n, n], data_for_shape(&[n, n], 2));
+            |trace| {
+                let a = traced_tensor(trace, &[n, n], data_for_shape(&[n, n], 1));
+                let b = traced_tensor(trace, &[n, n], data_for_shape(&[n, n], 2));
                 Ok(vec![traced_tensor::matmul(&a, &b)])
             },
         ));
@@ -1246,8 +1246,8 @@ fn run_small_latency_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
             "primal",
             "f64",
             &format!("{n}x{n}"),
-            || {
-                let a = traced_tensor(&[n, n], well_conditioned_matrix(n, 3));
+            |trace| {
+                let a = traced_tensor(trace, &[n, n], well_conditioned_matrix(n, 3));
                 let (u, s, vh) = a.svd()?;
                 Ok(vec![u, s, vh])
             },
@@ -1259,8 +1259,8 @@ fn run_small_latency_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
             "primal",
             "f64",
             &format!("{n}x{n}"),
-            || {
-                let a = traced_tensor(&[n, n], well_conditioned_matrix(n, 4));
+            |trace| {
+                let a = traced_tensor(trace, &[n, n], well_conditioned_matrix(n, 4));
                 let (q, r) = a.qr()?;
                 Ok(vec![q, r])
             },
@@ -1272,8 +1272,8 @@ fn run_small_latency_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
             "primal",
             "f64",
             &format!("{n}x{n}"),
-            || {
-                let a = traced_tensor(&[n, n], spd_matrix(n, 5));
+            |trace| {
+                let a = traced_tensor(trace, &[n, n], spd_matrix(n, 5));
                 let (w, v) = a.eigh()?;
                 Ok(vec![w, v])
             },
@@ -1286,9 +1286,9 @@ fn run_small_latency_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
                 "primal",
                 "f64",
                 &format!("{n}x{n},rhs={rhs_cols}"),
-                || {
-                    let a = traced_tensor(&[n, n], spd_matrix(n, 6));
-                    let b = traced_tensor(&[n, rhs_cols], data_for_shape(&[n, rhs_cols], 7));
+                |trace| {
+                    let a = traced_tensor(trace, &[n, n], spd_matrix(n, 6));
+                    let b = traced_tensor(trace, &[n, rhs_cols], data_for_shape(&[n, rhs_cols], 7));
                     Ok(vec![a.solve(&b)?])
                 },
             ));
@@ -1300,9 +1300,9 @@ fn run_small_latency_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
             "backward",
             "f64",
             &format!("{n}x{n}"),
-            || {
-                let a = traced_tensor(&[n, n], data_for_shape(&[n, n], 8));
-                let b = traced_tensor(&[n, n], data_for_shape(&[n, n], 9));
+            |trace| {
+                let a = traced_tensor(trace, &[n, n], data_for_shape(&[n, n], 8));
+                let b = traced_tensor(trace, &[n, n], data_for_shape(&[n, n], 9));
                 let y = traced_tensor::matmul(&a, &b);
                 let loss = y.reduce_sum(Some(&[0, 1]))?;
                 Ok(vec![grad(&loss, &a)?, grad(&loss, &b)?, loss])
@@ -1315,8 +1315,8 @@ fn run_small_latency_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
             "backward",
             "f64",
             &format!("{n}x{n}"),
-            || {
-                let a = traced_tensor(&[n, n], well_conditioned_matrix(n, 10));
+            |trace| {
+                let a = traced_tensor(trace, &[n, n], well_conditioned_matrix(n, 10));
                 let (_, s, _) = a.svd()?;
                 let loss = s.reduce_sum(Some(&[0]))?;
                 Ok(vec![grad(&loss, &a)?, loss])
@@ -1329,9 +1329,9 @@ fn run_small_latency_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
             "backward",
             "f64",
             &format!("{n}x{n},rhs=1"),
-            || {
-                let a = traced_tensor(&[n, n], spd_matrix(n, 11));
-                let b = traced_tensor(&[n, 1], data_for_shape(&[n, 1], 12));
+            |trace| {
+                let a = traced_tensor(trace, &[n, n], spd_matrix(n, 11));
+                let b = traced_tensor(trace, &[n, 1], data_for_shape(&[n, 1], 12));
                 let x = a.solve(&b)?;
                 let loss = x.reduce_sum(Some(&[0, 1]))?;
                 Ok(vec![grad(&loss, &a)?, grad(&loss, &b)?, loss])
@@ -1402,9 +1402,9 @@ fn run_large_throughput_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
             "primal",
             "f64",
             &format!("{n}x{n}"),
-            || {
-                let a = traced_tensor(&[n, n], data_for_shape(&[n, n], 21));
-                let b = traced_tensor(&[n, n], data_for_shape(&[n, n], 22));
+            |trace| {
+                let a = traced_tensor(trace, &[n, n], data_for_shape(&[n, n], 21));
+                let b = traced_tensor(trace, &[n, n], data_for_shape(&[n, n], 22));
                 Ok(vec![traced_tensor::matmul(&a, &b)])
             },
         ));
@@ -1420,9 +1420,9 @@ fn run_large_throughput_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
             "primal",
             "f64",
             &format!("{m}x{k} * {k}x{n}"),
-            || {
-                let a = traced_tensor(&[m, k], data_for_shape(&[m, k], 23));
-                let b = traced_tensor(&[k, n], data_for_shape(&[k, n], 24));
+            |trace| {
+                let a = traced_tensor(trace, &[m, k], data_for_shape(&[m, k], 23));
+                let b = traced_tensor(trace, &[k, n], data_for_shape(&[k, n], 24));
                 Ok(vec![traced_tensor::matmul(&a, &b)])
             },
         ));
@@ -1439,8 +1439,8 @@ fn run_large_throughput_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
             "primal",
             "f64",
             &format!("{n}x{n}"),
-            || {
-                let a = traced_tensor(&[n, n], well_conditioned_matrix(n, 25));
+            |trace| {
+                let a = traced_tensor(trace, &[n, n], well_conditioned_matrix(n, 25));
                 let (u, s, vh) = a.svd()?;
                 Ok(vec![u, s, vh])
             },
@@ -1452,8 +1452,8 @@ fn run_large_throughput_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
             "primal",
             "f64",
             &format!("{n}x{n}"),
-            || {
-                let a = traced_tensor(&[n, n], well_conditioned_matrix(n, 26));
+            |trace| {
+                let a = traced_tensor(trace, &[n, n], well_conditioned_matrix(n, 26));
                 let (q, r) = a.qr()?;
                 Ok(vec![q, r])
             },
@@ -1465,8 +1465,8 @@ fn run_large_throughput_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
             "primal",
             "f64",
             &format!("{n}x{n}"),
-            || {
-                let a = traced_tensor(&[n, n], spd_matrix(n, 27));
+            |trace| {
+                let a = traced_tensor(trace, &[n, n], spd_matrix(n, 27));
                 let (w, v) = a.eigh()?;
                 Ok(vec![w, v])
             },
@@ -1479,9 +1479,10 @@ fn run_large_throughput_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
                 "primal",
                 "f64",
                 &format!("{n}x{n},rhs={rhs_cols}"),
-                || {
-                    let a = traced_tensor(&[n, n], spd_matrix(n, 28));
-                    let b = traced_tensor(&[n, rhs_cols], data_for_shape(&[n, rhs_cols], 29));
+                |trace| {
+                    let a = traced_tensor(trace, &[n, n], spd_matrix(n, 28));
+                    let b =
+                        traced_tensor(trace, &[n, rhs_cols], data_for_shape(&[n, rhs_cols], 29));
                     Ok(vec![a.solve(&b)?])
                 },
             ));
@@ -1498,9 +1499,9 @@ fn run_large_throughput_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
             "primal",
             "f64",
             &format!("{n}x{n}"),
-            || {
-                let a = traced_tensor(&[n, n], data_for_shape(&[n, n], 30));
-                let b = traced_tensor(&[n, n], data_for_shape(&[n, n], 31));
+            |trace| {
+                let a = traced_tensor(trace, &[n, n], data_for_shape(&[n, n], 30));
+                let b = traced_tensor(trace, &[n, n], data_for_shape(&[n, n], 31));
                 Ok(vec![
                     traced_tensor::matmul(&a, &b).reduce_sum(Some(&[0, 1]))?
                 ])
@@ -1513,9 +1514,9 @@ fn run_large_throughput_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
             "backward",
             "f64",
             &format!("{n}x{n}"),
-            || {
-                let a = traced_tensor(&[n, n], data_for_shape(&[n, n], 32));
-                let b = traced_tensor(&[n, n], data_for_shape(&[n, n], 33));
+            |trace| {
+                let a = traced_tensor(trace, &[n, n], data_for_shape(&[n, n], 32));
+                let b = traced_tensor(trace, &[n, n], data_for_shape(&[n, n], 33));
                 let loss = traced_tensor::matmul(&a, &b).reduce_sum(Some(&[0, 1]))?;
                 Ok(vec![grad(&loss, &a)?, grad(&loss, &b)?, loss])
             },
@@ -1527,8 +1528,8 @@ fn run_large_throughput_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
             "backward",
             "f64",
             &format!("{n}x{n}"),
-            || {
-                let a = traced_tensor(&[n, n], well_conditioned_matrix(n, 34));
+            |trace| {
+                let a = traced_tensor(trace, &[n, n], well_conditioned_matrix(n, 34));
                 let (_, s, _) = a.svd()?;
                 let loss = s.reduce_sum(Some(&[0]))?;
                 Ok(vec![grad(&loss, &a)?, loss])
@@ -1541,9 +1542,9 @@ fn run_large_throughput_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
             "backward",
             "f64",
             &format!("{n}x{n},rhs=1"),
-            || {
-                let a = traced_tensor(&[n, n], spd_matrix(n, 35));
-                let b = traced_tensor(&[n, 1], data_for_shape(&[n, 1], 36));
+            |trace| {
+                let a = traced_tensor(trace, &[n, n], spd_matrix(n, 35));
+                let b = traced_tensor(trace, &[n, 1], data_for_shape(&[n, 1], 36));
                 let loss = a.solve(&b)?.reduce_sum(Some(&[0, 1]))?;
                 Ok(vec![grad(&loss, &a)?, grad(&loss, &b)?, loss])
             },
@@ -1620,9 +1621,9 @@ fn run_batched_small_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
             "primal",
             "f64",
             &format!("{n}x{n}xbatch{b} (native batch layout)"),
-            || {
-                let a = traced_tensor(&[n, n, b], data_for_shape(&[n, n, b], 41));
-                let rhs = traced_tensor(&[n, n, b], data_for_shape(&[n, n, b], 42));
+            |trace| {
+                let a = traced_tensor(trace, &[n, n, b], data_for_shape(&[n, n, b], 41));
+                let rhs = traced_tensor(trace, &[n, n, b], data_for_shape(&[n, n, b], 42));
                 Ok(vec![a.dot_general(&rhs, batched_matmul_config())?])
             },
         ));
@@ -1638,9 +1639,9 @@ fn run_batched_small_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
                 "primal",
                 "f64",
                 &shape,
-                || {
-                    let a = traced_tensor(&[n, n, b], data_for_shape(&[n, n, b], 41));
-                    let rhs = traced_tensor(&[n, n, b], data_for_shape(&[n, n, b], 42));
+                |trace| {
+                    let a = traced_tensor(trace, &[n, n, b], data_for_shape(&[n, n, b], 41));
+                    let rhs = traced_tensor(trace, &[n, n, b], data_for_shape(&[n, n, b], 42));
                     Ok(vec![a.dot_general(&rhs, batched_matmul_config())?])
                 },
             ));
@@ -1651,8 +1652,8 @@ fn run_batched_small_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
                 "primal",
                 "f64",
                 &shape,
-                || {
-                    let a = traced_tensor(&[n, n, b], batched_well_conditioned(n, b, 43));
+                |trace| {
+                    let a = traced_tensor(trace, &[n, n, b], batched_well_conditioned(n, b, 43));
                     let (u, s, vh) = a.svd()?;
                     Ok(vec![u, s, vh])
                 },
@@ -1664,8 +1665,8 @@ fn run_batched_small_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
                 "primal",
                 "f64",
                 &shape,
-                || {
-                    let a = traced_tensor(&[n, n, b], batched_well_conditioned(n, b, 44));
+                |trace| {
+                    let a = traced_tensor(trace, &[n, n, b], batched_well_conditioned(n, b, 44));
                     let (q, r) = a.qr()?;
                     Ok(vec![q, r])
                 },
@@ -1677,8 +1678,8 @@ fn run_batched_small_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
                 "primal",
                 "f64",
                 &shape,
-                || {
-                    let a = traced_tensor(&[n, n, b], batched_spd(n, b, 45));
+                |trace| {
+                    let a = traced_tensor(trace, &[n, n, b], batched_spd(n, b, 45));
                     let (w, v) = a.eigh()?;
                     Ok(vec![w, v])
                 },
@@ -1690,9 +1691,9 @@ fn run_batched_small_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
                 "primal",
                 "f64",
                 &format!("{shape},rhs=1"),
-                || {
-                    let a = traced_tensor(&[n, n, b], batched_spd(n, b, 46));
-                    let rhs = traced_tensor(&[n, 1, b], data_for_shape(&[n, 1, b], 47));
+                |trace| {
+                    let a = traced_tensor(trace, &[n, n, b], batched_spd(n, b, 46));
+                    let rhs = traced_tensor(trace, &[n, 1, b], data_for_shape(&[n, 1, b], 47));
                     Ok(vec![a.solve(&rhs)?])
                 },
             ));
@@ -1703,9 +1704,9 @@ fn run_batched_small_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
                 "backward",
                 "f64",
                 &shape,
-                || {
-                    let a = traced_tensor(&[n, n, b], data_for_shape(&[n, n, b], 48));
-                    let rhs = traced_tensor(&[n, n, b], data_for_shape(&[n, n, b], 49));
+                |trace| {
+                    let a = traced_tensor(trace, &[n, n, b], data_for_shape(&[n, n, b], 48));
+                    let rhs = traced_tensor(trace, &[n, n, b], data_for_shape(&[n, n, b], 49));
                     let loss = a
                         .dot_general(&rhs, batched_matmul_config())?
                         .reduce_sum(Some(&[0, 1, 2]))?;
@@ -1719,9 +1720,9 @@ fn run_batched_small_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
                 "backward",
                 "f64",
                 &format!("{shape},rhs=1"),
-                || {
-                    let a = traced_tensor(&[n, n, b], batched_spd(n, b, 50));
-                    let rhs = traced_tensor(&[n, 1, b], data_for_shape(&[n, 1, b], 51));
+                |trace| {
+                    let a = traced_tensor(trace, &[n, n, b], batched_spd(n, b, 50));
+                    let rhs = traced_tensor(trace, &[n, 1, b], data_for_shape(&[n, 1, b], 51));
                     let loss = a.solve(&rhs)?.reduce_sum(Some(&[0, 1, 2]))?;
                     Ok(vec![grad(&loss, &a)?, grad(&loss, &rhs)?, loss])
                 },
@@ -2104,14 +2105,16 @@ fn bench_trace_row(
     phase: &'static str,
     dtype: &'static str,
     shape: &str,
-    mut build: impl FnMut() -> tenferro_ad::error::Result<Vec<TracedTensor>>,
+    mut build: impl FnMut(&TraceContext) -> tenferro_ad::error::Result<Vec<TracedTensor>>,
 ) -> Row {
     if !benchmark_filter_matches(op, phase) {
         return filtered_row(suite, op, phase, dtype, shape);
     }
 
     let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
-        let outputs = build()?;
+        // Every traced value of one row belongs to this row's context.
+        let trace = TraceContext::new();
+        let outputs = build(&trace)?;
         let output_refs: Vec<&TracedTensor> = outputs.iter().collect();
         let mut compiler = GraphCompiler::new();
         let program = compiler.compile_many(&output_refs)?;
@@ -2319,8 +2322,8 @@ fn tangent_seed(matrix_seed: u64) -> u64 {
     matrix_seed.wrapping_add(TANGENT_SEED_OFFSET)
 }
 
-fn scalar_one() -> TracedTensor {
-    traced_tensor(&[], vec![1.0])
+fn scalar_one(trace: &TraceContext) -> TracedTensor {
+    traced_tensor(trace, &[], vec![1.0])
 }
 
 /// The eager fixtures of one AD case: the differentiated matrix, plus the fixed
@@ -2362,26 +2365,30 @@ impl LinalgAdLoss {
         }
     }
 
-    fn build(self, n: usize) -> tenferro_ad::error::Result<(TracedTensor, TracedTensor)> {
+    fn build(
+        self,
+        trace: &TraceContext,
+        n: usize,
+    ) -> tenferro_ad::error::Result<(TracedTensor, TracedTensor)> {
         match self {
             Self::SumSvdS { matrix_seed } => {
-                let a = traced_tensor(&[n, n], well_conditioned_matrix(n, matrix_seed));
+                let a = traced_tensor(trace, &[n, n], well_conditioned_matrix(n, matrix_seed));
                 let (_, s, _) = a.svd()?;
                 Ok((s.reduce_sum(Some(&[0]))?, a))
             }
             Self::SumQr { matrix_seed } => {
-                let a = traced_tensor(&[n, n], well_conditioned_matrix(n, matrix_seed));
+                let a = traced_tensor(trace, &[n, n], well_conditioned_matrix(n, matrix_seed));
                 let (q, r) = a.qr()?;
                 let loss = (&q.reduce_sum(Some(&[0, 1]))? + &r.reduce_sum(Some(&[0, 1]))?)?;
                 Ok((loss, a))
             }
             Self::SumEigh { matrix_seed } => {
-                let a = traced_tensor(&[n, n], spd_matrix(n, matrix_seed));
+                let a = traced_tensor(trace, &[n, n], spd_matrix(n, matrix_seed));
                 let (w, _) = a.eigh()?;
                 Ok((w.reduce_sum(Some(&[0]))?, a))
             }
             Self::SumLu { matrix_seed } => {
-                let a = traced_tensor(&[n, n], well_conditioned_matrix(n, matrix_seed));
+                let a = traced_tensor(trace, &[n, n], well_conditioned_matrix(n, matrix_seed));
                 let (_, l, u, _) = a.lu()?;
                 let loss = (&l.reduce_sum(Some(&[0, 1]))? + &u.reduce_sum(Some(&[0, 1]))?)?;
                 Ok((loss, a))
@@ -2391,8 +2398,12 @@ impl LinalgAdLoss {
                 rhs_seed,
                 rhs_cols,
             } => {
-                let a = traced_tensor(&[n, n], spd_matrix(n, matrix_seed));
-                let b = traced_tensor(&[n, rhs_cols], data_for_shape(&[n, rhs_cols], rhs_seed));
+                let a = traced_tensor(trace, &[n, n], spd_matrix(n, matrix_seed));
+                let b = traced_tensor(
+                    trace,
+                    &[n, rhs_cols],
+                    data_for_shape(&[n, rhs_cols], rhs_seed),
+                );
                 let x = a.solve(&b)?;
                 Ok((x.reduce_sum(Some(&[0, 1]))?, a))
             }
@@ -2484,9 +2495,9 @@ fn push_linalg_jvp_vjp_trace_benches(
         "jvp",
         "f64",
         shape,
-        || {
-            let (output, wrt) = loss.build(n)?;
-            let tangent = traced_tensor(&[n, n], data_for_shape(&[n, n], tangent_seed));
+        |trace| {
+            let (output, wrt) = loss.build(trace, n)?;
+            let tangent = traced_tensor(trace, &[n, n], data_for_shape(&[n, n], tangent_seed));
             let derivative = jvp(&output, &wrt, &tangent)?;
             Ok(vec![output, derivative])
         },
@@ -2498,9 +2509,9 @@ fn push_linalg_jvp_vjp_trace_benches(
         "vjp",
         "f64",
         shape,
-        || {
-            let (output, wrt) = loss.build(n)?;
-            let derivative = vjp(&output, &wrt, &scalar_one())?;
+        |trace| {
+            let (output, wrt) = loss.build(trace, n)?;
+            let derivative = vjp(&output, &wrt, &scalar_one(trace))?;
             Ok(vec![output, derivative])
         },
     ));
@@ -2571,8 +2582,9 @@ fn tensor(shape: &[usize], data: Vec<f64>) -> Tensor {
     )
 }
 
-fn traced_tensor(shape: &[usize], data: Vec<f64>) -> TracedTensor {
-    TracedTensor::from_tensor_concrete_shape(tensor(shape, data))
+fn traced_tensor(trace: &TraceContext, shape: &[usize], data: Vec<f64>) -> TracedTensor {
+    trace
+        .from_tensor_concrete_shape(tensor(shape, data))
         .expect("benchmark tensor should produce a traced input")
 }
 
@@ -2939,8 +2951,9 @@ mod timing_tests {
             check(x.grad().unwrap().unwrap().as_slice::<f64>().unwrap(), &da);
             check(y.grad().unwrap().unwrap().as_slice::<f64>().unwrap(), &db);
 
-            let x = traced_tensor(&shape, a);
-            let y = traced_tensor(&shape, b);
+            let trace = TraceContext::new();
+            let x = traced_tensor(&trace, &shape, a);
+            let y = traced_tensor(&trace, &shape, b);
             let output = x.dot_general(&y, batched_matmul_config()).unwrap();
             let loss = output.reduce_sum(None).unwrap();
             let gx = grad(&loss, &x).unwrap();

@@ -1,7 +1,7 @@
 //! Public-operation regressions: prepared dispatch and batched GEMM routing.
 use super::*;
 use tenferro_gpu::cuda::cuda_runtime_engine_registration;
-use tenferro_runtime::{DType, ExecutionEngine, GraphCompiler, Runtime, TracedTensor};
+use tenferro_runtime::{DType, ExecutionEngine, GraphCompiler, Runtime, TraceContext};
 
 pub(super) fn decode(p: &Value, timing: &Timing, device: usize) -> Result<CaseOutcome> {
     let (din, dout, len) = (
@@ -38,8 +38,9 @@ pub(super) fn decode(p: &Value, timing: &Timing, device: usize) -> Result<CaseOu
         check_tol(worst, 1e-3, "decode scalar oracle")
     };
     let (error, measurement) = if arm == "prepared" {
-        let tx = TracedTensor::input_concrete_shape(DType::F32, &[din, len])?;
-        let tw = TracedTensor::input_concrete_shape(DType::F32, &[din, dout])?;
+        let trace = TraceContext::new();
+        let tx = trace.input_concrete_shape(DType::F32, &[din, len])?;
+        let tw = trace.input_concrete_shape(DType::F32, &[din, dout])?;
         let ty = tx.dot_general(&tw, cfg)?;
         let program = GraphCompiler::new().compile_with_input_specs(
             &ty,
