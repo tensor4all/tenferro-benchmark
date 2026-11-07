@@ -464,6 +464,10 @@ jobs:
 
       - name: Run GPU benchmark suite
         id: collect
+        # A red collection is normal: the script keeps measuring after a failing
+        # case or suite, writes every row it did measure with the reason for the
+        # ones it did not, and only then exits non-zero. The packaging and upload
+        # steps below run with `if: always()`, so a red run still publishes.
         env:
           # Only an explicit dispatch narrows the arms. An empty value keeps the
           # scheduled run on the routine manifest's own set, so it still runs the

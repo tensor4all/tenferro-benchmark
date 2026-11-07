@@ -276,8 +276,12 @@ def build_summary(
         _suite, benchmark, _shape = problem_meta(record["problem_id"])
         return benchmark
 
+    rows = report_summary.rows_from_gpu_records(records, group=group)
+    rows += report_summary.rows_for_unrecorded_cases(
+        rows, report_summary.planned_case_ids(run_metadata), suite_id=header["suite_id"]
+    )
     return report_summary.build_document(
-        report_summary.rows_from_gpu_records(records, group=group),
+        rows,
         target_profile=header["target_profile"],
         suite_id=header["suite_id"],
         timestamp=header["timestamp"],
