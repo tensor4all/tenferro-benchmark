@@ -22,7 +22,7 @@ use tenferro_linalg::{
     EagerSessionLinalgExt, LinalgBackend, TensorLinalgExt, TracedTensorLinalgExt,
 };
 use tenferro_runtime::{
-    ExecutionEngine, GraphCompiler, Runtime, TensorSessionOpsExt, TracedTensor,
+    ExecutionEngine, GraphCompiler, Runtime, TensorSessionOpsExt, TraceContext, TracedTensor,
 };
 use tenferro_tensor::{
     CompareDir, DType, DotGeneralAccumulation, DotGeneralConfig, Engine, GatherConfig, PadConfig,
@@ -1714,132 +1714,144 @@ fn well_conditioned_c64(n: usize, seed: u64) -> &'static Tensor {
     })
 }
 
-fn traced(tensor: &Tensor) -> BenchResult<TracedTensor> {
-    Ok(TracedTensor::from_tensor_concrete_shape(
-        tensor.duplicate()?,
-    )?)
+fn traced(trace: &TraceContext, tensor: &Tensor) -> BenchResult<TracedTensor> {
+    Ok(trace.from_tensor_concrete_shape(tensor.duplicate()?)?)
 }
 
 fn build_trace_case(case: &Case) -> BenchResult<Vec<TracedTensor>> {
     let one = |value| Ok(vec![value]);
+    // Every traced value of one case belongs to this case's context.
+    let trace = &TraceContext::new();
     if case.suite == BATCH_FAMILY_SUITE {
-        return build_batch_family_trace(&BatchFamilySpec::parse(case)?);
+        return build_batch_family_trace(trace, &BatchFamilySpec::parse(case)?);
     }
     match (case.suite, case.benchmark) {
-        ("cpu/elementwise_reduction", "add") => {
-            one(traced(tensor_f64(&[EW_FAST_N], 1))?.add(&traced(tensor_f64(&[EW_FAST_N], 2))?)?)
+        ("cpu/elementwise_reduction", "add") => one(traced(trace, tensor_f64(&[EW_FAST_N], 1))?
+            .add(&traced(trace, tensor_f64(&[EW_FAST_N], 2))?)?),
+        ("cpu/elementwise_reduction", "sub") => one(traced(trace, tensor_f64(&[EW_FAST_N], 1))?
+            .sub(&traced(trace, tensor_f64(&[EW_FAST_N], 2))?)?),
+        ("cpu/elementwise_reduction", "mul") => one(traced(trace, tensor_f64(&[EW_FAST_N], 1))?
+            .mul(&traced(trace, tensor_f64(&[EW_FAST_N], 2))?)?),
+        ("cpu/elementwise_reduction", "div") => one(traced(trace, tensor_f64(&[EW_FAST_N], 1))?
+            .div(&traced(trace, tensor_f64_positive(&[EW_FAST_N], 2))?)?),
+        ("cpu/elementwise_reduction", "rem") => one(traced(trace, tensor_f64(&[EW_N], 1))?
+            .rem(&traced(trace, tensor_f64_positive(&[EW_N], 2))?)?),
+        ("cpu/elementwise_reduction", "neg") => {
+            one(traced(trace, tensor_f64(&[EW_FAST_N], 1))?.neg()?)
         }
-        ("cpu/elementwise_reduction", "sub") => {
-            one(traced(tensor_f64(&[EW_FAST_N], 1))?.sub(&traced(tensor_f64(&[EW_FAST_N], 2))?)?)
+        ("cpu/elementwise_reduction", "abs") => {
+            one(traced(trace, tensor_f64(&[EW_FAST_N], 1))?.abs()?)
         }
-        ("cpu/elementwise_reduction", "mul") => {
-            one(traced(tensor_f64(&[EW_FAST_N], 1))?.mul(&traced(tensor_f64(&[EW_FAST_N], 2))?)?)
+        ("cpu/elementwise_reduction", "sign") => {
+            one(traced(trace, tensor_f64(&[EW_FAST_N], 1))?.sign()?)
         }
-        ("cpu/elementwise_reduction", "div") => one(traced(tensor_f64(&[EW_FAST_N], 1))?
-            .div(&traced(tensor_f64_positive(&[EW_FAST_N], 2))?)?),
-        ("cpu/elementwise_reduction", "rem") => {
-            one(traced(tensor_f64(&[EW_N], 1))?.rem(&traced(tensor_f64_positive(&[EW_N], 2))?)?)
-        }
-        ("cpu/elementwise_reduction", "neg") => one(traced(tensor_f64(&[EW_FAST_N], 1))?.neg()?),
-        ("cpu/elementwise_reduction", "abs") => one(traced(tensor_f64(&[EW_FAST_N], 1))?.abs()?),
-        ("cpu/elementwise_reduction", "sign") => one(traced(tensor_f64(&[EW_FAST_N], 1))?.sign()?),
         ("cpu/elementwise_reduction", "maximum") => {
-            one(traced(tensor_f64(&[EW_FAST_N], 1))?
-                .maximum(&traced(tensor_f64(&[EW_FAST_N], 2))?)?)
+            one(traced(trace, tensor_f64(&[EW_FAST_N], 1))?
+                .maximum(&traced(trace, tensor_f64(&[EW_FAST_N], 2))?)?)
         }
         ("cpu/elementwise_reduction", "minimum") => {
-            one(traced(tensor_f64(&[EW_FAST_N], 1))?
-                .minimum(&traced(tensor_f64(&[EW_FAST_N], 2))?)?)
+            one(traced(trace, tensor_f64(&[EW_FAST_N], 1))?
+                .minimum(&traced(trace, tensor_f64(&[EW_FAST_N], 2))?)?)
         }
-        ("cpu/elementwise_reduction", "compare_lt") => one(traced(tensor_f64(&[EW_FAST_N], 1))?
-            .compare(&traced(tensor_f64(&[EW_FAST_N], 2))?, CompareDir::Lt)?),
+        ("cpu/elementwise_reduction", "compare_lt") => {
+            one(traced(trace, tensor_f64(&[EW_FAST_N], 1))?
+                .compare(&traced(trace, tensor_f64(&[EW_FAST_N], 2))?, CompareDir::Lt)?)
+        }
         ("cpu/elementwise_reduction", "select") => one(TracedTensor::select(
-            &traced(tensor_bool(&[EW_FAST_N]))?,
-            &traced(tensor_f64(&[EW_FAST_N], 1))?,
-            &traced(tensor_f64(&[EW_FAST_N], 2))?,
+            &traced(trace, tensor_bool(&[EW_FAST_N]))?,
+            &traced(trace, tensor_f64(&[EW_FAST_N], 1))?,
+            &traced(trace, tensor_f64(&[EW_FAST_N], 2))?,
         )?),
         ("cpu/elementwise_reduction", "where_select") => one(TracedTensor::where_select(
-            &traced(tensor_bool(&[EW_FAST_N]))?,
-            &traced(tensor_f64(&[EW_FAST_N], 1))?,
-            &traced(tensor_f64(&[EW_FAST_N], 2))?,
+            &traced(trace, tensor_bool(&[EW_FAST_N]))?,
+            &traced(trace, tensor_f64(&[EW_FAST_N], 1))?,
+            &traced(trace, tensor_f64(&[EW_FAST_N], 2))?,
         )?),
-        ("cpu/elementwise_reduction", "clamp") => one(traced(tensor_f64(&[EW_N], 1))?.clamp(
-            &traced(tensor_f64_constant(&[EW_N], -0.5))?,
-            &traced(tensor_f64_constant(&[EW_N], 0.5))?,
-        )?),
-        ("cpu/elementwise_reduction", "exp") => one(traced(tensor_f64(&[EW_N], 1))?.exp()?),
+        ("cpu/elementwise_reduction", "clamp") => one(traced(trace, tensor_f64(&[EW_N], 1))?
+            .clamp(
+                &traced(trace, tensor_f64_constant(&[EW_N], -0.5))?,
+                &traced(trace, tensor_f64_constant(&[EW_N], 0.5))?,
+            )?),
+        ("cpu/elementwise_reduction", "exp") => one(traced(trace, tensor_f64(&[EW_N], 1))?.exp()?),
         ("cpu/elementwise_reduction", "log") => {
-            one(traced(tensor_f64_positive(&[EW_N], 1))?.log()?)
+            one(traced(trace, tensor_f64_positive(&[EW_N], 1))?.log()?)
         }
-        ("cpu/elementwise_reduction", "sin") => one(traced(tensor_f64(&[EW_N], 1))?.sin()?),
-        ("cpu/elementwise_reduction", "cos") => one(traced(tensor_f64(&[EW_N], 1))?.cos()?),
-        ("cpu/elementwise_reduction", "tanh") => one(traced(tensor_f64(&[EW_N], 1))?.tanh()?),
+        ("cpu/elementwise_reduction", "sin") => one(traced(trace, tensor_f64(&[EW_N], 1))?.sin()?),
+        ("cpu/elementwise_reduction", "cos") => one(traced(trace, tensor_f64(&[EW_N], 1))?.cos()?),
+        ("cpu/elementwise_reduction", "tanh") => {
+            one(traced(trace, tensor_f64(&[EW_N], 1))?.tanh()?)
+        }
         ("cpu/elementwise_reduction", "sqrt") => {
-            one(traced(tensor_f64_positive(&[EW_FAST_N], 1))?.sqrt()?)
+            one(traced(trace, tensor_f64_positive(&[EW_FAST_N], 1))?.sqrt()?)
         }
         ("cpu/elementwise_reduction", "rsqrt") => {
-            one(traced(tensor_f64_positive(&[EW_FAST_N], 1))?.rsqrt()?)
+            one(traced(trace, tensor_f64_positive(&[EW_FAST_N], 1))?.rsqrt()?)
         }
-        ("cpu/elementwise_reduction", "pow") => one(traced(tensor_f64_positive(&[EW_SLOW_N], 1))?
-            .pow(&traced(tensor_f64_constant(&[EW_SLOW_N], 1.5))?)?),
+        ("cpu/elementwise_reduction", "pow") => {
+            one(traced(trace, tensor_f64_positive(&[EW_SLOW_N], 1))?
+                .pow(&traced(trace, tensor_f64_constant(&[EW_SLOW_N], 1.5))?)?)
+        }
         ("cpu/elementwise_reduction", "expm1") => {
-            one(traced(tensor_f64(&[EW_SLOW_N], 1))?.expm1()?)
+            one(traced(trace, tensor_f64(&[EW_SLOW_N], 1))?.expm1()?)
         }
         ("cpu/elementwise_reduction", "log1p") => {
-            one(traced(tensor_f64_positive(&[EW_SLOW_N], 1))?.log1p()?)
+            one(traced(trace, tensor_f64_positive(&[EW_SLOW_N], 1))?.log1p()?)
         }
         ("cpu/elementwise_reduction", "chain_log1p_exp_mul") => {
-            let x = traced(tensor_f64_positive(&[EW_SLOW_N], 1))?.log1p()?;
+            let x = traced(trace, tensor_f64_positive(&[EW_SLOW_N], 1))?.log1p()?;
             let y = x.exp()?;
-            one(y.mul(&traced(tensor_f64(&[EW_SLOW_N], 2))?)?)
+            one(y.mul(&traced(trace, tensor_f64(&[EW_SLOW_N], 2))?)?)
         }
         ("cpu/elementwise_reduction", "reduce_sum_all") => {
-            one(traced(tensor_f64(&[8192, 4096], 1))?.reduce_sum(Some(&[0, 1]))?)
+            one(traced(trace, tensor_f64(&[8192, 4096], 1))?.reduce_sum(Some(&[0, 1]))?)
         }
         ("cpu/elementwise_reduction", "reduce_prod_all") => {
-            one(traced(tensor_f64_constant(&[8192, 4096], 1.000001))?.reduce_prod(Some(&[0, 1]))?)
+            one(traced(trace, tensor_f64_constant(&[8192, 4096], 1.000001))?
+                .reduce_prod(Some(&[0, 1]))?)
         }
         ("cpu/elementwise_reduction", "reduce_max_axis0") => {
-            one(traced(tensor_f64(&[2048, 2048], 1))?.reduce_max(Some(&[0]))?)
+            one(traced(trace, tensor_f64(&[2048, 2048], 1))?.reduce_max(Some(&[0]))?)
         }
         ("cpu/elementwise_reduction", "reduce_min_axis1") => {
-            one(traced(tensor_f64(&[4096, 4096], 1))?.reduce_min(Some(&[1]))?)
+            one(traced(trace, tensor_f64(&[4096, 4096], 1))?.reduce_min(Some(&[1]))?)
         }
         ("cpu/elementwise_reduction", "reduce_max_all") => {
-            one(traced(tensor_f64(&[8192, 4096], 1))?.reduce_max(Some(&[0, 1]))?)
+            one(traced(trace, tensor_f64(&[8192, 4096], 1))?.reduce_max(Some(&[0, 1]))?)
         }
         ("cpu/elementwise_reduction", "reduce_min_all") => {
-            one(traced(tensor_f64(&[8192, 4096], 1))?.reduce_min(Some(&[0, 1]))?)
+            one(traced(trace, tensor_f64(&[8192, 4096], 1))?.reduce_min(Some(&[0, 1]))?)
         }
         ("cpu/elementwise_reduction", "reduce_max_axis1") => {
-            one(traced(tensor_f64(&[2048, 2048], 1))?.reduce_max(Some(&[1]))?)
+            one(traced(trace, tensor_f64(&[2048, 2048], 1))?.reduce_max(Some(&[1]))?)
         }
         ("cpu/elementwise_reduction", "reduce_min_axis0") => {
-            one(traced(tensor_f64(&[2048, 2048], 1))?.reduce_min(Some(&[0]))?)
+            one(traced(trace, tensor_f64(&[2048, 2048], 1))?.reduce_min(Some(&[0]))?)
         }
         ("cpu/elementwise_reduction", "reduce_sum_axis0") => {
-            one(traced(tensor_f64(&[2048, 2048], 1))?.reduce_sum(Some(&[0]))?)
+            one(traced(trace, tensor_f64(&[2048, 2048], 1))?.reduce_sum(Some(&[0]))?)
         }
         ("cpu/elementwise_reduction", "reduce_sum_axis1") => {
-            one(traced(tensor_f64(&[2048, 2048], 1))?.reduce_sum(Some(&[1]))?)
+            one(traced(trace, tensor_f64(&[2048, 2048], 1))?.reduce_sum(Some(&[1]))?)
         }
         ("cpu/elementwise_reduction", "reduce_prod_axis0") => {
-            one(traced(tensor_f64_constant(&[2048, 2048], 1.000001))?.reduce_prod(Some(&[0]))?)
+            one(traced(trace, tensor_f64_constant(&[2048, 2048], 1.000001))?
+                .reduce_prod(Some(&[0]))?)
         }
         ("cpu/elementwise_reduction", "reduce_prod_axis1") => {
-            one(traced(tensor_f64_constant(&[2048, 2048], 1.000001))?.reduce_prod(Some(&[1]))?)
+            one(traced(trace, tensor_f64_constant(&[2048, 2048], 1.000001))?
+                .reduce_prod(Some(&[1]))?)
         }
         ("cpu/elementwise_reduction", "reduce_sum_squares_axis0") => {
-            one(traced(tensor_f64(&[2048, 2048], 1))?.reduce_sum_squares(Some(&[0]))?)
+            one(traced(trace, tensor_f64(&[2048, 2048], 1))?.reduce_sum_squares(Some(&[0]))?)
         }
         ("cpu/elementwise_reduction", "masked_log_softmax_axis1") => {
-            one(traced(tensor_f64(&[1024, 64], 1))?
-                .masked_log_softmax(&traced(tensor_bool(&[1024, 64]))?, 1)?)
+            one(traced(trace, tensor_f64(&[1024, 64], 1))?
+                .masked_log_softmax(&traced(trace, tensor_bool(&[1024, 64]))?, 1)?)
         }
         ("cpu/indexing_layout", "gather") => {
             const N: usize = 262_144;
-            one(traced(tensor_f64(&[N], 1))?.gather(
-                &traced(tensor_i64_indices(&[N], N))?,
+            one(traced(trace, tensor_f64(&[N], 1))?.gather(
+                &traced(trace, tensor_i64_indices(&[N], N))?,
                 GatherConfig {
                     offset_dims: vec![],
                     collapsed_slice_dims: vec![0],
@@ -1851,9 +1863,9 @@ fn build_trace_case(case: &Case) -> BenchResult<Vec<TracedTensor>> {
         }
         ("cpu/indexing_layout", "scatter") => {
             const N: usize = 262_144;
-            one(traced(tensor_f64_constant(&[N], 0.0))?.scatter(
-                &traced(tensor_i64_indices(&[N, 1], N))?,
-                &traced(tensor_f64(&[N], 2))?,
+            one(traced(trace, tensor_f64_constant(&[N], 0.0))?.scatter(
+                &traced(trace, tensor_i64_indices(&[N, 1], N))?,
+                &traced(trace, tensor_f64(&[N], 2))?,
                 ScatterConfig {
                     update_window_dims: vec![],
                     inserted_window_dims: vec![0],
@@ -1864,7 +1876,7 @@ fn build_trace_case(case: &Case) -> BenchResult<Vec<TracedTensor>> {
         }
         ("cpu/indexing_layout", "slice") => {
             const N: usize = 4_194_304;
-            one(traced(tensor_f64(&[N], 1))?.slice(SliceConfig {
+            one(traced(trace, tensor_f64(&[N], 1))?.slice(SliceConfig {
                 starts: vec![1024],
                 limits: vec![N - 1024],
                 strides: vec![2],
@@ -1872,136 +1884,147 @@ fn build_trace_case(case: &Case) -> BenchResult<Vec<TracedTensor>> {
         }
         ("cpu/indexing_layout", "dynamic_slice") => {
             const N: usize = 4_194_304;
-            one(traced(tensor_f64(&[N], 1))?
-                .dynamic_slice(&traced(tensor_i64_constant(&[1], 1024))?, &[N / 2])?)
+            one(traced(trace, tensor_f64(&[N], 1))?
+                .dynamic_slice(&traced(trace, tensor_i64_constant(&[1], 1024))?, &[N / 2])?)
         }
         ("cpu/indexing_layout", "pad") => {
             const N: usize = 2_097_152;
-            one(traced(tensor_f64(&[N], 1))?.pad(PadConfig {
+            one(traced(trace, tensor_f64(&[N], 1))?.pad(PadConfig {
                 edge_padding_low: vec![128],
                 edge_padding_high: vec![128],
                 interior_padding: vec![0],
             })?)
         }
         ("cpu/indexing_layout", "concatenate") => {
-            let a = traced(tensor_f64(&[1_048_576], 1))?;
-            let b = traced(tensor_f64(&[1_048_576], 2))?;
+            let a = traced(trace, tensor_f64(&[1_048_576], 1))?;
+            let b = traced(trace, tensor_f64(&[1_048_576], 2))?;
             one(TracedTensor::concatenate(&[&a, &b], 0)?)
         }
         ("cpu/indexing_layout", "reverse") => {
-            one(traced(tensor_f64(&[2_097_152], 1))?.reverse(&[0])?)
+            one(traced(trace, tensor_f64(&[2_097_152], 1))?.reverse(&[0])?)
         }
         ("cpu/structural_shape", "transpose") => {
-            one(traced(tensor_f64(&[4096, 4096], 1))?.transpose(&[1, 0])?)
+            one(traced(trace, tensor_f64(&[4096, 4096], 1))?.transpose(&[1, 0])?)
         }
         ("cpu/structural_shape", "reshape") => {
-            one(traced(tensor_f64(&[33_554_432], 1))?.reshape(&[8192, 4096])?)
+            one(traced(trace, tensor_f64(&[33_554_432], 1))?.reshape(&[8192, 4096])?)
         }
         ("cpu/structural_shape", "broadcast_in_dim") => {
-            one(traced(tensor_f64(&[8192, 1], 1))?.broadcast_in_dim(&[8192, 4096], &[0, 1])?)
+            one(traced(trace, tensor_f64(&[8192, 1], 1))?
+                .broadcast_in_dim(&[8192, 4096], &[0, 1])?)
         }
         ("cpu/structural_shape", "cast_f64_f32") => {
-            one(traced(tensor_f64(&[33_554_432], 1))?.cast(DType::F32)?)
+            one(traced(trace, tensor_f64(&[33_554_432], 1))?.cast(DType::F32)?)
         }
         ("cpu/structural_shape", "extract_diagonal") => {
-            one(traced(tensor_f64(&[8_388_608, 2, 2], 1))?.extract_diag(1, 2)?)
+            one(traced(trace, tensor_f64(&[8_388_608, 2, 2], 1))?.extract_diag(1, 2)?)
         }
         ("cpu/structural_shape", "embed_diagonal") => {
-            one(traced(tensor_f64(&[8192], 1))?.embed_diag(0, 1)?)
+            one(traced(trace, tensor_f64(&[8192], 1))?.embed_diag(0, 1)?)
         }
-        ("cpu/structural_shape", "tril") => one(traced(tensor_f64(&[4096, 4096], 1))?.tril(0)?),
-        ("cpu/structural_shape", "triu") => one(traced(tensor_f64(&[4096, 4096], 1))?.triu(0)?),
-        ("cpu/linalg_uncovered", "cholesky") => one(traced(spd(1536, 1))?.cholesky()?),
+        ("cpu/structural_shape", "tril") => {
+            one(traced(trace, tensor_f64(&[4096, 4096], 1))?.tril(0)?)
+        }
+        ("cpu/structural_shape", "triu") => {
+            one(traced(trace, tensor_f64(&[4096, 4096], 1))?.triu(0)?)
+        }
+        ("cpu/linalg_uncovered", "cholesky") => one(traced(trace, spd(1536, 1))?.cholesky()?),
         ("cpu/linalg_uncovered", "eig") => {
-            let (w, v) = traced(well_conditioned(160, 1))?.eig()?;
+            let (w, v) = traced(trace, well_conditioned(160, 1))?.eig()?;
             Ok(vec![w, v])
         }
-        ("cpu/linalg_uncovered", "eigvals") => one(traced(well_conditioned(192, 1))?.eigvals()?),
-        ("cpu/linalg_uncovered", "eigvalsh") => one(traced(spd(512, 1))?.eigvalsh()?),
+        ("cpu/linalg_uncovered", "eigvals") => {
+            one(traced(trace, well_conditioned(192, 1))?.eigvals()?)
+        }
+        ("cpu/linalg_uncovered", "eigvalsh") => one(traced(trace, spd(512, 1))?.eigvalsh()?),
         ("cpu/linalg_batched", "batched_triangular_solve") => {
             let n = batched_matrix_size(case).ok_or("invalid batched shape label")?;
-            one(traced(batched_lower_triangular(n, 1))?.triangular_solve(
-                &traced(tensor_f64(&[n, 1, LU_BATCH], 2))?,
+            one(
+                traced(trace, batched_lower_triangular(n, 1))?.triangular_solve(
+                    &traced(trace, tensor_f64(&[n, 1, LU_BATCH], 2))?,
+                    true,
+                    true,
+                    false,
+                    false,
+                )?,
+            )
+        }
+        ("cpu/linalg_uncovered", "triangular_solve") => {
+            one(traced(trace, lower_triangular(4096, 1))?.triangular_solve(
+                &traced(trace, tensor_f64(&[4096, 64], 2))?,
                 true,
                 true,
                 false,
                 false,
             )?)
         }
-        ("cpu/linalg_uncovered", "triangular_solve") => one(traced(lower_triangular(4096, 1))?
-            .triangular_solve(
-                &traced(tensor_f64(&[4096, 64], 2))?,
-                true,
-                true,
-                false,
-                false,
-            )?),
-        ("cpu/linalg_uncovered", "det") => one(traced(well_conditioned(1024, 1))?.det()?),
+        ("cpu/linalg_uncovered", "det") => one(traced(trace, well_conditioned(1024, 1))?.det()?),
         ("cpu/linalg_uncovered", "slogdet") => {
-            let (sign, logabsdet) = traced(well_conditioned(1024, 1))?.slogdet()?;
+            let (sign, logabsdet) = traced(trace, well_conditioned(1024, 1))?.slogdet()?;
             Ok(vec![sign, logabsdet])
         }
-        ("cpu/linalg_uncovered", "inv") => one(traced(well_conditioned(768, 1))?.inv()?),
-        ("cpu/linalg_uncovered", "pinv") => one(traced(tensor_f64(&[512, 256], 1))?.pinv()?),
+        ("cpu/linalg_uncovered", "inv") => one(traced(trace, well_conditioned(768, 1))?.inv()?),
+        ("cpu/linalg_uncovered", "pinv") => one(traced(trace, tensor_f64(&[512, 256], 1))?.pinv()?),
         ("cpu/linalg_uncovered", "pinv_with_rtol") => {
-            one(traced(tensor_f64(&[512, 256], 1))?.pinv_with_rtol(1e-12)?)
+            one(traced(trace, tensor_f64(&[512, 256], 1))?.pinv_with_rtol(1e-12)?)
         }
         ("cpu/linalg_uncovered", "lu") => {
-            let (p, l, u, pivots) = traced(well_conditioned(1024, 1))?.lu()?;
+            let (p, l, u, pivots) = traced(trace, well_conditioned(1024, 1))?.lu()?;
             Ok(vec![p, l, u, pivots])
         }
-        ("cpu/linalg_uncovered", "lstsq") => {
-            one(traced(tensor_f64(&[768, 384], 1))?.lstsq(&traced(tensor_f64(&[768, 16], 2))?)?)
-        }
+        ("cpu/linalg_uncovered", "lstsq") => one(traced(trace, tensor_f64(&[768, 384], 1))?
+            .lstsq(&traced(trace, tensor_f64(&[768, 16], 2))?)?),
         ("cpu/linalg_uncovered", "svd_full") => {
-            let (u, s, vt) = traced(tensor_f64(&[768, 384], 1))?.svd_full()?;
+            let (u, s, vt) = traced(trace, tensor_f64(&[768, 384], 1))?.svd_full()?;
             Ok(vec![u, s, vt])
         }
         ("cpu/linalg_uncovered", "norm_fro") => {
-            one(traced(tensor_f64(&[2048, 2048], 1))?.norm(None, Some(&[0, 1]), false)?)
+            one(traced(trace, tensor_f64(&[2048, 2048], 1))?.norm(None, Some(&[0, 1]), false)?)
         }
-        ("cpu/complex", "conj") => one(traced(tensor_c64(&[16_777_216], 1))?.conj()?),
-        ("cpu/complex", "mul") => {
-            one(traced(tensor_c64(&[8_388_608], 1))?.mul(&traced(tensor_c64(&[8_388_608], 2))?)?)
-        }
-        ("cpu/complex", "div") => one(traced(tensor_c64(&[8_388_608], 1))?.div(&traced(
+        ("cpu/complex", "conj") => one(traced(trace, tensor_c64(&[16_777_216], 1))?.conj()?),
+        ("cpu/complex", "mul") => one(traced(trace, tensor_c64(&[8_388_608], 1))?
+            .mul(&traced(trace, tensor_c64(&[8_388_608], 2))?)?),
+        ("cpu/complex", "div") => one(traced(trace, tensor_c64(&[8_388_608], 1))?.div(&traced(
+            trace,
             tensor_c64_constant(&[8_388_608], Complex64::new(1.5, 0.25)),
         )?)?),
-        ("cpu/complex", "exp") => one(traced(tensor_c64(&[4_194_304], 1))?.exp()?),
-        ("cpu/complex", "log") => {
-            one(traced(tensor_c64_constant(&[4_194_304], Complex64::new(1.5, 0.25)))?.log()?)
-        }
-        ("cpu/complex", "dot_general") => one(traced(tensor_c64(&[640, 640], 1))?.dot_general(
-            &traced(tensor_c64(&[640, 640], 2))?,
-            DotGeneralConfig {
-                lhs_contracting_dims: [1].into_iter().collect(),
-                rhs_contracting_dims: [0].into_iter().collect(),
-                lhs_batch_dims: [].into_iter().collect(),
-                rhs_batch_dims: [].into_iter().collect(),
-            },
-        )?),
-        ("cpu/complex", "tensordot") => one(traced(tensor_c64(&[640, 640], 1))?.tensordot(
-            &traced(tensor_c64(&[640, 640], 2))?,
+        ("cpu/complex", "exp") => one(traced(trace, tensor_c64(&[4_194_304], 1))?.exp()?),
+        ("cpu/complex", "log") => one(traced(
+            trace,
+            tensor_c64_constant(&[4_194_304], Complex64::new(1.5, 0.25)),
+        )?
+        .log()?),
+        ("cpu/complex", "dot_general") => one(traced(trace, tensor_c64(&[640, 640], 1))?
+            .dot_general(
+                &traced(trace, tensor_c64(&[640, 640], 2))?,
+                DotGeneralConfig {
+                    lhs_contracting_dims: [1].into_iter().collect(),
+                    rhs_contracting_dims: [0].into_iter().collect(),
+                    lhs_batch_dims: [].into_iter().collect(),
+                    rhs_batch_dims: [].into_iter().collect(),
+                },
+            )?),
+        ("cpu/complex", "tensordot") => one(traced(trace, tensor_c64(&[640, 640], 1))?.tensordot(
+            &traced(trace, tensor_c64(&[640, 640], 2))?,
             TensorDotAxes::Count(1),
         )?),
         ("cpu/complex", "svd") => {
-            let (u, s, vt) = traced(tensor_c64(&[160, 160], 1))?.svd()?;
+            let (u, s, vt) = traced(trace, tensor_c64(&[160, 160], 1))?.svd()?;
             Ok(vec![u, s, vt])
         }
         ("cpu/complex", "qr") => {
-            let (q, r) = traced(tensor_c64(&[256, 256], 1))?.qr()?;
+            let (q, r) = traced(trace, tensor_c64(&[256, 256], 1))?.qr()?;
             Ok(vec![q, r])
         }
         ("cpu/complex", "eig") => {
-            let (w, v) = traced(tensor_c64(&[112, 112], 1))?.eig()?;
+            let (w, v) = traced(trace, tensor_c64(&[112, 112], 1))?.eig()?;
             Ok(vec![w, v])
         }
-        ("cpu/complex", "solve") => {
-            one(traced(well_conditioned_c64(384, 1))?.solve(&traced(tensor_c64(&[384, 8], 2))?)?)
-        }
-        ("cpu/complex", "cholesky") => one(traced(hpd_c64(448, 1))?.cholesky()?),
+        ("cpu/complex", "solve") => one(traced(trace, well_conditioned_c64(384, 1))?
+            .solve(&traced(trace, tensor_c64(&[384, 8], 2))?)?),
+        ("cpu/complex", "cholesky") => one(traced(trace, hpd_c64(448, 1))?.cholesky()?),
         ("cpu/complex", "norm_fro") => {
-            one(traced(tensor_c64(&[2048, 1536], 1))?.norm(None, Some(&[0, 1]), false)?)
+            one(traced(trace, tensor_c64(&[2048, 1536], 1))?.norm(None, Some(&[0, 1]), false)?)
         }
         _ => Err(format!(
             "no trace benchmark implementation for {}/{}",
@@ -3384,10 +3407,13 @@ fn batch_family_in_session(
     Ok(())
 }
 
-fn build_batch_family_trace(spec: &BatchFamilySpec) -> BenchResult<Vec<TracedTensor>> {
-    let input = traced(spec.input())?;
+fn build_batch_family_trace(
+    trace: &TraceContext,
+    spec: &BatchFamilySpec,
+) -> BenchResult<Vec<TracedTensor>> {
+    let input = traced(trace, spec.input())?;
     Ok(match spec.family {
-        BatchFamily::Solve => vec![input.solve(&traced(spec.rhs())?)?],
+        BatchFamily::Solve => vec![input.solve(&traced(trace, spec.rhs())?)?],
         BatchFamily::Cholesky => vec![input.cholesky()?],
         BatchFamily::Qr => {
             let (q, r) = input.qr()?;

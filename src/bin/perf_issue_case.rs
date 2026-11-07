@@ -28,7 +28,7 @@ use tenferro_cpu::{runtime_engine_id, runtime_engine_registration, CpuEngine};
 use tenferro_fft::{FftExecutor, FftNorm};
 use tenferro_linalg::{TensorLinalgExt, TracedTensorLinalgExt};
 use tenferro_runtime::{
-    DType, ExecutionEngine, GraphCompiler, Runtime, TensorSessionOpsExt, TracedTensor,
+    DType, ExecutionEngine, GraphCompiler, Runtime, TensorSessionOpsExt, TraceContext, TracedTensor,
 };
 use tenferro_tensor::{
     ContractionScalar, DotGeneralConfig, Engine, GatherConfig, SliceConfig, Tensor, TensorRead,
@@ -594,7 +594,9 @@ fn decode_projection_view_operand(
         backend.with_backend_session(|s| -> Result<(f64, Measurement)> {
             let run = |s: &mut dyn Engine| -> Result<Tensor> {
                 let rhs = match arm {
-                    "prepared-view" => TensorRead::from_view(w_view.tensor_view()),
+                    "prepared-view" => TensorRead::from_view(
+                        w_view.tensor_view().ok_or("decode view operand has no host view")?,
+                    ),
                     "prepared-contiguous" => TensorRead::from_tensor(&w_contiguous),
                     _ => return Err(format!("unknown decode view operand arm {arm}").into()),
                 };
@@ -1137,7 +1139,7 @@ fn tanh_chain(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
     let x_t = Tensor::from_vec_col_major(vec![rows, cols], data.clone())?;
     let (error, measurement, timer, outside) = match arm {
         "compiled-prepared" => {
-            let x_in = TracedTensor::input_concrete_shape(DType::F32, &[rows, cols])?;
+            let x_in = TraceContext::new().input_concrete_shape(DType::F32, &[rows, cols])?;
             let mut y = x_in.clone();
             for _ in 0..chain {
                 y = y.tanh()?;
@@ -1605,7 +1607,7 @@ fn trace_metadata_case(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
             s.neg(&y)
         })?
     } else {
-        let input = TracedTensor::from_tensor_concrete_shape(x)?;
+        let input = TraceContext::new().from_tensor_concrete_shape(x)?;
         let mut y = input;
         let mut views = Vec::new();
         for _ in 0..steps { y = y.triu(0)?.transpose(&[1, 0])?; if arm == "trace-outputs" { views.push(y.clone()); } }
@@ -2109,16 +2111,17 @@ fn small_grad_trace(params: &Value, timing: &Timing, threads: usize) -> Result<C
     let ad = AdContext::builder()
         .with_semantic_extension_rules(tenferro_linalg::semantic_ad_rules()?)?
         .build()?;
-    let a = TracedTensor::from_tensor_concrete_shape(Tensor::from_vec_col_major(
+    let trace = TraceContext::new();
+    let a = trace.from_tensor_concrete_shape(Tensor::from_vec_col_major(
         vec![n, n],
         data.clone(),
     )?)?;
-    let b = TracedTensor::from_tensor_concrete_shape(Tensor::from_vec_col_major(
+    let b = trace.from_tensor_concrete_shape(Tensor::from_vec_col_major(
         vec![n, n],
         rhs.clone(),
     )?)?;
     let loss = small_ad_loss_traced(op, &a, &b)?;
-    let seed = TracedTensor::from_tensor_concrete_shape(Tensor::from_vec_col_major(
+    let seed = trace.from_tensor_concrete_shape(Tensor::from_vec_col_major(
         Vec::<usize>::new(),
         vec![1.0],
     )?)?;
@@ -2427,7 +2430,9 @@ fn axpby_strided_source(params: &Value, timing: &Timing, threads: usize) -> Resu
                 backend.with_backend_session(|s| -> Result<(f64, Measurement)> {
                     let run = |s: &mut dyn Engine, dst: &mut Tensor| -> Result<()> {
                         let read = if strided {
-                            TensorRead::from_view(x_view.tensor_view())
+                            TensorRead::from_view(
+                                x_view.tensor_view().ok_or("strided source has no host view")?,
+                            )
                         } else {
                             TensorRead::from_tensor(&x_contiguous)
                         };

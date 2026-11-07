@@ -331,9 +331,16 @@ pub fn run(case_id: &str) -> Result<(), BoxError> {
         workers,
         threads,
     )?;
+    // Setup: every prepared view must expose a host read before the clock starts.
     let prepared_reads = views
         .as_ref()
-        .map(|v| v.iter().map(TensorValue::tensor_read).collect::<Vec<_>>());
+        .map(|v| {
+            v.iter()
+                .map(TensorValue::tensor_read)
+                .collect::<Option<Vec<_>>>()
+                .ok_or("a prepared view value has no host tensor read")
+        })
+        .transpose()?;
     let residual;
     let mut initial_public_call_ns = 0;
     let measured = if tier.starts_with("eager") {

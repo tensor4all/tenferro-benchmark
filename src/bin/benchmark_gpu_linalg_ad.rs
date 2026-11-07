@@ -16,7 +16,7 @@ use tenferro_gpu::cuda::{
     CudaRuntime,
 };
 use tenferro_linalg::TracedTensorLinalgExt;
-use tenferro_runtime::{ExecutionEngine, GraphCompiler, Runtime, TracedTensor};
+use tenferro_runtime::{ExecutionEngine, GraphCompiler, Runtime, TraceContext, TracedTensor};
 use tenferro_tensor::{DeviceKind, GpuBackendKind, Tensor};
 
 /// Backend identity of the deferred-batch throughput mode.
@@ -572,16 +572,19 @@ fn build_ad_outputs(
     loss: &LossKind,
     rt: &CudaRuntime,
 ) -> Result<Vec<TracedTensor>, String> {
-    let (output, wrt) = build_loss(n, loss, rt)?;
+    // The loss, its input and the AD seed all belong to one trace context.
+    let trace = TraceContext::new();
+    let (output, wrt) = build_loss(&trace, n, loss, rt)?;
     match phase {
         "jvp" => {
             let tangent_seed = tangent_seed(loss.matrix_seed());
-            let tangent = upload_traced(rt, &[n, n], data_for_shape(&[n, n], tangent_seed))?;
+            let tangent =
+                upload_traced(&trace, rt, &[n, n], data_for_shape(&[n, n], tangent_seed))?;
             let out = jvp(&output, &wrt, &tangent).map_err(|e| format!("jvp: {e}"))?;
             Ok(vec![output, out])
         }
         "vjp" => {
-            let cotangent = upload_traced(rt, &[], vec![1.0])?;
+            let cotangent = upload_traced(&trace, rt, &[], vec![1.0])?;
             let out = vjp(&output, &wrt, &cotangent).map_err(|e| format!("vjp: {e}"))?;
             Ok(vec![output, out])
         }
@@ -602,13 +605,14 @@ impl LossKind {
 }
 
 fn build_loss(
+    trace: &TraceContext,
     n: usize,
     loss: &LossKind,
     rt: &CudaRuntime,
 ) -> Result<(TracedTensor, TracedTensor), String> {
     match *loss {
         LossKind::SvdS { matrix_seed } => {
-            let a = upload_traced(rt, &[n, n], well_conditioned_matrix(n, matrix_seed))?;
+            let a = upload_traced(trace, rt, &[n, n], well_conditioned_matrix(n, matrix_seed))?;
             let (_, s, _) = a.svd().map_err(|e| format!("svd: {e}"))?;
             let out = s
                 .reduce_sum(Some(&[0]))
@@ -616,7 +620,7 @@ fn build_loss(
             Ok((out, a))
         }
         LossKind::Qr { matrix_seed } => {
-            let a = upload_traced(rt, &[n, n], well_conditioned_matrix(n, matrix_seed))?;
+            let a = upload_traced(trace, rt, &[n, n], well_conditioned_matrix(n, matrix_seed))?;
             let (q, r) = a.qr().map_err(|e| format!("qr: {e}"))?;
             let q_sum = q
                 .reduce_sum(Some(&[0, 1]))
@@ -628,7 +632,7 @@ fn build_loss(
             Ok((loss, a))
         }
         LossKind::Eigh { matrix_seed } => {
-            let a = upload_traced(rt, &[n, n], spd_matrix(n, matrix_seed))?;
+            let a = upload_traced(trace, rt, &[n, n], spd_matrix(n, matrix_seed))?;
             let (w, _) = a.eigh().map_err(|e| format!("eigh: {e}"))?;
             let out = w
                 .reduce_sum(Some(&[0]))
@@ -636,7 +640,7 @@ fn build_loss(
             Ok((out, a))
         }
         LossKind::Lu { matrix_seed } => {
-            let a = upload_traced(rt, &[n, n], well_conditioned_matrix(n, matrix_seed))?;
+            let a = upload_traced(trace, rt, &[n, n], well_conditioned_matrix(n, matrix_seed))?;
             let (_, l, u, _) = a.lu().map_err(|e| format!("lu: {e}"))?;
             let l_sum = l
                 .reduce_sum(Some(&[0, 1]))
@@ -652,8 +656,13 @@ fn build_loss(
             rhs_seed,
             rhs_cols,
         } => {
-            let a = upload_traced(rt, &[n, n], spd_matrix(n, matrix_seed))?;
-            let b = upload_traced(rt, &[n, rhs_cols], data_for_shape(&[n, rhs_cols], rhs_seed))?;
+            let a = upload_traced(trace, rt, &[n, n], spd_matrix(n, matrix_seed))?;
+            let b = upload_traced(
+                trace,
+                rt,
+                &[n, rhs_cols],
+                data_for_shape(&[n, rhs_cols], rhs_seed),
+            )?;
             let x = a.solve(&b).map_err(|e| format!("solve: {e}"))?;
             let out = x
                 .reduce_sum(Some(&[0, 1]))
@@ -664,13 +673,16 @@ fn build_loss(
 }
 
 fn upload_traced(
+    trace: &TraceContext,
     rt: &CudaRuntime,
     shape: &[usize],
     data: Vec<f64>,
 ) -> Result<TracedTensor, String> {
     let cpu = tensor_f64(shape, data);
     let gpu = upload_tensor(rt, &cpu).map_err(|e| format!("upload: {e}"))?;
-    TracedTensor::from_tensor_concrete_shape(gpu).map_err(|e| format!("trace input: {e}"))
+    trace
+        .from_tensor_concrete_shape(gpu)
+        .map_err(|e| format!("trace input: {e}"))
 }
 
 fn ad_context() -> &'static AdContext {

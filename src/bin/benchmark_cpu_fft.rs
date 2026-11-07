@@ -13,7 +13,7 @@ use tenferro_cpu::CpuEngine;
 use tenferro_fft::{
     EagerSessionFftExt, FftExecutor, FftNorm, TensorFftExt, TensorReadFftExt, TracedTensorFftExt,
 };
-use tenferro_runtime::{ExecutionEngine, GraphCompiler, Runtime, TracedTensor};
+use tenferro_runtime::{ExecutionEngine, GraphCompiler, Runtime, TraceContext};
 use tenferro_tensor::{Engine, Tensor, TensorRead};
 
 type BenchResult<T> = Result<T, Box<dyn std::error::Error>>;
@@ -300,7 +300,7 @@ fn time_case(
 fn time_trace_case(args: &Args, op: Op, input: &Tensor, n: usize) -> BenchResult<(f64, f64)> {
     // Constant construction, graph construction, compilation, runtime setup,
     // and FFT planning warmup are all outside the measured region.
-    let traced = TracedTensor::from_tensor_concrete_shape(input.duplicate()?)?;
+    let traced = TraceContext::new().from_tensor_concrete_shape(input.duplicate()?)?;
     let output = match op {
         Op::Fft => traced.fft(None, -1, FftNorm::Backward)?,
         Op::Ifft => traced.ifft(None, -1, FftNorm::Backward)?,
