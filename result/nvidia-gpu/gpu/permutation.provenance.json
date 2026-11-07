@@ -1,0 +1,61 @@
+{
+  "case_outcomes": {
+    "failed": {
+      "cases": [],
+      "count": 0
+    },
+    "skipped": {
+      "cases": [],
+      "count": 0
+    },
+    "unsupported": {
+      "cases": [],
+      "count": 0
+    }
+  },
+  "collected_at": "2026-11-07T20:17:28+00:00",
+  "files": {
+    "data/results/nvidia-gpu/gpu/permutation/20261107_201728/python_output_memcpy-d2d.jsonl": "be213f0f970eb01ae25d6e9481dd35981e99e7697ce2cdf6dfaafaca6b5ee767",
+    "data/results/nvidia-gpu/gpu/permutation/20261107_201728/python_output_pytorch-cuda.jsonl": "9aafd2fb5d9d253b09e6f65cec894f73e2006449a3e68b07098b023d4c1e2b49",
+    "data/results/nvidia-gpu/gpu/permutation/20261107_201728/records.jsonl": "407c606bcad8ebb672415da226f2293acbfcb137c34e17bbc3e2cf2bea3b9de4",
+    "data/results/nvidia-gpu/gpu/permutation/20261107_201728/report.md": "662061fe42e440cf3781fab52787d5a1e61302ce0c6e40fd12e1cc512dc4325b",
+    "data/results/nvidia-gpu/gpu/permutation/20261107_201728/report.summary.json": "f9e40132c01c2708de5c22395bc9f7f6b1e1db8e313cbb81e2ae62efa52cf737",
+    "data/results/nvidia-gpu/gpu/permutation/20261107_201728/run.yaml": "dfcc85ef372cc22eb0967ba3d554459380affb9814068df93ac50c6f4b46c6a8",
+    "data/results/nvidia-gpu/gpu/permutation/20261107_201728/rust_output.jsonl": "00a2e33d674a5176964429c528152c9fb2a59b50402d3d2cbe4aa24b357daf82",
+    "data/results/nvidia-gpu/gpu/permutation/20261107_201728/wall_backends.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "data/results/nvidia-gpu/gpu/permutation/20261107_201728/wall_command.json": "fbfb18b9e9c66700cfe3407dac1bdf61f0e62ebaff9df230d72431fc1e32fd86",
+    "result/nvidia-gpu/gpu/permutation.md": "662061fe42e440cf3781fab52787d5a1e61302ce0c6e40fd12e1cc512dc4325b",
+    "result/nvidia-gpu/gpu/permutation.summary.json": "f9e40132c01c2708de5c22395bc9f7f6b1e1db8e313cbb81e2ae62efa52cf737"
+  },
+  "hardware": {
+    "cpu": "AMD EPYC 7742 64-Core Processor",
+    "gpu": "NVIDIA A100-SXM4-80GB",
+    "host": "86889f3412c3"
+  },
+  "harness_commit": "e7860ca369657a92a929026378d2a4c11adaae16",
+  "missing_suites": [],
+  "schema_version": 1,
+  "source": {
+    "artifact_id": 13589928167,
+    "artifact_kind": "results",
+    "artifact_name": "runpod-gpu-benchmark-42409330136-attempt1",
+    "artifact_url": "https://github.com/tensor4all/tenferro-benchmark/actions/runs/42409330136/artifacts/13589928167",
+    "conclusion": "failure",
+    "created_at": "2026-11-07T20:45:51Z",
+    "digest": "sha256:11393f42dbe20dda28798fcd439cf98640d2a909e52b3d7160aaf7d5fe5b6322",
+    "event": "schedule",
+    "expires_at": "2027-02-05T20:05:19Z",
+    "head_branch": "main",
+    "head_sha": "e7860ca369657a92a929026378d2a4c11adaae16",
+    "repository": "tensor4all/tenferro-benchmark",
+    "run_attempt": 1,
+    "run_id": 42409330136,
+    "run_started_at": "2026-11-07T20:05:19Z",
+    "run_url": "https://github.com/tensor4all/tenferro-benchmark/actions/runs/42409330136",
+    "workflow_path": ".github/workflows/benchmark-runpod-gpu.yml"
+  },
+  "status": "partial",
+  "suite_id": "gpu/permutation",
+  "target_profile": "nvidia-gpu",
+  "tenferro_commit": "ffd352bdb9f98537be747101bc278db8a50a1595"
+}
