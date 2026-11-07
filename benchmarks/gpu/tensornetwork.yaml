@@ -3,6 +3,7 @@ suite_id: gpu/tensornetwork
 title: GPU Tensor Network Benchmarks
 description: Tree-guided tensor network contraction for tenferro-rs vs GPU framework comparison.
 defaults:
+  regime: throughput
   device: {kind: cuda, ordinal: 0}
   layout: {tenferro: col_major, framework: row_major_contiguous}
   run: {warmups: 3, runs: 10, timing_scope: steady_state_host_api_plus_device_sync}
@@ -18,6 +19,12 @@ problems:
   - id: tensornetwork_permutation_optimized_f32
     family: tensornetwork
     op: tensor_network_contract
+    regime: throughput
+    floor_exempt: >-
+      The TensorNetworkBenchmarks fixture is an external submodule, so the
+      contracted element count is not derivable from this declaration. The
+      published medians are 78-131 ms across four arms, three orders of magnitude
+      above the per-call dispatch scale, so the family floor cannot bind here.
     intent: Compare tenferro-rs CUDA backends against PyTorch on the TensorNetworkBenchmarks tree.
     notes: >-
       Uses the complete TensorNetworkBenchmarks tree and original F32 fixture.

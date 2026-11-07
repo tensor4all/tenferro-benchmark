@@ -34,9 +34,22 @@ latency and a throughput number in one row, ratio, average or summary: a
 throughput row is a batched measurement and is not a single-call cost.
 
 The suite also declares the regime in the YAML (`defaults.regime: throughput`
-and `regime: throughput` on each problem), per the repository regime rule. The
-AD runner selects the deferred route from the problem's `regime`; the dense
-runner selects it from the backend name (`tenferro-cuda-trace-deferred-batch`).
+and `regime` on each problem), per the repository regime rule. The AD runner
+selects the deferred route from `measure`; the dense runner selects it from the
+backend name (`tenferro-cuda-trace-deferred-batch`).
+
+The timing mode and the workload class are separate declarations, because they
+are separate facts:
+
+- `defaults.measure: deferred_batch` says *how* the suite times its cases (one
+  retirement per K calls). It is what the AD runner follows now, falling back to
+  `regime` for suites that do not declare it.
+- `regime` says *what* each case measures. Both cases in
+  `gpu/linalg_ad_throughput` are 256×256, below the `linalg_ad` floor in
+  `docs/regime-floors.md`, so their regime is `latency`: a 256² QR JVP costs
+  1.43 ms per call while the factorisation it wraps costs tens of µs. They are
+  published on the latency page, still timed with the deferred batch, and the
+  suite page says so.
 
 ## Batch size
 

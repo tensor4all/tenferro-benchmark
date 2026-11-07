@@ -9,6 +9,7 @@ description: >-
   prepared/segmented execution-path divergence: the prepared path must fuse the
   chain into one command, as the segmented path does.
 defaults:
+  regime: throughput
   device:
     kind: cuda
     ordinal: 0

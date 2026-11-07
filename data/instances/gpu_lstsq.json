@@ -11,6 +11,7 @@
   "cases": [
     {
       "id": "lstsq_tall_f32_s32_rhs8",
+      "regime": "latency",
       "op": "lstsq",
       "dtype": "f32",
       "n": 2048,
@@ -32,6 +33,7 @@
     },
     {
       "id": "lstsq_tall_f64_s32_rhs8",
+      "regime": "latency",
       "op": "lstsq",
       "dtype": "f64",
       "n": 2048,
@@ -53,6 +55,7 @@
     },
     {
       "id": "lstsq_tall_c32_s32_rhs8",
+      "regime": "latency",
       "op": "lstsq",
       "dtype": "c32",
       "n": 2048,
@@ -74,6 +77,7 @@
     },
     {
       "id": "lstsq_tall_c64_s32_rhs8",
+      "regime": "latency",
       "op": "lstsq",
       "dtype": "c64",
       "n": 2048,

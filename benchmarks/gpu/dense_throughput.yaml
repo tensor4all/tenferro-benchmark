@@ -6,13 +6,17 @@ description: >-
   sample enqueues K deferred prepared runs (Runtime::run_prepared_deferred) in
   one caller-held session and pays one retirement barrier in a single
   finish_prepared, so a sample's per-call time is sample_ms / K. These rows are
-  throughput measurements and are never comparable with, or averaged together
-  with, the per-call latency rows of `gpu/dense` and `gpu/elementwise`
+  deferred-batch measurements and are never comparable with, or averaged together
+  with the per-call latency rows of `gpu/dense` and `gpu/elementwise`
   (tenferro-rs #2087). Cases keep one deferred output set small enough that the
   whole K-batch stays inside the retention budget; the effective K is recorded in
-  every row's notes.
+  every row's notes. Deferred batch is the *timing mode* of this suite; each
+  case's `regime` still says whether its workload is throughput or per-call
+  overhead, and two of the three cases here are overhead probes (see
+  docs/regime-floors.md).
 defaults:
   regime: throughput
+  measure: deferred_batch
   device: {kind: cuda, ordinal: 0}
   layout: {tenferro: col_major, framework: row_major_contiguous}
   run: {warmups: 3, runs: 7, timing_scope: steady_state_host_api_plus_device_sync}
@@ -22,14 +26,18 @@ backends:
 problems:
   # tenferro-rs #2087: the same shape as the `gpu/dense`
   # dense_batched_matmul_f64_b16_32 per-command overhead probe, measured here as
-  # amortized throughput (K deferred runs share one retirement).
+  # amortized throughput (K deferred runs share one retirement). 16 batches of
+  # 32x32 is 16,384 elements, below the dense floor of 65,536: the row measures
+  # the framework's per-call cost, so it is a latency-regime case even though the
+  # suite times it in deferred-batch mode.
   - id: dense_batched_matmul_f64_b16_32_throughput
     family: dense
     op: batched_matmul
-    regime: throughput
+    regime: latency
     intent: >-
-      Per-operation cost of 16 batches of 32x32 matmul when K deferred prepared
-      runs share one retirement; throughput mode only, not a per-call latency row.
+      Per-operation framework cost of 16 batches of 32x32 matmul when K deferred
+      prepared runs share one retirement. The shape is far too small to be GPU
+      work, so this row is a per-call overhead diagnostic, not a throughput row.
     dtype:
       a: f64
       b: f64
@@ -42,15 +50,17 @@ problems:
     verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10}
 
   # The same chain as the `gpu/elementwise` elementwise_chain_f64_1k latency
-  # probe (tanh(t * a + b) eight times, three dispatch-bound ops per step).
+  # probe (tanh(t * a + b) eight times, three dispatch-bound ops per step). 1,024
+  # elements is two orders below the elementwise floor of 262,144, so the row
+  # measures per-call dispatch regardless of the deferred batch: latency regime.
   - id: elementwise_chain_f64_1k_throughput
     family: elementwise
     op: elementwise_chain
-    regime: throughput
+    regime: latency
     intent: >-
-      Dispatch-bound elementwise chain per-operation cost when K deferred
-      prepared runs share one retirement; throughput mode only, not the per-call
-      latency probe of `gpu/elementwise`.
+      Dispatch-bound elementwise chain per-operation framework cost when K
+      deferred prepared runs share one retirement. 1,024 elements is below the
+      elementwise floor, so this is a per-call overhead diagnostic.
     dtype:
       a: f64
       b: f64

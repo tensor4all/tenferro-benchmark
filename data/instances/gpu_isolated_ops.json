@@ -11,6 +11,7 @@
   "cases": [
     {
       "id": "add_f32_n1024",
+      "regime": "latency",
       "op": "add",
       "dtype": "f32",
       "n": 1024,
@@ -22,6 +23,7 @@
     },
     {
       "id": "add_f64_n1024",
+      "regime": "latency",
       "op": "add",
       "dtype": "f64",
       "n": 1024,
@@ -33,6 +35,7 @@
     },
     {
       "id": "sub_f32_n1024",
+      "regime": "latency",
       "op": "sub",
       "dtype": "f32",
       "n": 1024,
@@ -44,6 +47,7 @@
     },
     {
       "id": "sub_f64_n1024",
+      "regime": "latency",
       "op": "sub",
       "dtype": "f64",
       "n": 1024,
@@ -55,6 +59,7 @@
     },
     {
       "id": "mul_f32_n1024",
+      "regime": "latency",
       "op": "mul",
       "dtype": "f32",
       "n": 1024,
@@ -66,6 +71,7 @@
     },
     {
       "id": "mul_f64_n1024",
+      "regime": "latency",
       "op": "mul",
       "dtype": "f64",
       "n": 1024,
@@ -77,6 +83,7 @@
     },
     {
       "id": "div_f32_n1024",
+      "regime": "latency",
       "op": "div",
       "dtype": "f32",
       "n": 1024,
@@ -88,6 +95,7 @@
     },
     {
       "id": "div_f64_n1024",
+      "regime": "latency",
       "op": "div",
       "dtype": "f64",
       "n": 1024,
@@ -99,6 +107,7 @@
     },
     {
       "id": "rem_f32_n1024",
+      "regime": "latency",
       "op": "rem",
       "dtype": "f32",
       "n": 1024,
@@ -110,6 +119,7 @@
     },
     {
       "id": "rem_f64_n1024",
+      "regime": "latency",
       "op": "rem",
       "dtype": "f64",
       "n": 1024,
@@ -121,6 +131,7 @@
     },
     {
       "id": "pow_f32_n1024",
+      "regime": "latency",
       "op": "pow",
       "dtype": "f32",
       "n": 1024,
@@ -132,6 +143,7 @@
     },
     {
       "id": "pow_f64_n1024",
+      "regime": "latency",
       "op": "pow",
       "dtype": "f64",
       "n": 1024,
@@ -143,6 +155,7 @@
     },
     {
       "id": "maximum_f32_n1024",
+      "regime": "latency",
       "op": "maximum",
       "dtype": "f32",
       "n": 1024,
@@ -154,6 +167,7 @@
     },
     {
       "id": "maximum_f64_n1024",
+      "regime": "latency",
       "op": "maximum",
       "dtype": "f64",
       "n": 1024,
@@ -165,6 +179,7 @@
     },
     {
       "id": "minimum_f32_n1024",
+      "regime": "latency",
       "op": "minimum",
       "dtype": "f32",
       "n": 1024,
@@ -176,6 +191,7 @@
     },
     {
       "id": "minimum_f64_n1024",
+      "regime": "latency",
       "op": "minimum",
       "dtype": "f64",
       "n": 1024,
@@ -187,6 +203,7 @@
     },
     {
       "id": "neg_f32_n1024",
+      "regime": "latency",
       "op": "neg",
       "dtype": "f32",
       "n": 1024,
@@ -198,6 +215,7 @@
     },
     {
       "id": "neg_f64_n1024",
+      "regime": "latency",
       "op": "neg",
       "dtype": "f64",
       "n": 1024,
@@ -209,6 +227,7 @@
     },
     {
       "id": "abs_f32_n1024",
+      "regime": "latency",
       "op": "abs",
       "dtype": "f32",
       "n": 1024,
@@ -220,6 +239,7 @@
     },
     {
       "id": "abs_f64_n1024",
+      "regime": "latency",
       "op": "abs",
       "dtype": "f64",
       "n": 1024,
@@ -231,6 +251,7 @@
     },
     {
       "id": "sign_f32_n1024",
+      "regime": "latency",
       "op": "sign",
       "dtype": "f32",
       "n": 1024,
@@ -242,6 +263,7 @@
     },
     {
       "id": "sign_f64_n1024",
+      "regime": "latency",
       "op": "sign",
       "dtype": "f64",
       "n": 1024,
@@ -253,6 +275,7 @@
     },
     {
       "id": "conj_c32_n1024",
+      "regime": "latency",
       "op": "conj",
       "dtype": "c32",
       "n": 1024,
@@ -264,6 +287,7 @@
     },
     {
       "id": "conj_c64_n1024",
+      "regime": "latency",
       "op": "conj",
       "dtype": "c64",
       "n": 1024,
@@ -275,6 +299,7 @@
     },
     {
       "id": "exp_f32_n1024",
+      "regime": "latency",
       "op": "exp",
       "dtype": "f32",
       "n": 1024,
@@ -286,6 +311,7 @@
     },
     {
       "id": "exp_f64_n1024",
+      "regime": "latency",
       "op": "exp",
       "dtype": "f64",
       "n": 1024,
@@ -297,6 +323,7 @@
     },
     {
       "id": "expm1_f32_n1024",
+      "regime": "latency",
       "op": "expm1",
       "dtype": "f32",
       "n": 1024,
@@ -308,6 +335,7 @@
     },
     {
       "id": "expm1_f64_n1024",
+      "regime": "latency",
       "op": "expm1",
       "dtype": "f64",
       "n": 1024,
@@ -319,6 +347,7 @@
     },
     {
       "id": "log_f32_n1024",
+      "regime": "latency",
       "op": "log",
       "dtype": "f32",
       "n": 1024,
@@ -330,6 +359,7 @@
     },
     {
       "id": "log_f64_n1024",
+      "regime": "latency",
       "op": "log",
       "dtype": "f64",
       "n": 1024,
@@ -341,6 +371,7 @@
     },
     {
       "id": "log1p_f32_n1024",
+      "regime": "latency",
       "op": "log1p",
       "dtype": "f32",
       "n": 1024,
@@ -352,6 +383,7 @@
     },
     {
       "id": "log1p_f64_n1024",
+      "regime": "latency",
       "op": "log1p",
       "dtype": "f64",
       "n": 1024,
@@ -363,6 +395,7 @@
     },
     {
       "id": "erf_f32_n1024",
+      "regime": "latency",
       "op": "erf",
       "dtype": "f32",
       "n": 1024,
@@ -374,6 +407,7 @@
     },
     {
       "id": "erf_f64_n1024",
+      "regime": "latency",
       "op": "erf",
       "dtype": "f64",
       "n": 1024,
@@ -385,6 +419,7 @@
     },
     {
       "id": "sin_f32_n1024",
+      "regime": "latency",
       "op": "sin",
       "dtype": "f32",
       "n": 1024,
@@ -396,6 +431,7 @@
     },
     {
       "id": "sin_f64_n1024",
+      "regime": "latency",
       "op": "sin",
       "dtype": "f64",
       "n": 1024,
@@ -407,6 +443,7 @@
     },
     {
       "id": "cos_f32_n1024",
+      "regime": "latency",
       "op": "cos",
       "dtype": "f32",
       "n": 1024,
@@ -418,6 +455,7 @@
     },
     {
       "id": "cos_f64_n1024",
+      "regime": "latency",
       "op": "cos",
       "dtype": "f64",
       "n": 1024,
@@ -429,6 +467,7 @@
     },
     {
       "id": "tanh_f32_n1024",
+      "regime": "latency",
       "op": "tanh",
       "dtype": "f32",
       "n": 1024,
@@ -440,6 +479,7 @@
     },
     {
       "id": "tanh_f64_n1024",
+      "regime": "latency",
       "op": "tanh",
       "dtype": "f64",
       "n": 1024,
@@ -451,6 +491,7 @@
     },
     {
       "id": "sqrt_f32_n1024",
+      "regime": "latency",
       "op": "sqrt",
       "dtype": "f32",
       "n": 1024,
@@ -462,6 +503,7 @@
     },
     {
       "id": "sqrt_f64_n1024",
+      "regime": "latency",
       "op": "sqrt",
       "dtype": "f64",
       "n": 1024,
@@ -473,6 +515,7 @@
     },
     {
       "id": "rsqrt_f32_n1024",
+      "regime": "latency",
       "op": "rsqrt",
       "dtype": "f32",
       "n": 1024,
@@ -484,6 +527,7 @@
     },
     {
       "id": "rsqrt_f64_n1024",
+      "regime": "latency",
       "op": "rsqrt",
       "dtype": "f64",
       "n": 1024,
@@ -495,6 +539,7 @@
     },
     {
       "id": "compare_f32_n1024",
+      "regime": "latency",
       "op": "compare",
       "dtype": "f32",
       "n": 1024,
@@ -508,6 +553,7 @@
     },
     {
       "id": "compare_f64_n1024",
+      "regime": "latency",
       "op": "compare",
       "dtype": "f64",
       "n": 1024,
@@ -521,6 +567,7 @@
     },
     {
       "id": "where_select_f32_n1024",
+      "regime": "latency",
       "op": "where_select",
       "dtype": "f32",
       "n": 1024,
@@ -532,6 +579,7 @@
     },
     {
       "id": "where_select_f64_n1024",
+      "regime": "latency",
       "op": "where_select",
       "dtype": "f64",
       "n": 1024,
@@ -543,6 +591,7 @@
     },
     {
       "id": "clamp_f32_n1024",
+      "regime": "latency",
       "op": "clamp",
       "dtype": "f32",
       "n": 1024,
@@ -554,6 +603,7 @@
     },
     {
       "id": "clamp_f64_n1024",
+      "regime": "latency",
       "op": "clamp",
       "dtype": "f64",
       "n": 1024,
@@ -565,6 +615,7 @@
     },
     {
       "id": "reduce_sum_f32_n1024",
+      "regime": "latency",
       "op": "reduce_sum",
       "dtype": "f32",
       "n": 1024,
@@ -577,6 +628,7 @@
     },
     {
       "id": "reduce_sum_f64_n1024",
+      "regime": "latency",
       "op": "reduce_sum",
       "dtype": "f64",
       "n": 1024,
@@ -589,6 +641,7 @@
     },
     {
       "id": "reduce_prod_f32_n1024",
+      "regime": "latency",
       "op": "reduce_prod",
       "dtype": "f32",
       "n": 1024,
@@ -601,6 +654,7 @@
     },
     {
       "id": "reduce_prod_f64_n1024",
+      "regime": "latency",
       "op": "reduce_prod",
       "dtype": "f64",
       "n": 1024,
@@ -613,6 +667,7 @@
     },
     {
       "id": "reduce_max_f32_n1024",
+      "regime": "latency",
       "op": "reduce_max",
       "dtype": "f32",
       "n": 1024,
@@ -625,6 +680,7 @@
     },
     {
       "id": "reduce_max_f64_n1024",
+      "regime": "latency",
       "op": "reduce_max",
       "dtype": "f64",
       "n": 1024,
@@ -637,6 +693,7 @@
     },
     {
       "id": "reduce_min_f32_n1024",
+      "regime": "latency",
       "op": "reduce_min",
       "dtype": "f32",
       "n": 1024,
@@ -649,6 +706,7 @@
     },
     {
       "id": "reduce_min_f64_n1024",
+      "regime": "latency",
       "op": "reduce_min",
       "dtype": "f64",
       "n": 1024,
@@ -661,6 +719,7 @@
     },
     {
       "id": "reduce_sum_squares_f32_n1024",
+      "regime": "latency",
       "op": "reduce_sum_squares",
       "dtype": "f32",
       "n": 1024,
@@ -677,6 +736,7 @@
     },
     {
       "id": "reduce_sum_squares_f64_n1024",
+      "regime": "latency",
       "op": "reduce_sum_squares",
       "dtype": "f64",
       "n": 1024,
@@ -693,6 +753,7 @@
     },
     {
       "id": "reduce_mean_f32_n1024",
+      "regime": "latency",
       "op": "reduce_mean",
       "dtype": "f32",
       "n": 1024,
@@ -708,6 +769,7 @@
     },
     {
       "id": "reduce_mean_f64_n1024",
+      "regime": "latency",
       "op": "reduce_mean",
       "dtype": "f64",
       "n": 1024,
@@ -1431,6 +1493,7 @@
     },
     {
       "id": "reduce_sum_full_f32_n1024",
+      "regime": "latency",
       "op": "reduce_sum",
       "dtype": "f32",
       "n": 1024,
@@ -1443,6 +1506,7 @@
     },
     {
       "id": "reduce_prod_full_f32_n1024",
+      "regime": "latency",
       "op": "reduce_prod",
       "dtype": "f32",
       "n": 1024,
@@ -1455,6 +1519,7 @@
     },
     {
       "id": "reduce_max_full_f32_n1024",
+      "regime": "latency",
       "op": "reduce_max",
       "dtype": "f32",
       "n": 1024,
@@ -1467,6 +1532,7 @@
     },
     {
       "id": "reduce_min_full_f32_n1024",
+      "regime": "latency",
       "op": "reduce_min",
       "dtype": "f32",
       "n": 1024,
@@ -1479,6 +1545,7 @@
     },
     {
       "id": "compare_eq_f32_n1024",
+      "regime": "latency",
       "op": "compare",
       "dtype": "f32",
       "n": 1024,
@@ -1493,6 +1560,7 @@
     },
     {
       "id": "compare_lt_f32_n1024",
+      "regime": "latency",
       "op": "compare",
       "dtype": "f32",
       "n": 1024,
@@ -1507,6 +1575,7 @@
     },
     {
       "id": "compare_le_f32_n1024",
+      "regime": "latency",
       "op": "compare",
       "dtype": "f32",
       "n": 1024,
@@ -1521,6 +1590,7 @@
     },
     {
       "id": "compare_ge_f32_n1024",
+      "regime": "latency",
       "op": "compare",
       "dtype": "f32",
       "n": 1024,
@@ -1535,6 +1605,7 @@
     },
     {
       "id": "reduce_sum_full_f64_n1024",
+      "regime": "latency",
       "op": "reduce_sum",
       "dtype": "f64",
       "n": 1024,
@@ -1547,6 +1618,7 @@
     },
     {
       "id": "reduce_prod_full_f64_n1024",
+      "regime": "latency",
       "op": "reduce_prod",
       "dtype": "f64",
       "n": 1024,
@@ -1559,6 +1631,7 @@
     },
     {
       "id": "reduce_max_full_f64_n1024",
+      "regime": "latency",
       "op": "reduce_max",
       "dtype": "f64",
       "n": 1024,
@@ -1571,6 +1644,7 @@
     },
     {
       "id": "reduce_min_full_f64_n1024",
+      "regime": "latency",
       "op": "reduce_min",
       "dtype": "f64",
       "n": 1024,
@@ -1583,6 +1657,7 @@
     },
     {
       "id": "compare_eq_f64_n1024",
+      "regime": "latency",
       "op": "compare",
       "dtype": "f64",
       "n": 1024,
@@ -1597,6 +1672,7 @@
     },
     {
       "id": "compare_lt_f64_n1024",
+      "regime": "latency",
       "op": "compare",
       "dtype": "f64",
       "n": 1024,
@@ -1611,6 +1687,7 @@
     },
     {
       "id": "compare_le_f64_n1024",
+      "regime": "latency",
       "op": "compare",
       "dtype": "f64",
       "n": 1024,
@@ -1625,6 +1702,7 @@
     },
     {
       "id": "compare_ge_f64_n1024",
+      "regime": "latency",
       "op": "compare",
       "dtype": "f64",
       "n": 1024,
@@ -1855,6 +1933,7 @@
     },
     {
       "id": "reduce_mean_full_f32_n1024",
+      "regime": "latency",
       "op": "reduce_mean",
       "dtype": "f32",
       "n": 1024,
@@ -1870,6 +1949,7 @@
     },
     {
       "id": "reduce_sum_squares_full_f32_n1024",
+      "regime": "latency",
       "op": "reduce_sum_squares",
       "dtype": "f32",
       "n": 1024,
@@ -1881,6 +1961,7 @@
     },
     {
       "id": "reduce_mean_full_f64_n1024",
+      "regime": "latency",
       "op": "reduce_mean",
       "dtype": "f64",
       "n": 1024,
@@ -1896,6 +1977,7 @@
     },
     {
       "id": "reduce_sum_squares_full_f64_n1024",
+      "regime": "latency",
       "op": "reduce_sum_squares",
       "dtype": "f64",
       "n": 1024,
@@ -1959,6 +2041,7 @@
     },
     {
       "id": "scale_real_f32_n1024",
+      "regime": "latency",
       "op": "scale_real",
       "dtype": "f32",
       "n": 1024,
@@ -1975,6 +2058,7 @@
     },
     {
       "id": "scale_real_f64_n1024",
+      "regime": "latency",
       "op": "scale_real",
       "dtype": "f64",
       "n": 1024,
@@ -1991,6 +2075,7 @@
     },
     {
       "id": "scale_real_c32_n1024",
+      "regime": "latency",
       "op": "scale_real",
       "dtype": "c32",
       "n": 1024,
@@ -2007,6 +2092,7 @@
     },
     {
       "id": "scale_real_c64_n1024",
+      "regime": "latency",
       "op": "scale_real",
       "dtype": "c64",
       "n": 1024,
@@ -2023,6 +2109,7 @@
     },
     {
       "id": "scale_complex_c32_n1024",
+      "regime": "latency",
       "op": "scale_complex",
       "dtype": "c32",
       "n": 1024,
@@ -2040,6 +2127,7 @@
     },
     {
       "id": "scale_complex_c64_n1024",
+      "regime": "latency",
       "op": "scale_complex",
       "dtype": "c64",
       "n": 1024,
@@ -2155,6 +2243,7 @@
     },
     {
       "id": "add_i32_n1024",
+      "regime": "latency",
       "op": "add",
       "dtype": "i32",
       "n": 1024,
@@ -2168,6 +2257,7 @@
     },
     {
       "id": "sub_i32_n1024",
+      "regime": "latency",
       "op": "sub",
       "dtype": "i32",
       "n": 1024,
@@ -2181,6 +2271,7 @@
     },
     {
       "id": "mul_i32_n1024",
+      "regime": "latency",
       "op": "mul",
       "dtype": "i32",
       "n": 1024,
@@ -2194,6 +2285,7 @@
     },
     {
       "id": "div_i32_n1024",
+      "regime": "latency",
       "op": "div",
       "dtype": "i32",
       "n": 1024,
@@ -2207,6 +2299,7 @@
     },
     {
       "id": "rem_i32_n1024",
+      "regime": "latency",
       "op": "rem",
       "dtype": "i32",
       "n": 1024,
@@ -2220,6 +2313,7 @@
     },
     {
       "id": "maximum_i32_n1024",
+      "regime": "latency",
       "op": "maximum",
       "dtype": "i32",
       "n": 1024,
@@ -2233,6 +2327,7 @@
     },
     {
       "id": "minimum_i32_n1024",
+      "regime": "latency",
       "op": "minimum",
       "dtype": "i32",
       "n": 1024,
@@ -2246,6 +2341,7 @@
     },
     {
       "id": "neg_i32_n1024",
+      "regime": "latency",
       "op": "neg",
       "dtype": "i32",
       "n": 1024,
@@ -2259,6 +2355,7 @@
     },
     {
       "id": "abs_i32_n1024",
+      "regime": "latency",
       "op": "abs",
       "dtype": "i32",
       "n": 1024,
@@ -2272,6 +2369,7 @@
     },
     {
       "id": "sign_i32_n1024",
+      "regime": "latency",
       "op": "sign",
       "dtype": "i32",
       "n": 1024,
@@ -2285,6 +2383,7 @@
     },
     {
       "id": "reduce_sum_i32_n1024",
+      "regime": "latency",
       "op": "reduce_sum",
       "dtype": "i32",
       "n": 1024,
@@ -2298,6 +2397,7 @@
     },
     {
       "id": "reduce_max_i32_n1024",
+      "regime": "latency",
       "op": "reduce_max",
       "dtype": "i32",
       "n": 1024,
@@ -2311,6 +2411,7 @@
     },
     {
       "id": "reduce_min_i32_n1024",
+      "regime": "latency",
       "op": "reduce_min",
       "dtype": "i32",
       "n": 1024,
@@ -2324,6 +2425,7 @@
     },
     {
       "id": "add_i64_n1024",
+      "regime": "latency",
       "op": "add",
       "dtype": "i64",
       "n": 1024,
@@ -2337,6 +2439,7 @@
     },
     {
       "id": "sub_i64_n1024",
+      "regime": "latency",
       "op": "sub",
       "dtype": "i64",
       "n": 1024,
@@ -2350,6 +2453,7 @@
     },
     {
       "id": "mul_i64_n1024",
+      "regime": "latency",
       "op": "mul",
       "dtype": "i64",
       "n": 1024,
@@ -2363,6 +2467,7 @@
     },
     {
       "id": "div_i64_n1024",
+      "regime": "latency",
       "op": "div",
       "dtype": "i64",
       "n": 1024,
@@ -2376,6 +2481,7 @@
     },
     {
       "id": "rem_i64_n1024",
+      "regime": "latency",
       "op": "rem",
       "dtype": "i64",
       "n": 1024,
@@ -2389,6 +2495,7 @@
     },
     {
       "id": "maximum_i64_n1024",
+      "regime": "latency",
       "op": "maximum",
       "dtype": "i64",
       "n": 1024,
@@ -2402,6 +2509,7 @@
     },
     {
       "id": "minimum_i64_n1024",
+      "regime": "latency",
       "op": "minimum",
       "dtype": "i64",
       "n": 1024,
@@ -2415,6 +2523,7 @@
     },
     {
       "id": "neg_i64_n1024",
+      "regime": "latency",
       "op": "neg",
       "dtype": "i64",
       "n": 1024,
@@ -2428,6 +2537,7 @@
     },
     {
       "id": "abs_i64_n1024",
+      "regime": "latency",
       "op": "abs",
       "dtype": "i64",
       "n": 1024,
@@ -2441,6 +2551,7 @@
     },
     {
       "id": "sign_i64_n1024",
+      "regime": "latency",
       "op": "sign",
       "dtype": "i64",
       "n": 1024,
@@ -2454,6 +2565,7 @@
     },
     {
       "id": "reduce_sum_i64_n1024",
+      "regime": "latency",
       "op": "reduce_sum",
       "dtype": "i64",
       "n": 1024,
@@ -2467,6 +2579,7 @@
     },
     {
       "id": "reduce_max_i64_n1024",
+      "regime": "latency",
       "op": "reduce_max",
       "dtype": "i64",
       "n": 1024,
@@ -2480,6 +2593,7 @@
     },
     {
       "id": "reduce_min_i64_n1024",
+      "regime": "latency",
       "op": "reduce_min",
       "dtype": "i64",
       "n": 1024,

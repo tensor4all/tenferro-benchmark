@@ -48,6 +48,27 @@ class PipelineTest(unittest.TestCase):
         legacy=repo/'result/amd-cpu/cpu/legacy.md'
         legacy.parent.mkdir(parents=True)
         legacy.write_text('# Legacy diagnostic\nNo inferred timestamp.\n')
+        # The repository keeps the suite manifests the results were produced
+        # from: a measured case must declare its regime, so gpu/dense needs one.
+        summary_cases = {
+            row["case"]
+            for row in json.loads(payload["result/nvidia-gpu/gpu/dense.summary.json"])["rows"]
+        }
+        manifest=repo/'benchmarks/gpu/dense.yaml'
+        manifest.parent.mkdir(parents=True)
+        manifest.write_text(
+            'schema_version: 1\n'
+            'suite_id: gpu/dense\n'
+            'title: fixture\n'
+            'description: fixture\n'
+            'defaults:\n  regime: throughput\n  run: {runs: 7}\n'
+            'backends:\n  - tenferro-cuda-trace\n'
+            'problems:\n'
+            + ''.join(
+                f'  - {{id: {case}, family: dense, size_elements: 1048576}}\n'
+                for case in sorted(summary_cases)
+            )
+        )
         git('add','result')
         git('commit','-m','Earlier committed baseline and legacy report')
         updates,decisions=plan_updates(repo,validated)

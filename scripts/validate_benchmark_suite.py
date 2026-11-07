@@ -13,6 +13,8 @@ import yaml
 from jsonschema import Draft202012Validator, FormatChecker
 from jsonschema.exceptions import SchemaError
 
+import regime_policy
+
 PROJECT_DIR = Path(__file__).resolve().parents[1]
 SUITE_SCHEMA = PROJECT_DIR / "schemas" / "benchmark-suite.schema.json"
 RUN_SCHEMA = PROJECT_DIR / "schemas" / "benchmark-run.schema.json"
@@ -105,7 +107,14 @@ def validate_suite(path: Path) -> bool:
     except ValidationLoadError as exc:
         print(exc, file=sys.stderr)
         return False
-    return validate_object(path, suite, validator) and validate_unique_problem_ids(path, suite)
+    ok = validate_object(path, suite, validator) and validate_unique_problem_ids(path, suite)
+    # The regime rule is a load-time check, not a publishing-time one: a GPU case
+    # with no declared regime, or a throughput case below its family floor, is a
+    # suite error here as well as in the dashboard.
+    for message in regime_policy.check_suite(suite, PROJECT_DIR):
+        print(f"{path}: {message}", file=sys.stderr)
+        ok = False
+    return ok
 
 
 def validate_run(path: Path) -> bool:

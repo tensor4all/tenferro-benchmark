@@ -2,8 +2,13 @@ schema_version: 1
 suite_id: gpu/linalg_jvp_vjp
 title: GPU Linalg JVP/VJP Benchmarks
 description: Trace-mode linalg automatic differentiation on CUDA for tenferro-rs and
-  PyTorch at GPU-sized matrices (n=256, 512).
+  PyTorch at GPU-sized matrices (n=256, 512). Every case here pays one device
+  retirement per call, so each row is a per-call latency row. n=256 is 65,536
+  elements, below the linalg_ad floor, and even a 512x512 QR JVP is dominated by
+  the trace runtime's per-call cost. The same cases measured with one retirement
+  per K calls live in `gpu/linalg_ad_throughput`.
 defaults:
+  regime: latency
   device:
     kind: cuda
     ordinal: 0

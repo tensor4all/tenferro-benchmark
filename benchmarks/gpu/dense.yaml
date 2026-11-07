@@ -6,6 +6,7 @@ description: >-
   dense_solve_f64_512_rhs16 carries tenferro-rs #2192 (CUDA solve vs pytorch-cuda;
   per-call non-singularity validation synchronizes and reads back scalars).
 defaults:
+  regime: throughput
   device: {kind: cuda, ordinal: 0}
   layout: {tenferro: col_major, framework: row_major_contiguous}
   run: {warmups: 3, runs: 7, timing_scope: steady_state_host_api_plus_device_sync}

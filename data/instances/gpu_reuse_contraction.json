@@ -11,6 +11,7 @@
   "cases": [
     {
       "id": "add_into_f32_n1024",
+      "regime": "latency",
       "op": "add_into",
       "dtype": "f32",
       "n": 1024,
@@ -26,6 +27,7 @@
     },
     {
       "id": "add_into_f64_n1024",
+      "regime": "latency",
       "op": "add_into",
       "dtype": "f64",
       "n": 1024,
@@ -41,6 +43,7 @@
     },
     {
       "id": "add_read_into_f32_n1024",
+      "regime": "latency",
       "op": "add_read_into",
       "dtype": "f32",
       "n": 1024,
@@ -56,6 +59,7 @@
     },
     {
       "id": "add_read_into_f64_n1024",
+      "regime": "latency",
       "op": "add_read_into",
       "dtype": "f64",
       "n": 1024,
@@ -71,6 +75,7 @@
     },
     {
       "id": "sub_into_f32_n1024",
+      "regime": "latency",
       "op": "sub_into",
       "dtype": "f32",
       "n": 1024,
@@ -86,6 +91,7 @@
     },
     {
       "id": "sub_into_f64_n1024",
+      "regime": "latency",
       "op": "sub_into",
       "dtype": "f64",
       "n": 1024,
@@ -101,6 +107,7 @@
     },
     {
       "id": "sub_read_into_f32_n1024",
+      "regime": "latency",
       "op": "sub_read_into",
       "dtype": "f32",
       "n": 1024,
@@ -116,6 +123,7 @@
     },
     {
       "id": "sub_read_into_f64_n1024",
+      "regime": "latency",
       "op": "sub_read_into",
       "dtype": "f64",
       "n": 1024,
@@ -131,6 +139,7 @@
     },
     {
       "id": "mul_into_f32_n1024",
+      "regime": "latency",
       "op": "mul_into",
       "dtype": "f32",
       "n": 1024,
@@ -146,6 +155,7 @@
     },
     {
       "id": "mul_into_f64_n1024",
+      "regime": "latency",
       "op": "mul_into",
       "dtype": "f64",
       "n": 1024,
@@ -161,6 +171,7 @@
     },
     {
       "id": "mul_read_into_f32_n1024",
+      "regime": "latency",
       "op": "mul_read_into",
       "dtype": "f32",
       "n": 1024,
@@ -176,6 +187,7 @@
     },
     {
       "id": "mul_read_into_f64_n1024",
+      "regime": "latency",
       "op": "mul_read_into",
       "dtype": "f64",
       "n": 1024,
@@ -191,6 +203,7 @@
     },
     {
       "id": "div_into_f32_n1024",
+      "regime": "latency",
       "op": "div_into",
       "dtype": "f32",
       "n": 1024,
@@ -206,6 +219,7 @@
     },
     {
       "id": "div_into_f64_n1024",
+      "regime": "latency",
       "op": "div_into",
       "dtype": "f64",
       "n": 1024,
@@ -221,6 +235,7 @@
     },
     {
       "id": "div_read_into_f32_n1024",
+      "regime": "latency",
       "op": "div_read_into",
       "dtype": "f32",
       "n": 1024,
@@ -236,6 +251,7 @@
     },
     {
       "id": "div_read_into_f64_n1024",
+      "regime": "latency",
       "op": "div_read_into",
       "dtype": "f64",
       "n": 1024,
@@ -251,6 +267,7 @@
     },
     {
       "id": "neg_into_f32_n1024",
+      "regime": "latency",
       "op": "neg_into",
       "dtype": "f32",
       "n": 1024,
@@ -266,6 +283,7 @@
     },
     {
       "id": "neg_into_f64_n1024",
+      "regime": "latency",
       "op": "neg_into",
       "dtype": "f64",
       "n": 1024,
@@ -281,6 +299,7 @@
     },
     {
       "id": "neg_read_into_f32_n1024",
+      "regime": "latency",
       "op": "neg_read_into",
       "dtype": "f32",
       "n": 1024,
@@ -296,6 +315,7 @@
     },
     {
       "id": "neg_read_into_f64_n1024",
+      "regime": "latency",
       "op": "neg_read_into",
       "dtype": "f64",
       "n": 1024,
@@ -311,6 +331,7 @@
     },
     {
       "id": "conj_into_c32_n1024",
+      "regime": "latency",
       "op": "conj_into",
       "dtype": "c32",
       "n": 1024,
@@ -326,6 +347,7 @@
     },
     {
       "id": "conj_into_c64_n1024",
+      "regime": "latency",
       "op": "conj_into",
       "dtype": "c64",
       "n": 1024,
@@ -341,6 +363,7 @@
     },
     {
       "id": "conj_read_into_c32_n1024",
+      "regime": "latency",
       "op": "conj_read_into",
       "dtype": "c32",
       "n": 1024,
@@ -356,6 +379,7 @@
     },
     {
       "id": "conj_read_into_c64_n1024",
+      "regime": "latency",
       "op": "conj_read_into",
       "dtype": "c64",
       "n": 1024,
@@ -731,6 +755,7 @@
     },
     {
       "id": "tensordot_f32_n1024",
+      "regime": "latency",
       "op": "tensordot",
       "dtype": "f32",
       "n": 1024,
@@ -743,6 +768,7 @@
     },
     {
       "id": "tensordot_f64_n1024",
+      "regime": "latency",
       "op": "tensordot",
       "dtype": "f64",
       "n": 1024,
@@ -755,6 +781,7 @@
     },
     {
       "id": "tensordot_c32_n1024",
+      "regime": "latency",
       "op": "tensordot",
       "dtype": "c32",
       "n": 1024,
@@ -767,6 +794,7 @@
     },
     {
       "id": "tensordot_c64_n1024",
+      "regime": "latency",
       "op": "tensordot",
       "dtype": "c64",
       "n": 1024,
@@ -779,6 +807,7 @@
     },
     {
       "id": "vdot_read_f32_n1024",
+      "regime": "latency",
       "op": "vdot_read",
       "dtype": "f32",
       "n": 1024,
@@ -792,6 +821,7 @@
     },
     {
       "id": "vdot_read_f64_n1024",
+      "regime": "latency",
       "op": "vdot_read",
       "dtype": "f64",
       "n": 1024,
@@ -805,6 +835,7 @@
     },
     {
       "id": "vdot_read_c32_n1024",
+      "regime": "latency",
       "op": "vdot_read",
       "dtype": "c32",
       "n": 1024,
@@ -818,6 +849,7 @@
     },
     {
       "id": "vdot_read_c64_n1024",
+      "regime": "latency",
       "op": "vdot_read",
       "dtype": "c64",
       "n": 1024,
@@ -831,6 +863,7 @@
     },
     {
       "id": "norm_squared_read_f32_n1024",
+      "regime": "latency",
       "op": "norm_squared_read",
       "dtype": "f32",
       "n": 1024,
@@ -844,6 +877,7 @@
     },
     {
       "id": "norm_squared_read_f64_n1024",
+      "regime": "latency",
       "op": "norm_squared_read",
       "dtype": "f64",
       "n": 1024,
@@ -983,6 +1017,7 @@
     },
     {
       "id": "axpby_read_into_accum_f32_n1024",
+      "regime": "latency",
       "op": "axpby_read_into_accum",
       "dtype": "f32",
       "n": 1024,
@@ -998,6 +1033,7 @@
     },
     {
       "id": "axpby_read_into_accum_f64_n1024",
+      "regime": "latency",
       "op": "axpby_read_into_accum",
       "dtype": "f64",
       "n": 1024,
@@ -1013,6 +1049,7 @@
     },
     {
       "id": "axpby_read_into_accum_c32_n1024",
+      "regime": "latency",
       "op": "axpby_read_into_accum",
       "dtype": "c32",
       "n": 1024,
@@ -1028,6 +1065,7 @@
     },
     {
       "id": "axpby_read_into_accum_c64_n1024",
+      "regime": "latency",
       "op": "axpby_read_into_accum",
       "dtype": "c64",
       "n": 1024,
@@ -1103,6 +1141,7 @@
     },
     {
       "id": "dot_general_read_into_f32_s16",
+      "regime": "latency",
       "op": "dot_general_read_into",
       "dtype": "f32",
       "n": 256,
@@ -1119,6 +1158,7 @@
     },
     {
       "id": "dot_general_read_into_accum_f32_s16",
+      "regime": "latency",
       "op": "dot_general_read_into_accum",
       "dtype": "f32",
       "n": 256,
@@ -1135,6 +1175,7 @@
     },
     {
       "id": "dot_general_read_into_accum_cached_f32_s16",
+      "regime": "latency",
       "op": "dot_general_read_into_accum_cached",
       "dtype": "f32",
       "n": 256,
@@ -1151,6 +1192,7 @@
     },
     {
       "id": "dot_general_read_into_f64_s16",
+      "regime": "latency",
       "op": "dot_general_read_into",
       "dtype": "f64",
       "n": 256,
@@ -1167,6 +1209,7 @@
     },
     {
       "id": "dot_general_read_into_accum_f64_s16",
+      "regime": "latency",
       "op": "dot_general_read_into_accum",
       "dtype": "f64",
       "n": 256,
@@ -1183,6 +1226,7 @@
     },
     {
       "id": "dot_general_read_into_accum_cached_f64_s16",
+      "regime": "latency",
       "op": "dot_general_read_into_accum_cached",
       "dtype": "f64",
       "n": 256,
@@ -1199,6 +1243,7 @@
     },
     {
       "id": "dot_general_read_into_c32_s16",
+      "regime": "latency",
       "op": "dot_general_read_into",
       "dtype": "c32",
       "n": 256,
@@ -1215,6 +1260,7 @@
     },
     {
       "id": "dot_general_read_into_accum_c32_s16",
+      "regime": "latency",
       "op": "dot_general_read_into_accum",
       "dtype": "c32",
       "n": 256,
@@ -1231,6 +1277,7 @@
     },
     {
       "id": "dot_general_read_into_accum_cached_c32_s16",
+      "regime": "latency",
       "op": "dot_general_read_into_accum_cached",
       "dtype": "c32",
       "n": 256,
@@ -1247,6 +1294,7 @@
     },
     {
       "id": "dot_general_read_into_c64_s16",
+      "regime": "latency",
       "op": "dot_general_read_into",
       "dtype": "c64",
       "n": 256,
@@ -1263,6 +1311,7 @@
     },
     {
       "id": "dot_general_read_into_accum_c64_s16",
+      "regime": "latency",
       "op": "dot_general_read_into_accum",
       "dtype": "c64",
       "n": 256,
@@ -1279,6 +1328,7 @@
     },
     {
       "id": "dot_general_read_into_accum_cached_c64_s16",
+      "regime": "latency",
       "op": "dot_general_read_into_accum_cached",
       "dtype": "c64",
       "n": 256,
@@ -1295,6 +1345,7 @@
     },
     {
       "id": "dot_general_read_into_f32_s256",
+      "regime": "latency",
       "op": "dot_general_read_into",
       "dtype": "f32",
       "n": 65536,
@@ -1311,6 +1362,7 @@
     },
     {
       "id": "dot_general_read_into_accum_f32_s256",
+      "regime": "latency",
       "op": "dot_general_read_into_accum",
       "dtype": "f32",
       "n": 65536,
@@ -1327,6 +1379,7 @@
     },
     {
       "id": "dot_general_read_into_accum_cached_f32_s256",
+      "regime": "latency",
       "op": "dot_general_read_into_accum_cached",
       "dtype": "f32",
       "n": 65536,
@@ -1343,6 +1396,7 @@
     },
     {
       "id": "dot_general_read_into_f64_s256",
+      "regime": "latency",
       "op": "dot_general_read_into",
       "dtype": "f64",
       "n": 65536,
@@ -1359,6 +1413,7 @@
     },
     {
       "id": "dot_general_read_into_accum_f64_s256",
+      "regime": "latency",
       "op": "dot_general_read_into_accum",
       "dtype": "f64",
       "n": 65536,
@@ -1375,6 +1430,7 @@
     },
     {
       "id": "dot_general_read_into_accum_cached_f64_s256",
+      "regime": "latency",
       "op": "dot_general_read_into_accum_cached",
       "dtype": "f64",
       "n": 65536,
@@ -1391,6 +1447,7 @@
     },
     {
       "id": "dot_general_read_into_c32_s256",
+      "regime": "latency",
       "op": "dot_general_read_into",
       "dtype": "c32",
       "n": 65536,
@@ -1407,6 +1464,7 @@
     },
     {
       "id": "dot_general_read_into_accum_c32_s256",
+      "regime": "latency",
       "op": "dot_general_read_into_accum",
       "dtype": "c32",
       "n": 65536,
@@ -1423,6 +1481,7 @@
     },
     {
       "id": "dot_general_read_into_accum_cached_c32_s256",
+      "regime": "latency",
       "op": "dot_general_read_into_accum_cached",
       "dtype": "c32",
       "n": 65536,
@@ -1439,6 +1498,7 @@
     },
     {
       "id": "dot_general_read_into_c64_s256",
+      "regime": "latency",
       "op": "dot_general_read_into",
       "dtype": "c64",
       "n": 65536,
@@ -1455,6 +1515,7 @@
     },
     {
       "id": "dot_general_read_into_accum_c64_s256",
+      "regime": "latency",
       "op": "dot_general_read_into_accum",
       "dtype": "c64",
       "n": 65536,
@@ -1471,6 +1532,7 @@
     },
     {
       "id": "dot_general_read_into_accum_cached_c64_s256",
+      "regime": "latency",
       "op": "dot_general_read_into_accum_cached",
       "dtype": "c64",
       "n": 65536,
@@ -1487,6 +1549,7 @@
     },
     {
       "id": "add_strided_read_f32_n1024",
+      "regime": "latency",
       "op": "add_strided_read",
       "read_op": "add",
       "dtype": "f32",
@@ -1502,6 +1565,7 @@
     },
     {
       "id": "add_strided_read_f64_n1024",
+      "regime": "latency",
       "op": "add_strided_read",
       "read_op": "add",
       "dtype": "f64",
@@ -1517,6 +1581,7 @@
     },
     {
       "id": "mul_strided_read_f32_n1024",
+      "regime": "latency",
       "op": "mul_strided_read",
       "read_op": "mul",
       "dtype": "f32",
@@ -1532,6 +1597,7 @@
     },
     {
       "id": "mul_strided_read_f64_n1024",
+      "regime": "latency",
       "op": "mul_strided_read",
       "read_op": "mul",
       "dtype": "f64",
@@ -1547,6 +1613,7 @@
     },
     {
       "id": "neg_strided_read_f32_n1024",
+      "regime": "latency",
       "op": "neg_strided_read",
       "read_op": "neg",
       "dtype": "f32",
@@ -1562,6 +1629,7 @@
     },
     {
       "id": "neg_strided_read_f64_n1024",
+      "regime": "latency",
       "op": "neg_strided_read",
       "read_op": "neg",
       "dtype": "f64",
@@ -1577,6 +1645,7 @@
     },
     {
       "id": "exp_strided_read_f32_n1024",
+      "regime": "latency",
       "op": "exp_strided_read",
       "read_op": "exp",
       "dtype": "f32",
@@ -1592,6 +1661,7 @@
     },
     {
       "id": "exp_strided_read_f64_n1024",
+      "regime": "latency",
       "op": "exp_strided_read",
       "read_op": "exp",
       "dtype": "f64",
@@ -1607,6 +1677,7 @@
     },
     {
       "id": "tanh_strided_read_f32_n1024",
+      "regime": "latency",
       "op": "tanh_strided_read",
       "read_op": "tanh",
       "dtype": "f32",
@@ -1622,6 +1693,7 @@
     },
     {
       "id": "tanh_strided_read_f64_n1024",
+      "regime": "latency",
       "op": "tanh_strided_read",
       "read_op": "tanh",
       "dtype": "f64",
@@ -1637,6 +1709,7 @@
     },
     {
       "id": "reduce_sum_strided_read_f32_n1024",
+      "regime": "latency",
       "op": "reduce_sum_strided_read",
       "read_op": "reduce_sum",
       "dtype": "f32",
@@ -1652,6 +1725,7 @@
     },
     {
       "id": "reduce_sum_strided_read_f64_n1024",
+      "regime": "latency",
       "op": "reduce_sum_strided_read",
       "read_op": "reduce_sum",
       "dtype": "f64",
@@ -1667,6 +1741,7 @@
     },
     {
       "id": "conj_strided_read_c32_n1024",
+      "regime": "latency",
       "op": "conj_strided_read",
       "read_op": "conj",
       "dtype": "c32",
@@ -1682,6 +1757,7 @@
     },
     {
       "id": "conj_strided_read_c64_n1024",
+      "regime": "latency",
       "op": "conj_strided_read",
       "read_op": "conj",
       "dtype": "c64",
@@ -1907,6 +1983,7 @@
     },
     {
       "id": "axpby_overwrite_f32_n1024",
+      "regime": "latency",
       "op": "axpby_read_into_accum",
       "dtype": "f32",
       "n": 1024,
@@ -1924,6 +2001,7 @@
     },
     {
       "id": "axpby_lerp_f32_n1024",
+      "regime": "latency",
       "op": "axpby_read_into_accum",
       "dtype": "f32",
       "n": 1024,
@@ -1941,6 +2019,7 @@
     },
     {
       "id": "axpby_unit_add_f32_n1024",
+      "regime": "latency",
       "op": "axpby_read_into_accum",
       "dtype": "f32",
       "n": 1024,
@@ -1957,6 +2036,7 @@
     },
     {
       "id": "axpby_overwrite_f64_n1024",
+      "regime": "latency",
       "op": "axpby_read_into_accum",
       "dtype": "f64",
       "n": 1024,
@@ -1974,6 +2054,7 @@
     },
     {
       "id": "axpby_lerp_f64_n1024",
+      "regime": "latency",
       "op": "axpby_read_into_accum",
       "dtype": "f64",
       "n": 1024,
@@ -1991,6 +2072,7 @@
     },
     {
       "id": "axpby_unit_add_f64_n1024",
+      "regime": "latency",
       "op": "axpby_read_into_accum",
       "dtype": "f64",
       "n": 1024,
@@ -2007,6 +2089,7 @@
     },
     {
       "id": "axpby_overwrite_c32_n1024",
+      "regime": "latency",
       "op": "axpby_read_into_accum",
       "dtype": "c32",
       "n": 1024,
@@ -2024,6 +2107,7 @@
     },
     {
       "id": "axpby_lerp_c32_n1024",
+      "regime": "latency",
       "op": "axpby_read_into_accum",
       "dtype": "c32",
       "n": 1024,
@@ -2041,6 +2125,7 @@
     },
     {
       "id": "axpby_unit_add_c32_n1024",
+      "regime": "latency",
       "op": "axpby_read_into_accum",
       "dtype": "c32",
       "n": 1024,
@@ -2057,6 +2142,7 @@
     },
     {
       "id": "axpby_overwrite_c64_n1024",
+      "regime": "latency",
       "op": "axpby_read_into_accum",
       "dtype": "c64",
       "n": 1024,
@@ -2074,6 +2160,7 @@
     },
     {
       "id": "axpby_lerp_c64_n1024",
+      "regime": "latency",
       "op": "axpby_read_into_accum",
       "dtype": "c64",
       "n": 1024,
@@ -2091,6 +2178,7 @@
     },
     {
       "id": "axpby_unit_add_c64_n1024",
+      "regime": "latency",
       "op": "axpby_read_into_accum",
       "dtype": "c64",
       "n": 1024,
@@ -2307,6 +2395,7 @@
     },
     {
       "id": "dot_general_batch_f32_s32",
+      "regime": "latency",
       "op": "dot_general_axes",
       "variant": "batch",
       "dtype": "f32",
@@ -2338,6 +2427,7 @@
     },
     {
       "id": "dot_general_batch_f64_s32",
+      "regime": "latency",
       "op": "dot_general_axes",
       "variant": "batch",
       "dtype": "f64",
@@ -2369,6 +2459,7 @@
     },
     {
       "id": "dot_general_batch_c32_s32",
+      "regime": "latency",
       "op": "dot_general_axes",
       "variant": "batch",
       "dtype": "c32",
@@ -2400,6 +2491,7 @@
     },
     {
       "id": "dot_general_batch_c64_s32",
+      "regime": "latency",
       "op": "dot_general_axes",
       "variant": "batch",
       "dtype": "c64",
@@ -2431,6 +2523,7 @@
     },
     {
       "id": "dot_general_multiple_f32_s32",
+      "regime": "latency",
       "op": "dot_general_axes",
       "variant": "multiple",
       "dtype": "f32",
@@ -2460,6 +2553,7 @@
     },
     {
       "id": "dot_general_multiple_f64_s32",
+      "regime": "latency",
       "op": "dot_general_axes",
       "variant": "multiple",
       "dtype": "f64",
@@ -2489,6 +2583,7 @@
     },
     {
       "id": "dot_general_multiple_c32_s32",
+      "regime": "latency",
       "op": "dot_general_axes",
       "variant": "multiple",
       "dtype": "c32",
@@ -2518,6 +2613,7 @@
     },
     {
       "id": "dot_general_multiple_c64_s32",
+      "regime": "latency",
       "op": "dot_general_axes",
       "variant": "multiple",
       "dtype": "c64",
@@ -2547,6 +2643,7 @@
     },
     {
       "id": "dot_general_batch_f32_s256",
+      "regime": "latency",
       "op": "dot_general_axes",
       "variant": "batch",
       "dtype": "f32",
@@ -2578,6 +2675,7 @@
     },
     {
       "id": "dot_general_batch_f64_s256",
+      "regime": "latency",
       "op": "dot_general_axes",
       "variant": "batch",
       "dtype": "f64",
@@ -2609,6 +2707,7 @@
     },
     {
       "id": "dot_general_batch_c32_s256",
+      "regime": "latency",
       "op": "dot_general_axes",
       "variant": "batch",
       "dtype": "c32",
@@ -2640,6 +2739,7 @@
     },
     {
       "id": "dot_general_batch_c64_s256",
+      "regime": "latency",
       "op": "dot_general_axes",
       "variant": "batch",
       "dtype": "c64",
@@ -2671,6 +2771,7 @@
     },
     {
       "id": "dot_general_multiple_f32_s256",
+      "regime": "latency",
       "op": "dot_general_axes",
       "variant": "multiple",
       "dtype": "f32",
@@ -2700,6 +2801,7 @@
     },
     {
       "id": "dot_general_multiple_f64_s256",
+      "regime": "latency",
       "op": "dot_general_axes",
       "variant": "multiple",
       "dtype": "f64",
@@ -2729,6 +2831,7 @@
     },
     {
       "id": "dot_general_multiple_c32_s256",
+      "regime": "latency",
       "op": "dot_general_axes",
       "variant": "multiple",
       "dtype": "c32",
@@ -2758,6 +2861,7 @@
     },
     {
       "id": "dot_general_multiple_c64_s256",
+      "regime": "latency",
       "op": "dot_general_axes",
       "variant": "multiple",
       "dtype": "c64",
@@ -2787,6 +2891,7 @@
     },
     {
       "id": "dot_conj_l0r0_c32_n1024",
+      "regime": "latency",
       "op": "dot_general_conj",
       "dtype": "c32",
       "n": 1024,
@@ -2811,6 +2916,7 @@
     },
     {
       "id": "dot_conj_l1r0_c32_n1024",
+      "regime": "latency",
       "op": "dot_general_conj",
       "dtype": "c32",
       "n": 1024,
@@ -2835,6 +2941,7 @@
     },
     {
       "id": "dot_conj_l0r1_c32_n1024",
+      "regime": "latency",
       "op": "dot_general_conj",
       "dtype": "c32",
       "n": 1024,
@@ -2859,6 +2966,7 @@
     },
     {
       "id": "dot_conj_l1r1_c32_n1024",
+      "regime": "latency",
       "op": "dot_general_conj",
       "dtype": "c32",
       "n": 1024,
@@ -2888,6 +2996,7 @@
     },
     {
       "id": "dot_conj_l0r0_c64_n1024",
+      "regime": "latency",
       "op": "dot_general_conj",
       "dtype": "c64",
       "n": 1024,
@@ -2912,6 +3021,7 @@
     },
     {
       "id": "dot_conj_l1r0_c64_n1024",
+      "regime": "latency",
       "op": "dot_general_conj",
       "dtype": "c64",
       "n": 1024,
@@ -2936,6 +3046,7 @@
     },
     {
       "id": "dot_conj_l0r1_c64_n1024",
+      "regime": "latency",
       "op": "dot_general_conj",
       "dtype": "c64",
       "n": 1024,
@@ -2960,6 +3071,7 @@
     },
     {
       "id": "dot_conj_l1r1_c64_n1024",
+      "regime": "latency",
       "op": "dot_general_conj",
       "dtype": "c64",
       "n": 1024,
@@ -3191,6 +3303,7 @@
     },
     {
       "id": "einsum_plan_owned_f32_s32",
+      "regime": "latency",
       "op": "einsum_plan_owned",
       "dtype": "f32",
       "n": 512,
@@ -3209,6 +3322,7 @@
     },
     {
       "id": "einsum_plan_read_f32_s32",
+      "regime": "latency",
       "op": "einsum_plan_read",
       "dtype": "f32",
       "n": 512,
@@ -3227,6 +3341,7 @@
     },
     {
       "id": "einsum_plan_strided_read_f32_s32",
+      "regime": "latency",
       "op": "einsum_plan_strided_read",
       "dtype": "f32",
       "n": 512,
@@ -3245,6 +3360,7 @@
     },
     {
       "id": "einsum_plan_into_f32_s32",
+      "regime": "latency",
       "op": "einsum_plan_into",
       "dtype": "f32",
       "n": 512,
@@ -3265,6 +3381,7 @@
     },
     {
       "id": "einsum_plan_read_into_f32_s32",
+      "regime": "latency",
       "op": "einsum_plan_read_into",
       "dtype": "f32",
       "n": 512,
@@ -3285,6 +3402,7 @@
     },
     {
       "id": "einsum_plan_read_into_accum_f32_s32",
+      "regime": "latency",
       "op": "einsum_plan_read_into_accum",
       "dtype": "f32",
       "n": 512,
@@ -3305,6 +3423,7 @@
     },
     {
       "id": "einsum_plan_strided_read_into_f32_s32",
+      "regime": "latency",
       "op": "einsum_plan_strided_read_into",
       "dtype": "f32",
       "n": 512,
@@ -3325,6 +3444,7 @@
     },
     {
       "id": "einsum_plan_strided_read_into_accum_f32_s32",
+      "regime": "latency",
       "op": "einsum_plan_strided_read_into_accum",
       "dtype": "f32",
       "n": 512,
@@ -3345,6 +3465,7 @@
     },
     {
       "id": "einsum_plan_owned_f64_s32",
+      "regime": "latency",
       "op": "einsum_plan_owned",
       "dtype": "f64",
       "n": 512,
@@ -3363,6 +3484,7 @@
     },
     {
       "id": "einsum_plan_read_f64_s32",
+      "regime": "latency",
       "op": "einsum_plan_read",
       "dtype": "f64",
       "n": 512,
@@ -3381,6 +3503,7 @@
     },
     {
       "id": "einsum_plan_strided_read_f64_s32",
+      "regime": "latency",
       "op": "einsum_plan_strided_read",
       "dtype": "f64",
       "n": 512,
@@ -3399,6 +3522,7 @@
     },
     {
       "id": "einsum_plan_into_f64_s32",
+      "regime": "latency",
       "op": "einsum_plan_into",
       "dtype": "f64",
       "n": 512,
@@ -3419,6 +3543,7 @@
     },
     {
       "id": "einsum_plan_read_into_f64_s32",
+      "regime": "latency",
       "op": "einsum_plan_read_into",
       "dtype": "f64",
       "n": 512,
@@ -3439,6 +3564,7 @@
     },
     {
       "id": "einsum_plan_read_into_accum_f64_s32",
+      "regime": "latency",
       "op": "einsum_plan_read_into_accum",
       "dtype": "f64",
       "n": 512,
@@ -3459,6 +3585,7 @@
     },
     {
       "id": "einsum_plan_strided_read_into_f64_s32",
+      "regime": "latency",
       "op": "einsum_plan_strided_read_into",
       "dtype": "f64",
       "n": 512,
@@ -3479,6 +3606,7 @@
     },
     {
       "id": "einsum_plan_strided_read_into_accum_f64_s32",
+      "regime": "latency",
       "op": "einsum_plan_strided_read_into_accum",
       "dtype": "f64",
       "n": 512,
@@ -3499,6 +3627,7 @@
     },
     {
       "id": "einsum_plan_owned_c32_s32",
+      "regime": "latency",
       "op": "einsum_plan_owned",
       "dtype": "c32",
       "n": 512,
@@ -3517,6 +3646,7 @@
     },
     {
       "id": "einsum_plan_read_c32_s32",
+      "regime": "latency",
       "op": "einsum_plan_read",
       "dtype": "c32",
       "n": 512,
@@ -3535,6 +3665,7 @@
     },
     {
       "id": "einsum_plan_strided_read_c32_s32",
+      "regime": "latency",
       "op": "einsum_plan_strided_read",
       "dtype": "c32",
       "n": 512,
@@ -3553,6 +3684,7 @@
     },
     {
       "id": "einsum_plan_into_c32_s32",
+      "regime": "latency",
       "op": "einsum_plan_into",
       "dtype": "c32",
       "n": 512,
@@ -3573,6 +3705,7 @@
     },
     {
       "id": "einsum_plan_read_into_c32_s32",
+      "regime": "latency",
       "op": "einsum_plan_read_into",
       "dtype": "c32",
       "n": 512,
@@ -3593,6 +3726,7 @@
     },
     {
       "id": "einsum_plan_read_into_accum_c32_s32",
+      "regime": "latency",
       "op": "einsum_plan_read_into_accum",
       "dtype": "c32",
       "n": 512,
@@ -3613,6 +3747,7 @@
     },
     {
       "id": "einsum_plan_strided_read_into_c32_s32",
+      "regime": "latency",
       "op": "einsum_plan_strided_read_into",
       "dtype": "c32",
       "n": 512,
@@ -3633,6 +3768,7 @@
     },
     {
       "id": "einsum_plan_strided_read_into_accum_c32_s32",
+      "regime": "latency",
       "op": "einsum_plan_strided_read_into_accum",
       "dtype": "c32",
       "n": 512,
@@ -3653,6 +3789,7 @@
     },
     {
       "id": "einsum_plan_owned_c64_s32",
+      "regime": "latency",
       "op": "einsum_plan_owned",
       "dtype": "c64",
       "n": 512,
@@ -3671,6 +3808,7 @@
     },
     {
       "id": "einsum_plan_read_c64_s32",
+      "regime": "latency",
       "op": "einsum_plan_read",
       "dtype": "c64",
       "n": 512,
@@ -3689,6 +3827,7 @@
     },
     {
       "id": "einsum_plan_strided_read_c64_s32",
+      "regime": "latency",
       "op": "einsum_plan_strided_read",
       "dtype": "c64",
       "n": 512,
@@ -3707,6 +3846,7 @@
     },
     {
       "id": "einsum_plan_into_c64_s32",
+      "regime": "latency",
       "op": "einsum_plan_into",
       "dtype": "c64",
       "n": 512,
@@ -3727,6 +3867,7 @@
     },
     {
       "id": "einsum_plan_read_into_c64_s32",
+      "regime": "latency",
       "op": "einsum_plan_read_into",
       "dtype": "c64",
       "n": 512,
@@ -3747,6 +3888,7 @@
     },
     {
       "id": "einsum_plan_read_into_accum_c64_s32",
+      "regime": "latency",
       "op": "einsum_plan_read_into_accum",
       "dtype": "c64",
       "n": 512,
@@ -3767,6 +3909,7 @@
     },
     {
       "id": "einsum_plan_strided_read_into_c64_s32",
+      "regime": "latency",
       "op": "einsum_plan_strided_read_into",
       "dtype": "c64",
       "n": 512,
@@ -3787,6 +3930,7 @@
     },
     {
       "id": "einsum_plan_strided_read_into_accum_c64_s32",
+      "regime": "latency",
       "op": "einsum_plan_strided_read_into_accum",
       "dtype": "c64",
       "n": 512,
@@ -3807,6 +3951,7 @@
     },
     {
       "id": "einsum_plan_owned_f32_s256",
+      "regime": "latency",
       "op": "einsum_plan_owned",
       "dtype": "f32",
       "n": 32768,
@@ -3825,6 +3970,7 @@
     },
     {
       "id": "einsum_plan_read_f32_s256",
+      "regime": "latency",
       "op": "einsum_plan_read",
       "dtype": "f32",
       "n": 32768,
@@ -3843,6 +3989,7 @@
     },
     {
       "id": "einsum_plan_strided_read_f32_s256",
+      "regime": "latency",
       "op": "einsum_plan_strided_read",
       "dtype": "f32",
       "n": 32768,
@@ -3861,6 +4008,7 @@
     },
     {
       "id": "einsum_plan_into_f32_s256",
+      "regime": "latency",
       "op": "einsum_plan_into",
       "dtype": "f32",
       "n": 32768,
@@ -3881,6 +4029,7 @@
     },
     {
       "id": "einsum_plan_read_into_f32_s256",
+      "regime": "latency",
       "op": "einsum_plan_read_into",
       "dtype": "f32",
       "n": 32768,
@@ -3901,6 +4050,7 @@
     },
     {
       "id": "einsum_plan_read_into_accum_f32_s256",
+      "regime": "latency",
       "op": "einsum_plan_read_into_accum",
       "dtype": "f32",
       "n": 32768,
@@ -3921,6 +4071,7 @@
     },
     {
       "id": "einsum_plan_strided_read_into_f32_s256",
+      "regime": "latency",
       "op": "einsum_plan_strided_read_into",
       "dtype": "f32",
       "n": 32768,
@@ -3941,6 +4092,7 @@
     },
     {
       "id": "einsum_plan_strided_read_into_accum_f32_s256",
+      "regime": "latency",
       "op": "einsum_plan_strided_read_into_accum",
       "dtype": "f32",
       "n": 32768,
@@ -3961,6 +4113,7 @@
     },
     {
       "id": "einsum_plan_owned_f64_s256",
+      "regime": "latency",
       "op": "einsum_plan_owned",
       "dtype": "f64",
       "n": 32768,
@@ -3979,6 +4132,7 @@
     },
     {
       "id": "einsum_plan_read_f64_s256",
+      "regime": "latency",
       "op": "einsum_plan_read",
       "dtype": "f64",
       "n": 32768,
@@ -3997,6 +4151,7 @@
     },
     {
       "id": "einsum_plan_strided_read_f64_s256",
+      "regime": "latency",
       "op": "einsum_plan_strided_read",
       "dtype": "f64",
       "n": 32768,
@@ -4015,6 +4170,7 @@
     },
     {
       "id": "einsum_plan_into_f64_s256",
+      "regime": "latency",
       "op": "einsum_plan_into",
       "dtype": "f64",
       "n": 32768,
@@ -4035,6 +4191,7 @@
     },
     {
       "id": "einsum_plan_read_into_f64_s256",
+      "regime": "latency",
       "op": "einsum_plan_read_into",
       "dtype": "f64",
       "n": 32768,
@@ -4055,6 +4212,7 @@
     },
     {
       "id": "einsum_plan_read_into_accum_f64_s256",
+      "regime": "latency",
       "op": "einsum_plan_read_into_accum",
       "dtype": "f64",
       "n": 32768,
@@ -4075,6 +4233,7 @@
     },
     {
       "id": "einsum_plan_strided_read_into_f64_s256",
+      "regime": "latency",
       "op": "einsum_plan_strided_read_into",
       "dtype": "f64",
       "n": 32768,
@@ -4095,6 +4254,7 @@
     },
     {
       "id": "einsum_plan_strided_read_into_accum_f64_s256",
+      "regime": "latency",
       "op": "einsum_plan_strided_read_into_accum",
       "dtype": "f64",
       "n": 32768,
@@ -4115,6 +4275,7 @@
     },
     {
       "id": "einsum_plan_owned_c32_s256",
+      "regime": "latency",
       "op": "einsum_plan_owned",
       "dtype": "c32",
       "n": 32768,
@@ -4133,6 +4294,7 @@
     },
     {
       "id": "einsum_plan_read_c32_s256",
+      "regime": "latency",
       "op": "einsum_plan_read",
       "dtype": "c32",
       "n": 32768,
@@ -4151,6 +4313,7 @@
     },
     {
       "id": "einsum_plan_strided_read_c32_s256",
+      "regime": "latency",
       "op": "einsum_plan_strided_read",
       "dtype": "c32",
       "n": 32768,
@@ -4169,6 +4332,7 @@
     },
     {
       "id": "einsum_plan_into_c32_s256",
+      "regime": "latency",
       "op": "einsum_plan_into",
       "dtype": "c32",
       "n": 32768,
@@ -4189,6 +4353,7 @@
     },
     {
       "id": "einsum_plan_read_into_c32_s256",
+      "regime": "latency",
       "op": "einsum_plan_read_into",
       "dtype": "c32",
       "n": 32768,
@@ -4209,6 +4374,7 @@
     },
     {
       "id": "einsum_plan_read_into_accum_c32_s256",
+      "regime": "latency",
       "op": "einsum_plan_read_into_accum",
       "dtype": "c32",
       "n": 32768,
@@ -4229,6 +4395,7 @@
     },
     {
       "id": "einsum_plan_strided_read_into_c32_s256",
+      "regime": "latency",
       "op": "einsum_plan_strided_read_into",
       "dtype": "c32",
       "n": 32768,
@@ -4249,6 +4416,7 @@
     },
     {
       "id": "einsum_plan_strided_read_into_accum_c32_s256",
+      "regime": "latency",
       "op": "einsum_plan_strided_read_into_accum",
       "dtype": "c32",
       "n": 32768,
@@ -4269,6 +4437,7 @@
     },
     {
       "id": "einsum_plan_owned_c64_s256",
+      "regime": "latency",
       "op": "einsum_plan_owned",
       "dtype": "c64",
       "n": 32768,
@@ -4287,6 +4456,7 @@
     },
     {
       "id": "einsum_plan_read_c64_s256",
+      "regime": "latency",
       "op": "einsum_plan_read",
       "dtype": "c64",
       "n": 32768,
@@ -4305,6 +4475,7 @@
     },
     {
       "id": "einsum_plan_strided_read_c64_s256",
+      "regime": "latency",
       "op": "einsum_plan_strided_read",
       "dtype": "c64",
       "n": 32768,
@@ -4323,6 +4494,7 @@
     },
     {
       "id": "einsum_plan_into_c64_s256",
+      "regime": "latency",
       "op": "einsum_plan_into",
       "dtype": "c64",
       "n": 32768,
@@ -4343,6 +4515,7 @@
     },
     {
       "id": "einsum_plan_read_into_c64_s256",
+      "regime": "latency",
       "op": "einsum_plan_read_into",
       "dtype": "c64",
       "n": 32768,
@@ -4363,6 +4536,7 @@
     },
     {
       "id": "einsum_plan_read_into_accum_c64_s256",
+      "regime": "latency",
       "op": "einsum_plan_read_into_accum",
       "dtype": "c64",
       "n": 32768,
@@ -4383,6 +4557,7 @@
     },
     {
       "id": "einsum_plan_strided_read_into_c64_s256",
+      "regime": "latency",
       "op": "einsum_plan_strided_read_into",
       "dtype": "c64",
       "n": 32768,
@@ -4403,6 +4578,7 @@
     },
     {
       "id": "einsum_plan_strided_read_into_accum_c64_s256",
+      "regime": "latency",
       "op": "einsum_plan_strided_read_into_accum",
       "dtype": "c64",
       "n": 32768,
@@ -4423,6 +4599,7 @@
     },
     {
       "id": "sub_strided_read_f32_n1024",
+      "regime": "latency",
       "op": "sub_strided_read",
       "read_op": "sub",
       "dtype": "f32",
@@ -4438,6 +4615,7 @@
     },
     {
       "id": "sub_strided_read_f64_n1024",
+      "regime": "latency",
       "op": "sub_strided_read",
       "read_op": "sub",
       "dtype": "f64",
@@ -4453,6 +4631,7 @@
     },
     {
       "id": "div_strided_read_f32_n1024",
+      "regime": "latency",
       "op": "div_strided_read",
       "read_op": "div",
       "dtype": "f32",
@@ -4468,6 +4647,7 @@
     },
     {
       "id": "div_strided_read_f64_n1024",
+      "regime": "latency",
       "op": "div_strided_read",
       "read_op": "div",
       "dtype": "f64",
@@ -4483,6 +4663,7 @@
     },
     {
       "id": "rem_strided_read_f32_n1024",
+      "regime": "latency",
       "op": "rem_strided_read",
       "read_op": "rem",
       "dtype": "f32",
@@ -4498,6 +4679,7 @@
     },
     {
       "id": "rem_strided_read_f64_n1024",
+      "regime": "latency",
       "op": "rem_strided_read",
       "read_op": "rem",
       "dtype": "f64",
@@ -4513,6 +4695,7 @@
     },
     {
       "id": "pow_strided_read_f32_n1024",
+      "regime": "latency",
       "op": "pow_strided_read",
       "read_op": "pow",
       "dtype": "f32",
@@ -4528,6 +4711,7 @@
     },
     {
       "id": "pow_strided_read_f64_n1024",
+      "regime": "latency",
       "op": "pow_strided_read",
       "read_op": "pow",
       "dtype": "f64",
@@ -4543,6 +4727,7 @@
     },
     {
       "id": "maximum_strided_read_f32_n1024",
+      "regime": "latency",
       "op": "maximum_strided_read",
       "read_op": "maximum",
       "dtype": "f32",
@@ -4558,6 +4743,7 @@
     },
     {
       "id": "maximum_strided_read_f64_n1024",
+      "regime": "latency",
       "op": "maximum_strided_read",
       "read_op": "maximum",
       "dtype": "f64",
@@ -4573,6 +4759,7 @@
     },
     {
       "id": "minimum_strided_read_f32_n1024",
+      "regime": "latency",
       "op": "minimum_strided_read",
       "read_op": "minimum",
       "dtype": "f32",
@@ -4588,6 +4775,7 @@
     },
     {
       "id": "minimum_strided_read_f64_n1024",
+      "regime": "latency",
       "op": "minimum_strided_read",
       "read_op": "minimum",
       "dtype": "f64",
@@ -4603,6 +4791,7 @@
     },
     {
       "id": "abs_strided_read_f32_n1024",
+      "regime": "latency",
       "op": "abs_strided_read",
       "read_op": "abs",
       "dtype": "f32",
@@ -4618,6 +4807,7 @@
     },
     {
       "id": "abs_strided_read_f64_n1024",
+      "regime": "latency",
       "op": "abs_strided_read",
       "read_op": "abs",
       "dtype": "f64",
@@ -4633,6 +4823,7 @@
     },
     {
       "id": "sign_strided_read_f32_n1024",
+      "regime": "latency",
       "op": "sign_strided_read",
       "read_op": "sign",
       "dtype": "f32",
@@ -4648,6 +4839,7 @@
     },
     {
       "id": "sign_strided_read_f64_n1024",
+      "regime": "latency",
       "op": "sign_strided_read",
       "read_op": "sign",
       "dtype": "f64",
@@ -4663,6 +4855,7 @@
     },
     {
       "id": "expm1_strided_read_f32_n1024",
+      "regime": "latency",
       "op": "expm1_strided_read",
       "read_op": "expm1",
       "dtype": "f32",
@@ -4678,6 +4871,7 @@
     },
     {
       "id": "expm1_strided_read_f64_n1024",
+      "regime": "latency",
       "op": "expm1_strided_read",
       "read_op": "expm1",
       "dtype": "f64",
@@ -4693,6 +4887,7 @@
     },
     {
       "id": "log_strided_read_f32_n1024",
+      "regime": "latency",
       "op": "log_strided_read",
       "read_op": "log",
       "dtype": "f32",
@@ -4708,6 +4903,7 @@
     },
     {
       "id": "log_strided_read_f64_n1024",
+      "regime": "latency",
       "op": "log_strided_read",
       "read_op": "log",
       "dtype": "f64",
@@ -4723,6 +4919,7 @@
     },
     {
       "id": "log1p_strided_read_f32_n1024",
+      "regime": "latency",
       "op": "log1p_strided_read",
       "read_op": "log1p",
       "dtype": "f32",
@@ -4738,6 +4935,7 @@
     },
     {
       "id": "log1p_strided_read_f64_n1024",
+      "regime": "latency",
       "op": "log1p_strided_read",
       "read_op": "log1p",
       "dtype": "f64",
@@ -4753,6 +4951,7 @@
     },
     {
       "id": "erf_strided_read_f32_n1024",
+      "regime": "latency",
       "op": "erf_strided_read",
       "read_op": "erf",
       "dtype": "f32",
@@ -4768,6 +4967,7 @@
     },
     {
       "id": "erf_strided_read_f64_n1024",
+      "regime": "latency",
       "op": "erf_strided_read",
       "read_op": "erf",
       "dtype": "f64",
@@ -4783,6 +4983,7 @@
     },
     {
       "id": "sin_strided_read_f32_n1024",
+      "regime": "latency",
       "op": "sin_strided_read",
       "read_op": "sin",
       "dtype": "f32",
@@ -4798,6 +4999,7 @@
     },
     {
       "id": "sin_strided_read_f64_n1024",
+      "regime": "latency",
       "op": "sin_strided_read",
       "read_op": "sin",
       "dtype": "f64",
@@ -4813,6 +5015,7 @@
     },
     {
       "id": "cos_strided_read_f32_n1024",
+      "regime": "latency",
       "op": "cos_strided_read",
       "read_op": "cos",
       "dtype": "f32",
@@ -4828,6 +5031,7 @@
     },
     {
       "id": "cos_strided_read_f64_n1024",
+      "regime": "latency",
       "op": "cos_strided_read",
       "read_op": "cos",
       "dtype": "f64",
@@ -4843,6 +5047,7 @@
     },
     {
       "id": "sqrt_strided_read_f32_n1024",
+      "regime": "latency",
       "op": "sqrt_strided_read",
       "read_op": "sqrt",
       "dtype": "f32",
@@ -4858,6 +5063,7 @@
     },
     {
       "id": "sqrt_strided_read_f64_n1024",
+      "regime": "latency",
       "op": "sqrt_strided_read",
       "read_op": "sqrt",
       "dtype": "f64",
@@ -4873,6 +5079,7 @@
     },
     {
       "id": "rsqrt_strided_read_f32_n1024",
+      "regime": "latency",
       "op": "rsqrt_strided_read",
       "read_op": "rsqrt",
       "dtype": "f32",
@@ -4888,6 +5095,7 @@
     },
     {
       "id": "rsqrt_strided_read_f64_n1024",
+      "regime": "latency",
       "op": "rsqrt_strided_read",
       "read_op": "rsqrt",
       "dtype": "f64",
@@ -4903,6 +5111,7 @@
     },
     {
       "id": "reduce_prod_strided_read_f32_n1024",
+      "regime": "latency",
       "op": "reduce_prod_strided_read",
       "read_op": "reduce_prod",
       "dtype": "f32",
@@ -4918,6 +5127,7 @@
     },
     {
       "id": "reduce_prod_strided_read_f64_n1024",
+      "regime": "latency",
       "op": "reduce_prod_strided_read",
       "read_op": "reduce_prod",
       "dtype": "f64",
@@ -4933,6 +5143,7 @@
     },
     {
       "id": "reduce_max_strided_read_f32_n1024",
+      "regime": "latency",
       "op": "reduce_max_strided_read",
       "read_op": "reduce_max",
       "dtype": "f32",
@@ -4948,6 +5159,7 @@
     },
     {
       "id": "reduce_max_strided_read_f64_n1024",
+      "regime": "latency",
       "op": "reduce_max_strided_read",
       "read_op": "reduce_max",
       "dtype": "f64",
@@ -4963,6 +5175,7 @@
     },
     {
       "id": "reduce_min_strided_read_f32_n1024",
+      "regime": "latency",
       "op": "reduce_min_strided_read",
       "read_op": "reduce_min",
       "dtype": "f32",
@@ -4978,6 +5191,7 @@
     },
     {
       "id": "reduce_min_strided_read_f64_n1024",
+      "regime": "latency",
       "op": "reduce_min_strided_read",
       "read_op": "reduce_min",
       "dtype": "f64",
@@ -4993,6 +5207,7 @@
     },
     {
       "id": "reduce_sum_squares_strided_read_f32_n1024",
+      "regime": "latency",
       "op": "reduce_sum_squares_strided_read",
       "read_op": "reduce_sum_squares",
       "dtype": "f32",
@@ -5008,6 +5223,7 @@
     },
     {
       "id": "reduce_sum_squares_strided_read_f64_n1024",
+      "regime": "latency",
       "op": "reduce_sum_squares_strided_read",
       "read_op": "reduce_sum_squares",
       "dtype": "f64",
