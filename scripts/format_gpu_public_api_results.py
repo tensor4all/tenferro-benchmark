@@ -74,8 +74,29 @@ def load_rows(suite, paths, *, verify_only=False):
     return rows
 
 
+BATCHING_MARK = "†"
+
+
+def mixed_batching_cases(suite, rows):
+    """Case ids whose measured arms timed a different number of operations per sample.
+
+    The per-operation median divides each batch by its own count, but a batch of 32 and
+    a batch of 16 amortise launch and synchronization differently, so the two arms'
+    values are an approximate comparison, not a like-for-like one (#336).
+    """
+    mixed = set()
+    for case in suite["cases"]:
+        counts = {rows[case["id"], backend]["timing"]["operations_per_sample"]
+                  for backend in suite["backends"]
+                  if rows[case["id"], backend]["status"] == "ok"}
+        if len(counts) > 1:
+            mixed.add(case["id"])
+    return mixed
+
+
 def render(suite, paths, metadata, timestamp, run_path=None):
     rows = load_rows(suite, paths)
+    mixed = mixed_batching_cases(suite, rows)
     calibration = guard.calibration_of(metadata)
     for row in rows.values():
         if row["status"] != "ok":
@@ -104,6 +125,7 @@ def render(suite, paths, metadata, timestamp, run_path=None):
         text += [compile_note(accounting), ""]
     text += [
             'Values are median (IQR) **µs per operation**. Samples time batches of declared operations plus device synchronization; retained output memory is limited to 256 MiB. Batch counts and raw durations are preserved in JSONL.', "",
+            f'Cases marked {BATCHING_MARK} (**{len(mixed)}** of {len(suite["cases"])}) were sampled with a different number of operations per sample on different arms (see Ops/sample in the sampling table). Each value is still per operation, but the arms amortise launch and synchronization over different batch sizes, so a ratio between their columns is approximate and is not presented as a like-for-like comparison.', "",
             'Setup, input transfers, library/plan initialization, JIT compilation, validation downloads and output destruction are outside timing. Intrinsic output allocation is inside timing; output-reuse rows instead use preallocated destinations across samples. Accumulating destinations are restored from prepared GPU seeds and synchronized before every batch clock, including initialization and calibration. Direct and eager each use one entered session across samples; direct FFT uses cached `FftExecutor`. JAX eager and compiled JIT are separate arms.', "",
             'All measured output elements are checked against independently generated NumPy/SciPy reference results before and after sampling. Unsupported rows include unavailable APIs and APIs whose internal setup cannot be excluded; these are not performance measurements. Short batches limited by output memory remain identifiable in the sampling table.', "",
             '| Case | ' + ' | '.join(backends) + ' |',
@@ -138,7 +160,8 @@ def render(suite, paths, metadata, timestamp, run_path=None):
             else:
                 v = row["samples_us"]
                 cells.append(f'{np.median(v):.3f} ({np.percentile(v, 75)-np.percentile(v, 25):.3f})')
-        text.append('| ' + case["id"] + ' | ' + ' | '.join(cells) + ' |')
+        label = case["id"] + (f" {BATCHING_MARK}" if case["id"] in mixed else "")
+        text.append('| ' + label + ' | ' + ' | '.join(cells) + ' |')
     text += ["", "## Sampling", "", "| Case | Backend | Ops/sample | Samples | Median batch ms | Bytes/op | Copy ratio | Verification error/tolerance |", "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |"]
     # Sorted, so the page does not depend on the order the backends' files were
     # passed in (the collector starts Rust arms before Python arms).

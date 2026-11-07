@@ -78,6 +78,7 @@ def make_row(
     group: str | None = None,
     verified: bool = False,
     reason: str | None = None,
+    operations_per_sample: int | None = None,
 ) -> dict[str, Any]:
     row: dict[str, Any] = {"case": str(case)}
     if group not in (None, ""):
@@ -90,7 +91,30 @@ def make_row(
     row["verified"] = bool(verified)
     if reason:
         row["reason"] = str(reason)
+    if operations_per_sample is not None:
+        row["operations_per_sample"] = int(operations_per_sample)
     return row
+
+
+def gpu_operations_per_sample(record: dict[str, Any]) -> int | None:
+    """How many operations one timed sample of an ok GPU record batched, if recorded.
+
+    The routine-contract records carry it in ``execution.notes`` as
+    ``sampling.operations_per_sample``. Two arms of one case that batched a different
+    number of operations amortise differently, so their per-operation medians are not
+    directly comparable (#336); the summary keeps the count so a consumer can tell.
+    """
+    if record.get("status") != "ok":
+        return None
+    notes = (record.get("execution") or {}).get("notes")
+    if not isinstance(notes, str) or not notes.strip().startswith("{"):
+        return None
+    try:
+        sampling = json.loads(notes).get("sampling") or {}
+    except (ValueError, AttributeError):
+        return None
+    count = sampling.get("operations_per_sample")
+    return count if isinstance(count, int) and not isinstance(count, bool) and count >= 1 else None
 
 
 def build_document(
@@ -317,6 +341,7 @@ def rows_from_gpu_records(
                 group=grp,
                 verified=verification.get("status") == "passed",
                 reason=reason,
+                operations_per_sample=gpu_operations_per_sample(record),
             )
         )
     return rows

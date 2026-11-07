@@ -459,6 +459,33 @@ class CompileNoteTest(unittest.TestCase):
             path.write_text(json.dumps(row) + "\n")
             self.assertNotIn("NVRTC", formatter.render(suite, [path], {}, "test"))
 
+class BatchingComparabilityTest(unittest.TestCase):
+    """#336: a case whose arms batched different counts is marked, not presented as like for like."""
+
+    def render(self, counts):
+        suite = {"suite_id": "gpu/one", "backends": list(counts), "description": "d",
+                 "cases": [{"id": "one", "op": "add", "dtype": "f32", "shape": [4]}]}
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "rows.jsonl"
+            path.write_text("".join(json.dumps({
+                "case_id": "one", "op": "add", "backend": backend, "status": "ok",
+                "timing": {"operations_per_sample": count, "batch_ms": [0.05 * count]},
+                "verification": {"max_error_over_tolerance": 0.0}}) + "\n"
+                for backend, count in counts.items()))
+            return formatter.render(suite, [path], {}, "test")
+
+    def test_mixed_batching_marks_the_case(self):
+        report = self.render({"tenferro-cuda-direct": 16, "pytorch-cuda": 32})
+        self.assertIn(f"| one {formatter.BATCHING_MARK} |", report)
+        self.assertIn(f"Cases marked {formatter.BATCHING_MARK} (**1** of 1)", report)
+        # The value stays per operation: 0.8 ms / 16 = 1.6 ms / 32 = 50 µs.
+        self.assertIn("50.000 (0.000) | 50.000 (0.000)", report)
+
+    def test_equal_batching_is_not_marked(self):
+        report = self.render({"tenferro-cuda-direct": 32, "pytorch-cuda": 32})
+        self.assertIn("| one |", report)
+        self.assertIn(f"Cases marked {formatter.BATCHING_MARK} (**0** of 1)", report)
+
 
 if __name__ == "__main__":
     unittest.main()
