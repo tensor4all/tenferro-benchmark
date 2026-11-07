@@ -195,6 +195,11 @@ def fold(row, suite_id=None):
     if "compile_modules" in row:
         record["timing"]["compile_cache"] = row.get("compile_cache")
         record["timing"]["compile_modules"] = row.get("compile_modules")
+    # Which check backed the row travels with it; a family that records no mode
+    # keeps byte-identical records.
+    recorded_mode = (row.get("verification") or {}).get("mode")
+    if recorded_mode:
+        record["verification"]["mode"] = recorded_mode
     return record
 
 

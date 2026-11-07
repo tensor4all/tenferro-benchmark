@@ -112,14 +112,29 @@ def format_markdown(
         seen.add(key)
         if record["status"] == "ok":
             verification = record["verification"]
-            if verification["status"] != "passed" or not verification.get("reference_backend"):
-                raise ValueError(f"unverified AD result: {key}")
-            for field in ("max_abs_error", "max_rel_error", "residual"):
-                value = verification.get(field)
-                if value is None or not math.isfinite(value) or value < 0:
-                    raise ValueError(f"invalid AD verification: {key}")
-            if verification["residual"] > 1:
-                raise ValueError(f"AD verification exceeds tolerance: {key}")
+            verified = verification["status"] == "passed"
+            if verified:
+                if not verification.get("reference_backend"):
+                    raise ValueError(f"unverified AD result: {key}")
+                for field in ("max_abs_error", "max_rel_error", "residual"):
+                    value = verification.get(field)
+                    if value is None or not math.isfinite(value) or value < 0:
+                        raise ValueError(f"invalid AD verification: {key}")
+                if verification["residual"] > 1:
+                    raise ValueError(f"AD verification exceeds tolerance: {key}")
+            else:
+                # A measure_only row is a measurement, not a verified one. It
+                # publishes only when its manifest states why no check ran, and
+                # it never carries the numbers a check would have produced.
+                if verification["status"] != "not_run":
+                    raise ValueError(f"unverified AD result: {key}")
+                if not (verification.get("reason") or "").strip():
+                    raise ValueError(f"unexplained unverified AD result: {key}")
+                if verification.get("mode") != "measure_only":
+                    raise ValueError(f"not_run AD result without measure_only: {key}")
+                for field in ("max_abs_error", "max_rel_error", "residual"):
+                    if verification.get(field) is not None:
+                        raise ValueError(f"not_run AD result carries a check value: {key}")
             sampling = json.loads(record["execution"]["notes"])["sampling"]
             if record["suite_id"] == "gpu/linalg_ad_latency":
                 scope = "steady_state_host_api_plus_device_sync"
@@ -196,6 +211,40 @@ def format_markdown(
         "Timed runs include the host API call and backend-native device synchronization "
         "without downloading AD outputs in the timed region."
     )
+    # Which check backs each number is part of the report: a reader must never
+    # have to assume a row was compared against a reference.
+    mode_notes = {
+        "cpu_reference": "re-executed on the CPU in f64 and compared element by element",
+        "analytic": "compared element by element against a closed-form derivative "
+                    "built on the accelerator",
+        "finite_difference": "directional derivative compared with a central difference "
+                             "of the primal loss at a step derived from f64 precision",
+        "measure_only": "**not verified**: the manifest declares this case measurement-only",
+    }
+    modes_present = sorted(
+        {record["verification"].get("mode") or "cpu_reference"
+         for record in records if record["status"] == "ok"}
+    )
+    if modes_present != ["cpu_reference"]:
+        lines.append(
+            "Verification modes: "
+            + "; ".join(f"`{mode}` ({mode_notes.get(mode, 'unrecorded check')})"
+                        for mode in modes_present)
+            + ". Every mode is held to the suite's own rtol/atol."
+        )
+    unchecked = [
+        record for record in records
+        if record["status"] == "ok" and record["verification"]["status"] == "not_run"
+    ]
+    if unchecked:
+        lines.append(
+            "Rows marked as not checked: "
+            + "; ".join(
+                f"`{record['problem_id']}` ({record['verification']['reason']})"
+                for record in unchecked
+            )
+            + ". Their numbers are measurements only."
+        )
     suites_present = {suite for suite, _, _, _ in by_key}
     if "small" in suites_present:
         lines.append("Small cases (n=2, 4, 8) use bounded batches of repeated declared operations with retained outputs. They compare steady-state API latency, not isolated GPU throughput. Native synchronization completes each operation; numerical downloads are outside timing.")

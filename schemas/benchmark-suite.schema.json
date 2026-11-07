@@ -96,14 +96,34 @@
     },
     "verify": {
       "type": "object",
-      "required": ["reference", "rtol", "atol"],
       "additionalProperties": true,
       "properties": {
+        "mode": {
+          "description": "How the case's numbers are checked. cpu_reference (default) re-runs the compiled graph on a CPU engine; analytic compares every output element against a closed-form reference built on the accelerator; finite_difference compares the directional derivative against a central difference of the primal loss; measure_only runs no check and is refused unless reason explains why.",
+          "enum": ["cpu_reference", "analytic", "finite_difference", "measure_only"]
+        },
         "reference": { "type": "string", "minLength": 1 },
         "rtol": { "type": "number", "minimum": 0 },
         "atol": { "type": "number", "minimum": 0 },
-        "residual_rtol": { "type": "number", "minimum": 0 }
-      }
+        "residual_rtol": { "type": "number", "minimum": 0 },
+        "reason": {
+          "description": "Why a measure_only case carries no numerical check. Required, and non-blank, for that mode only.",
+          "type": "string"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "mode": { "const": "measure_only" } },
+            "required": ["mode"]
+          },
+          "then": {
+            "required": ["reason"],
+            "properties": { "reason": { "minLength": 1, "pattern": "\\S" } }
+          },
+          "else": { "required": ["reference", "rtol", "atol"] }
+        }
+      ]
     },
     "layout": {
       "type": "object",

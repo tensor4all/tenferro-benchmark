@@ -84,11 +84,12 @@ def main() -> None:
                         ts=ts,
                         bc=bc,
                         tc=tc,
+                        verify_defaults=suite.get("defaults"),
                     )
                     fh.write(json.dumps(rec, sort_keys=True) + "\n")
 
 
-def run_one(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
+def run_one(suite_id, problem, backend, device_ordinal, *, ts, bc, tc, verify_defaults=None):
     phase = problem["op"]
     if phase not in {"jvp", "vjp"}:
         return stub(
@@ -103,9 +104,11 @@ def run_one(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
             tc=tc,
         )
     if backend == "pytorch-cuda":
-        return run_torch(suite_id, problem, backend, device_ordinal, ts=ts, bc=bc, tc=tc)
+        return run_torch(suite_id, problem, backend, device_ordinal, ts=ts, bc=bc, tc=tc,
+                         verify_defaults=verify_defaults)
     if backend == "jax-cuda":
-        return run_jax(suite_id, problem, backend, device_ordinal, ts=ts, bc=bc, tc=tc)
+        return run_jax(suite_id, problem, backend, device_ordinal, ts=ts, bc=bc, tc=tc,
+                       verify_defaults=verify_defaults)
     return stub(
         suite_id,
         problem,
@@ -129,19 +132,22 @@ def problem_shape(problem) -> str:
     return f"{n}x{n}"
 
 
-def run_torch(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
-    return run_framework(suite_id, problem, backend, device_ordinal, ts=ts, bc=bc, tc=tc)
+def run_torch(suite_id, problem, backend, device_ordinal, *, ts, bc, tc, verify_defaults=None):
+    return run_framework(suite_id, problem, backend, device_ordinal, ts=ts, bc=bc, tc=tc,
+                         verify_defaults=verify_defaults)
 
 
-def run_jax(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
-    return run_framework(suite_id, problem, backend, device_ordinal, ts=ts, bc=bc, tc=tc)
+def run_jax(suite_id, problem, backend, device_ordinal, *, ts, bc, tc, verify_defaults=None):
+    return run_framework(suite_id, problem, backend, device_ordinal, ts=ts, bc=bc, tc=tc,
+                         verify_defaults=verify_defaults)
 
 
-def run_framework(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
+def run_framework(suite_id, problem, backend, device_ordinal, *, ts, bc, tc, verify_defaults=None):
     import numpy as np
     from gpu_linalg_ad_contracts import cpu_reference, leaves, verify_arrays
     from benchmark_gpu_public_api import measure
     from benchmark_gpu_python import _timing_stats
+    import linalg_ad_verify_modes as verify_modes
     is_jax = backend == "jax-cuda"
     path = "prepared-jax-cuda-jit-linalg-ad" if is_jax else "pytorch-cuda-functional-linalg-ad"
     phase, ad = problem["op"], problem["linalg_ad"]
@@ -151,13 +157,20 @@ def run_framework(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
     rtol, atol = problem.get("verify", {}).get("rtol", 1e-5), problem.get("verify", {}).get("atol", 1e-8)
     verify_only = os.environ.get("GPU_BENCH_VERIFY_ONLY") == "1"
     case_started = time.perf_counter()
+    # Which check backs this row is the manifest's decision, not the runner's.
+    mode = verify_modes.mode_for(problem, verify_defaults)
     try:
         if warmups < 0 or runs < 1:
             raise ValueError("invalid AD sampling counts")
         matrix = matrix_for_linalg_ad(loss_name, n, seed)
         tangent = data((n, n), tangent_seed(seed))
         rhs = data((n, ad.get("rhs_cols", 1)), ad.get("rhs_seed", 0)) if loss_name == "grad_sum_solve" else None
-        expected, difference = cpu_reference(LOSS_TORCH[loss_name], matrix, tangent, rhs, phase)
+        if mode == "cpu_reference":
+            expected, difference = cpu_reference(LOSS_TORCH[loss_name], matrix, tangent, rhs, phase)
+        else:
+            # analytic and finite_difference build their reference at check time
+            # from the same matrix; measure_only builds none at all.
+            expected, difference = None, None
         # Input generation plus the CPU AD reference: everything this case pays
         # before its own clocks start.
         fixture_ms = (time.perf_counter() - case_started) * 1000
@@ -222,7 +235,16 @@ def run_framework(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
         def check(result):
             for value in leaves(result):
                 check_placement(value)
-            return verify_arrays([download(v) for v in leaves(result)], expected, rtol, atol)
+            arrays = [download(v) for v in leaves(result)]
+            if mode == "measure_only":
+                return None
+            if mode == "cpu_reference":
+                max_abs, max_rel, worst = verify_arrays(arrays, expected, rtol, atol)
+                return {"max_abs_error": max_abs, "max_rel_error": max_rel,
+                        "residual": worst, "reference_backend": "cpu_fp64 AD re-execution",
+                        "reason": None, "mode": mode, "diagnostic": difference}
+            return verify_modes.check(mode, loss_name, phase, arrays, matrix, tangent, rhs,
+                                      rtol, atol)
         probe_started = time.perf_counter()
         probe = runner()
         ready(probe)
@@ -238,7 +260,12 @@ def run_framework(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
         verify_started = time.perf_counter()
         verification = check(probe)
         verify_ms += (time.perf_counter() - verify_started) * 1000
-        output_bytes = sum(a.nbytes for a in expected)
+        if mode == "measure_only":
+            # No reference was built, so the transferred bytes come from the
+            # row's own outputs rather than from a reference-shaped list.
+            output_bytes = sum(v.numel() * v.element_size() for v in leaves(probe))
+        else:
+            output_bytes = sum(a.nbytes for a in expected)
         del probe
         sampling = None
         if not verify_only:
@@ -246,10 +273,16 @@ def run_framework(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
                                synchronize_each_operation=True)
             final = runner()
             ready(final)
-            verify_started = time.perf_counter()
-            after = check(final)
-            verify_ms += (time.perf_counter() - verify_started) * 1000
-            verification = tuple(max(a, b) for a, b in zip(verification, after))
+            if mode != "measure_only":
+                verify_started = time.perf_counter()
+                after = check(final)
+                verify_ms += (time.perf_counter() - verify_started) * 1000
+                verification = {
+                    **verification,
+                    "max_abs_error": max(verification["max_abs_error"], after["max_abs_error"]),
+                    "max_rel_error": max(verification["max_rel_error"], after["max_rel_error"]),
+                    "residual": max(verification["residual"], after["residual"]),
+                }
             del final
         stats = (None,)*5 if verify_only else _timing_stats([v/sampling["operations_per_sample"] for v in sampling["batch_ms"]])
         first, median, minimum, p95, iqr = stats
@@ -260,10 +293,19 @@ def run_framework(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
             rec["status"] = "verification_only"
         rec["timing"].update(first_run_ms=first, min_ms=minimum, p95_ms=p95, compile_time_ms=compile_ms,
                              first_call_ms=first_call_ms, verification_time_ms=round(verify_ms, 3))
-        rec["verification"].update(reference_backend="pytorch-cpu-f64 AD plus central difference of primal loss",
-                                   max_abs_error=verification[0], max_rel_error=verification[1], residual=verification[2])
+        if mode == "measure_only":
+            rec["verification"] = verify_modes.not_run(problem, verify_defaults)
+        else:
+            rec["verification"].update(status="passed", mode=mode,
+                                       reference_backend=verification["reference_backend"],
+                                       max_abs_error=verification["max_abs_error"],
+                                       max_rel_error=verification["max_rel_error"],
+                                       residual=verification["residual"],
+                                       reason=verification["reason"])
         rec["execution"]["notes"] = json.dumps(dict(sampling=sampling, central_difference=difference,
-            framework_version=version, setup="fixtures/transfers, compilation, initialization and validation outside clocks",
+            framework_version=version, verification_mode=mode,
+            verification_diagnostic=(verification or {}).get("diagnostic"),
+            setup="fixtures/transfers, compilation, initialization and validation outside clocks",
             first_call="compilation plus the first executed call, measured outside every timed sample",
             first_call_ms=first_call_ms, compile_time_ms=compile_ms,
             jax_compilation_cache_dir=cache_dir, **cache_delta,

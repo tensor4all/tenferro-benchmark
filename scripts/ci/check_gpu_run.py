@@ -102,7 +102,15 @@ def validate_records(path: Path, suite_id: str, expected: set[tuple[str, str]]) 
         if timing.get('timed_runs', 0) < 1:
             raise ValueError(f'{suite_id}: no measured samples: {key}')
         if row.get('verification', {}).get('status') != 'passed':
-            raise ValueError(f'{suite_id}: verification did not pass: {key}')
+            # A row that declares no check at all is still a measurement, but it
+            # must state why it has none; anything else is an unverified row
+            # masquerading as a measured one.
+            verification = row.get('verification') or {}
+            measured_only = (verification.get('status') == 'not_run'
+                             and verification.get('mode') == 'measure_only'
+                             and str(verification.get('reason') or '').strip())
+            if not measured_only:
+                raise ValueError(f'{suite_id}: verification did not pass: {key}')
         measured.add(row['backend'])
     if seen != expected:
         raise ValueError(f'{suite_id}: missing rows {expected - seen}; unexpected rows {seen - expected}')

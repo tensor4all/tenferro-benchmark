@@ -569,6 +569,11 @@ def is_tenferro_anomaly(row: dict[str, Any]) -> bool:
         return False
     status = row.get("status")
     if status == "ok":
+        # A row that declares no check (measure_only) is not an anomaly: it is
+        # a measurement whose missing evidence is stated on its own row, and it
+        # gets the `unverified` badge instead of `fail`.
+        if row.get("verification") == "measure_only":
+            return False
         return row.get("verified") is False
     if is_neutral_unsupported(row):
         return False
@@ -637,6 +642,104 @@ def non_ok_cell(rows: Iterable[dict[str, Any]], already_shown: Iterable[dict[str
     if not badges:
         return '<td><span class="muted">-</span></td>'
     return "<td>" + " · ".join(badges) + "</td>"
+
+
+#: Word and tooltip of each verification mode a record can declare.
+VERIFICATION_MODES = {
+    "cpu_reference": ("cpu reference",
+                      "the whole case re-executed on a CPU engine in f64 and "
+                      "compared element by element"),
+    "analytic": ("analytic",
+                 "every element compared against a closed-form reference built "
+                 "on the accelerator"),
+    "finite_difference": ("finite-difference",
+                          "directional derivative compared with a central "
+                          "difference of the primal loss"),
+}
+
+#: Styles for the verification badges. They are emitted only on a page that
+#: carries one, so a page whose records predate the mode is byte-identical to
+#: the one it rendered before.
+VERIFICATION_CSS = """
+.unverified {
+  display: inline-block; border-radius: 999px; padding: 0 .5rem;
+  font-size: .78rem; font-weight: 600; white-space: nowrap;
+  background: transparent; color: var(--parity); border: 1px dashed var(--parity);
+}
+.verified-mode {
+  display: inline-block; border-radius: 999px; padding: 0 .5rem;
+  font-size: .78rem; font-weight: 600; white-space: nowrap;
+  background: var(--flag-bg); color: var(--fg); border: 1px solid var(--line);
+}
+"""
+
+UNVERIFIED_TOOLTIP = (
+    "measured without a numerical check: the manifest declares this case "
+    "measure_only and states why"
+)
+
+
+def declares_verification_modes(rows: Iterable[dict[str, Any]]) -> bool:
+    """Whether any arm of a case states a check other than the default one.
+
+    A page whose records predate the mode, or whose arms were all checked
+    against the CPU reference, keeps its column set: the badge column appears
+    only where it distinguishes something.
+    """
+    return any(
+        row.get("verification") in ("analytic", "finite_difference", "measure_only")
+        for row in rows
+    )
+
+
+def verification_badge(mode: str) -> str:
+    """One badge naming the check behind a number."""
+    label, detail = VERIFICATION_MODES.get(mode, (mode, "recorded verification mode"))
+    return f'<span class="verified-mode" title="{esc(detail)}">{esc(label)}</span>'
+
+
+def unverified_badge(row: dict[str, Any]) -> str:
+    """``unverified``: a number was measured and no check backs it.
+
+    Deliberately not ``fail``: nothing went wrong, and deliberately not a plain
+    number either: nothing was compared.
+    """
+    reason = str(row.get("reason") or "").strip()
+    title = f"{UNVERIFIED_TOOLTIP} ({reason})" if reason else UNVERIFIED_TOOLTIP
+    return f'<span class="unverified" title="{esc(title)}">unverified</span>'
+
+
+def verification_cell(rows: Iterable[dict[str, Any]]) -> str:
+    """The table cell naming which check backs each arm of one case."""
+    entries = []
+    for row in rows:
+        mode = row.get("verification")
+        if not mode or row_status(row) != "ok":
+            continue
+        backend = f'<code>{esc(row.get("backend"))}</code> '
+        if mode == "measure_only":
+            entries.append(backend + unverified_badge(row))
+        else:
+            entries.append(backend + verification_badge(mode))
+    if not entries:
+        return '<td><span class="muted">-</span></td>'
+    return "<td>" + " · ".join(entries) + "</td>"
+
+
+def verification_legend() -> str:
+    """One line telling a reader what the verification badges mean."""
+    return (
+        '<p class="chart-legend">Verification: '
+        + " and ".join(
+            verification_badge(mode) + f" <span class=\"muted\">{esc(detail)}</span>"
+            for mode, detail in (
+                ("analytic", "compares every element against a closed-form reference"),
+                ("finite_difference", "compares the directional derivative against a central difference"),
+            )
+        )
+        + " · <span class=\"unverified\">unverified</span> was measured with no check "
+        "at all, and its title carries the recorded reason.</p>"
+    )
 
 
 def arm_median(rows: list[dict[str, Any]], arm: Arm) -> float | None:
@@ -1580,7 +1683,7 @@ footer { margin-top: 3rem; font-size: .85rem; color: var(--muted); border-top: 1
 """
 
 
-def page(title: str, body: str, *, description: str = "") -> str:
+def page(title: str, body: str, *, description: str = "", extra_css: str = "") -> str:
     return (
         "<!DOCTYPE html>\n"
         '<html lang="en">\n<head>\n'
@@ -1588,7 +1691,7 @@ def page(title: str, body: str, *, description: str = "") -> str:
         '  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
         f"  <title>{esc(title)}</title>\n"
         + (f'  <meta name="description" content="{esc(description)}">\n' if description else "")
-        + f"  <style>{STYLESHEET}</style>\n"
+        + f"  <style>{STYLESHEET}{extra_css}</style>\n"
         "</head>\n<body>\n"
         f"{body}\n"
         "</body>\n</html>\n"
@@ -2672,6 +2775,7 @@ def render_case_table(
     }
     by_case = case_rows(document)
     rules = ratio_rules_for(suite_id)
+    show_verification = declares_verification_modes(document.get("rows") or [])
     rows = []
     for case, group in sorted(grouped):
         rows_for_case = grouped[(case, group)]
@@ -2690,19 +2794,25 @@ def render_case_table(
         # is visible next to the backends that did run for the same case.
         not_ok_cell = non_ok_cell(rows_for_case, neutral.get((case, group), []))
         flags_text = flag_badges(flags.get((case, group), [])) or '<span class="muted">-</span>'
+        verification_text = (
+            verification_cell(rows_for_case) if show_verification else ""
+        )
         rows.append(
             f"<tr><td><code>{esc(case)}</code></td>"
             f"<td>{esc(group or '-')}</td>"
             + "".join(cells)
-            + f"<td>{note}</td>{not_ok_cell}<td>{flags_text}</td></tr>"
+            + f"<td>{note}</td>{not_ok_cell}{verification_text}<td>{flags_text}</td></tr>"
         )
     if not rows:
         return ""
     return (
-        '<div class="table-wrap"><table><thead><tr>'
+        (verification_legend() if show_verification else "")
+        + '<div class="table-wrap"><table><thead><tr>'
         "<th>case</th><th>group</th>"
         + "".join(f"<th>{esc(rule.column)}</th>" for rule in rules)
-        + "<th>not measured</th><th>not ok</th><th>flags</th>"
+        + "<th>not measured</th><th>not ok</th>"
+        + ("<th>verification</th>" if show_verification else "")
+        + "<th>flags</th>"
         "</tr></thead><tbody>" + "".join(rows) + "</tbody></table></div>"
     )
 
@@ -2873,7 +2983,12 @@ def render_suite_page(
             body.append(render_perf_reference_table(document, reference_map))
     body.append("<h2>Original report</h2>")
     body.append(markdown_html)
-    return page(f"{suite_id} - {profile}", "\n".join(body))
+    rows = (document or {}).get("rows") or []
+    return page(
+        f"{suite_id} - {profile}",
+        "\n".join(body),
+        extra_css=VERIFICATION_CSS if declares_verification_modes(rows) else "",
+    )
 
 
 # ---------------------------------------------------------------------------

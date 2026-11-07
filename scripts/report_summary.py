@@ -79,6 +79,7 @@ def make_row(
     verified: bool = False,
     reason: str | None = None,
     operations_per_sample: int | None = None,
+    verification: str | None = None,
 ) -> dict[str, Any]:
     row: dict[str, Any] = {"case": str(case)}
     if group not in (None, ""):
@@ -93,6 +94,10 @@ def make_row(
         row["reason"] = str(reason)
     if operations_per_sample is not None:
         row["operations_per_sample"] = int(operations_per_sample)
+    if verification:
+        # Which check backs this row. Absent on records written before the mode
+        # existed, where the CPU reference was the only check there was.
+        row["verification"] = str(verification)
     return row
 
 
@@ -353,6 +358,10 @@ def rows_from_gpu_records(
             median = None
             iqr = None
             reason = recorded_reason(record) or f"{status}: no reason recorded"
+        elif verification.get("status") == "not_run":
+            # Measured, but no check ran: the row keeps its number and states
+            # why it carries no evidence.
+            reason = verification.get("reason") or "measure_only: no reason recorded"
 
         case = record.get("problem_id") or record.get("case") or record.get("case_id")
         grp = group(record) if group is not None else record.get("op")
@@ -367,6 +376,7 @@ def rows_from_gpu_records(
                 verified=verification.get("status") == "passed",
                 reason=reason,
                 operations_per_sample=gpu_operations_per_sample(record),
+                verification=verification.get("mode"),
             )
         )
     return rows

@@ -150,8 +150,13 @@ def gpu_rows(files: list[Path]):
         row = json.loads(line)
         timing, execution = row.get('timing') or {}, row.get('execution') or {}
         status = row.get('status') if row.get('status') in STATUSES else 'failed'
-        if status == 'ok' and ((row.get('verification') or {}).get('status') != 'passed'
-                               or not positive(timing.get('median_ms'))):
+        verification = row.get('verification') or {}
+        measured_only = (verification.get('status') == 'not_run'
+                         and verification.get('mode') == 'measure_only'
+                         and str(verification.get('reason') or '').strip())
+        if status == 'ok' and verification.get('status') != 'passed' and not measured_only:
+            status = 'failed'
+        elif status == 'ok' and not positive(timing.get('median_ms')):
             status = 'failed'
         yield {
             'problem_id': row['problem_id'], 'op': row.get('op'), 'dtype': execution.get('dtype'),
@@ -159,7 +164,7 @@ def gpu_rows(files: list[Path]):
             'execution_path': execution.get('execution_path'), 'status': status,
             'median_ms': timing.get('median_ms') if status == 'ok' else None,
             'iqr_ms': (timing.get('iqr_ms') or 0.0) if status == 'ok' else None,
-            'note': execution.get('unsupported_reason') or (row.get('verification') or {}).get('reason'),
+            'note': execution.get('unsupported_reason') or verification.get('reason'),
         }
 
 

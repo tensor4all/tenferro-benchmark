@@ -53,6 +53,10 @@
           "iqr": { "type": ["number", "null"] },
           "status": { "type": "string", "minLength": 1 },
           "verified": { "type": "boolean" },
+          "verification": {
+            "description": "Which check produced verified. Absent for records written before the mode existed, where cpu_reference was the only check.",
+            "enum": ["cpu_reference", "analytic", "finite_difference", "measure_only"]
+          },
           "reason": { "type": "string" }
         },
         "additionalProperties": true
