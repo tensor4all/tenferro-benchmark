@@ -6,6 +6,8 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 # shellcheck source=scripts/gpu_preflight.sh
 source scripts/gpu_preflight.sh
+# shellcheck source=scripts/gpu_arm_launch.sh
+source scripts/gpu_arm_launch.sh
 family="${1:-fft}"
 # The public API collection reuses family identities and never overlaps runners.
 if [[ "$family" == all ]]; then
@@ -115,18 +117,37 @@ for backend in "${api_backends[@]}"; do
     esac
 done
 outputs=()
+# Each arm gets a record under $run_dir/arms/: the CPU it ran on and that CPU's busy
+# fraction (GPU_BENCH_CPU_SELECT=1), or why it was skipped. An arm whose output an
+# earlier process of the same run stamp already wrote is skipped explicitly instead of
+# being started and recorded as a failure (#335).
+run_arm() {
+    local backend="$1" output="$2" rc=0
+    shift 2
+    gpu_arm_prepare "$run_dir" "$backend" "$output" || rc=$?
+    if [[ "$rc" == "$GPU_ARM_SKIPPED" ]]; then
+        outputs+=("$output")
+        return 0
+    fi
+    [[ "$rc" == 0 ]] || gpu_arm_fail_unless_runnable "$rc"
+    "${GPU_ARM_PREFIX[@]+"${GPU_ARM_PREFIX[@]}"}" "$@" || rc=$?
+    gpu_arm_finish "$run_dir" "$backend" "$rc"
+    [[ "$rc" == 0 ]] || exit "$rc"
+    outputs+=("$output")
+}
 for backend in ${rust_arms[@]+"${rust_arms[@]}"}; do
     output="$run_dir/$backend.jsonl"
-    "${CARGO_TARGET_DIR:-target}/release/benchmark_gpu_public_api" \
+    run_arm "$backend" "$output" "${CARGO_TARGET_DIR:-target}/release/benchmark_gpu_public_api" \
         --fixtures "$run_dir/fixtures/manifest.json" --backend "$backend" --output "$output"
-    outputs+=("$output")
 done
 for backend in ${python_arms[@]+"${python_arms[@]}"}; do
     output="$run_dir/$backend.jsonl"
-    uv run python scripts/benchmark_gpu_public_api.py --suite "$suite" \
+    run_arm "$backend" "$output" uv run python scripts/benchmark_gpu_public_api.py --suite "$suite" \
         --fixtures "$run_dir/fixtures" --backend "$backend" --output "$output"
-    outputs+=("$output")
 done
+# The arm records go into run.yaml, so the page's run metadata names the CPU each arm ran on.
+uv run python scripts/gpu_measurement_cpu.py record-run --run-metadata "$run_dir/run.yaml" \
+    "$run_dir"/arms/*.json
 if [[ "$GPU_API_VERIFY_ONLY" == 1 ]]; then
     uv run python scripts/format_gpu_public_api_results.py --suite "$suite" \
         --run-metadata "$run_dir/run.yaml" --verify-only \

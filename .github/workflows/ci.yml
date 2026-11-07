@@ -176,6 +176,9 @@ jobs:
             scripts/run_gpu_linalg_jvp_vjp.sh scripts/run_gpu_public_api.sh \
             scripts/run_gpu_throughput.sh scripts/run_cpu_followup.sh
           bash tests/test_gpu_preflight.sh
+          bash -n scripts/gpu_arm_launch.sh
+          bash tests/test_gpu_arm_launch.sh
+          uv run python -m unittest tests.test_gpu_measurement_cpu
           bash tests/test_tenferro_checkout_helpers.sh
           bash tests/test_cpu_followup_run_record.sh
           uv run python -m unittest tests.test_run_metadata_environment tests.test_run_metadata_host

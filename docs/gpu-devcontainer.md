@@ -82,6 +82,37 @@ interactive session on the same checkout; the job's rebuild is then incremental.
 `GPU_BENCH_PREBUILT_RUST=1` is only for a shipped binary that comes with its
 `<binary>.json` artifact (the hosted workflow), not for a local build.
 
+## Measurement CPU of a GPU arm (shared or batch hosts)
+
+A GPU arm's host thread issues the launches and waits on the device, so it needs a
+CPU core. On a shared node, set `GPU_BENCH_CPU_SELECT=1` and the drivers
+(`scripts/run_gpu_suite.sh`, `scripts/run_gpu_public_api.sh`, through
+`scripts/gpu_arm_launch.sh`) choose that core per arm:
+
+- `scripts/gpu_measurement_cpu.py select` scores every CPU of the allocation: the
+  process affinity, or `GPU_BENCH_CPUSET`. It reads `/proc/stat` twice,
+  `GPU_BENCH_CPU_IDLE_WINDOW_SECONDS` apart (default 1), takes the quietest CPU and
+  pins the arm to it with `taskset -c`. An allocation larger than one CPU is
+  therefore usable as is.
+- The threshold is `GPU_BENCH_CPU_MAX_BUSY` (default `0.05`, strict). When even
+  the quietest CPU is busier than that, the driver exits with **76**. Its message
+  names the cpuset and every CPU's busy fraction. The allocation is the problem,
+  so release it and request another instead of sleeping. A run that relaxes the
+  threshold records the value and that it came from the environment.
+- Every arm writes `arms/<backend>.json` in its run directory, and the driver
+  copies these records into `run.yaml` under `collection.measurement_cpu`. Each
+  record holds the CPU the arm ran on, that CPU's busy fraction, all the per-CPU
+  fractions and the threshold. With the selection off (the default), the record
+  says the arm ran unpinned.
+- An arm whose output file already holds rows from an earlier process of the
+  same run stamp is not started. Its record says `skipped` and gives the reason,
+  so `arm.json` never describes a run whose output it did not write. Before this
+  change, the Rust binary refused to overwrite (`AlreadyExists`) and the arm was
+  recorded as a failure.
+
+Nothing here changes what is measured or how it is verified, only which CPU the
+arm uses and what happens when none is good enough (#335).
+
 ## Host and container Python environments are separate
 
 The CUDA devcontainer mounts a container-only named volume over
