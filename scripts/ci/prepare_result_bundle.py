@@ -12,6 +12,7 @@ import hashlib
 import json
 from pathlib import Path
 import shutil
+import sys
 
 import yaml
 
@@ -64,6 +65,81 @@ def current_runs(root, profile, suite, source):
     return sorted(set(runs))
 
 
+class NoSuiteOutputs(Exception):
+    """This suite produced no run directory in the selected attempt."""
+
+
+def package_gpu_suite(root: Path, profile: str, output: Path, suite_file: str, source: dict,
+                      timestamp: str | None, backends: str) -> tuple[str, dict, str, dict]:
+    """Copy and declare one GPU suite, raising when this suite cannot package.
+
+    A suite is packaged whole or not at all: its files are copied, its row
+    inventory is derived from the plan, and only then is it declared.  A suite
+    that raises leaves nothing behind, so the caller can record it as
+    unpublished and keep the suites that did produce their outputs.
+    """
+    declaration = yaml.safe_load(safe_file(ROOT, suite_file.strip()).read_text())
+    suite = declaration['suite_id']
+    if not suite.startswith('gpu/'):
+        raise ValueError('Not a GPU publication suite')
+    runs = current_runs(root, profile, suite, source)
+    if timestamp and any(run.name != timestamp for run in runs):
+        raise ValueError(f'{suite}: inconsistent or ambiguous collection timestamp')
+    if not runs:
+        raise NoSuiteOutputs(suite)
+    if len(runs) != 1:
+        raise ValueError(f'{suite}: ambiguous collection outputs in selected run attempt')
+    run = runs[0]
+    stamp = run.name
+    if timestamp and stamp != timestamp:
+        raise ValueError('GPU suites have inconsistent collection timestamps')
+    run_relative = str(run.relative_to(root))
+    target = output / run_relative
+    excluded = []
+    for path in sorted(run.rglob('*')):
+        if path.is_file() or path.is_symlink():
+            relative = str(path.relative_to(root))
+            safe_file(root, relative)
+            if derived_asset(relative):
+                excluded.append((str(path.relative_to(run)), path.stat().st_size))
+                continue
+            destination = output / relative
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(path, destination)
+    for filename, suffix in (('report.md', '.md'), ('report.summary.json', '.summary.json')):
+        original = safe_file(root, run_relative + '/' + filename)
+        destination = output / f'result/{profile}/{suite}{suffix}'
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(original, destination)
+    # The routine selection owns which rows a suite must produce; a run that
+    # predates it falls back to the suite declaration.
+    expected = planned_rows(run, suite)
+    if expected is None:
+        declared = declaration.get('backends', backends.split(','))
+        expected = {(problem['id'], backend) for problem in declaration['problems']
+                    for backend in backends.split(',') if backend in declared}
+    expected = sorted(expected)
+    # Recorded, and refused at ingestion: a run that dropped a routine arm is
+    # not the weekly matrix, however complete its own rows look.
+    gaps = routine_arm_gaps(run, suite)
+    files = [output / f'result/{profile}/{suite}.summary.json',
+             output / f'result/{profile}/{suite}.md']
+    files += sorted(path for path in target.rglob('*') if path.is_file())
+    count, total_bytes, inventory_digest = _inventory(excluded)
+    entry = {'suite_id': suite, 'expected_rows': expected,
+             'files': {str(path.relative_to(output)): digest(path) for path in files},
+             'excluded_derived': {'files': count, 'bytes': total_bytes,
+                                  'sha256': inventory_digest}}
+    return suite, entry, stamp, gaps
+
+
+def discard_gpu_suite(output: Path, suite: str, profile: str = 'nvidia-gpu') -> None:
+    """Remove a suite's partial copies so the bundle declares only packaged suites."""
+    shutil.rmtree(output / 'data/results' / profile / suite, ignore_errors=True)
+    for suffix in ('.md', '.summary.json'):
+        (output / f'result/{profile}/{suite}{suffix}').unlink(missing_ok=True)
+
+
 def prepare_bundle(root: Path, profile: str, source: dict, output: Path,
                    *, suites='all', backends=GPU_BACKENDS, timestamp=None):
     """Validate all current outputs; missing suites are recorded, not replaced."""
@@ -87,68 +163,50 @@ def prepare_bundle(root: Path, profile: str, source: dict, output: Path,
         entries, missing, narrowed = [], [], {}
         output.mkdir(parents=True, exist_ok=False)
         for suite_file in suite_files.split(','):
-            declaration = yaml.safe_load(safe_file(ROOT, suite_file.strip()).read_text())
-            suite = declaration['suite_id']
-            if not suite.startswith('gpu/'):
-                raise ValueError('Not a GPU publication suite')
-            runs = current_runs(root, profile, suite, source)
-            if timestamp and any(run.name != timestamp for run in runs):
-                raise ValueError(f'{suite}: inconsistent or ambiguous collection timestamp')
-            if not runs:
+            # One suite that cannot be packaged (or whose own accounting is
+            # incomplete) is recorded as unpublished. It never costs the other
+            # suites the results they did produce.
+            suite_decl = yaml.safe_load(safe_file(ROOT, suite_file.strip()).read_text())
+            suite = suite_decl.get('suite_id', suite_file.strip())
+            try:
+                suite, entry, stamp, gaps = package_gpu_suite(root, profile, output, suite_file, source,
+                                                              timestamp, backends)
+            except NoSuiteOutputs:
                 missing.append(suite)
                 continue
-            if len(runs) != 1:
-                raise ValueError(f'{suite}: ambiguous collection outputs in selected run attempt')
-            run = runs[0]
-            stamp = run.name
-            if timestamp is None:
-                timestamp = stamp
-            if stamp != timestamp:
-                raise ValueError('GPU suites have inconsistent collection timestamps')
-            run_relative = str(run.relative_to(root))
-            target = output / run_relative
-            excluded = []
-            for path in sorted(run.rglob('*')):
-                if path.is_file() or path.is_symlink():
-                    relative = str(path.relative_to(root))
-                    safe_file(root, relative)
-                    if derived_asset(relative):
-                        excluded.append((str(path.relative_to(run)), path.stat().st_size))
-                        continue
-                    destination = output / relative
-                    destination.parent.mkdir(parents=True, exist_ok=True)
-                    shutil.copyfile(path, destination)
-            for filename, suffix in (('report.md', '.md'), ('report.summary.json', '.summary.json')):
-                original = safe_file(root, run_relative + '/' + filename)
-                destination = output / f'result/{profile}/{suite}{suffix}'
-                destination.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copyfile(original, destination)
-            # The routine selection owns which rows a suite must produce; a
-            # run that predates it falls back to the suite declaration.
-            expected = planned_rows(run, suite)
-            if expected is None:
-                declared = declaration.get('backends', backends.split(','))
-                expected = {(problem['id'], backend) for problem in declaration['problems']
-                            for backend in backends.split(',') if backend in declared}
-            expected = sorted(expected)
-            # Recorded, and refused at ingestion: a run that dropped a routine arm
-            # is not the weekly matrix, however complete its own rows look.
-            gaps = routine_arm_gaps(run, suite)
+            except (ValueError, OSError, KeyError) as error:
+                discard_gpu_suite(output, suite)
+                missing.append(suite)
+                print(f'{suite}: not published: {error}', file=sys.stderr)
+                continue
             if gaps:
                 narrowed[suite] = gaps
-            files = [output / f'result/{profile}/{suite}{suffix}' for suffix in ('.md', '.summary.json')]
-            files += sorted(path for path in target.rglob('*') if path.is_file())
-            count, total_bytes, inventory_digest = _inventory(excluded)
-            entries.append({'suite_id': suite, 'expected_rows': expected,
-                            'files': {str(path.relative_to(output)): digest(path) for path in files},
-                            'excluded_derived': {'files': count, 'bytes': total_bytes,
-                                                 'sha256': inventory_digest}})
+            timestamp = timestamp or stamp
+            entries.append(entry)
         if not entries:
             raise ValueError('No GPU collection outputs in the selected run attempt')
         manifest = {'schema_version': 2, 'timestamp': timestamp, 'suites': entries, 'missing_suites': missing}
         if narrowed:
             manifest['narrowed_routine_arms'] = narrowed
         (output / 'publication.json').write_text(json.dumps(manifest, indent=2) + '\n')
+        # One suite whose artifacts fail the publication contract must not cost
+        # the week the suites that pass it. The failing suite is named at the
+        # front of the message, so it can be removed while the rest publishes;
+        # a bundle that has nothing left still fails with the original error.
+        while len(manifest['suites']) > 1:
+            try:
+                return validate_bundle(output, profile, source)
+            except Exception as error:
+                dropped = next((entry['suite_id'] for entry in manifest['suites']
+                                if str(error).startswith(entry['suite_id'] + ':')), None)
+                if dropped is None:
+                    raise
+                print(f'{dropped}: not published: {error}', file=sys.stderr)
+                manifest['suites'] = [entry for entry in manifest['suites']
+                                      if entry['suite_id'] != dropped]
+                manifest['missing_suites'] = sorted(set(manifest['missing_suites']) | {dropped})
+                discard_gpu_suite(output, dropped)
+                (output / 'publication.json').write_text(json.dumps(manifest, indent=2) + '\n')
     # No manifest from a failed validation may authorize a results upload.
     try:
         return validate_bundle(output, profile, source)

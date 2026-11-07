@@ -130,9 +130,57 @@ def run_metadata_lines(metadata: dict[str, Any] | None) -> list[str]:
     return lines + [""]
 
 
+def unmeasured_rows(
+    records: list[dict[str, Any]],
+    run_metadata: dict[str, Any] | None = None,
+) -> list[dict[str, Any]]:
+    """Rows for every planned case without a timing: the suite's own failures."""
+    header = report_summary.metadata_from_run_metadata(run_metadata)
+    rows = report_summary.rows_from_gpu_records(records, group=lambda record: record.get("op"))
+    rows += report_summary.rows_for_unrecorded_cases(
+        rows, report_summary.planned_case_ids(run_metadata), suite_id=header["suite_id"]
+    )
+    return [row for row in rows if str(row.get("status")) != "ok"]
+
+
+def unmeasured_section(rows: list[dict[str, Any]]) -> list[str]:
+    """Markdown list of the cases this run planned but could not measure."""
+    if not rows:
+        return []
+    lines = [
+        "## Not measured",
+        "",
+        "Every planned case keeps a row here even when it has no timing. `missing` means the "
+        "runner wrote no row for the case at all; every other status is the runner's own "
+        "verdict. These rows are failures, never measured results, and the summary sidecar "
+        "carries the same rows so a chart shows the gap instead of hiding it.",
+        "",
+        "| Case | Backend | Status | Reason |",
+        "|---|---|---|---|",
+    ]
+    for row in sorted(rows, key=lambda row: (str(row["case"]), str(row["backend"]))):
+        lines.append(
+            "| " + " | ".join(
+                markdown_cell(value)
+                for value in (row["case"], row["backend"], row["status"], row.get("reason", ""))
+            ) + " |"
+        )
+    return lines + [""]
+
+
 def format_markdown(records: list[dict[str, Any]], run_metadata: dict[str, Any] | None = None) -> str:
     if not records:
-        return clean_markdown_eof("# GPU Benchmark Results\n\nNo GPU benchmark records found.")
+        # A run whose every case failed still has to publish what happened to
+        # each one, so the plan's own rows decide whether there is anything to say.
+        failed = unmeasured_rows([], run_metadata)
+        if not failed:
+            return clean_markdown_eof("# GPU Benchmark Results\n\nNo GPU benchmark records found.")
+        lines = ["# GPU Benchmark Results", ""]
+        lines.extend(run_metadata_lines(run_metadata))
+        lines.append("No case in this run produced a measurement; every planned case is listed below.")
+        lines.append("")
+        lines.extend(unmeasured_section(failed))
+        return clean_markdown_eof("\n".join(lines))
     if any(record["status"] == "verification_only" for record in records):
         raise ValueError("Verification-only GPU records cannot be published as benchmark timings")
     keys = [(record["suite_id"], record["problem_id"], record["backend"]) for record in records]
@@ -236,6 +284,7 @@ def format_markdown(records: list[dict[str, Any]], run_metadata: dict[str, Any] 
                 sample["retained_bytes_per_operation"], sample["retention_budget_bytes"],
                 sample["effective_retention_bound_bytes"], sample["operations_per_sample"]])) + " |")
         lines.append("")
+    lines.extend(unmeasured_section(unmeasured_rows(records, run_metadata)))
     return clean_markdown_eof("\n".join(lines))
 
 
@@ -251,14 +300,23 @@ def build_summary(
     records: list[dict[str, Any]],
     run_metadata: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Machine-readable sidecar for the same records the Markdown is built from."""
+    """Machine-readable sidecar for the same records the Markdown is built from.
+
+    Every planned case has a row.  A case that produced no record at all keeps a
+    ``missing`` row with the reason it has no timing, so a reader (or the
+    dashboard) never has to infer a failure from an absent row.
+    """
     header = report_summary.metadata_from_run_metadata(run_metadata)
     hardware = dict(header["hardware"])
     gpu_info = resolve_gpu_info(records, run_metadata)
     if gpu_info.get("Name"):
         hardware.setdefault("gpu", gpu_info["Name"])
+    rows = report_summary.rows_from_gpu_records(records, group=lambda record: record.get("op"))
+    rows += report_summary.rows_for_unrecorded_cases(
+        rows, report_summary.planned_case_ids(run_metadata), suite_id=header["suite_id"]
+    )
     return report_summary.build_document(
-        report_summary.rows_from_gpu_records(records, group=lambda record: record.get("op")),
+        rows,
         target_profile=header["target_profile"],
         suite_id=header["suite_id"],
         timestamp=header["timestamp"],
