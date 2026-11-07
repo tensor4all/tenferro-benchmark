@@ -62,7 +62,9 @@ is recorded in the run metadata and summaries. Passing a non-A100 reviewed
 `gpu_type` is for diagnostics only; such results must not replace maintained
 A100 reports.
 
-The watchdog starts deleting after 3300 seconds (`POD_MAX_LIFETIME_SECONDS`).
+The watchdog starts deleting after 7200 seconds (`POD_MAX_LIFETIME_SECONDS`). At the A100 PCIe
+rate of $1.79/h a full two-hour pod costs $3.58; a run that finishes early pays only for the time it
+used, so the cap is a ceiling on a wedged pod rather than the usual spend.
 Its 180-second cleanup budget stays below one hour when deletion succeeds;
 if the provider cannot confirm deletion, manual cleanup is required:
 
