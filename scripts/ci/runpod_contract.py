@@ -18,6 +18,7 @@ from scripts.ci.runpod_http import request_with_retry
 
 
 DEFAULT_CONFIG = Path(__file__).with_name("runpod_config.json")
+DEFAULT_NETWORK_VOLUME_PATH = "/opt/bench-cache"
 
 
 class ContractError(RuntimeError):
@@ -191,6 +192,30 @@ def fetch_openapi(url: str, api_key: str) -> Mapping[str, object]:
     return value
 
 
+def validate_network_volume(config):
+    """Validate the optional RunPod network volume the JAX cache lives on.
+
+    An unset volume is not an error: the run then keeps the host-local
+    persistent mount and collects the benchmark with an empty compilation
+    cache. A configured one is validated for shape, because a malformed ID
+    would only surface as a failed pod creation on a paid path.
+    """
+    volume_id = config.get("network_volume_id", "")
+    if not isinstance(volume_id, str):
+        raise ContractError("runpod_config.json network_volume_id must be a string")
+    volume_id = volume_id.strip()
+    if not volume_id:
+        return None
+    if not re.fullmatch(r"[A-Za-z0-9_-]{4,64}", volume_id):
+        raise ContractError(f"network_volume_id is not a RunPod volume ID: {volume_id!r}")
+    mount_path = config.get("network_volume_mount_path", DEFAULT_NETWORK_VOLUME_PATH)
+    if not isinstance(mount_path, str) or not mount_path.startswith("/") or mount_path == "/":
+        raise ContractError(
+            "runpod_config.json network_volume_mount_path must be an absolute path below /"
+        )
+    return volume_id, mount_path
+
+
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
@@ -226,10 +251,15 @@ def main() -> int:
             catalog = fetch_openapi(str(config["catalog_url"]), api_key)
         validate_gpu_type_ids(schema, configured_ids, catalog)
         validate_min_cuda_version(schema, min_cuda_version)
+        volume = validate_network_volume(config)
         print(
             f"RunPod v2 catalog recognizes all {len(configured_ids)} configured GPU "
             f"IDs; CUDA version syntax is valid: >= {min_cuda_version}. "
             "Live capacity is checked separately."
+        )
+        print("RunPod network volume: " + (
+            f"{volume[0]} at {volume[1]} (JAX compilation cache enabled)"
+            if volume else "none configured (JAX compilation cache disabled)")
         )
     except (ContractError, KeyError) as error:
         print(f"RunPod contract error: {error}", file=sys.stderr)

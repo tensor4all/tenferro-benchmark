@@ -117,6 +117,125 @@ excluded compatible newer hosts as well as CUDA 12 hosts. The minimum-version
 filter avoids having to add future driver versions by hand. Diagnostics retain
 the catalog's advertised CUDA versions to make future version gaps visible.
 
+## JAX compilation cache on a network volume
+
+The pod is ephemeral, so XLA's persistent compilation cache only survives the
+night if it is written to storage the next pod can mount. RunPod **network
+volumes** provide that; GitHub Actions caches do not, because an entry evicted
+after seven idle days would silently change the measurement conditions of a
+weekly job.
+
+### What is cached, and why it does not expire weekly
+
+XLA compiles per case, and the result depends only on the JAX version, the
+CUDA runtime/driver version and the program itself (shapes, ops, compiler
+flags). It does **not** depend on which tenferro revision produced those shapes:
+the same `(4096, 4096)` SVD is the same CUDA kernel every week. The cache key is
+therefore
+
+```
+sha256( jax.__version__ | cuda_version | driver_version | sorted(case matrix) )
+```
+
+and the tenferro pin is deliberately excluded — including it would miss the
+cache on every weekly run, which is the only situation this exists for. The
+case matrix is one entry per `(suite, problem, JAX arm)` built from the routine
+manifest, with `run`/`verify`/`notes` stripped: sampling counts and tolerances
+cannot change a compiled program, so editing them must not invalidate a
+generation. A JAX upgrade, a CUDA/driver change or a shape/op/arm change does
+start a new generation, which is the intent: a stale cubin is the one failure
+mode worth paying a recompile to avoid.
+
+`scripts/ci/jax_cache.py` owns the key, the generation directories and the
+pod-side setup; `scripts/ci/tests/test_jax_cache.py` pins the key's
+determinism, the pruning rule and the recording.
+
+### Setup
+
+Create the volume once, in a data center where the benchmark GPU types are
+offered, and put its ID in the repository variable
+`RUNPOD_JAX_CACHE_VOLUME_ID` (Settings → Variables → Actions). Without that
+variable nothing changes: no volume is attached and the run collects with an
+empty cache, logging `jax compile cache: disabled (no network volume
+configured)`.
+
+```bash
+curl -sS -X POST https://rest.runpod.io/v1/networkvolumes \
+  -H "Authorization: Bearer $RUNPOD_API_KEY" -H 'Content-Type: application/json' \
+  -d '{"name": "tenferro-jax-cache", "size": 50, "dataCenterId": "US-TX-3"}'
+# → {"id": "...", ...}; store that id as the RUNPOD_JAX_CACHE_VOLUME_ID variable
+```
+
+The volume is mounted at `network_volume_mount_path`
+(`scripts/ci/runpod_config.json`, default `/opt/bench-cache`). REST v2 accepts at
+most one mount kind per pod, so a configured volume replaces the host-local
+`mounts.persistent` entry; `runpod_provision.py` reads the ID from
+`RUNPOD_NETWORK_VOLUME_ID`, and `runpod_contract.py` validates its shape before
+a paid request is made. A pod can only attach a volume in its own data center,
+so create the volume where the benchmark tier runs.
+
+### Pod-side behavior
+
+The `Configure the JAX compilation cache` step derives the key from the
+installed runtime and exports three variables for the collection:
+
+| Variable | Value |
+| --- | --- |
+| `JAX_COMPILATION_CACHE_DIR` | `<mount>/jax/<key>` |
+| `JAX_PERSISTENT_CACHE_MIN_COMPILE_TIME_SECS` | `1` — only expensive compiles are stored |
+| `JAX_PERSISTENT_CACHE_MAX_SIZE_BYTES` | `4294967296` (4 GiB) |
+
+Under `<mount>/jax/`, each key is one directory. At startup the step keeps the
+current generation and the newest previous one and deletes older directories
+whole; entries inside a generation are never edited individually, because JAX
+owns that layout. The previous generation is kept so a driver bump can be
+rolled back without losing a week of compiles.
+
+Every failure mode degrades to "collect cold": an unset variable, an unwritable
+or missing mount, or an unreadable volume prints one diagnostic line and the
+run continues. The cache is infrastructure, never a reason to lose a night.
+
+### What the recorded numbers mean
+
+`timing.first_call_ms` is the first warmup — the explicit compilation plus the
+first executed call — measured outside every timed sample. The timed region is
+unchanged: `warmups`, `timed_runs`, the sampling loop and `rtol`/`atol` do not
+move, so **a cache hit cannot show up in `median_ms`**, and it should not: the
+steady state never contained the compile.
+
+`cache_bytes_delta` and `cache_entries_delta` in `execution.notes` are the
+cache directory's growth around the case. They are evidence, not proof:
+positive means this case added entries, zero is *consistent with* a hit and is
+not a claim of one. The only unambiguous hit signal is JAX's own
+`Persistent compilation cache hit` log line, which is not part of the result
+bundle.
+
+### Measured behavior (CPU JAX)
+
+The mechanism was verified end to end on CPU JAX 0.10.1 with separate processes
+sharing one cache directory, because the pod budget does not allow a GPU probe:
+
+| Case | `JAX_PERSISTENT_CACHE_MIN_COMPILE_TIME_SECS` | First process | Second process | Directory |
+| --- | --- | --- | --- | --- |
+| 64² f64 SVD | `0` | 1963 ms | 83 ms | 3 → 4 files, 18.9 kB → 23.9 kB |
+| 512² f64 SVD | `0` | 249 ms | 158 ms | 3 → 4 files, 22.4 kB → 27.6 kB |
+| 512² f64 SVD | `1` (production) | 315 ms | — | unchanged: no entry |
+
+The second process logged `Persistent compilation cache hit for 'jit_svd_of'`,
+so these are hits, not inference from a stopwatch. Two honest limits:
+
+* **The 1 s floor is not exercised by CPU SVD.** XLA's CPU backend compiles the
+  SVD program in ~0.2 s even at 2048², so with the production floor those cases
+  are never stored. A synthetic 700-step chained program (6.5 s compile) does
+  cross the floor on CPU: it produced one 236 kB entry, and later processes
+  logged the cache hit. Whether the CUDA backend's 4096-AD compiles clear 1 s
+  the way the issue expects is **not verified here** — that needs one GPU night
+  and the `first_call_ms` columns of two consecutive runs.
+* A cache hit does not make `lower().compile()` instant: tracing and HLO
+  construction are not cached. On the 700-step program the hit took ~4.7 s
+  against ~6.7 s cold, which is why `first_call_ms` — not `compile_time_ms`
+  alone — is the number to compare across weeks.
+
 ## REST v2 integration
 
 All RunPod operational calls use `https://api.runpod.io/v2`. The migration follows
@@ -125,7 +244,7 @@ and [the published OpenAPI](https://api.runpod.io/v2/openapi.json).
 
 | Purpose | REST v2 API and fields |
 | --- | --- |
-| Create | `POST /v2/pods`: `image`, `cloud`, `gpu.id/count/minCudaVersion`, `disk`, `mounts.persistent`, `entrypoint`, `cmd`, `env` |
+| Create | `POST /v2/pods`: `image`, `cloud`, `gpu.id/count/minCudaVersion`, `disk`, `mounts.persistent` (or `mounts.network` when a cache volume is configured), `entrypoint`, `cmd`, `env` |
 | Assigned hardware and cost | Created Pod's `gpu.id` and `cost` |
 | Pricing and stock | `GET /v2/catalog/gpus`: wrapped `gpus`, `price.secure`, `memory`, `availability` |
 | Startup and container liveness | `GET /v2/pods/{id}`: `status` and `runtime` |

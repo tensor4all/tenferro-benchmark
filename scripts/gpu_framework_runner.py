@@ -9,6 +9,7 @@ import json
 import os
 import time
 
+import jax_cache_stats
 from benchmark_gpu_public_api import measure
 
 
@@ -56,6 +57,10 @@ def run(legacy, suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
     kw = dict(ts=ts, bc=bc, tc=tc)
     compile_ms = None
     compiler_options = compiler_options_for(problem, backend)
+    # The persistent compilation cache is shared across arms; only its growth is
+    # evidence a row added entries. A hit cannot be claimed from a time alone.
+    cache_dir = os.environ.get("JAX_COMPILATION_CACHE_DIR") or None
+    cache_before = jax_cache_stats.stats(cache_dir)
     print(backend, problem["id"], "setup", flush=True)
     try:
         if is_jax:
@@ -198,10 +203,15 @@ def run(legacy, suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
         # Mandatory initialization, placement and numerical check also happen
         # when zero warmups or verification-only execution is requested.
         setup_end = time.monotonic_ns()
+        probe_started = time.monotonic_ns()
         probe = operation()
         ready(probe)
         assert_placement(probe)
         probe_ready = time.monotonic_ns()
+        # The first call with its compilation: the timed region below starts
+        # only after warmups, so this records cold-path cost without touching it.
+        first_call_ms = (compile_ms or 0.0) + (probe_ready - probe_started) / 1e6
+        cache_delta = jax_cache_stats.delta(cache_before, jax_cache_stats.stats(cache_dir))
         verification = check(probe)
         verified = time.monotonic_ns()
         print(backend, problem["id"], "initial verification passed", flush=True)
@@ -224,10 +234,16 @@ def run(legacy, suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
         record = legacy._ok_record(suite_id, problem, backend, device_ordinal, path=path,
             warmup_runs=warmups, timed_runs=0 if verify_only else runs,
             first_run_ms=first, median_ms=median, min_ms=minimum, p95_ms=p95, iqr_ms=iqr,
-            compile_time_ms=compile_ms, ver_status=verification[0], max_abs=verification[1], max_rel=verification[2],
+            compile_time_ms=compile_ms, first_call_ms=first_call_ms,
+            ver_status=verification[0], max_abs=verification[1], max_rel=verification[2],
             rtol=rtol, atol=atol, env=legacy._base_env(device_ordinal, ts, bc, tc))
         record["execution"]["notes"] = json.dumps({
             "sampling": sampling, "setup": "inputs/transfers, plans, compilation, lazy initialization and validation outside clocks",
+            "first_call": "compilation plus the first executed call, measured outside every timed sample",
+            "first_call_ms": first_call_ms, "compile_time_ms": compile_ms,
+            "jax_compilation_cache_dir": cache_dir, **cache_delta,
+            "jax_compilation_cache_note": ("directory growth around the case; positive values are new entries, "
+                                           "zero is consistent with a hit but is not proof of one"),
             "precision": "JAX x64/highest; PyTorch TF32 disabled", "framework_version": version,
             "compiler_options": compiler_options if is_jax else None,
             "physical_device_index": os.environ.get("GPU_BENCH_PHYSICAL_DEVICE"),

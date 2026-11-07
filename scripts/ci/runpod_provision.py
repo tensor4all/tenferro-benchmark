@@ -46,6 +46,7 @@ from scripts.ci.runpod_client import (
     _redact,
     build_pod_payload,
     create_pod,
+    network_volume,
 )
 from scripts.ci.runpod_contract import configured_gpu_tiers
 from scripts.ci.runpod_pricing import (
@@ -584,7 +585,19 @@ def select_tiers(tiers, selected: str):
 def main() -> int:
     args = _parse_args()
     try:
-        config = _load_config(args.config)
+        config = dict(_load_config(args.config))
+        # The volume ID is repository configuration, not a committed literal:
+        # it differs per RunPod account and data center.
+        volume_id = os.environ.get("RUNPOD_NETWORK_VOLUME_ID", "").strip()
+        if volume_id:
+            config["network_volume_id"] = volume_id
+        volume_path = os.environ.get("RUNPOD_NETWORK_VOLUME_MOUNT_PATH", "").strip()
+        if volume_path:
+            config["network_volume_mount_path"] = volume_path
+        volume = network_volume(config)
+        print("RunPod network volume: " + (
+            f"{volume[0]} at {volume[1]}" if volume
+            else "none (JAX compilation cache disabled)"))
         api_key = os.environ.get("RUNPOD_API_KEY")
         gh_token = os.environ.get("PROVISION_GH_TOKEN")
         org = os.environ.get("PROVISION_ORG")

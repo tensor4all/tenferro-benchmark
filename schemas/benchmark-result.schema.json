@@ -80,6 +80,11 @@
           "minimum": 0,
           "description": "NVRTC modules this case compiled; 0 on a warm run."
         },
+        "first_call_ms": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "description": "Compilation plus the first executed call (the first warmup), measured outside every timed sample. Optional: collectors that do not measure a cold path omit it."
+        },
         "first_run_ms": { "type": ["number", "null"], "minimum": 0 },
         "median_ms": { "type": ["number", "null"], "minimum": 0 },
         "min_ms": { "type": ["number", "null"], "minimum": 0 },

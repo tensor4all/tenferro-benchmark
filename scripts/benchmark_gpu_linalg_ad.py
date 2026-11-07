@@ -17,6 +17,7 @@ PROJECT_DIR = SCRIPT_DIR.parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
+import jax_cache_stats  # noqa: E402
 from benchmark_cpu_ops_python import (  # noqa: E402
     data,
     large_linalg_jvp_vjp_sizes,
@@ -157,6 +158,8 @@ def run_framework(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
         rhs = data((n, ad.get("rhs_cols", 1)), ad.get("rhs_seed", 0)) if loss_name == "grad_sum_solve" else None
         expected, difference = cpu_reference(LOSS_TORCH[loss_name], matrix, tangent, rhs, phase)
         compile_ms = None
+        cache_dir = os.environ.get("JAX_COMPILATION_CACHE_DIR") or None
+        cache_before = jax_cache_stats.stats(cache_dir)
         if is_jax:
             import jax
             import jax.numpy as jnp
@@ -216,8 +219,14 @@ def run_framework(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
             for value in leaves(result):
                 check_placement(value)
             return verify_arrays([download(v) for v in leaves(result)], expected, rtol, atol)
+        probe_started = time.perf_counter()
         probe = runner()
         ready(probe)
+        probe_ready = time.perf_counter()
+        # Compilation plus the first executed call; every timed sample below
+        # still starts after warmups, so the measured region is unchanged.
+        first_call_ms = (compile_ms or 0.0) + (probe_ready - probe_started) * 1000
+        cache_delta = jax_cache_stats.delta(cache_before, jax_cache_stats.stats(cache_dir))
         verification = check(probe)
         output_bytes = sum(a.nbytes for a in expected)
         del probe
@@ -237,11 +246,17 @@ def run_framework(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
                         rtol=rtol, atol=atol, ts=ts, bc=bc, tc=tc)
         if verify_only:
             rec["status"] = "verification_only"
-        rec["timing"].update(first_run_ms=first, min_ms=minimum, p95_ms=p95, compile_time_ms=compile_ms)
+        rec["timing"].update(first_run_ms=first, min_ms=minimum, p95_ms=p95, compile_time_ms=compile_ms,
+                             first_call_ms=first_call_ms)
         rec["verification"].update(reference_backend="pytorch-cpu-f64 AD plus central difference of primal loss",
                                    max_abs_error=verification[0], max_rel_error=verification[1], residual=verification[2])
         rec["execution"]["notes"] = json.dumps(dict(sampling=sampling, central_difference=difference,
             framework_version=version, setup="fixtures/transfers, compilation, initialization and validation outside clocks",
+            first_call="compilation plus the first executed call, measured outside every timed sample",
+            first_call_ms=first_call_ms, compile_time_ms=compile_ms,
+            jax_compilation_cache_dir=cache_dir, **cache_delta,
+            jax_compilation_cache_note=("directory growth around the case; positive values are new entries, "
+                                        "zero is consistent with a hit but is not proof of one"),
             differentiated_argument="A only; RHS fixed", scope="primal scalar loss plus first-order JVP/VJP",
             device_uuid=os.environ.get("CUDA_VISIBLE_DEVICES"), physical_device_index=os.environ.get("GPU_BENCH_PHYSICAL_DEVICE"),
             verification_only=verify_only))

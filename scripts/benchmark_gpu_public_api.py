@@ -11,6 +11,7 @@ from pathlib import Path
 import sys
 import time
 
+import jax_cache_stats
 import numpy as np
 
 # The sibling modules are imported by name because this file also runs as a script
@@ -438,6 +439,8 @@ def run_python(backend, root, output):
             compile_ms = 0.0
             fixture_started = time.monotonic()
             try:
+                first_call_started = None
+                cache_before = jax_cache_stats.stats(os.environ.get("JAX_COMPILATION_CACHE_DIR") or None)
                 hosts = [load_array(root, a) for a in case["inputs"]]
                 is_fft = case["op"] in {"fft", "ifft", "rfft", "irfft"}
                 stored_fingerprints = [load_fingerprint(root, a) for a in case["outputs"]]
@@ -475,6 +478,7 @@ def run_python(backend, root, output):
                             compile_started = time.monotonic()
                             fn = jax.jit(fn).lower(*inputs).compile()
                             compile_ms = (time.monotonic() - compile_started) * 1e3
+                            first_call_compile_ms = compile_ms
                         op = lambda: fn(*inputs)
                     jax.block_until_ready(inputs)
                     sync = lambda: None  # previous batch waits on every output
@@ -487,12 +491,20 @@ def run_python(backend, root, output):
                 reuse = "_into" in case["op"]
                 if hasattr(op, "prepare"):
                     op.prepare(1)
+                if first_call_started is None:
+                    first_call_started = time.monotonic()
                 probe = op(0) if reuse else op()
                 if hasattr(op, "inspect"):
                     ready([probe])
                     probe = op.inspect(probe)  # snapshot only for untimed verification
                 verify_device(probe, backend, device if backend == "pytorch-cuda" else gpu)
                 (jax.block_until_ready if backend != "pytorch-cuda" and hasattr(op, "inspect") else ready)([probe])
+                # Compilation (JIT arms only) plus the first executed call; every
+                # timed sample below still happens after the warmups.
+                first_call_ms = first_call_compile_ms + (time.monotonic() - first_call_started) * 1e3
+                cache_delta = jax_cache_stats.delta(
+                    cache_before,
+                    jax_cache_stats.stats(os.environ.get("JAX_COMPILATION_CACHE_DIR") or None))
                 verify_started = time.monotonic()
                 inspected = normalized_outputs([download(v) for v in leaves(probe)], case, backend)
                 # The fingerprint is a recorded diagnostic and never the decision: an
@@ -546,6 +558,8 @@ def run_python(backend, root, output):
                     "warning": warning,
                     "scope": "case wall clock outside the timed region: fixtures, H2D, library initialization, compilation, validation, output destruction",
                 }
+                if timing is not None:
+                    timing.update(first_call_ms=first_call_ms, **cache_delta)
                 row.update(status="unsupported" if numerical_exclusion else ("verification_only" if verify_only else "ok"), timing=timing,
                            verification={"max_error_over_tolerance": error, "reference": case["reference"]})
                 if numerical_exclusion:

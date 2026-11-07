@@ -324,6 +324,8 @@ jobs:
           PROVISION_ORG: ${{ github.repository_owner }}
           PROVISION_RUNNER_GROUP_ID: ${{ vars.RUNPOD_RUNNER_GROUP_ID || '4' }}
           PROVISION_RUNNER_LABEL: runpod-benchmark-${{ github.run_id }}-${{ github.run_attempt }}
+          # Empty here disables the JAX compilation cache; the pod then runs cold.
+          RUNPOD_NETWORK_VOLUME_ID: ${{ vars.RUNPOD_JAX_CACHE_VOLUME_ID }}
           PYTHONUNBUFFERED: "1"
         run: |
           set -euo pipefail
@@ -415,6 +417,20 @@ jobs:
       - name: Verify and extract prepared runtime
         timeout-minutes: 10
         run: bash scripts/ci/restore_gpu_environment.sh
+      - name: Configure the JAX compilation cache
+        # A missing, unwritable or stale volume is not a benchmark failure: the
+        # module prints one line and the run continues with an empty cache.
+        timeout-minutes: 5
+        env:
+          RUNPOD_NETWORK_VOLUME_ID: ${{ vars.RUNPOD_JAX_CACHE_VOLUME_ID }}
+        run: |
+          set -euo pipefail
+          uv run python -m scripts.ci.jax_cache configure \
+            --volume-id "${RUNPOD_NETWORK_VOLUME_ID:-}" \
+            --suite "$REQUESTED_SUITE" \
+            --backends "${{ inputs.backends }}" \
+            --github-env "$GITHUB_ENV"
+          nvidia-smi --query-gpu=name,driver_version --format=csv,noheader
       - name: Pin benchmark dependency to hosted build revision
         run: |
           set -euo pipefail
