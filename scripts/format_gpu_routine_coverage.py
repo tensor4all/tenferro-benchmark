@@ -20,9 +20,11 @@ def render(status, source=None):
                      "verification_only", "raw_samples_unavailable", "noisy",
                      "duplicates", "unexpected"):
         lines.extend(["", f"## {category}", ""])
+        statuses = status.get("statuses") or {}
         for key in status.get(category, []):
             reason = status.get("reasons", {}).get(key)
-            lines.append(f"- `{key}`" + (f": {reason}" if reason else ""))
+            label = f" ({statuses[key]})" if statuses.get(key) else ""
+            lines.append(f"- `{key}`{label}" + (f": {reason}" if reason else ""))
         if not status.get(category):
             lines.append("None.")
     return "\n".join(lines) + "\n"

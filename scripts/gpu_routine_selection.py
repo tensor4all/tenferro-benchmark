@@ -4,13 +4,16 @@ import copy
 import json
 import math
 import statistics
+import sys
 from pathlib import Path
 
 import yaml
 
 import bench_selection
+import report_summary
 
 DEFAULT_DRIVER = "gpu_suite"
+MISSING_REASON = report_summary.MISSING_REASON
 
 
 def defaults(manifest_path, vendor_arms=False):
@@ -178,19 +181,30 @@ def materialize(manifest_path, requested, output, backend_override="", problem="
 
 def account(plan, paths):
     by_id, duplicates = {}, []
+    duplicate_counts = {}
     for path in paths:
         for line in path.read_text().splitlines():
             if not line.strip(): continue
             row = json.loads(line)
             key = f"{row['suite_id']}:{row['problem_id']}:{row['backend']}"
-            if key in by_id: duplicates.append(key)
+            if key in by_id:
+                duplicates.append(key)
+                duplicate_counts[key] = duplicate_counts.get(key, 1) + 1
             by_id[key] = row
     result = {name:[] for name in ("executed","skipped","unsupported","failed","missing","noisy","verification_only","raw_samples_unavailable")}
     reasons = {}
+    statuses = {}
     for key in plan["selected"]:
         row = by_id.get(key)
         if row is None:
-            result["missing"].append(key); continue
+            # The case was planned and never measured. It stays in the
+            # accounting as `missing` with the reason no row exists, so a
+            # reader sees the gap and its cause instead of nothing at all.
+            result["missing"].append(key)
+            statuses[key] = "missing"
+            reasons[key] = MISSING_REASON
+            continue
+        statuses[key] = row["status"]
         verification = row.get("verification", {})
         reason = next((value.strip() for value in (
             row.get("execution", {}).get("unsupported_reason"), verification.get("reason"))
@@ -218,18 +232,29 @@ def account(plan, paths):
             notes = json.loads(row["execution"].get("notes") or "{}")
             samples = notes["sampling"]["batch_ms"]
         except (KeyError,TypeError,ValueError):
-            result["raw_samples_unavailable"].append(key); continue
+            result["raw_samples_unavailable"].append(key)
+            reasons[key] = "the record passed but carries no sampling batch_ms, so no median can be checked"
+            continue
         if not samples:
-            result["raw_samples_unavailable"].append(key); continue
+            result["raw_samples_unavailable"].append(key)
+            reasons[key] = "the record carries an empty sampling batch, so no median can be checked"
+            continue
         if any(not math.isfinite(value) or value <= 0 for value in samples):
             result["failed"].append(key); continue
         result["executed"].append(key)
         if len(samples)>1 and statistics.stdev(samples)/statistics.mean(samples)>.10:
             result["noisy"].append(key)
+    for key in duplicates:
+        reasons[key] = (f"{duplicate_counts.get(key, 2)} rows were recorded for this case; "
+                        "only one row per case may publish")
+    for key in sorted(set(by_id) - set(plan["selected"])):
+        statuses[key] = by_id[key]["status"]
+        reasons[key] = ("a row was recorded for a case the routine selection did not select; "
+                        "it is not part of this campaign")
     result.update(manifest_version=plan["manifest_version"],effort=plan["effort"],
                   expected=plan["expected"],selected=plan["selected"],
                   duplicates=duplicates,unexpected=sorted(set(by_id)-set(plan["selected"])),
-                  reasons=reasons)
+                  reasons=reasons, statuses=statuses)
     result["complete"] = (len(result["executed"])==len(plan["expected"]) and
                           not result["duplicates"] and not result["unexpected"])
     result["counts"] = {key:len(value) for key,value in result.items() if isinstance(value,list)}
@@ -270,7 +295,13 @@ def main():
             print(f"{category}: {status['counts'][category]}")
             for key in status[category]:
                 print(f"  {key}: {status['reasons'].get(key, category)}")
-        if status["failed"] or status["missing"] or status["duplicates"] or status["unexpected"]:
+        # case_status.json is already written: the rows this run did measure stay
+        # publishable, and the non-zero exit only tells the job it went red.
+        incomplete = [name for name in ("failed", "missing", "duplicates", "unexpected")
+                      if status[name]]
+        if incomplete:
+            print("collection incomplete: " + ", ".join(
+                f"{name}={status['counts'][name]}" for name in incomplete), file=sys.stderr)
             raise SystemExit("GPU collection has failed/missing/duplicate/unexpected cases")
         return
     plan = materialize(args.manifest,args.suites,args.output,args.backends,args.problem,args.effort,

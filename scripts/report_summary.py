@@ -38,7 +38,9 @@ run-level provenance v1 cannot express::
 
 Rows are sorted by ``(case, group, backend)`` so a summary is deterministic for
 the same input records.  ``median``/``iqr`` are ``null`` when a record is
-missing or not ``ok``.
+missing or not ``ok``.  Every non-``ok`` row carries a non-empty ``reason``, and
+a planned case that produced no record at all keeps a ``missing`` row with the
+reason it has no timing: a failure is never expressed as an absent row.
 """
 
 from __future__ import annotations
@@ -59,6 +61,27 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 # stdout-piped formatter CLI (and its fixture tests) unchanged.
 SUMMARY_ENV = "BENCHMARK_REPORT_SUMMARY"
 RUN_METADATA_ENV = "BENCHMARK_RUN_METADATA"
+
+# A case the run planned to measure but never wrote a row for.  It is a
+# failure, not an omission: the row exists so a reader sees the case and why it
+# has no timing, instead of a hole between two measured rows.
+MISSING_STATUS = "missing"
+MISSING_REASON = ("no measurement row was written for this case; the runner "
+                  "produced no result for it (see this run's raw records and log)")
+
+
+def no_reason_text(status: str, verification: str | None = None) -> str:
+    """Say that nothing was recorded, in the words of the row's own fields."""
+    recorded = f", verification {verification}" if verification not in (None, "", "unknown") else ""
+    return f"status {status}{recorded}; the runner recorded no reason"
+
+
+def recorded_reason(*candidates: Any) -> str | None:
+    """The first nonblank explanation among the row's own fields."""
+    for value in candidates:
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    return None
 
 
 def summary_path_for_report(report_path: Path) -> Path:
@@ -89,7 +112,11 @@ def make_row(
         row["iqr"] = float(iqr)
     row["status"] = str(status)
     row["verified"] = bool(verified)
-    if reason:
+    # Every non-ok row explains itself: a reader must never meet a row whose
+    # status says it failed and whose reason is blank or absent.
+    if str(status) != "ok":
+        row["reason"] = str(recorded_reason(reason) or no_reason_text(str(status)))
+    elif reason:
         row["reason"] = str(reason)
     if operations_per_sample is not None:
         row["operations_per_sample"] = int(operations_per_sample)
@@ -324,11 +351,14 @@ def rows_from_gpu_records(
             median = None
             iqr = None
         reason = None
-        if status == "unsupported":
-            reason = execution.get("unsupported_reason")
+        if status != "ok":
             path = execution.get("execution_path")
-            if not reason and path and "unavailable" in str(path):
-                reason = str(path)
+            reason = recorded_reason(
+                verification.get("reason"),
+                execution.get("unsupported_reason"),
+                execution.get("error"),
+                str(path) if path and "unavailable" in str(path) else None,
+            ) or no_reason_text(status, verification.get("status"))
         case = record.get("problem_id") or record.get("case") or record.get("case_id")
         grp = group(record) if group is not None else record.get("op")
         rows.append(
@@ -345,6 +375,60 @@ def rows_from_gpu_records(
             )
         )
     return rows
+
+
+def planned_case_ids(run_metadata: dict[str, Any] | None) -> list[str]:
+    """The ``suite:problem:backend`` keys this suite's own plan asked it to measure.
+
+    ``run_gpu_suite.sh`` stamps the routine selection on each run's metadata, so
+    a formatter and the ingestion rebuild read the same plan from the same file
+    and produce byte-identical summaries.
+    """
+    collection = (run_metadata or {}).get("collection") or {}
+    keys = collection.get("selected_case_ids") or collection.get("expected_case_ids") or []
+    return [key for key in keys if isinstance(key, str) and key.count(":") >= 2]
+
+
+def split_case_key(key: str) -> tuple[str, str, str]:
+    """Split ``suite:problem:backend``; the problem may itself contain colons."""
+    suite, rest = key.split(":", 1)
+    problem, backend = rest.rsplit(":", 1)
+    return suite, problem, backend
+
+
+def rows_for_unrecorded_cases(
+    rows: Iterable[dict[str, Any]],
+    planned_keys: Iterable[str],
+    *,
+    suite_id: str | None = None,
+    group: str | None = None,
+) -> list[dict[str, Any]]:
+    """Rows for planned cases that produced no row, so no case disappears.
+
+    A planned case with no measurement row is a failure the reader must see;
+    dropping it would leave a hole where a comparison belongs.  The row carries
+    the ``missing`` status and the reason it has no timing.  Without a suite id
+    the plan cannot be attributed to this summary, so nothing is added.
+    """
+    if not suite_id:
+        return []
+    seen = {(str(row.get("case")), str(row.get("backend"))) for row in rows}
+    groups = {str(row.get("case")): row["group"] for row in rows if row.get("group")}
+    extra = []
+    for key in planned_keys:
+        try:
+            suite, problem, backend = split_case_key(key)
+        except ValueError:
+            continue
+        if suite_id is not None and suite != suite_id:
+            continue
+        if (problem, backend) in seen:
+            continue
+        extra.append(
+            make_row(problem, backend, None, status=MISSING_STATUS,
+                     group=groups.get(problem, group), verified=False, reason=MISSING_REASON)
+        )
+    return extra
 
 
 def maybe_write(

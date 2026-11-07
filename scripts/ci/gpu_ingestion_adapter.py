@@ -54,7 +54,13 @@ def adapt_publication(bundle: Path, source: dict) -> dict:
             if row['status'] in FAILED_STATUSES and any(timing.get(metric) is not None for metric in
                     ('first_run_ms', 'median_ms', 'min_ms', 'p95_ms', 'iqr_ms')):
                 raise ValueError(f'{suite}: failed row has timing: {key}')
-        if seen != {tuple(row) for row in expected_rows}:
+        # A planned case the runner never wrote a row for may still publish: the
+        # summary then carries it as `missing` with the reason it has no timing,
+        # so the gap is visible instead of dropped. Any other difference between
+        # the plan and the raw rows still rejects the suite.
+        unrecorded = {(str(row['case']), str(row['backend'])) for row in summary['rows']
+                      if str(row.get('status')) == 'missing'}
+        if seen | unrecorded != {tuple(row) for row in expected_rows} or seen & unrecorded:
             raise ValueError(f'{suite}: missing/unexpected raw rows')
         metadata = yaml.safe_load(safe_file(bundle, run+'/run.yaml').read_text())
         if (metadata.get('target_profile') != 'nvidia-gpu' or metadata.get('suite_id') != suite
