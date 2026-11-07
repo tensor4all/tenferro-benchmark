@@ -127,10 +127,18 @@ jobs:
         run: |
           set -euo pipefail
           export PATH="$CUDA_HOME/bin:$PATH"
-          # The routine set collects four runners on the pod, which has a CUDA
-          # runtime but no Rust toolchain.
+          # The pod has a CUDA runtime but no Rust toolchain, so every runner it
+          # runs is built here: the routine set's four collectors plus the
+          # routine control lane's perf_issues runner (see below).
           binaries=(benchmark_gpu_rust benchmark_gpu_linalg_ad benchmark_gpu_public_api
-                    benchmark_gpu_permutation)
+                    benchmark_gpu_permutation benchmark_gpu_perf_issues)
+          # benchmark_gpu_perf_issues is not a routine manifest suite: the
+          # unfiltered routine command collects the routine control lane after
+          # the routine set (scripts/run_gpu_suite.sh ->
+          # scripts/run_gpu_routine_controls.sh -> scripts/run_gpu_perf_issues.sh),
+          # and that lane runs it. gpu_binaries.py derives the same set, so the
+          # pod's transfer check names a missing control binary before the
+          # collection starts rather than after the routine set is spent.
           if [[ "$REQUESTED_SUITE" == perf-issues-readback ]]; then
             binaries=(benchmark_gpu_perf_issues)
           fi

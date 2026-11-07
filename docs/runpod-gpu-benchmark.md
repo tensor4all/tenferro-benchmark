@@ -242,10 +242,12 @@ Only `main` saves it. Every invocation still runs `cargo build --locked` against
 the current sources; a cache hit does not skip freshness or artifact checks.
 The accepted pod checks out the exact tenferro-rs commit used for that build
 and verifies the artifact before sampling. The binaries the pod requires come
-from the `driver:` of each selected suite (`scripts/ci/gpu_binaries.py`), so a
-suite whose driver's binary did not arrive fails the transfer step by name
-instead of becoming `missing` rows later. Missing, stale, or modified artifacts
-fail rather than silently rebuilding on a paid GPU.
+from the `driver:` of each selected suite (`scripts/ci/gpu_binaries.py`), plus
+the routine control lane's `benchmark_gpu_perf_issues` runner for the unfiltered
+weekly command, which collects that lane after the routine set. A suite or lane
+whose binary did not arrive fails the transfer step by name instead of becoming
+`missing` rows later. Missing, stale, or modified artifacts fail rather than
+silently rebuilding on a paid GPU.
 
 Another hosted Ubuntu 24.04 job prepares a managed Python 3.12.12 interpreter,
 the frozen `scripts/ci/runpod_runtime/uv.lock` environment, CUDA 12.8 shared runtime libraries and JIT headers, and

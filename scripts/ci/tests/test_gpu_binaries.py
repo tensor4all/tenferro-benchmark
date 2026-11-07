@@ -1,13 +1,18 @@
 import contextlib
 import io
+import re
 import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+import yaml
+
 from scripts.ci.gpu_binaries import (
     MANIFEST, READBACK, check, main, required_binaries,
 )
+
+ROOT = Path(__file__).resolve().parents[3]
 
 # A minimal routine manifest: one generic suite, one delegated AD driver.
 ROUTINE = '''
@@ -24,19 +29,48 @@ suites:
 '''
 
 
+def built_binaries():
+    """The binaries the hosted build compiles before any pod is rented.
+
+    The first `binaries=(...)` of the build step is the unfiltered weekly list;
+    the readback branch replaces it below.
+    """
+    workflow = yaml.safe_load(
+        (ROOT / '.github/workflows/benchmark-runpod-gpu.yml').read_text())
+    build = next(step for step in workflow['jobs']['prepare-benchmark']['steps']
+                 if step.get('id') == 'build')
+    match = re.search(r'binaries=\(([^)]*)\)', build['run'])
+    if match is None:
+        raise AssertionError('the build step declares no binaries=(...) array')
+    return match.group(1).split()
+
+
 class RequiredBinariesTest(unittest.TestCase):
     def manifest(self, directory, text=ROUTINE):
         path = Path(directory) / 'routine.yaml'
         path.write_text(text)
         return path
 
-    def test_whole_routine_set_needs_the_generic_and_the_ad_runner(self):
+    def test_whole_routine_set_needs_the_generic_the_ad_runner_and_the_controls_runner(self):
         with tempfile.TemporaryDirectory() as directory:
             required = required_binaries('all', self.manifest(directory))
         self.assertEqual(required, {
             'benchmark_gpu_rust': ['benchmarks/gpu/dense.yaml'],
             'benchmark_gpu_linalg_ad': ['benchmarks/gpu/linalg_jvp_vjp.yaml'],
+            # The routine command collects the control lane after the routine
+            # set, and that lane is not a routine manifest entry.
+            'benchmark_gpu_perf_issues': ['routine_controls '
+                                          '(benchmarks/gpu/manifests/routine_controls.yaml)'],
         })
+
+    def test_a_filtered_selection_does_not_need_the_controls_runner(self):
+        # A suite, backend or problem filter turns the control lane off
+        # (scripts/run_gpu_suite.sh), so a named suite must not demand its
+        # binary.
+        with tempfile.TemporaryDirectory() as directory:
+            required = required_binaries(
+                'benchmarks/gpu/dense.yaml', self.manifest(directory))
+        self.assertNotIn('benchmark_gpu_perf_issues', required)
 
     def test_selection_without_the_ad_driver_ships_one_binary(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -77,6 +111,13 @@ class RequiredBinariesTest(unittest.TestCase):
         self.assertIn('benchmarks/gpu/linalg_jvp_vjp.yaml', every)
         self.assertIn('benchmarks/gpu/linalg_ad_latency.yaml', every)
 
+    def test_the_weekly_requirement_is_exactly_what_the_workflow_builds(self):
+        # Two declarations cannot drift: the build step's `binaries` array and
+        # this module. A missed binary is only noticed on the pod after the
+        # routine set is collected, so the drift has to fail here instead.
+        required = required_binaries('all', MANIFEST)
+        self.assertEqual(set(required), set(built_binaries()))
+
     def test_cli_lists_binaries_or_checks_the_transfer(self):
         with tempfile.TemporaryDirectory() as directory:
             manifest = self.manifest(directory)
@@ -87,6 +128,8 @@ class RequiredBinariesTest(unittest.TestCase):
             self.assertEqual(out.getvalue().splitlines(), [
                 'benchmark_gpu_rust\tbenchmarks/gpu/dense.yaml',
                 'benchmark_gpu_linalg_ad\tbenchmarks/gpu/linalg_jvp_vjp.yaml',
+                'benchmark_gpu_perf_issues\troutine_controls '
+                '(benchmarks/gpu/manifests/routine_controls.yaml)',
             ])
             with patch('sys.argv', argv + ['--directory', directory]):
                 with self.assertRaisesRegex(SystemExit, 'benchmark_gpu_linalg_ad'):
