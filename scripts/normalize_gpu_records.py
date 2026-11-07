@@ -47,6 +47,26 @@ COMPILE_TIME_SCOPE = ("the untimed case wall of the case that compiled, includin
                       "transfers and verification; not a compile interval")
 COMPILE_TIME_ABSENT = ("not measured: no compile interval was recorded; `compile_modules` counts "
                        "the NVRTC modules and the untimed wall is the case wall")
+# A record without `compile_modules` is not an NVRTC arm. The Python arms time their own
+# compile call and nothing else (jax-cuda-jit: `jax.jit(fn).lower(*inputs).compile()`), and
+# record 0.0 when the arm has no compile step, so their value is a real compile interval
+# and must not be labelled as the legacy untimed wall (#363).
+FRAMEWORK_COMPILE_SCOPE = ("the arm's own lowering/compile interval, timed around its compile call "
+                           "only (jax-cuda-jit: jax.jit(fn).lower(*inputs).compile()); 0.0 when the "
+                           "arm has no compile step")
+
+
+def compile_time_scope(row, recorded_compile_ms):
+    """What one record's `compile_time_ms` holds, decided by the kind of record it is.
+
+    Only an NVRTC record (one that carries `compile_modules`) can hold the legacy untimed
+    case wall; any other recorded value is the arm's own compile interval.
+    """
+    if recorded_compile_ms is None:
+        return COMPILE_TIME_ABSENT
+    if "compile_modules" in row:
+        return COMPILE_TIME_SCOPE
+    return FRAMEWORK_COMPILE_SCOPE
 
 
 def _spread(values):
@@ -139,8 +159,7 @@ def fold(row, suite_id=None):
             "warmup_runs": row.get("warmup") or timing.get("warmups") or 0,
             "timed_runs": len(values),
             "compile_time_ms": recorded_compile_ms,
-            "compile_time_scope": (COMPILE_TIME_SCOPE if recorded_compile_ms is not None
-                                   else COMPILE_TIME_ABSENT),
+            "compile_time_scope": compile_time_scope(row, recorded_compile_ms),
             "first_run_ms": None,
             "median_ms": median, "min_ms": min(values) if values else None,
             "p95_ms": None, "iqr_ms": iqr,
