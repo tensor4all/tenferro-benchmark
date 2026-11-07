@@ -295,8 +295,10 @@ jobs:
     if: ${{ !inputs.prepare_only }}
     needs: [prepare-benchmark, prepare-environment]
     runs-on: ubuntu-latest
-    # Must outlive the pod: the pod's own watchdog deletes it after POD_MAX_LIFETIME_SECONDS.
-    timeout-minutes: 110
+    # Must outlive the pod: the pod's own watchdog deletes it after POD_MAX_LIFETIME_SECONDS, so the
+    # runner's timeout is the backstop and has to be the *larger* of the two. A runner timeout below
+    # the watchdog kills the job while the pod is still alive and still billing.
+    timeout-minutes: 125
     outputs:
       pod_id: ${{ steps.create_pod.outputs.pod_id }}
       runner_label: ${{ steps.create_pod.outputs.runner_label }}
@@ -382,8 +384,9 @@ jobs:
     runs-on:
       - self-hosted
       - ${{ needs.start-runpod.outputs.runner_label }}
-    # Part of the two-hour rental budget; see POD_MAX_LIFETIME_SECONDS.
-    timeout-minutes: 92
+    # Same rule here: above POD_MAX_LIFETIME_SECONDS (7200 s = 120 min) so the watchdog deletes the
+    # pod first and this job is still running to run its own delete step if the watchdog misfires.
+    timeout-minutes: 130
     env:
       # Arms the prepared runtime covers; not a selection filter.
       GPU_BENCH_RUNTIME_BACKENDS: ${{ inputs.backends || 'tenferro-cuda-trace,tenferro-cuda-eager,pytorch-cuda,jax-cuda' }}
