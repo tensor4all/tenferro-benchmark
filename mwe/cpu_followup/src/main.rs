@@ -7,7 +7,7 @@ use tenferro_ad::EagerRuntime;
 use tenferro_cpu::{with_cpu_engine, CpuEngine};
 use tenferro_fft::{FftExecutor, FftNorm, TracedTensorFftExt};
 use tenferro_linalg::{TensorLinalgExt, TracedTensorLinalgExt};
-use tenferro_runtime::{ExecutionEngine, GraphCompiler, Runtime, TracedTensor};
+use tenferro_runtime::{ExecutionEngine, GraphCompiler, Runtime, TraceContext, TracedTensor};
 use tenferro_tensor::{
     DType, GatherConfig, PadConfig, ScatterConfig, SliceConfig, Tensor, TensorAnalytic,
     TensorIndexing, TensorRead, TensorReduction, TensorStructural, TensorValue, TensorView,
@@ -151,8 +151,8 @@ fn units(n: usize) -> Result<Vec<()>> {
 fn reads<'a>(x: &'a Tensor, n: usize) -> Result<Vec<TensorRead<'a>>> {
     Ok((0..n).map(|_| TensorRead::from_tensor(x)).collect())
 }
-fn traced(x: &Tensor) -> Result<TracedTensor> {
-    Ok(TracedTensor::from_tensor_concrete_shape(x.duplicate()?)?)
+fn traced(trace: &TraceContext, x: &Tensor) -> Result<TracedTensor> {
+    Ok(trace.from_tensor_concrete_shape(x.duplicate()?)?)
 }
 fn trace_measure(
     outputs: &[TracedTensor],
@@ -252,7 +252,9 @@ fn real(case: &Value, path: &str, threads: usize, runs: usize, target: u128) -> 
         n * 8
     };
     if path == "prepared-trace-call" {
-        let tx = traced(&x)?;
+        // One trace context per case: every traced input of the graph comes from it.
+        let trace = TraceContext::new();
+        let tx = traced(&trace, &x)?;
         let y = match op {
             "exp" => tx.exp()?,
             "log" => tx.log()?,
@@ -261,7 +263,7 @@ fn real(case: &Value, path: &str, threads: usize, runs: usize, target: u128) -> 
             "tanh" => tx.tanh()?,
             "expm1" => tx.expm1()?,
             "log1p" => tx.log1p()?,
-            "pow" => tx.pow(&traced(exponent.as_ref().unwrap())?)?,
+            "pow" => tx.pow(&traced(&trace, exponent.as_ref().unwrap())?)?,
             x if x.starts_with("reduce_max") => tx.reduce_max(Some(&axes))?,
             x if x.starts_with("reduce_min") => tx.reduce_min(Some(&axes))?,
             x if x.starts_with("reduce_sum") => tx.reduce_sum(Some(&axes))?,
@@ -447,21 +449,23 @@ fn indexing(case: &Value, path: &str, threads: usize, runs: usize, target: u128)
         _ => n * 8,
     };
     if path == "prepared-trace-call" {
-        let tx = traced(&x)?;
+        // One trace context per case: every traced input of the graph comes from it.
+        let trace = TraceContext::new();
+        let tx = traced(&trace, &x)?;
         let out = match op {
-            "gather" => tx.gather(&traced(&idx)?, gather.clone())?,
-            "scatter" => traced(zeros.as_ref().unwrap())?.scatter(
-                &traced(&idx)?,
-                &traced(&y)?,
+            "gather" => tx.gather(&traced(&trace, &idx)?, gather.clone())?,
+            "scatter" => traced(&trace, zeros.as_ref().unwrap())?.scatter(
+                &traced(&trace, &idx)?,
+                &traced(&trace, &y)?,
                 scatter.clone(),
             )?,
             "slice" => tx.slice(slice.clone())?,
-            "dynamic_slice" => tx.dynamic_slice(&traced(&start)?, &[n / 2])?,
+            "dynamic_slice" => tx.dynamic_slice(&traced(&trace, &start)?, &[n / 2])?,
             "dynamic_update_slice" => {
                 return Err("unsupported: no public TracedTensor dynamic_update_slice API".into())
             }
             "pad" => tx.pad(pad.clone())?,
-            "concatenate" => TracedTensor::concatenate(&[&tx, &traced(&y)?], 0)?,
+            "concatenate" => TracedTensor::concatenate(&[&tx, &traced(&trace, &y)?], 0)?,
             "reverse" => tx.reverse(&[0])?,
             _ => unreachable!(),
         };
@@ -507,7 +511,9 @@ fn structural(
         _ => 4096 * 4096 * 8,
     };
     if path == "prepared-trace-call" {
-        let tx = traced(&x)?;
+        // One trace context per case: every traced input of the graph comes from it.
+        let trace = TraceContext::new();
+        let tx = traced(&trace, &x)?;
         let out = match op {
             "cast_f64_f32" => tx.cast(DType::F32)?,
             "extract_diagonal" => tx.extract_diag(1, 2)?,
@@ -578,7 +584,9 @@ fn complex_or_linalg(
         n * 16
     };
     if path == "prepared-trace-call" {
-        let tx = traced(&x)?;
+        // One trace context per case: every traced input of the graph comes from it.
+        let trace = TraceContext::new();
+        let tx = traced(&trace, &x)?;
         let outs = match op {
             "exp" => vec![tx.exp()?],
             "log" => vec![tx.log()?],
@@ -648,7 +656,9 @@ fn fft(case: &Value, path: &str, threads: usize, runs: usize, target: u128) -> R
     };
     let bytes = n * if case["dtype"] == "c64" { 16 } else { 8 };
     if path == "prepared-trace-call" {
-        let tx = traced(&x)?;
+        // One trace context per case: every traced input of the graph comes from it.
+        let trace = TraceContext::new();
+        let tx = traced(&trace, &x)?;
         let out = match op {
             "fft" => tx.fft(None, -1, FftNorm::Backward)?,
             "ifft" => tx.ifft(None, -1, FftNorm::Backward)?,
@@ -760,7 +770,9 @@ mod tests {
 
     #[test]
     fn prepared_trace_runs_on_a_caller_owned_engine_without_sampling() {
-        let input = TracedTensor::from_vec_col_major(vec![2], vec![1.0_f64, 2.0]).unwrap();
+        let input = TraceContext::new()
+            .from_vec_col_major(vec![2], vec![1.0_f64, 2.0])
+            .unwrap();
         let output = input.exp().unwrap();
         let row = trace_measure(&[output], 1, 16, 0, 1_000_000).unwrap();
         assert!(row["samples"].as_array().unwrap().is_empty());
