@@ -300,6 +300,32 @@ def load_run_metadata(path: Path | None) -> dict[str, Any] | None:
     return metadata if isinstance(metadata, dict) else None
 
 
+def recorded_reason(record: dict[str, Any]) -> str | None:
+    """The cause a non-ok record states for itself, if it states one.
+
+    ``scripts/gpu_routine_selection.py`` already reads a failure's cause from
+    these two places, so the summary reads them too: a stub puts its message in
+    ``execution.unsupported_reason`` and in ``verification.reason``, and the
+    result schema allows no other home for it.
+
+    A row that publishes only ``runtime_failed`` with no reason costs the one
+    fact a reader needs -- what actually raised.  The ``gpu/tensornetwork``
+    trace row was published that way on 2026-10-31: the failing case was
+    ``tensornetwork_permutation_optimized_f32`` and the exception
+    (``run: TypedTensor::host_data: ... backend storage cannot be borrowed as
+    host data``) survived only in the run artifact, which expires.
+    """
+    execution = record.get("execution") or {}
+    verification = record.get("verification") or {}
+    for value in (execution.get("unsupported_reason"), verification.get("reason")):
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    path = execution.get("execution_path")
+    if path and "unavailable" in str(path):
+        return str(path)
+    return None
+
+
 def rows_from_gpu_records(
     records: Iterable[dict[str, Any]],
     *,
@@ -317,18 +343,17 @@ def rows_from_gpu_records(
         status = str(record.get("status", "unknown"))
         timing = record.get("timing") or {}
         verification = record.get("verification") or {}
-        execution = record.get("execution") or {}
         median = timing.get("median_ms")
         iqr = timing.get("iqr_ms")
+        reason = None
         if status != "ok":
+            # Every non-ok row explains itself: an unsupported, skipped, failed
+            # or verification-failed row without a reason is neither a
+            # measurement nor an explanation, so a bare status is not enough.
             median = None
             iqr = None
-        reason = None
-        if status == "unsupported":
-            reason = execution.get("unsupported_reason")
-            path = execution.get("execution_path")
-            if not reason and path and "unavailable" in str(path):
-                reason = str(path)
+            reason = recorded_reason(record) or f"{status}: no reason recorded"
+
         case = record.get("problem_id") or record.get("case") or record.get("case_id")
         grp = group(record) if group is not None else record.get("op")
         rows.append(
