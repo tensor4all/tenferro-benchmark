@@ -451,8 +451,35 @@ def row_median(rows: list[dict[str, Any]], backend: str) -> float | None:
     return None
 
 
-def best_reference(rows: list[dict[str, Any]], backends: set[str]) -> float | None:
-    values = [row_median(rows, backend) for backend in backends]
+def row_operations(rows: list[dict[str, Any]], backend: str) -> int | None:
+    """The recorded operations per timed sample of a backend's ok row, if any."""
+    for row in rows:
+        if row.get("backend") == backend and row.get("status") == "ok" and row.get("median") is not None:
+            count = row.get("operations_per_sample")
+            return count if isinstance(count, int) else None
+    return None
+
+
+def same_batching(left: int | None, right: int | None) -> bool:
+    """Whether two arms' per-operation medians come from equally batched samples.
+
+    A row without a recorded count (CPU suites, older GPU summaries) is not judged.
+    Two arms that batched a different number of operations amortise differently, so
+    their per-operation ratio is not presented (#336).
+    """
+    return left is None or right is None or left == right
+
+
+def best_reference(
+    rows: list[dict[str, Any]],
+    backends: set[str],
+    operations_per_sample: int | None = None,
+) -> float | None:
+    values = [
+        row_median(rows, backend)
+        for backend in backends
+        if same_batching(operations_per_sample, row_operations(rows, backend))
+    ]
     values = [value for value in values if value is not None and value > 0]
     return min(values) if values else None
 
@@ -518,6 +545,14 @@ def arm_median(rows: list[dict[str, Any]], arm: Arm) -> float | None:
     return None
 
 
+def arm_operations(rows: list[dict[str, Any]], arm: Arm) -> int | None:
+    """The batching of the backend ``arm_median`` resolves the arm to."""
+    for backend in arm.backends:
+        if row_median(rows, backend) is not None:
+            return row_operations(rows, backend)
+    return None
+
+
 def load_perf_reference_map(path: Path) -> dict[str, list[str]]:
     """Map a perf-issue tenferro case id to its reference case ids."""
     try:
@@ -557,7 +592,7 @@ def case_ratio_entries(
     references = set(rule.reference_backends)
     for arm in rule.arms:
         numerator = arm_median(rows, arm)
-        denominator = best_reference(rows, references)
+        denominator = best_reference(rows, references, arm_operations(rows, arm))
         if numerator is not None and denominator:
             entries[arm.label] = numerator / denominator
     return entries
@@ -638,13 +673,20 @@ def compute_case_flags(
     """
     flags: list[str] = []
     eager, trace = tenferro_median(rows)
-    pytorch = best_reference(rows, PYTORCH_BACKENDS)
-    jax = best_reference(rows, JAX_BACKENDS)
+    # A flag is a ratio too: it is raised only between equally batched arms (#336).
+    eager_operations = row_operations(rows, TENFERRO_EAGER)
+    pytorch = best_reference(rows, PYTORCH_BACKENDS, eager_operations)
+    jax = best_reference(rows, JAX_BACKENDS, eager_operations)
     if eager is not None and pytorch is not None and eager / pytorch >= EAGER_TORCH_FLAG:
         flags.append("eager/torch")
     if eager is not None and jax is not None and eager / jax >= EAGER_JAX_FLAG:
         flags.append("eager/jax")
-    if eager is not None and trace is not None and trace / eager >= TRACE_EAGER_FLAG:
+    if (
+        eager is not None
+        and trace is not None
+        and same_batching(eager_operations, row_operations(rows, TENFERRO_TRACE))
+        and trace / eager >= TRACE_EAGER_FLAG
+    ):
         flags.append("trace/eager")
     if any(is_tenferro_anomaly(row) for row in rows):
         flags.append("status")

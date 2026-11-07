@@ -16,6 +16,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 import generate_dashboard as dashboard  # noqa: E402
 import report_summary  # noqa: E402
+import report_summary  # noqa: E402
 import result_status  # noqa: E402
 
 ZERO_OUTCOMES = {
@@ -550,6 +551,47 @@ class DashboardTests(unittest.TestCase):
         )
         summaries = dashboard.load_summaries(self.result)
         self.assertIn(("nvidia-gpu", "gpu/dense"), summaries)
+
+
+class BatchingComparabilityTests(unittest.TestCase):
+    """#336: no ratio or flag between arms that batched different operation counts."""
+
+    @staticmethod
+    def batched(case, backend, median, count):
+        result = row(case, backend, median)
+        result["operations_per_sample"] = count
+        return result
+
+    def test_a_reference_with_different_batching_is_not_a_denominator(self):
+        document = {"rows": [
+            self.batched("a", "tenferro-cuda-eager", 4.0, 16),
+            self.batched("a", "pytorch-cuda", 1.0, 32),
+            self.batched("b", "tenferro-cuda-eager", 3.0, 32),
+            self.batched("b", "pytorch-cuda", 1.0, 32),
+        ]}
+        ratios = dashboard.suite_ratios(document, "gpu/dense")
+        # Only case b compares like with like.
+        self.assertEqual(ratios["vs PyTorch"]["count"], 1)
+        self.assertAlmostEqual(ratios["vs PyTorch"]["arms"]["eager"], 3.0)
+        rows_a = dashboard.case_rows(document)["a"]
+        self.assertNotIn("eager/torch", dashboard.compute_case_flags(rows_a))
+        self.assertIn("eager/torch", dashboard.compute_case_flags(dashboard.case_rows(document)["b"]))
+
+    def test_rows_without_a_recorded_count_are_still_compared(self):
+        document = {"rows": [row("a", "tenferro-cuda-eager", 4.0), row("a", "pytorch-cuda", 1.0)]}
+        self.assertAlmostEqual(
+            dashboard.suite_ratios(document, "gpu/dense")["vs PyTorch"]["arms"]["eager"], 4.0)
+
+    def test_the_gpu_summary_row_carries_the_recorded_count(self):
+        record = {"problem_id": "a", "backend": "pytorch-cuda", "status": "ok", "op": "add",
+                  "timing": {"median_ms": 0.1, "iqr_ms": 0.0},
+                  "verification": {"status": "passed"},
+                  "execution": {"notes": json.dumps({"sampling": {"operations_per_sample": 32}})}}
+        [summary_row] = report_summary.rows_from_gpu_records([record])
+        self.assertEqual(summary_row["operations_per_sample"], 32)
+        record["execution"]["notes"] = "free text"
+        [summary_row] = report_summary.rows_from_gpu_records([record])
+        self.assertNotIn("operations_per_sample", summary_row)
 
 
 class RegenerateSummariesTests(unittest.TestCase):
