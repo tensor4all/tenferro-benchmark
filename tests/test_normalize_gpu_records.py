@@ -227,6 +227,29 @@ class NormalizeTest(unittest.TestCase):
         self.assertEqual(kept["timing"]["compile_time_ms"], 3000.0)
         self.assertEqual(kept["timing"]["compile_time_scope"], normalize.COMPILE_TIME_SCOPE)
 
+    def test_a_jax_compile_and_an_nvrtc_wall_get_different_labels(self):
+        # #363: the legacy-wall label belongs to NVRTC records only. A jax-cuda-jit record
+        # carries a real lowering/compile interval and no compile_modules.
+        nvrtc = fold(family_row(backend="direct", compile_cache="miss", compile_modules=2,
+                                timing={"operations_per_sample": 1, "batch_ms": [0.4],
+                                        "compile_time_ms": 3000.0}), "gpu/isolated_ops")
+        jax = fold(family_row(backend="jax-cuda-jit",
+                              timing={"operations_per_sample": 1, "batch_ms": [0.4],
+                                      "compile_time_ms": 250.0}), "gpu/isolated_ops")
+        self.assertEqual(nvrtc["timing"]["compile_time_scope"], normalize.COMPILE_TIME_SCOPE)
+        self.assertEqual(jax["timing"]["compile_time_scope"], normalize.FRAMEWORK_COMPILE_SCOPE)
+        self.assertNotEqual(nvrtc["timing"]["compile_time_scope"],
+                            jax["timing"]["compile_time_scope"])
+        self.assertEqual(jax["timing"]["compile_time_ms"], 250.0)
+        # The framework record still has no NVRTC fields and stays out of the NVRTC totals.
+        self.assertNotIn("compile_modules", jax["timing"])
+
+    def test_a_framework_arm_without_a_compile_interval_is_absent(self):
+        folded = fold(family_row(backend="jax-cuda",
+                                 timing={"operations_per_sample": 1, "batch_ms": [0.4],
+                                         "compile_time_ms": None}), "gpu/isolated_ops")
+        self.assertEqual(folded["timing"]["compile_time_scope"], normalize.COMPILE_TIME_ABSENT)
+
     def test_a_family_that_does_not_compile_records_nothing(self):
         self.assertIsNone(compile_accounting([family_row()]))
 
