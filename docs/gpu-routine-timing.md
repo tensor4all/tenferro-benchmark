@@ -150,6 +150,11 @@ Because these missing pairs never count as measured coverage, the coverage
 report for this run says "Measured coverage complete: no" even though every
 recorded row passed.
 
+This run's own plan counted them anyway: it expanded `problems × backends` and
+ignored each pattern's `participants_gpu`. The plan is 698 rows since #368 fixed
+that count, and none of the 16 pairs above is planned; the numbers in this file
+are what this run recorded under the old plan.
+
 ## Compile totals
 
 With the cache disabled, the public-API Rust arms compiled 52 modules across 34

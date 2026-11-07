@@ -15,10 +15,12 @@ devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.
 
 ## Cost of the set
 
-`rows = problems × backends`; each row is one measured and numerically verified
-cell, and each backend is a separate process with its own startup and
-preparation. Widening the set is a cost decision, so it belongs in the table
-below and in `routine.yaml`, not in a code change.
+`rows = problems × backends` less the arms a case declares it does not
+participate in (`participants_gpu`, currently the permutation patterns); each row
+is one measured and numerically verified cell, and each backend is a separate
+process with its own startup and preparation. Widening the set is a cost
+decision, so it belongs in the table below and in `routine.yaml`, not in a code
+change.
 
 | Suite | Driver | Problems | Backends | Rows |
 |---|---|---:|---:|---:|
@@ -29,7 +31,7 @@ below and in `routine.yaml`, not in a code change.
 | `gpu/elementwise` | `gpu_suite` | 2 | 4 | 8 |
 | `gpu/linalg_ad_latency` | `gpu_linalg_ad` | 10 | 3 | 30 |
 | `gpu/linalg_jvp_vjp` | `gpu_linalg_ad` | 10 | 3 | 30 |
-| `gpu/permutation` | `gpu_permutation` | 10 | 6 | 60 |
+| `gpu/permutation` | `gpu_permutation` | 10 | 6 | 44 |
 | `gpu/lstsq` | `gpu_public_api` | 1 | 4 | 4 |
 | `gpu/linalg_public_api_throughput` | `gpu_public_api` | 16 | 4 | 64 |
 | `gpu/fft` | `gpu_public_api` | 4 | 4 | 16 |
@@ -37,11 +39,11 @@ below and in `routine.yaml`, not in a code change.
 | `gpu/structural` | `gpu_public_api` | 16 | 4 | 64 |
 | `gpu/isolated_ops` | `gpu_public_api` | 33 | 4 | 132 |
 | `gpu/reuse_contraction` | `gpu_public_api` | 56 | 4 | 224 |
-| **Total** | | **180** | **55** | **714** |
+| **Total** | | **180** | **55** | **698** |
 
 The opt-in vendor arms add 164 rows (`gpu/dense` cublaslt/cutlass/cusolver,
 `gpu/einsum` cublaslt/cutlass, `gpu/sparse` cusparse/ginkgo, and the second JAX
-path `jax-cuda-jit` on the seven public-API families) for an 878-row matrix.
+path `jax-cuda-jit` on the seven public-API families) for an 862-row matrix.
 Vendor comparisons characterize against other libraries; they are not part of the
 weekly bundle.
 
@@ -60,7 +62,7 @@ are declarations, and `perf_issues.yaml` is the routine control lane.
 | `gpu/nn` | (a) collected | same collector, 11 activation/normalization operations, published page | 44 |
 | `gpu/structural` | (a) collected | same collector, 16 structural operations, published page | 64 |
 | `gpu/reuse_contraction` | (a) collected | same collector, 56 reuse/accumulating and strided-read operations, published page | 224 |
-| `gpu/permutation` | (a) collected | own collectors `run_gpu_permutation.sh` and the Rust/Python runners; the materialize kernel under every contraction, and its 44 rows once went three weeks without an update | 60 |
+| `gpu/permutation` | (a) collected | own collectors `run_gpu_permutation.sh` and the Rust/Python runners; the materialize kernel under every contraction, and its 44 rows once went three weeks without an update | 44 |
 | `gpu/dense_throughput` | (b) excluded by design | separate regime: backend identity `tenferro-cuda-trace-deferred-batch`, own driver `run_gpu_throughput.sh`, own reports. `AGENTS.md` forbids averaging or summarising a throughput row with a latency row, so it cannot join one weekly matrix | — |
 | `gpu/linalg_ad_throughput` | (b) excluded by design | same deferred-batch regime and driver as `dense_throughput` | — |
 | `gpu/perf_issues` | (c) diagnostic lane | 193-case broad matrix selected by its own `benchmarks/gpu/manifests/perf_issues.yaml`; the routine command already runs the curated 10 timed + 8 state controls from it weekly. The broad matrix stays independently selectable | — |
@@ -101,7 +103,7 @@ naming it there again.
 The weekly run collects the manifest in order: the core five, both AD suites,
 `permutation`, `lstsq`, `linalg_public_api_throughput`, `fft`, `nn`, `structural`,
 `isolated_ops`, `reuse_contraction`. A night that runs out of budget therefore
-loses the cheapest-signal-per-row tail last. The 714-row set is 6.7x the previous
+loses the cheapest-signal-per-row tail last. The 698-row set is 6.6x the previous
 routine matrix; it has not been measured on A100 yet. If the first complete
 collection does not fit the pod window, the documented fallback is to drop
 `gpu/isolated_ops` and `gpu/reuse_contraction` (356 rows of per-operation API

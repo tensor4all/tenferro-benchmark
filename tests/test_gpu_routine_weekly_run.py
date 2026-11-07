@@ -130,7 +130,13 @@ backends = sys.argv[1:] or ["tenferro-cuda-transpose", "tenferro-cuda-to-contigu
                             "tenferro-cuda-destination-reuse", "cutensor"]
 rows = []
 for pattern in suite["patterns"]:
+    # The real drivers emit a row only for the arms a pattern declares as
+    # participants, so the fake gates on the same declaration. Without it the
+    # fake invents rows the collector can never produce and hides #368.
+    participants = set(pattern.get("participants_gpu") or [])
     for backend in backends:
+        if participants and backend not in participants:
+            continue
         rows.append({"schema_version": 1, "suite_id": "gpu/permutation", "runner": "fake",
                      "pattern_id": pattern["id"], "label": pattern.get("label", ""),
                      "backend": backend, "shape": pattern["shape"], "perm": pattern["perm"],
@@ -245,11 +251,11 @@ class WeeklyRoutineRunTest(unittest.TestCase):
         self.assertEqual(process.returncode, 0, process.stdout + process.stderr)
         selection = self.root / f"data/results/nvidia-gpu/gpu/routine_selection/{TIMESTAMP}"
         plan = json.loads((selection / "selection.json").read_text())
-        self.assertEqual(len(plan["selected"]), 714)
+        self.assertEqual(len(plan["selected"]), 698)
         self.assertNotIn("coverage", plan)
         status = json.loads((selection / "case_status.json").read_text())
         self.assertTrue(status["complete"], status)
-        self.assertEqual(len(status["executed"]), 714)
+        self.assertEqual(len(status["executed"]), 698)
         self.assertEqual(status["counts"]["unexpected"], 0)
 
         # Every suite recorded its own wall clock, which is what fills the
@@ -297,7 +303,7 @@ class WeeklyRoutineRunTest(unittest.TestCase):
         self.assertEqual({entry["suite_id"]: len(entry["expected_rows"]) for entry in publication["suites"]},
                          {"gpu/dense": 28, "gpu/einsum": 4, "gpu/sparse": 2, "gpu/tensornetwork": 4,
                           "gpu/elementwise": 8, "gpu/linalg_ad_latency": 30, "gpu/linalg_jvp_vjp": 30,
-                          "gpu/permutation": 60, "gpu/lstsq": 4, "gpu/linalg_public_api_throughput": 64,
+                          "gpu/permutation": 44, "gpu/lstsq": 4, "gpu/linalg_public_api_throughput": 64,
                           "gpu/fft": 16, "gpu/nn": 44, "gpu/structural": 64, "gpu/isolated_ops": 132,
                           "gpu/reuse_contraction": 224})
 

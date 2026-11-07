@@ -28,7 +28,7 @@ class RoutineSelectionTest(unittest.TestCase):
     def test_one_set_selects_every_routine_suite_once(self):
         with tempfile.TemporaryDirectory() as tmp:
             plan = self.plan(Path(tmp))
-            self.assertEqual(len(plan["selected"]), 714)
+            self.assertEqual(len(plan["selected"]), 698)
             self.assertEqual(plan["expected"], plan["selected"])
             for suite in ("dense", "einsum", "sparse", "tensornetwork", "elementwise",
                           "linalg_ad_latency", "linalg_jvp_vjp", "permutation", "lstsq",
@@ -52,11 +52,17 @@ class RoutineSelectionTest(unittest.TestCase):
             # The permutation runners fix their own arms, cuTENSOR included.
             self.assertTrue(any(key.startswith("gpu/permutation:") and key.endswith(":cutensor")
                                 for key in plan["selected"]))
+            # A pattern runs only the arms it declares as participants, so the
+            # suite is 44 rows, not the plain 10 x 6 product (#368).
+            permutation = [key for key in plan["selected"] if key.startswith("gpu/permutation:")]
+            self.assertEqual(len(permutation), 44)
+            self.assertTrue(all(key.endswith(":memcpy-d2d") for key in permutation
+                                if key.startswith("gpu/permutation:memcpy_24d_64x2:")))
 
     def test_vendor_arms_are_opt_in(self):
         with tempfile.TemporaryDirectory() as tmp:
             plan = self.plan(Path(tmp), vendor_arms=True)
-            self.assertEqual(len(plan["selected"]), 878)
+            self.assertEqual(len(plan["selected"]), 862)
             self.assertTrue(plan["vendor_arms"])
             dense = [key for key in plan["selected"] if key.startswith("gpu/dense:")]
             self.assertEqual(len(dense), 49)

@@ -26,7 +26,7 @@ issue: 107
 # | gpu/elementwise                  | gpu_suite       |        2 |        4 |    8 |
 # | gpu/linalg_ad_latency            | gpu_linalg_ad   |       10 |        3 |   30 |
 # | gpu/linalg_jvp_vjp               | gpu_linalg_ad   |       10 |        3 |   30 |
-# | gpu/permutation                  | gpu_permutation |       10 |        6 |   60 |
+# | gpu/permutation                  | gpu_permutation |       10 |        6 |   44 |
 # | gpu/lstsq                        | gpu_public_api  |        1 |        4 |    4 |
 # | gpu/linalg_public_api_throughput | gpu_public_api  |       16 |        4 |   64 |
 # | gpu/fft                          | gpu_public_api  |        4 |        4 |   16 |
@@ -34,11 +34,11 @@ issue: 107
 # | gpu/structural                   | gpu_public_api  |       16 |        4 |   64 |
 # | gpu/isolated_ops                 | gpu_public_api  |       33 |        4 |  132 |
 # | gpu/reuse_contraction            | gpu_public_api  |       56 |        4 |  224 |
-# | Total                            |                 |      180 |       55 |  714 |
+# | Total                            |                 |      180 |       55 |  698 |
 #
 # Opt-in vendor arms add 164 rows: gpu/dense +21, gpu/einsum +2, gpu/sparse +4,
 # and the second JAX path jax-cuda-jit on the seven public-API families +137,
-# for an 878-row matrix. Rows are problem/backend pairs; each pair is one
+# for an 862-row matrix. Rows are problem/backend pairs; each pair is one
 # measured and numerically verified cell, and each backend is a separate
 # process with its own startup and preparation.
 #
