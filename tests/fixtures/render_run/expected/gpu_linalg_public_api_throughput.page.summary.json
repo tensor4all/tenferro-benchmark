@@ -18,7 +18,8 @@
       "median": 0.06887025,
       "iqr": 0.00031875000000000653,
       "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 4
     },
     {
       "case": "cholesky_f32_512x512",
@@ -27,7 +28,8 @@
       "median": 0.07136975,
       "iqr": 0.0001244999999999996,
       "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 4
     },
     {
       "case": "householder_r_default_f32_512x256",
@@ -45,7 +47,8 @@
       "median": 0.034698,
       "iqr": 0.0,
       "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 4
     }
   ]
 }
