@@ -117,13 +117,27 @@ def materialize(manifest_path, requested, output, backend_override="", problem="
             raise ValueError(f"routine backends absent from {spec['file']}: {suite_id}")
         if backend_override:
             backends = [b for b in backend_override.split(",") if b in source["backends"]]
-        expected.extend(f"{suite_id}:{pid}:{backend}" for pid in spec["problems"] for backend in backends)
+
+        def arms_for(pid):
+            """The arms one case declares; every routine backend when it declares none.
+
+            An instance-driven case may carry ``participants_gpu``, and its driver
+            then emits a row for those arms only. Expanding the cartesian product
+            here turned every non-participant pair into a `missing` row the
+            collector can never produce (#368). The filter keeps ``backends``
+            order, so a plan's ids stay stable against the recorded runs.
+            """
+            participants = (problems[pid] or {}).get("participants_gpu")
+            return [b for b in backends if b in participants] if participants else backends
+
+        expected.extend(f"{suite_id}:{pid}:{backend}" for pid in spec["problems"]
+                        for backend in arms_for(pid))
         if spec["file"] not in requested or not backends:
             continue
         ids = [pid for pid in spec["problems"] if not problem or pid == problem]
         if not ids:
             continue
-        selected.extend(f"{suite_id}:{pid}:{backend}" for pid in ids for backend in backends)
+        selected.extend(f"{suite_id}:{pid}:{backend}" for pid in ids for backend in arms_for(pid))
         effective = copy.deepcopy(source)
         effective["backends"] = backends
         path = output / (suite_id.replace("/", "_")+".yaml")
