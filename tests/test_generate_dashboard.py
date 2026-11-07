@@ -1238,5 +1238,203 @@ class FailedBackendTest(unittest.TestCase):
         )
 
 
+def chart_no_ratio_note(html):
+    """The paragraph ``svg_ratio_chart`` prints when no case has a ratio."""
+    start = html.index("No ratio could be computed")
+    return html[start : html.index("</p>", start)]
+
+
+def profile_header(html, index=0):
+    """One ``profile-head`` div of a page (the spans are inline, so it is one line)."""
+    return re.findall(r'<div class="profile-head">.*?</div>', html, re.S)[index]
+
+
+class RatioChartWithoutBaselineTest(unittest.TestCase):
+    """A case whose baseline arm failed keeps the number its other arm measured.
+
+    ``svg_ratio_chart`` printed "no measurement was recorded as ok" for a case whose
+    *baseline* failed, even though the contender had a median, and the paragraph had
+    no place for the failure reason either.  "Measured but not comparable" and
+    "nothing was measured" are different claims and must not share a sentence.
+    """
+
+    def cases(self, measured, not_ok):
+        return [
+            {
+                "case": "dense_solve_f64_512_rhs16",
+                "contenders": [],
+                "measured": measured,
+                "not_ok": not_ok,
+            }
+        ]
+
+    def test_a_measured_case_with_a_failed_baseline_is_not_called_unmeasured(self):
+        html = dashboard.svg_ratio_chart(
+            self.cases(
+                [{"backend": "tenferro-cuda-eager", "median": 20.0}],
+                [{"backend": "pytorch-cuda", "status": "failed", "label": "fail", "reason": "CUDA OOM"}],
+            ),
+            "PyTorch",
+        )
+        note = chart_no_ratio_note(html)
+        # The measurement that exists is printed, with its unit.
+        self.assertIn("<code>tenferro-cuda-eager</code>", note)
+        self.assertIn("20.000 ms", note)
+        # The failure reason survives even though no bar could be drawn.
+        self.assertIn("CUDA OOM", note)
+        # And the case is not described as having recorded nothing.
+        self.assertNotIn("no measurement was recorded as ok", note)
+
+    def test_a_case_without_any_ok_row_still_says_that(self):
+        html = dashboard.svg_ratio_chart(
+            self.cases(
+                [],
+                [{"backend": "pytorch-cuda", "status": "failed", "label": "fail", "reason": "CUDA OOM"}],
+            ),
+            "PyTorch",
+        )
+        note = chart_no_ratio_note(html)
+        self.assertIn("no measurement was recorded as ok", note)
+        self.assertIn("CUDA OOM", note)
+
+    def test_the_page_keeps_the_measured_median_and_the_failure_reason(self):
+        temp = tempfile.TemporaryDirectory()
+        self.addCleanup(temp.cleanup)
+        root = Path(temp.name)
+        result = root / "result"
+        benchmarks = root / "benchmarks" / "gpu"
+        benchmarks.mkdir(parents=True)
+        (benchmarks / "dense.yaml").write_text(
+            "schema_version: 1\nsuite_id: gpu/dense\ndefaults:\n  regime: throughput\n"
+            "problems:\n  - {id: case_ok}\n"
+        )
+        suite_dir = result / "nvidia-gpu" / "gpu"
+        suite_dir.mkdir(parents=True)
+        report = suite_dir / "dense.md"
+        report.write_text("# gpu/dense\n\nbody\n")
+        document = summary_document(
+            [
+                row("case_ok", "tenferro-cuda-eager", 20.0),
+                row("case_ok", "pytorch-cuda", 0.0, status="failed", reason="CUDA OOM"),
+            ],
+            suite_id="gpu/dense",
+        )
+        report.with_suffix(".summary.json").write_text(json.dumps(document))
+        output = root / "site"
+        self.assertEqual(
+            dashboard.generate(
+                result,
+                output,
+                baseline_dir=root / "baseline",
+                git_repo=None,
+                instances_dir=root / "instances",
+                benchmarks_dir=root / "benchmarks",
+                latest_profiles=None,
+            ),
+            0,
+        )
+        family = (output / "gpu/index.html").read_text()
+        note = chart_no_ratio_note(family)
+        self.assertIn("20.000 ms", note)
+        self.assertIn("CUDA OOM", note)
+        self.assertNotIn("no measurement was recorded as ok", note)
+
+
+class ProfileHeaderScopeTest(unittest.TestCase):
+    """A page's header dates only the suites that page renders.
+
+    ``gpu/latency/index.html`` printed the throughput suites' range
+    (``dates: 2026-10-17 – 2026-11-05 · 2 suites``) although it draws no throughput
+    block: with nothing of its own to describe, the header fell back to every suite
+    of the profile, diagnostics included.
+    """
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.result = self.root / "result"
+        self.benchmarks = self.root / "benchmarks" / "gpu"
+        self.benchmarks.mkdir(parents=True)
+        for suite_id, regime, problem in (
+            ("gpu/dense", "throughput", "case_throughput"),
+            ("gpu/linalg_ad_latency", "latency", "case_latency"),
+        ):
+            (self.benchmarks / f"{suite_id.split('/', 1)[1]}.yaml").write_text(
+                f"schema_version: 1\nsuite_id: {suite_id}\ndefaults:\n  regime: {regime}\n"
+                f"problems:\n  - {{id: {problem}}}\n"
+            )
+
+    def write_suite(self, suite_id, timestamp, case):
+        suite_dir = self.result / "nvidia-gpu" / suite_id.split("/", 1)[0]
+        suite_dir.mkdir(parents=True, exist_ok=True)
+        stem = suite_id.split("/", 1)[1]
+        report = suite_dir / f"{stem}.md"
+        report.write_text(f"# {suite_id}\n\nbody\n")
+        document = summary_document(
+            [
+                row(case, "tenferro-cuda-eager", 20.0),
+                row(case, "tenferro-cuda-trace", 30.0),
+                row(case, "pytorch-cuda", 10.0),
+            ],
+            suite_id=suite_id,
+            timestamp=timestamp,
+        )
+        report.with_suffix(".summary.json").write_text(json.dumps(document))
+
+    def generate(self, name="site"):
+        output = self.root / name
+        self.assertEqual(
+            dashboard.generate(
+                self.result,
+                output,
+                baseline_dir=self.root / "baseline",
+                git_repo=None,
+                instances_dir=self.root / "instances",
+                benchmarks_dir=self.root / "benchmarks",
+                latest_profiles=None,
+            ),
+            0,
+        )
+        return output
+
+    def test_a_regime_page_dates_only_the_suites_it_renders(self):
+        self.write_suite("gpu/dense", "2026-11-05T03:43:18Z", "case_throughput")
+        self.write_suite("gpu/linalg_ad_latency", "2026-10-17T10:53:37+00:00", "case_latency")
+        output = self.generate()
+
+        latency = profile_header((output / "gpu/latency/index.html").read_text())
+        self.assertIn("dates: 2026-10-17 · 1 suite", latency)
+        # The throughput suite is not drawn here, so it cannot date this page.
+        self.assertNotIn("2026-11-05", latency)
+        self.assertNotIn("2 suites", latency)
+        self.assertNotIn("older than", latency)
+
+        throughput = profile_header((output / "gpu/index.html").read_text())
+        self.assertIn("dates: 2026-11-05 · 1 suite", throughput)
+        self.assertNotIn("2026-10-17", throughput)
+
+    def test_a_profile_with_nothing_rendered_has_no_date_line(self):
+        self.write_suite("gpu/dense", "2026-11-05T03:43:18Z", "case_throughput")
+        page = (self.generate() / "gpu/latency/index.html").read_text()
+        latency = profile_header(page)
+        self.assertNotIn("dates:", latency)
+        self.assertIn("no suite from this profile is rendered on this page", latency)
+        # A summary exists for this profile; it is just not this page's subject.
+        self.assertNotIn("no machine-readable summary", latency)
+
+
+    def test_a_profile_with_no_summary_at_all_still_says_so(self):
+        # A report with no sidecar, and no maintained suite in either regime.
+        legacy = self.result / "nvidia-gpu" / "gpu" / "legacy.md"
+        legacy.parent.mkdir(parents=True)
+        legacy.write_text("# gpu/legacy\n\nbody\n")
+        page = (self.generate() / "gpu/latency/index.html").read_text()
+        latency = profile_header(page)
+        self.assertNotIn("dates:", latency)
+        self.assertIn("no machine-readable summary", latency)
+        self.assertNotIn("no suite from this profile is rendered on this page", latency)
+
+
 if __name__ == "__main__":
     unittest.main()

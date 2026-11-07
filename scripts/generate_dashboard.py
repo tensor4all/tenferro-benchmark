@@ -1318,6 +1318,35 @@ def bar_tooltip(item: dict[str, Any], case: dict[str, Any], baseline_label: str,
     return text
 
 
+def no_ratio_note(case: dict[str, Any], unit: str) -> str:
+    """One case of the no-ratio paragraph: what it measured and what did not run.
+
+    A case whose baseline arm failed is not a case that measured nothing: its
+    contender's median is printed here, next to the reason the baseline has no
+    number.  Only a case with no ok measurement at all says so.
+    """
+    measured = [
+        f'<code>{esc(item["backend"])}</code> {esc(fmt_median(item["median"], unit))}'
+        for item in case.get("measured") or []
+    ]
+    if measured:
+        text = f"measured {' · '.join(measured)}"
+        if case.get("baseline_median") is None:
+            text += ", but its baseline arm produced no number"
+        elif not case.get("contenders"):
+            text += ", but no arm of it had a ratio against that baseline"
+    else:
+        text = "no measurement was recorded as ok"
+    not_ok = [
+        f'<span class="fail">{esc(item["label"])}</span> <code>{esc(item["backend"])}</code>'
+        + (f' <span class="muted">{esc(item["reason"])}</span>' if item.get("reason") else "")
+        for item in case.get("not_ok") or []
+    ]
+    if not_ok:
+        text += "; not ok: " + " · ".join(not_ok)
+    return f'<code>{esc(case["case"])}</code> {text}'
+
+
 def svg_ratio_chart(cases: list[dict[str, Any]], baseline_label: str, unit: str = "ms") -> str:
     """Per-case ratios for one suite, one bar per contender.
 
@@ -1337,18 +1366,12 @@ def svg_ratio_chart(cases: list[dict[str, Any]], baseline_label: str, unit: str 
         return ""
     ratios = [item["ratio"] for case in rows for item in case["contenders"]]
     if not ratios:
-        # Nothing to plot, but the failures are still named.
+        # Nothing to plot: no case has both sides of a comparison.  Name what each
+        # case did record — a measured median and the reason an arm has none — so
+        # the paragraph never claims a number was not measured when it was.
         return (
-            '<p class="chart-legend">No ratio could be computed and no measurement was '
-            "recorded as ok: "
-            + " · ".join(
-                f'<code>{esc(case["case"])}</code> '
-                + " ".join(
-                    f'<span class="fail">{esc(item["label"])}</span> <code>{esc(item["backend"])}</code>'
-                    for item in case.get("not_ok") or []
-                )
-                for case in rows
-            )
+            '<p class="chart-legend">No ratio could be computed: '
+            + " · ".join(no_ratio_note(case, unit) for case in rows)
             + "</p>"
         )
     low = math.log10(min(ratios) / 1.15)
@@ -1934,6 +1957,13 @@ def case_ratio_row(
             }
             for row in non_ok_rows(case.rows)
         ],
+        # Every ok measurement of the case, whether or not it became a bar: a case
+        # whose baseline failed still recorded the medians its own arms produced.
+        "measured": [
+            {"backend": str(row.get("backend")), "median": float(row["median"])}
+            for row in case.rows
+            if row_status(row) == "ok" and row.get("median") is not None
+        ],
     }
     if baseline is None:
         return item
@@ -2263,9 +2293,19 @@ def render_top(
 
 
 def profile_header_from_views(
-    profile: str, views: list[SuiteView], reference: datetime | None = None
+    profile: str,
+    views: list[SuiteView],
+    reference: datetime | None = None,
+    *,
+    empty_note: str = "no machine-readable summary",
 ) -> str:
-    """Profile head.  ``reference`` is the newest collection the ages are measured from."""
+    """Profile head.  ``reference`` is the newest collection the ages are measured from.
+
+    ``views`` must be the suites the page renders: the dates, the suite count and
+    the stale count describe those blocks and nothing else.  ``empty_note`` says
+    why there is no date line, so an empty ``views`` is not reported as a missing
+    summary when the profile does have one for a page it is not drawn on.
+    """
     documents = [view.document for view in views if view.document]
     hardware = next((hardware_name(doc) for doc in documents if hardware_name(doc)), None)
     commit = next((str(doc["tenferro_commit"]) for doc in documents if doc.get("tenferro_commit")), None)
@@ -2276,7 +2316,7 @@ def profile_header_from_views(
     if commit:
         pieces.append(f"<span>tenferro: <code>{esc(commit[:12])}</code></span>")
     if not documents:
-        pieces.append('<span class="muted">no machine-readable summary</span>')
+        pieces.append(f'<span class="muted">{esc(empty_note)}</span>')
     return '<div class="profile-head">' + "".join(pieces) + "</div>"
 
 
@@ -2390,7 +2430,18 @@ def render_family(
         profile_reference = collection_reference(profile_documents) or page_reference
         body.append('<section class="profile-card">')
         body.append(f'<h2>{esc(profile_label(profile))}</h2>')
-        body.append(profile_header_from_views(profile, profile_shown or profile_views, profile_reference))
+        if profile_shown:
+            body.append(profile_header_from_views(profile, profile_shown, profile_reference))
+        else:
+            # Nothing from this profile is drawn on this page, so it cannot date the
+            # header: a suite of the other regime (or a diagnostic) is not evidence
+            # for what this page shows.
+            empty_note = "no suite from this profile is rendered on this page"
+            if not any(view.document for view in profile_views):
+                empty_note = "no machine-readable summary"
+            body.append(
+                profile_header_from_views(profile, [], profile_reference, empty_note=empty_note)
+            )
         if profile in GITHUB_HOSTED_PROFILES or any(is_hosted(view) for view in profile_views):
             body.append(f'<p class="notice">{REPORT_QUALITY_NOTICE}</p>')
         profile_maintained = [
