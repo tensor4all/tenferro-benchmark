@@ -1,0 +1,80 @@
+name: Create the JAX compile-cache network volume
+
+# One-time infrastructure step, run by hand.  The weekly GPU job mounts this volume so XLA's
+# compilation cache survives between ephemeral pods; without the volume the job still runs, with the
+# cache disabled.  A network volume is pinned to one data center and cannot move afterwards, so the
+# data center is an explicit input rather than a guess.
+
+on:
+  workflow_dispatch:
+    inputs:
+      name:
+        description: Volume name
+        required: false
+        default: jax-compile-cache
+      size_gb:
+        description: Size in GB (provider minimum is 10)
+        required: false
+        default: "10"
+      data_center:
+        description: Data center to create the volume in (immutable afterwards, e.g. US-KS-2)
+        required: true
+      dry_run:
+        description: Describe the request without creating anything
+        required: false
+        type: choice
+        options: ["true", "false"]
+        default: "true"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: runpod-jax-cache-volume
+  cancel-in-progress: false
+
+jobs:
+  create-volume:
+    name: Create or reuse the network volume
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout trusted tooling
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: List existing network volumes
+        env:
+          RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+        run: python3 -m scripts.ci.runpod_network_volume list | tee /tmp/volumes.json
+
+      - name: Create the volume when the name is free
+        id: create
+        env:
+          RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+          VOLUME_NAME: ${{ inputs.name }}
+          SIZE_GB: ${{ inputs.size_gb }}
+          DATA_CENTER: ${{ inputs.data_center }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          args=(--name "$VOLUME_NAME" --size-gb "$SIZE_GB" --data-center "$DATA_CENTER")
+          if [ "$DRY_RUN" = "true" ]; then args+=(--dry-run); fi
+          python3 -m scripts.ci.runpod_network_volume create "${args[@]}" | tee /tmp/create.json
+
+      - name: Summarise
+        if: ${{ always() }}
+        run: |
+          set -euo pipefail
+          {
+            echo "### RunPod network volume"
+            echo
+            echo '```json'
+            cat /tmp/create.json 2>/dev/null || echo "{}"
+            echo '```'
+            echo
+            echo "Set the repository variable \`RUNPOD_JAX_CACHE_VOLUME_ID\` to the volume id above,"
+            echo "and keep \`RUNPOD_JAX_CACHE_DATA_CENTER\` equal to its data center: pods that mount it"
+            echo "must be created in that data center."
+          } >> "$GITHUB_STEP_SUMMARY"
