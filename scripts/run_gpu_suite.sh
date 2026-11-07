@@ -68,6 +68,9 @@ RUST_MIN_STACK="${RUST_MIN_STACK:-67108864}"
 # pays that compile again in every suite instead of once per run.
 # shellcheck source=scripts/gpu_preflight.sh
 source "$SCRIPT_DIR/gpu_preflight.sh"
+# shellcheck source=scripts/gpu_arm_launch.sh
+source "$SCRIPT_DIR/gpu_arm_launch.sh"
+GPU_ARM_PREFIX=()
 configure_cuda_artifact_cache "$PHYSICAL_DEVICE_ORDINAL"
 
 cd "$PROJECT_DIR"
@@ -243,7 +246,8 @@ build_rust_benchmark_if_needed() {
         return 0
     fi
     if [[ "${GPU_BENCH_PREBUILT_RUST:-0}" == "1" ]]; then
-        python3 "$SCRIPT_DIR/ci/gpu_artifact.py" "$RUST_BIN"
+        # Explicit returns: the caller runs this under `||`, where set -e is off.
+        python3 "$SCRIPT_DIR/ci/gpu_artifact.py" "$RUST_BIN" || return $?
         RUST_BUILT=1
         return 0
     fi
@@ -254,7 +258,7 @@ build_rust_benchmark_if_needed() {
     CUDA_PATH="${CUDA_HOME:-/usr/local/cuda}" \
     RUST_MIN_STACK="$RUST_MIN_STACK" \
     LD_LIBRARY_PATH="${CUDA_HOME:-/usr/local/cuda}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
-        cargo build --release --features cuda --bin benchmark_gpu_rust 2>&1
+        cargo build --release --features cuda --bin benchmark_gpu_rust 2>&1 || return $?
     RUST_BUILD_NS=$(( $(wall_now) - build_start ))
     RUST_BUILT=1
 }
@@ -263,11 +267,12 @@ run_rust_backend() {
     local suite="$1"
     local chunk_jsonl="$2"
     shift 2
-    build_rust_benchmark_if_needed
+    build_rust_benchmark_if_needed || return $?
     CUBECL_DEBUG_LOG=0 \
     CUDA_PATH="${CUDA_HOME:-/usr/local/cuda}" \
     RUST_MIN_STACK="$RUST_MIN_STACK" \
     LD_LIBRARY_PATH="${CUDA_HOME:-/usr/local/cuda}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
+        ${GPU_ARM_PREFIX[@]+"${GPU_ARM_PREFIX[@]}"} \
         "$RUST_BIN" "$chunk_jsonl" "$DEVICE_ORDINAL" "$PROBLEM_FILTER" \
         "$@" -- "$suite"
 }
@@ -279,6 +284,7 @@ run_python_backend() {
     # Per-run synthetic sparse cache shared by every backend process (the
     # fixtures are identical across pytorch-cuda/cusparse/ginkgo).
     GPU_BENCH_SPARSE_CACHE_DIR="${GPU_BENCH_SPARSE_CACHE_DIR:-$(dirname "$chunk_jsonl")/cache}" \
+    ${GPU_ARM_PREFIX[@]+"${GPU_ARM_PREFIX[@]}"} \
     "${PYTHON[@]}" "$SCRIPT_DIR/benchmark_gpu_python.py" \
         "$chunk_jsonl" "$DEVICE_ORDINAL" "$PROBLEM_FILTER" \
         "$@" -- "$suite"
@@ -307,11 +313,19 @@ run_suite_serial_by_backend() {
         backend_start="$(wall_now)"
         build_before="$RUST_BUILD_NS"
 
+        # The arm's CPU is chosen (GPU_BENCH_CPU_SELECT=1) and recorded under
+        # $run_dir/arms/ before it starts; a busy allocation stops the run with 76 (#335).
+        local prepare_rc=0 arm_rc=0
+        gpu_arm_prepare "$run_dir" "$backend" || prepare_rc=$?
+        [[ "$prepare_rc" == 0 ]] || gpu_arm_fail_unless_runnable "$prepare_rc"
         if [[ "$backend" == "tenferro-cuda-eager" || "$backend" == "tenferro-cuda-eager-per-call-session" || "$backend" == "tenferro-cuda-trace" ]]; then
-            run_rust_backend "$suite" "$chunk" "$backend"
+            run_rust_backend "$suite" "$chunk" "$backend" || arm_rc=$?
         else
-            run_python_backend "$suite" "$chunk" "$backend"
+            run_python_backend "$suite" "$chunk" "$backend" || arm_rc=$?
         fi
+        gpu_arm_finish "$run_dir" "$backend" "$arm_rc"
+        GPU_ARM_PREFIX=()
+        [[ "$arm_rc" == 0 ]] || exit "$arm_rc"
         backend_end="$(wall_now)"
         "${PYTHON[@]}" - "$run_dir/wall_backends.jsonl" "$backend" "$backend_start" "$backend_end" "$build_before" "$RUST_BUILD_NS" <<'PY'
 import json, sys
@@ -394,7 +408,13 @@ for index in "${!SUITES[@]}"; do
             echo "Delegating $suite_id to scripts/run_gpu_public_api.sh"
             GPU_BENCH_TIMESTAMP="$TIMESTAMP" GPU_API_FAMILY="$suite_name" \
                 GPU_API_SUITE_FILE="$instances" GPU_API_SUITE_DECL="$suite" \
-                bash "$SCRIPT_DIR/run_gpu_public_api.sh" "$suite_name" || VALIDATION_FAILED=1 ;;
+                bash "$SCRIPT_DIR/run_gpu_public_api.sh" "$suite_name" || {
+                    delegate_rc=$?
+                    # A busy allocation is not a validation failure of this suite: stop
+                    # so the driver above can request another allocation (#335).
+                    [[ "$delegate_rc" != "$GPU_ARM_NO_USABLE_CPU" ]] || exit "$GPU_ARM_NO_USABLE_CPU"
+                    VALIDATION_FAILED=1
+                } ;;
         gpu_permutation)
             echo "Delegating $suite_id to scripts/run_gpu_permutation.sh"
             GPU_BENCH_TIMESTAMP="$TIMESTAMP" BENCHMARK_TIMESTAMP="$TIMESTAMP" \
@@ -407,6 +427,10 @@ for index in "${!SUITES[@]}"; do
     [[ -f "$RUN_YAML" ]] || continue
     write_collection_block "$suite_id" "$RUN_YAML" "$SUITE_STARTED_AT" "$SUITE_FINISHED_AT" \
         "$COLLECTION_START_NS" "$COLLECTION_END_NS"
+    if [[ "$driver" == gpu_suite ]] && compgen -G "$RUN_DIR/arms/*.json" >/dev/null; then
+        "${PYTHON[@]}" "$SCRIPT_DIR/gpu_measurement_cpu.py" record-run --run-metadata "$RUN_YAML" \
+            "$RUN_DIR"/arms/*.json
+    fi
     if [[ "$driver" != gpu_suite ]]; then
         # The delegate already validated and formatted this suite.
         write_suite_wall_record "$RUN_DIR" "$COLLECTION_START_NS" "$COLLECTION_END_NS" "$COLLECTION_END_NS"
