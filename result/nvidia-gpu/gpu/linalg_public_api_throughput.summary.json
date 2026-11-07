@@ -2,433 +2,139 @@
   "schema_version": 1,
   "target_profile": "nvidia-gpu",
   "suite_id": "gpu/linalg_public_api_throughput",
-  "timestamp": "2026-11-05T03:40:34Z",
-  "tenferro_commit": "a000e5c4929d5bebb91e783c329b27106baed12e",
+  "timestamp": "2026-11-07T20:17:28+00:00",
+  "tenferro_commit": "ffd352bdb9f98537be747101bc278db8a50a1595",
   "hardware": {
-    "gpu": "NVIDIA A100 80GB PCIe",
-    "cpu": "AMD EPYC 7713P 64-Core Processor",
-    "host": "bd7fc8e76a87"
+    "gpu": "NVIDIA A100-SXM4-80GB",
+    "cpu": "AMD EPYC 7742 64-Core Processor",
+    "host": "86889f3412c3"
   },
   "unit": "ms",
   "rows": [
     {
-      "case": "cholesky_f32_512x512",
-      "group": "cholesky",
-      "backend": "jax-cuda",
-      "median": 0.241345375,
-      "iqr": 0.0007000312500000105,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "cholesky_f32_512x512",
-      "group": "cholesky",
-      "backend": "jax-cuda-jit",
-      "median": 0.240684125,
-      "iqr": 0.0006965937500000019,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "cholesky_f32_512x512",
-      "group": "cholesky",
-      "backend": "pytorch-cuda",
-      "median": 0.26877575,
-      "iqr": 0.005182750000000014,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "cholesky_f32_512x512",
-      "group": "cholesky",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.2766135,
-      "iqr": 0.0005293749999999986,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "cholesky_f32_512x512",
-      "group": "cholesky",
-      "backend": "tenferro-cuda-eager",
-      "median": 0.325179,
-      "iqr": 0.007069687499999977,
-      "status": "ok",
-      "verified": true
-    },
-    {
       "case": "cholesky_f64_512x512",
       "group": "cholesky",
       "backend": "jax-cuda",
-      "median": 0.303084375,
-      "iqr": 0.002468875000000037,
+      "median": 0.3707725,
+      "iqr": 0.004454687499999999,
       "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "cholesky_f64_512x512",
-      "group": "cholesky",
-      "backend": "jax-cuda-jit",
-      "median": 0.30130575,
-      "iqr": 0.0012544999999999917,
-      "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 8
     },
     {
       "case": "cholesky_f64_512x512",
       "group": "cholesky",
       "backend": "pytorch-cuda",
-      "median": 0.3266915,
-      "iqr": 0.0012982499999999453,
+      "median": 0.397086,
+      "iqr": 0.001601124999999981,
       "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 8
     },
     {
       "case": "cholesky_f64_512x512",
       "group": "cholesky",
       "backend": "tenferro-cuda-direct",
-      "median": 0.333985625,
-      "iqr": 0.0009513125000000233,
+      "median": 0.41940575,
+      "iqr": 0.0009349374999999549,
       "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 8
     },
     {
       "case": "cholesky_f64_512x512",
       "group": "cholesky",
       "backend": "tenferro-cuda-eager",
-      "median": 0.3688005,
-      "iqr": 0.0015700000000000158,
+      "median": 0.45905825,
+      "iqr": 0.0015635625000000042,
       "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "det_f32_512x512",
-      "group": "det",
-      "backend": "jax-cuda",
-      "median": 1.2397685,
-      "iqr": 0.02898600000000018,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "det_f32_512x512",
-      "group": "det",
-      "backend": "jax-cuda-jit",
-      "median": 1.243574,
-      "iqr": 0.03406600000000015,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "det_f32_512x512",
-      "group": "det",
-      "backend": "pytorch-cuda",
-      "median": 1.1740615,
-      "iqr": 0.006320499999999951,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "det_f32_512x512",
-      "group": "det",
-      "backend": "tenferro-cuda-direct",
-      "median": 1.6299775,
-      "iqr": 0.021263500000000102,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "det_f32_512x512",
-      "group": "det",
-      "backend": "tenferro-cuda-eager",
-      "median": 1.661109,
-      "iqr": 0.03914649999999997,
-      "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 8
     },
     {
       "case": "det_f64_512x512",
       "group": "det",
       "backend": "jax-cuda",
-      "median": 1.391534,
-      "iqr": 0.020520749999999977,
+      "median": 1.39032,
+      "iqr": 0.006885249999999843,
       "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "det_f64_512x512",
-      "group": "det",
-      "backend": "jax-cuda-jit",
-      "median": 1.389534,
-      "iqr": 0.032051249999999865,
-      "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 2
     },
     {
       "case": "det_f64_512x512",
       "group": "det",
       "backend": "pytorch-cuda",
-      "median": 1.3142165,
-      "iqr": 0.006805750000000055,
+      "median": 1.312653,
+      "iqr": 0.0044079999999997455,
       "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 2
     },
     {
       "case": "det_f64_512x512",
       "group": "det",
       "backend": "tenferro-cuda-direct",
-      "median": 1.779718,
-      "iqr": 0.02413125000000016,
+      "median": 1.819336,
+      "iqr": 0.00842849999999995,
       "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 2
     },
     {
       "case": "det_f64_512x512",
       "group": "det",
       "backend": "tenferro-cuda-eager",
-      "median": 1.816079,
-      "iqr": 0.02172799999999997,
+      "median": 1.872126,
+      "iqr": 0.013189499999999965,
       "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "eigvalsh_f32_512x512",
-      "group": "eigvalsh",
-      "backend": "jax-cuda",
-      "median": 5.95172,
-      "iqr": 0.04377599999999937,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "eigvalsh_f32_512x512",
-      "group": "eigvalsh",
-      "backend": "jax-cuda-jit",
-      "median": 6.391326,
-      "iqr": 0.5026379999999993,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "eigvalsh_f32_512x512",
-      "group": "eigvalsh",
-      "backend": "pytorch-cuda",
-      "median": 5.209554,
-      "iqr": 0.009295500000000345,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "eigvalsh_f32_512x512",
-      "group": "eigvalsh",
-      "backend": "tenferro-cuda-direct",
-      "median": 5.192744,
-      "iqr": 0.007360499999999881,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "eigvalsh_f32_512x512",
-      "group": "eigvalsh",
-      "backend": "tenferro-cuda-eager",
-      "median": 5.260875,
-      "iqr": 0.007730000000000459,
-      "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 2
     },
     {
       "case": "eigvalsh_f64_512x512",
       "group": "eigvalsh",
       "backend": "jax-cuda",
-      "median": 6.179488,
-      "iqr": 0.09690850000000051,
+      "median": 6.053931,
+      "iqr": 0.03145449999999972,
       "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "eigvalsh_f64_512x512",
-      "group": "eigvalsh",
-      "backend": "jax-cuda-jit",
-      "median": 6.21121,
-      "iqr": 0.041712000000000415,
-      "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 1
     },
     {
       "case": "eigvalsh_f64_512x512",
       "group": "eigvalsh",
       "backend": "pytorch-cuda",
-      "median": 5.560977,
-      "iqr": 0.018051000000000705,
+      "median": 5.607185,
+      "iqr": 0.00790000000000024,
       "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 1
     },
     {
       "case": "eigvalsh_f64_512x512",
       "group": "eigvalsh",
       "backend": "tenferro-cuda-direct",
-      "median": 5.570467,
-      "iqr": 0.009430500000000563,
+      "median": 5.592708,
+      "iqr": 0.012407999999998864,
       "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 1
     },
     {
       "case": "eigvalsh_f64_512x512",
       "group": "eigvalsh",
       "backend": "tenferro-cuda-eager",
-      "median": 5.611108,
-      "iqr": 0.011495000000000033,
+      "median": 6.875956,
+      "iqr": 0.01076450000000051,
       "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_append_default_c32_512x256",
-      "group": "householder_append",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
-    },
-    {
-      "case": "householder_append_default_c32_512x256",
-      "group": "householder_append",
-      "backend": "jax-cuda-jit",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
-    },
-    {
-      "case": "householder_append_default_c32_512x256",
-      "group": "householder_append",
-      "backend": "pytorch-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
-    },
-    {
-      "case": "householder_append_default_c32_512x256",
-      "group": "householder_append",
-      "backend": "tenferro-cuda-direct",
-      "median": null,
-      "status": "unsupported",
       "verified": true,
-      "reason": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-    },
-    {
-      "case": "householder_append_default_c32_512x256",
-      "group": "householder_append",
-      "backend": "tenferro-cuda-eager",
-      "median": null,
-      "status": "unsupported",
-      "verified": true,
-      "reason": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-    },
-    {
-      "case": "householder_append_default_c64_512x256",
-      "group": "householder_append",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
-    },
-    {
-      "case": "householder_append_default_c64_512x256",
-      "group": "householder_append",
-      "backend": "jax-cuda-jit",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
-    },
-    {
-      "case": "householder_append_default_c64_512x256",
-      "group": "householder_append",
-      "backend": "pytorch-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
-    },
-    {
-      "case": "householder_append_default_c64_512x256",
-      "group": "householder_append",
-      "backend": "tenferro-cuda-direct",
-      "median": null,
-      "status": "unsupported",
-      "verified": true,
-      "reason": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-    },
-    {
-      "case": "householder_append_default_c64_512x256",
-      "group": "householder_append",
-      "backend": "tenferro-cuda-eager",
-      "median": null,
-      "status": "unsupported",
-      "verified": true,
-      "reason": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-    },
-    {
-      "case": "householder_append_default_f32_512x256",
-      "group": "householder_append",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
-    },
-    {
-      "case": "householder_append_default_f32_512x256",
-      "group": "householder_append",
-      "backend": "jax-cuda-jit",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
-    },
-    {
-      "case": "householder_append_default_f32_512x256",
-      "group": "householder_append",
-      "backend": "pytorch-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
-    },
-    {
-      "case": "householder_append_default_f32_512x256",
-      "group": "householder_append",
-      "backend": "tenferro-cuda-direct",
-      "median": null,
-      "status": "unsupported",
-      "verified": true,
-      "reason": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-    },
-    {
-      "case": "householder_append_default_f32_512x256",
-      "group": "householder_append",
-      "backend": "tenferro-cuda-eager",
-      "median": null,
-      "status": "unsupported",
-      "verified": true,
-      "reason": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+      "operations_per_sample": 1
     },
     {
       "case": "householder_append_default_f64_512x256",
       "group": "householder_append",
       "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
-    },
-    {
-      "case": "householder_append_default_f64_512x256",
-      "group": "householder_append",
-      "backend": "jax-cuda-jit",
       "median": null,
       "status": "unsupported",
       "verified": false,
@@ -462,153 +168,9 @@
       "reason": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
     },
     {
-      "case": "householder_from_factors_default_c32_512x256",
-      "group": "householder_from_factors",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
-    },
-    {
-      "case": "householder_from_factors_default_c32_512x256",
-      "group": "householder_from_factors",
-      "backend": "jax-cuda-jit",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
-    },
-    {
-      "case": "householder_from_factors_default_c32_512x256",
-      "group": "householder_from_factors",
-      "backend": "pytorch-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
-    },
-    {
-      "case": "householder_from_factors_default_c32_512x256",
-      "group": "householder_from_factors",
-      "backend": "tenferro-cuda-direct",
-      "median": 1.529364,
-      "iqr": 0.012672500000000309,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_from_factors_default_c32_512x256",
-      "group": "householder_from_factors",
-      "backend": "tenferro-cuda-eager",
-      "median": 1.5898715,
-      "iqr": 0.015080750000000087,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_from_factors_default_c64_512x256",
-      "group": "householder_from_factors",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
-    },
-    {
-      "case": "householder_from_factors_default_c64_512x256",
-      "group": "householder_from_factors",
-      "backend": "jax-cuda-jit",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
-    },
-    {
-      "case": "householder_from_factors_default_c64_512x256",
-      "group": "householder_from_factors",
-      "backend": "pytorch-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
-    },
-    {
-      "case": "householder_from_factors_default_c64_512x256",
-      "group": "householder_from_factors",
-      "backend": "tenferro-cuda-direct",
-      "median": 1.865476,
-      "iqr": 0.015166000000000235,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_from_factors_default_c64_512x256",
-      "group": "householder_from_factors",
-      "backend": "tenferro-cuda-eager",
-      "median": 1.8366,
-      "iqr": 0.006550249999999869,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_from_factors_default_f32_512x256",
-      "group": "householder_from_factors",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
-    },
-    {
-      "case": "householder_from_factors_default_f32_512x256",
-      "group": "householder_from_factors",
-      "backend": "jax-cuda-jit",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
-    },
-    {
-      "case": "householder_from_factors_default_f32_512x256",
-      "group": "householder_from_factors",
-      "backend": "pytorch-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
-    },
-    {
-      "case": "householder_from_factors_default_f32_512x256",
-      "group": "householder_from_factors",
-      "backend": "tenferro-cuda-direct",
-      "median": 1.4330105,
-      "iqr": 0.006070499999999868,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_from_factors_default_f32_512x256",
-      "group": "householder_from_factors",
-      "backend": "tenferro-cuda-eager",
-      "median": 1.491628,
-      "iqr": 0.007737999999999801,
-      "status": "ok",
-      "verified": true
-    },
-    {
       "case": "householder_from_factors_default_f64_512x256",
       "group": "householder_from_factors",
       "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
-    },
-    {
-      "case": "householder_from_factors_default_f64_512x256",
-      "group": "householder_from_factors",
-      "backend": "jax-cuda-jit",
       "median": null,
       "status": "unsupported",
       "verified": false,
@@ -627,361 +189,41 @@
       "case": "householder_from_factors_default_f64_512x256",
       "group": "householder_from_factors",
       "backend": "tenferro-cuda-direct",
-      "median": 1.585891,
-      "iqr": 0.020942999999999934,
+      "median": 1.593083,
+      "iqr": 0.01200000000000001,
       "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 2
     },
     {
       "case": "householder_from_factors_default_f64_512x256",
       "group": "householder_from_factors",
       "backend": "tenferro-cuda-eager",
-      "median": 1.617987,
-      "iqr": 0.006229999999999958,
+      "median": 1.631461,
+      "iqr": 0.006747499999999906,
       "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_q_columns_complement_c32_512x256",
-      "group": "householder_q_columns",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs."
-    },
-    {
-      "case": "householder_q_columns_complement_c32_512x256",
-      "group": "householder_q_columns",
-      "backend": "jax-cuda-jit",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs."
-    },
-    {
-      "case": "householder_q_columns_complement_c32_512x256",
-      "group": "householder_q_columns",
-      "backend": "pytorch-cuda",
-      "median": 0.251122625,
-      "iqr": 0.0002793749999999706,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_q_columns_complement_c32_512x256",
-      "group": "householder_q_columns",
-      "backend": "tenferro-cuda-direct",
-      "median": null,
-      "status": "unsupported",
       "verified": true,
-      "reason": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-    },
-    {
-      "case": "householder_q_columns_complement_c32_512x256",
-      "group": "householder_q_columns",
-      "backend": "tenferro-cuda-eager",
-      "median": null,
-      "status": "unsupported",
-      "verified": true,
-      "reason": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-    },
-    {
-      "case": "householder_q_columns_complement_c64_512x256",
-      "group": "householder_q_columns",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs."
-    },
-    {
-      "case": "householder_q_columns_complement_c64_512x256",
-      "group": "householder_q_columns",
-      "backend": "jax-cuda-jit",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs."
-    },
-    {
-      "case": "householder_q_columns_complement_c64_512x256",
-      "group": "householder_q_columns",
-      "backend": "pytorch-cuda",
-      "median": 0.252314,
-      "iqr": 0.001265124999999978,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_q_columns_complement_c64_512x256",
-      "group": "householder_q_columns",
-      "backend": "tenferro-cuda-direct",
-      "median": null,
-      "status": "unsupported",
-      "verified": true,
-      "reason": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-    },
-    {
-      "case": "householder_q_columns_complement_c64_512x256",
-      "group": "householder_q_columns",
-      "backend": "tenferro-cuda-eager",
-      "median": null,
-      "status": "unsupported",
-      "verified": true,
-      "reason": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-    },
-    {
-      "case": "householder_q_columns_complement_f32_512x256",
-      "group": "householder_q_columns",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs."
-    },
-    {
-      "case": "householder_q_columns_complement_f32_512x256",
-      "group": "householder_q_columns",
-      "backend": "jax-cuda-jit",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs."
-    },
-    {
-      "case": "householder_q_columns_complement_f32_512x256",
-      "group": "householder_q_columns",
-      "backend": "pytorch-cuda",
-      "median": 0.166435875,
-      "iqr": 0.0001946874999999848,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_q_columns_complement_f32_512x256",
-      "group": "householder_q_columns",
-      "backend": "tenferro-cuda-direct",
-      "median": null,
-      "status": "unsupported",
-      "verified": true,
-      "reason": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-    },
-    {
-      "case": "householder_q_columns_complement_f32_512x256",
-      "group": "householder_q_columns",
-      "backend": "tenferro-cuda-eager",
-      "median": null,
-      "status": "unsupported",
-      "verified": true,
-      "reason": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-    },
-    {
-      "case": "householder_q_columns_complement_f64_512x256",
-      "group": "householder_q_columns",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs."
-    },
-    {
-      "case": "householder_q_columns_complement_f64_512x256",
-      "group": "householder_q_columns",
-      "backend": "jax-cuda-jit",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs."
-    },
-    {
-      "case": "householder_q_columns_complement_f64_512x256",
-      "group": "householder_q_columns",
-      "backend": "pytorch-cuda",
-      "median": 0.1652014375,
-      "iqr": 0.00025975000000000303,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_q_columns_complement_f64_512x256",
-      "group": "householder_q_columns",
-      "backend": "tenferro-cuda-direct",
-      "median": null,
-      "status": "unsupported",
-      "verified": true,
-      "reason": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-    },
-    {
-      "case": "householder_q_columns_complement_f64_512x256",
-      "group": "householder_q_columns",
-      "backend": "tenferro-cuda-eager",
-      "median": null,
-      "status": "unsupported",
-      "verified": true,
-      "reason": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-    },
-    {
-      "case": "householder_q_columns_prefix_c32_512x256",
-      "group": "householder_q_columns",
-      "backend": "jax-cuda",
-      "median": 0.1278383125,
-      "iqr": 0.0008390937499999918,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_q_columns_prefix_c32_512x256",
-      "group": "householder_q_columns",
-      "backend": "jax-cuda-jit",
-      "median": 0.109188875,
-      "iqr": 0.0007728437500000018,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_q_columns_prefix_c32_512x256",
-      "group": "householder_q_columns",
-      "backend": "pytorch-cuda",
-      "median": 0.09121978125,
-      "iqr": 4.6734374999996e-05,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_q_columns_prefix_c32_512x256",
-      "group": "householder_q_columns",
-      "backend": "tenferro-cuda-direct",
-      "median": null,
-      "status": "unsupported",
-      "verified": true,
-      "reason": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-    },
-    {
-      "case": "householder_q_columns_prefix_c32_512x256",
-      "group": "householder_q_columns",
-      "backend": "tenferro-cuda-eager",
-      "median": null,
-      "status": "unsupported",
-      "verified": true,
-      "reason": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-    },
-    {
-      "case": "householder_q_columns_prefix_c64_512x256",
-      "group": "householder_q_columns",
-      "backend": "jax-cuda",
-      "median": 0.130793375,
-      "iqr": 0.000956281250000024,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_q_columns_prefix_c64_512x256",
-      "group": "householder_q_columns",
-      "backend": "jax-cuda-jit",
-      "median": 0.1113808125,
-      "iqr": 0.000559078125000001,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_q_columns_prefix_c64_512x256",
-      "group": "householder_q_columns",
-      "backend": "pytorch-cuda",
-      "median": 0.0635813125,
-      "iqr": 0.0002670312500000077,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_q_columns_prefix_c64_512x256",
-      "group": "householder_q_columns",
-      "backend": "tenferro-cuda-direct",
-      "median": null,
-      "status": "unsupported",
-      "verified": true,
-      "reason": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-    },
-    {
-      "case": "householder_q_columns_prefix_c64_512x256",
-      "group": "householder_q_columns",
-      "backend": "tenferro-cuda-eager",
-      "median": null,
-      "status": "unsupported",
-      "verified": true,
-      "reason": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-    },
-    {
-      "case": "householder_q_columns_prefix_f32_512x256",
-      "group": "householder_q_columns",
-      "backend": "jax-cuda",
-      "median": 0.12839325,
-      "iqr": 0.0009175000000000155,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_q_columns_prefix_f32_512x256",
-      "group": "householder_q_columns",
-      "backend": "jax-cuda-jit",
-      "median": 0.10545028125,
-      "iqr": 0.0017134843749999906,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_q_columns_prefix_f32_512x256",
-      "group": "householder_q_columns",
-      "backend": "pytorch-cuda",
-      "median": 0.061227640625,
-      "iqr": 5.211718749999206e-05,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_q_columns_prefix_f32_512x256",
-      "group": "householder_q_columns",
-      "backend": "tenferro-cuda-direct",
-      "median": null,
-      "status": "unsupported",
-      "verified": true,
-      "reason": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-    },
-    {
-      "case": "householder_q_columns_prefix_f32_512x256",
-      "group": "householder_q_columns",
-      "backend": "tenferro-cuda-eager",
-      "median": null,
-      "status": "unsupported",
-      "verified": true,
-      "reason": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+      "operations_per_sample": 2
     },
     {
       "case": "householder_q_columns_prefix_f64_512x256",
       "group": "householder_q_columns",
       "backend": "jax-cuda",
-      "median": 0.1351585,
-      "iqr": 0.0005812187499999732,
+      "median": 0.29844075,
+      "iqr": 0.05982693750000001,
       "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_q_columns_prefix_f64_512x256",
-      "group": "householder_q_columns",
-      "backend": "jax-cuda-jit",
-      "median": 0.1142665625,
-      "iqr": 0.02907981250000001,
-      "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 8
     },
     {
       "case": "householder_q_columns_prefix_f64_512x256",
       "group": "householder_q_columns",
       "backend": "pytorch-cuda",
-      "median": 0.0653535625,
-      "iqr": 0.000903468750000011,
+      "median": 0.080449375,
+      "iqr": 0.0005402343750000038,
       "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 32
     },
     {
       "case": "householder_q_columns_prefix_f64_512x256",
@@ -1002,796 +244,104 @@
       "reason": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
     },
     {
-      "case": "householder_qr_square_c32_256x256",
-      "group": "householder_qr",
-      "backend": "jax-cuda",
-      "median": 1.014686,
-      "iqr": 0.040929249999999806,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_square_c32_256x256",
-      "group": "householder_qr",
-      "backend": "jax-cuda-jit",
-      "median": 1.0693275,
-      "iqr": 0.02357275000000003,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_square_c32_256x256",
-      "group": "householder_qr",
-      "backend": "pytorch-cuda",
-      "median": 0.97331425,
-      "iqr": 0.0030576249999998417,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_square_c32_256x256",
-      "group": "householder_qr",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.99567275,
-      "iqr": 0.004450249999999878,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_square_c32_256x256",
-      "group": "householder_qr",
-      "backend": "tenferro-cuda-eager",
-      "median": 1.0354115,
-      "iqr": 0.00882000000000005,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_square_c64_256x256",
-      "group": "householder_qr",
-      "backend": "jax-cuda",
-      "median": 1.2694195,
-      "iqr": 0.05007925000000002,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_square_c64_256x256",
-      "group": "householder_qr",
-      "backend": "jax-cuda-jit",
-      "median": 1.27678,
-      "iqr": 0.03306874999999998,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_square_c64_256x256",
-      "group": "householder_qr",
-      "backend": "pytorch-cuda",
-      "median": 1.1707765,
-      "iqr": 0.005262749999999983,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_square_c64_256x256",
-      "group": "householder_qr",
-      "backend": "tenferro-cuda-direct",
-      "median": 1.2003575,
-      "iqr": 0.0024925000000002306,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_square_c64_256x256",
-      "group": "householder_qr",
-      "backend": "tenferro-cuda-eager",
-      "median": 1.2348635,
-      "iqr": 0.005220249999999815,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_square_f32_256x256",
-      "group": "householder_qr",
-      "backend": "jax-cuda",
-      "median": 0.9323655,
-      "iqr": 0.011503000000000041,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_square_f32_256x256",
-      "group": "householder_qr",
-      "backend": "jax-cuda-jit",
-      "median": 0.9668695,
-      "iqr": 0.02566124999999997,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_square_f32_256x256",
-      "group": "householder_qr",
-      "backend": "pytorch-cuda",
-      "median": 0.907322,
-      "iqr": 0.0012038749999999654,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_square_f32_256x256",
-      "group": "householder_qr",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.9260175,
-      "iqr": 0.0033228750000000584,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_square_f32_256x256",
-      "group": "householder_qr",
-      "backend": "tenferro-cuda-eager",
-      "median": 0.97158675,
-      "iqr": 0.007915499999999964,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_square_f64_256x256",
-      "group": "householder_qr",
-      "backend": "jax-cuda",
-      "median": 1.0579875,
-      "iqr": 0.04870949999999996,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_square_f64_256x256",
-      "group": "householder_qr",
-      "backend": "jax-cuda-jit",
-      "median": 1.0934235,
-      "iqr": 0.029571500000000084,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_square_f64_256x256",
-      "group": "householder_qr",
-      "backend": "pytorch-cuda",
-      "median": 1.015516,
-      "iqr": 0.0038875000000000437,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_square_f64_256x256",
-      "group": "householder_qr",
-      "backend": "tenferro-cuda-direct",
-      "median": 1.0333065,
-      "iqr": 0.005015250000000027,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_square_f64_256x256",
-      "group": "householder_qr",
-      "backend": "tenferro-cuda-eager",
-      "median": 1.077993,
-      "iqr": 0.0027377500000000943,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_tall_c32_512x256",
-      "group": "householder_qr",
-      "backend": "jax-cuda",
-      "median": 1.4030595,
-      "iqr": 0.03444825000000007,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_tall_c32_512x256",
-      "group": "householder_qr",
-      "backend": "jax-cuda-jit",
-      "median": 1.3712635,
-      "iqr": 0.025748249999999917,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_tall_c32_512x256",
-      "group": "householder_qr",
-      "backend": "pytorch-cuda",
-      "median": 1.26746,
-      "iqr": 0.00480024999999995,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_tall_c32_512x256",
-      "group": "householder_qr",
-      "backend": "tenferro-cuda-direct",
-      "median": 1.305686,
-      "iqr": 0.004364999999999952,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_tall_c32_512x256",
-      "group": "householder_qr",
-      "backend": "tenferro-cuda-eager",
-      "median": 1.3470775,
-      "iqr": 0.015267749999999802,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_tall_c64_512x256",
-      "group": "householder_qr",
-      "backend": "jax-cuda",
-      "median": 1.6904,
-      "iqr": 0.03356374999999989,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_tall_c64_512x256",
-      "group": "householder_qr",
-      "backend": "jax-cuda-jit",
-      "median": 1.721021,
-      "iqr": 0.004375250000000053,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_tall_c64_512x256",
-      "group": "householder_qr",
-      "backend": "pytorch-cuda",
-      "median": 1.642478,
-      "iqr": 0.005062749999999783,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_tall_c64_512x256",
-      "group": "householder_qr",
-      "backend": "tenferro-cuda-direct",
-      "median": 1.6537285,
-      "iqr": 0.0028999999999999027,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_tall_c64_512x256",
-      "group": "householder_qr",
-      "backend": "tenferro-cuda-eager",
-      "median": 1.6581485,
-      "iqr": 0.004350249999999889,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_tall_f32_512x256",
-      "group": "householder_qr",
-      "backend": "jax-cuda",
-      "median": 1.294276,
-      "iqr": 0.05175900000000011,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_tall_f32_512x256",
-      "group": "householder_qr",
-      "backend": "jax-cuda-jit",
-      "median": 1.300701,
-      "iqr": 0.02911874999999986,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_tall_f32_512x256",
-      "group": "householder_qr",
-      "backend": "pytorch-cuda",
-      "median": 1.1943075,
-      "iqr": 0.006692750000000025,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_tall_f32_512x256",
-      "group": "householder_qr",
-      "backend": "tenferro-cuda-direct",
-      "median": 1.2114325,
-      "iqr": 0.00418525000000014,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_tall_f32_512x256",
-      "group": "householder_qr",
-      "backend": "tenferro-cuda-eager",
-      "median": 1.2606995,
-      "iqr": 0.007175750000000036,
-      "status": "ok",
-      "verified": true
-    },
-    {
       "case": "householder_qr_tall_f64_512x256",
       "group": "householder_qr",
       "backend": "jax-cuda",
-      "median": 1.4239455,
-      "iqr": 0.030321000000000042,
+      "median": 1.4202665,
+      "iqr": 0.031629499999999755,
       "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_tall_f64_512x256",
-      "group": "householder_qr",
-      "backend": "jax-cuda-jit",
-      "median": 1.4247305,
-      "iqr": 0.04361899999999985,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_tall_f64_512x256",
-      "group": "householder_qr",
-      "backend": "pytorch-cuda",
-      "median": 1.323807,
-      "iqr": 0.011048000000000169,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_tall_f64_512x256",
-      "group": "householder_qr",
-      "backend": "tenferro-cuda-direct",
-      "median": 1.3510875,
-      "iqr": 0.005959999999999965,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_tall_f64_512x256",
-      "group": "householder_qr",
-      "backend": "tenferro-cuda-eager",
-      "median": 1.4060895,
-      "iqr": 0.009727749999999924,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_wide_c32_256x512",
-      "group": "householder_qr",
-      "backend": "jax-cuda",
-      "median": 1.308851,
-      "iqr": 0.025146000000000113,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_wide_c32_256x512",
-      "group": "householder_qr",
-      "backend": "jax-cuda-jit",
-      "median": 1.2983205,
-      "iqr": 0.033493500000000065,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_wide_c32_256x512",
-      "group": "householder_qr",
-      "backend": "pytorch-cuda",
-      "median": 1.2019175,
-      "iqr": 0.01012275000000007,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_wide_c32_256x512",
-      "group": "householder_qr",
-      "backend": "tenferro-cuda-direct",
-      "median": 1.220658,
-      "iqr": 0.005762999999999963,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_wide_c32_256x512",
-      "group": "householder_qr",
-      "backend": "tenferro-cuda-eager",
-      "median": 1.266985,
-      "iqr": 0.012237750000000158,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_wide_c64_256x512",
-      "group": "householder_qr",
-      "backend": "jax-cuda",
-      "median": 1.614197,
-      "iqr": 0.01652050000000016,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_wide_c64_256x512",
-      "group": "householder_qr",
-      "backend": "jax-cuda-jit",
-      "median": 1.670649,
-      "iqr": 0.03415649999999992,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_wide_c64_256x512",
-      "group": "householder_qr",
-      "backend": "pytorch-cuda",
-      "median": 1.4903175,
-      "iqr": 0.006925249999999883,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_wide_c64_256x512",
-      "group": "householder_qr",
-      "backend": "tenferro-cuda-direct",
-      "median": 1.5134335,
-      "iqr": 0.012682999999999778,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_wide_c64_256x512",
-      "group": "householder_qr",
-      "backend": "tenferro-cuda-eager",
-      "median": 1.5443145,
-      "iqr": 0.01346050000000032,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_wide_f32_256x512",
-      "group": "householder_qr",
-      "backend": "jax-cuda",
-      "median": 1.231864,
-      "iqr": 0.04880675000000001,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_wide_f32_256x512",
-      "group": "householder_qr",
-      "backend": "jax-cuda-jit",
-      "median": 1.2379035,
-      "iqr": 0.042329249999999874,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_wide_f32_256x512",
-      "group": "householder_qr",
-      "backend": "pytorch-cuda",
-      "median": 1.102659,
-      "iqr": 0.009587750000000117,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_wide_f32_256x512",
-      "group": "householder_qr",
-      "backend": "tenferro-cuda-direct",
-      "median": 1.126655,
-      "iqr": 0.011278000000000121,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_wide_f32_256x512",
-      "group": "householder_qr",
-      "backend": "tenferro-cuda-eager",
-      "median": 1.152021,
-      "iqr": 0.009895250000000022,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_wide_f64_256x512",
-      "group": "householder_qr",
-      "backend": "jax-cuda",
-      "median": 1.353958,
-      "iqr": 0.021770999999999763,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_wide_f64_256x512",
-      "group": "householder_qr",
-      "backend": "jax-cuda-jit",
-      "median": 1.356183,
-      "iqr": 0.03866899999999984,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_wide_f64_256x512",
-      "group": "householder_qr",
-      "backend": "pytorch-cuda",
-      "median": 1.238589,
-      "iqr": 0.013752999999999904,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_wide_f64_256x512",
-      "group": "householder_qr",
-      "backend": "tenferro-cuda-direct",
-      "median": 1.245269,
-      "iqr": 0.009525000000000006,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_qr_wide_f64_256x512",
-      "group": "householder_qr",
-      "backend": "tenferro-cuda-eager",
-      "median": 1.294521,
-      "iqr": 0.017668000000000017,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_r_default_c32_512x256",
-      "group": "householder_r",
-      "backend": "jax-cuda",
-      "median": 0.039714375,
-      "iqr": 0.0002527421875000019,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_r_default_c32_512x256",
-      "group": "householder_r",
-      "backend": "jax-cuda-jit",
-      "median": 0.04940346875,
-      "iqr": 0.0003533593750000008,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_r_default_c32_512x256",
-      "group": "householder_r",
-      "backend": "pytorch-cuda",
-      "median": 0.00465934375,
-      "iqr": 6.8740234374998e-06,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_r_default_c32_512x256",
-      "group": "householder_r",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.038524796875,
-      "iqr": 0.0014361406249999986,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_r_default_c32_512x256",
-      "group": "householder_r",
-      "backend": "tenferro-cuda-eager",
-      "median": 0.04409953125,
-      "iqr": 0.00015516406249999753,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_r_default_c64_512x256",
-      "group": "householder_r",
-      "backend": "jax-cuda",
-      "median": 0.039998125,
-      "iqr": 0.0003551718749999974,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_r_default_c64_512x256",
-      "group": "householder_r",
-      "backend": "jax-cuda-jit",
-      "median": 0.047873875,
-      "iqr": 0.004499695312500003,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_r_default_c64_512x256",
-      "group": "householder_r",
-      "backend": "pytorch-cuda",
-      "median": 0.00479630078125,
-      "iqr": 1.0802734375000775e-05,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_r_default_c64_512x256",
-      "group": "householder_r",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.036528796875,
-      "iqr": 0.0015325546874999998,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_r_default_c64_512x256",
-      "group": "householder_r",
-      "backend": "tenferro-cuda-eager",
-      "median": 0.04854546875,
-      "iqr": 0.000124070312500002,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_r_default_f32_512x256",
-      "group": "householder_r",
-      "backend": "jax-cuda",
-      "median": 0.039530453125,
-      "iqr": 0.0001689140624999974,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_r_default_f32_512x256",
-      "group": "householder_r",
-      "backend": "jax-cuda-jit",
-      "median": 0.046647125,
-      "iqr": 0.006759062499999996,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_r_default_f32_512x256",
-      "group": "householder_r",
-      "backend": "pytorch-cuda",
-      "median": 0.00508580078125,
-      "iqr": 0.0003642734374999998,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_r_default_f32_512x256",
-      "group": "householder_r",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.038373390625,
-      "iqr": 0.0027015781250000065,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_r_default_f32_512x256",
-      "group": "householder_r",
-      "backend": "tenferro-cuda-eager",
-      "median": 0.043888421875,
-      "iqr": 0.0014777031249999933,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_r_default_f64_512x256",
-      "group": "householder_r",
-      "backend": "jax-cuda",
-      "median": 0.03964609375,
-      "iqr": 0.0002030468750000014,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_r_default_f64_512x256",
-      "group": "householder_r",
-      "backend": "jax-cuda-jit",
-      "median": 0.0451833125,
-      "iqr": 0.0041202968750000055,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_r_default_f64_512x256",
-      "group": "householder_r",
-      "backend": "pytorch-cuda",
-      "median": 0.00471954296875,
-      "iqr": 0.00047804492187500033,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_r_default_f64_512x256",
-      "group": "householder_r",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.036444875,
-      "iqr": 0.0018400703124999973,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "householder_r_default_f64_512x256",
-      "group": "householder_r",
-      "backend": "tenferro-cuda-eager",
-      "median": 0.045573328125,
-      "iqr": 0.0025163281250000016,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "inv_f32_512x512",
-      "group": "inv",
-      "backend": "jax-cuda",
-      "median": 1.55142,
-      "iqr": 0.018340750000000128,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "inv_f32_512x512",
-      "group": "inv",
-      "backend": "jax-cuda-jit",
-      "median": 1.5741105,
-      "iqr": 0.011590749999999872,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "inv_f32_512x512",
-      "group": "inv",
-      "backend": "pytorch-cuda",
-      "median": 1.5170785,
-      "iqr": 0.0043202500000001365,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "inv_f32_512x512",
-      "group": "inv",
-      "backend": "tenferro-cuda-direct",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "CUDA concrete route fails at revision 8b13220c: inv_owned/eye_like passes a host scalar to broadcast_in_dim. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906."
-    },
-    {
-      "case": "inv_f32_512x512",
-      "group": "inv",
-      "backend": "tenferro-cuda-eager",
-      "median": null,
-      "status": "unsupported",
       "verified": true,
-      "reason": "Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer."
+      "operations_per_sample": 2
+    },
+    {
+      "case": "householder_qr_tall_f64_512x256",
+      "group": "householder_qr",
+      "backend": "pytorch-cuda",
+      "median": 1.3407055,
+      "iqr": 0.0035992499999999428,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 2
+    },
+    {
+      "case": "householder_qr_tall_f64_512x256",
+      "group": "householder_qr",
+      "backend": "tenferro-cuda-direct",
+      "median": 1.343947,
+      "iqr": 0.00495650000000003,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 2
+    },
+    {
+      "case": "householder_qr_tall_f64_512x256",
+      "group": "householder_qr",
+      "backend": "tenferro-cuda-eager",
+      "median": 1.380837,
+      "iqr": 0.004493749999999963,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 2
+    },
+    {
+      "case": "householder_r_default_f64_512x256",
+      "group": "householder_r",
+      "backend": "jax-cuda",
+      "median": 0.053347765625,
+      "iqr": 0.0003774374999999941,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 64
+    },
+    {
+      "case": "householder_r_default_f64_512x256",
+      "group": "householder_r",
+      "backend": "pytorch-cuda",
+      "median": 0.0074253125,
+      "iqr": 7.331250000000046e-05,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 16
+    },
+    {
+      "case": "householder_r_default_f64_512x256",
+      "group": "householder_r",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.05275384375,
+      "iqr": 0.0004378671874999962,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 64
+    },
+    {
+      "case": "householder_r_default_f64_512x256",
+      "group": "householder_r",
+      "backend": "tenferro-cuda-eager",
+      "median": 0.06162153125,
+      "iqr": 0.0003664843749999966,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
     },
     {
       "case": "inv_f64_512x512",
       "group": "inv",
       "backend": "jax-cuda",
-      "median": 1.951389,
-      "iqr": 0.09093349999999978,
+      "median": 1.8242855,
+      "iqr": 0.020375999999999728,
       "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "inv_f64_512x512",
-      "group": "inv",
-      "backend": "jax-cuda-jit",
-      "median": 1.868141,
-      "iqr": 0.015314999999999968,
-      "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 2
     },
     {
       "case": "inv_f64_512x512",
       "group": "inv",
       "backend": "pytorch-cuda",
-      "median": 1.7904135,
-      "iqr": 0.004130250000000002,
+      "median": 1.793392,
+      "iqr": 0.004879250000000113,
       "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 2
     },
     {
       "case": "inv_f64_512x512",
@@ -1812,333 +362,9 @@
       "reason": "Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer."
     },
     {
-      "case": "lu_square_c32_s256",
-      "group": "lu",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
-    },
-    {
-      "case": "lu_square_c32_s256",
-      "group": "lu",
-      "backend": "jax-cuda-jit",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
-    },
-    {
-      "case": "lu_square_c32_s256",
-      "group": "lu",
-      "backend": "pytorch-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
-    },
-    {
-      "case": "lu_square_c32_s256",
-      "group": "lu",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.65919075,
-      "iqr": 0.007699125000000029,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lu_square_c32_s256",
-      "group": "lu",
-      "backend": "tenferro-cuda-eager",
-      "median": 0.68207425,
-      "iqr": 0.001767500000000033,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lu_square_c64_s256",
-      "group": "lu",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
-    },
-    {
-      "case": "lu_square_c64_s256",
-      "group": "lu",
-      "backend": "jax-cuda-jit",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
-    },
-    {
-      "case": "lu_square_c64_s256",
-      "group": "lu",
-      "backend": "pytorch-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
-    },
-    {
-      "case": "lu_square_c64_s256",
-      "group": "lu",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.71092525,
-      "iqr": 0.0016289999999999916,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lu_square_c64_s256",
-      "group": "lu",
-      "backend": "tenferro-cuda-eager",
-      "median": 0.7449765,
-      "iqr": 0.0009112499999999191,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lu_square_f32_s256",
-      "group": "lu",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
-    },
-    {
-      "case": "lu_square_f32_s256",
-      "group": "lu",
-      "backend": "jax-cuda-jit",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
-    },
-    {
-      "case": "lu_square_f32_s256",
-      "group": "lu",
-      "backend": "pytorch-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
-    },
-    {
-      "case": "lu_square_f32_s256",
-      "group": "lu",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.615947,
-      "iqr": 0.0040701250000001465,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lu_square_f32_s256",
-      "group": "lu",
-      "backend": "tenferro-cuda-eager",
-      "median": 0.65764575,
-      "iqr": 0.001878749999999929,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lu_square_f64_s256",
-      "group": "lu",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
-    },
-    {
-      "case": "lu_square_f64_s256",
-      "group": "lu",
-      "backend": "jax-cuda-jit",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
-    },
-    {
-      "case": "lu_square_f64_s256",
-      "group": "lu",
-      "backend": "pytorch-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
-    },
-    {
-      "case": "lu_square_f64_s256",
-      "group": "lu",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.646953,
-      "iqr": 0.002448875000000017,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lu_square_f64_s256",
-      "group": "lu",
-      "backend": "tenferro-cuda-eager",
-      "median": 0.6815065,
-      "iqr": 0.003232624999999878,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lu_tall_c32_s256",
-      "group": "lu",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
-    },
-    {
-      "case": "lu_tall_c32_s256",
-      "group": "lu",
-      "backend": "jax-cuda-jit",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
-    },
-    {
-      "case": "lu_tall_c32_s256",
-      "group": "lu",
-      "backend": "pytorch-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
-    },
-    {
-      "case": "lu_tall_c32_s256",
-      "group": "lu",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.821854,
-      "iqr": 0.002766250000000081,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lu_tall_c32_s256",
-      "group": "lu",
-      "backend": "tenferro-cuda-eager",
-      "median": 0.837562,
-      "iqr": 0.001365125000000078,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lu_tall_c64_s256",
-      "group": "lu",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
-    },
-    {
-      "case": "lu_tall_c64_s256",
-      "group": "lu",
-      "backend": "jax-cuda-jit",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
-    },
-    {
-      "case": "lu_tall_c64_s256",
-      "group": "lu",
-      "backend": "pytorch-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
-    },
-    {
-      "case": "lu_tall_c64_s256",
-      "group": "lu",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.96140625,
-      "iqr": 0.008191625000000036,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lu_tall_c64_s256",
-      "group": "lu",
-      "backend": "tenferro-cuda-eager",
-      "median": 0.9901625,
-      "iqr": 0.004476375000000088,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lu_tall_f32_s256",
-      "group": "lu",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
-    },
-    {
-      "case": "lu_tall_f32_s256",
-      "group": "lu",
-      "backend": "jax-cuda-jit",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
-    },
-    {
-      "case": "lu_tall_f32_s256",
-      "group": "lu",
-      "backend": "pytorch-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
-    },
-    {
-      "case": "lu_tall_f32_s256",
-      "group": "lu",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.760522,
-      "iqr": 0.0012400000000000189,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lu_tall_f32_s256",
-      "group": "lu",
-      "backend": "tenferro-cuda-eager",
-      "median": 0.78798025,
-      "iqr": 0.002912625000000002,
-      "status": "ok",
-      "verified": true
-    },
-    {
       "case": "lu_tall_f64_s256",
       "group": "lu",
       "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
-    },
-    {
-      "case": "lu_tall_f64_s256",
-      "group": "lu",
-      "backend": "jax-cuda-jit",
       "median": null,
       "status": "unsupported",
       "verified": false,
@@ -2157,361 +383,81 @@
       "case": "lu_tall_f64_s256",
       "group": "lu",
       "backend": "tenferro-cuda-direct",
-      "median": 0.83993225,
-      "iqr": 0.0006809999999999317,
+      "median": 1.0162675,
+      "iqr": 0.006234750000000178,
       "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lu_tall_f64_s256",
-      "group": "lu",
-      "backend": "tenferro-cuda-eager",
-      "median": 0.85802775,
-      "iqr": 0.003288625000000045,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lu_wide_c32_s256",
-      "group": "lu",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
-    },
-    {
-      "case": "lu_wide_c32_s256",
-      "group": "lu",
-      "backend": "jax-cuda-jit",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
-    },
-    {
-      "case": "lu_wide_c32_s256",
-      "group": "lu",
-      "backend": "pytorch-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
-    },
-    {
-      "case": "lu_wide_c32_s256",
-      "group": "lu",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.71127025,
-      "iqr": 0.0017724999999999547,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lu_wide_c32_s256",
-      "group": "lu",
-      "backend": "tenferro-cuda-eager",
-      "median": 0.766117,
-      "iqr": 0.003982624999999906,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lu_wide_c64_s256",
-      "group": "lu",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
-    },
-    {
-      "case": "lu_wide_c64_s256",
-      "group": "lu",
-      "backend": "jax-cuda-jit",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
-    },
-    {
-      "case": "lu_wide_c64_s256",
-      "group": "lu",
-      "backend": "pytorch-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
-    },
-    {
-      "case": "lu_wide_c64_s256",
-      "group": "lu",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.8340995,
-      "iqr": 0.0016626250000000287,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lu_wide_c64_s256",
-      "group": "lu",
-      "backend": "tenferro-cuda-eager",
-      "median": 0.8760535,
-      "iqr": 0.011759124999999981,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lu_wide_f32_s256",
-      "group": "lu",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
-    },
-    {
-      "case": "lu_wide_f32_s256",
-      "group": "lu",
-      "backend": "jax-cuda-jit",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
-    },
-    {
-      "case": "lu_wide_f32_s256",
-      "group": "lu",
-      "backend": "pytorch-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
-    },
-    {
-      "case": "lu_wide_f32_s256",
-      "group": "lu",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.65562575,
-      "iqr": 0.013454250000000001,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lu_wide_f32_s256",
-      "group": "lu",
-      "backend": "tenferro-cuda-eager",
-      "median": 0.6936495,
-      "iqr": 0.0028951249999999984,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lu_wide_f64_s256",
-      "group": "lu",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
-    },
-    {
-      "case": "lu_wide_f64_s256",
-      "group": "lu",
-      "backend": "jax-cuda-jit",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
-    },
-    {
-      "case": "lu_wide_f64_s256",
-      "group": "lu",
-      "backend": "pytorch-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
-    },
-    {
-      "case": "lu_wide_f64_s256",
-      "group": "lu",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.73079825,
-      "iqr": 0.001611250000000064,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lu_wide_f64_s256",
-      "group": "lu",
-      "backend": "tenferro-cuda-eager",
-      "median": 0.78243275,
-      "iqr": 0.01685049999999988,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "norm_f32_512x512",
-      "group": "norm",
-      "backend": "jax-cuda",
-      "median": 0.09820065625,
-      "iqr": 0.042873531250000006,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "norm_f32_512x512",
-      "group": "norm",
-      "backend": "jax-cuda-jit",
-      "median": 0.07169565625,
-      "iqr": 0.018840218750000005,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "norm_f32_512x512",
-      "group": "norm",
-      "backend": "pytorch-cuda",
-      "median": 0.0099420703125,
-      "iqr": 0.0009749570312499994,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "norm_f32_512x512",
-      "group": "norm",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.08935721875,
-      "iqr": 0.0029165000000000024,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "norm_f32_512x512",
-      "group": "norm",
-      "backend": "tenferro-cuda-eager",
-      "median": 0.1120101875,
-      "iqr": 0.00015921875000000918,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "norm_f64_512x512",
-      "group": "norm",
-      "backend": "jax-cuda",
-      "median": 0.09733875,
-      "iqr": 0.04162678125,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "norm_f64_512x512",
-      "group": "norm",
-      "backend": "jax-cuda-jit",
-      "median": 0.05913240625,
-      "iqr": 0.05042174999999999,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "norm_f64_512x512",
-      "group": "norm",
-      "backend": "pytorch-cuda",
-      "median": 0.010598109375,
-      "iqr": 0.001078298828125001,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "norm_f64_512x512",
-      "group": "norm",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.0958386875,
-      "iqr": 0.0004918750000000027,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "norm_f64_512x512",
-      "group": "norm",
-      "backend": "tenferro-cuda-eager",
-      "median": 0.11382525,
-      "iqr": 0.0004023593749999943,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "pinv_f32_512x512",
-      "group": "pinv",
-      "backend": "jax-cuda",
-      "median": 31.673879,
-      "iqr": 0.0768129999999978,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "pinv_f32_512x512",
-      "group": "pinv",
-      "backend": "jax-cuda-jit",
-      "median": 31.388259,
-      "iqr": 0.10111350000000385,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "pinv_f32_512x512",
-      "group": "pinv",
-      "backend": "pytorch-cuda",
-      "median": 34.312152,
-      "iqr": 0.029465999999999326,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "pinv_f32_512x512",
-      "group": "pinv",
-      "backend": "tenferro-cuda-direct",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "CUDA concrete route fails at revision 8b13220c: pinv_from_svd passes a host threshold scalar to mul_read. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906."
-    },
-    {
-      "case": "pinv_f32_512x512",
-      "group": "pinv",
-      "backend": "tenferro-cuda-eager",
-      "median": null,
-      "status": "unsupported",
       "verified": true,
-      "reason": "Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer."
+      "operations_per_sample": 2
+    },
+    {
+      "case": "lu_tall_f64_s256",
+      "group": "lu",
+      "backend": "tenferro-cuda-eager",
+      "median": 1.0692125,
+      "iqr": 0.004580999999999946,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 2
+    },
+    {
+      "case": "norm_f64_512x512",
+      "group": "norm",
+      "backend": "jax-cuda",
+      "median": 0.10749678125,
+      "iqr": 0.001656265625000014,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "norm_f64_512x512",
+      "group": "norm",
+      "backend": "pytorch-cuda",
+      "median": 0.013284890625,
+      "iqr": 6.024804687499927e-05,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 256
+    },
+    {
+      "case": "norm_f64_512x512",
+      "group": "norm",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.0745535,
+      "iqr": 0.0005640312499999856,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "norm_f64_512x512",
+      "group": "norm",
+      "backend": "tenferro-cuda-eager",
+      "median": 0.09710303125,
+      "iqr": 0.0008458281250000033,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
     },
     {
       "case": "pinv_f64_512x512",
       "group": "pinv",
       "backend": "jax-cuda",
-      "median": 78.382079,
-      "iqr": 0.0579569999999876,
+      "median": 78.281966,
+      "iqr": 0.05296500000000037,
       "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "pinv_f64_512x512",
-      "group": "pinv",
-      "backend": "jax-cuda-jit",
-      "median": 77.777709,
-      "iqr": 0.04590200000001232,
-      "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 1
     },
     {
       "case": "pinv_f64_512x512",
       "group": "pinv",
       "backend": "pytorch-cuda",
-      "median": 84.684382,
-      "iqr": 0.027811499999998546,
+      "median": 84.86131,
+      "iqr": 0.021986500000011233,
       "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 1
     },
     {
       "case": "pinv_f64_512x512",
@@ -2532,1075 +478,114 @@
       "reason": "Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer."
     },
     {
-      "case": "slogdet_negative_c32_256x256",
-      "group": "slogdet",
-      "backend": "jax-cuda",
-      "median": 0.5783205,
-      "iqr": 0.0008900000000000574,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_negative_c32_256x256",
-      "group": "slogdet",
-      "backend": "jax-cuda-jit",
-      "median": 0.5693,
-      "iqr": 0.004161250000000005,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_negative_c32_256x256",
-      "group": "slogdet",
-      "backend": "pytorch-cuda",
-      "median": 0.5730255,
-      "iqr": 0.0006487500000000868,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_negative_c32_256x256",
-      "group": "slogdet",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.8099685,
-      "iqr": 0.012499249999999962,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_negative_c32_256x256",
-      "group": "slogdet",
-      "backend": "tenferro-cuda-eager",
-      "median": 0.858328,
-      "iqr": 0.001457625000000018,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_negative_c64_256x256",
-      "group": "slogdet",
-      "backend": "jax-cuda",
-      "median": 0.63367,
-      "iqr": 0.008795374999999939,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_negative_c64_256x256",
-      "group": "slogdet",
-      "backend": "jax-cuda-jit",
-      "median": 0.64865525,
-      "iqr": 0.0023701250000001117,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_negative_c64_256x256",
-      "group": "slogdet",
-      "backend": "pytorch-cuda",
-      "median": 0.62794475,
-      "iqr": 0.0009924999999999518,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_negative_c64_256x256",
-      "group": "slogdet",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.8660255,
-      "iqr": 0.0025362499999999066,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_negative_c64_256x256",
-      "group": "slogdet",
-      "backend": "tenferro-cuda-eager",
-      "median": 0.94092075,
-      "iqr": 0.005798749999999964,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_negative_f32_256x256",
-      "group": "slogdet",
-      "backend": "jax-cuda",
-      "median": 0.53162875,
-      "iqr": 0.0036840000000000206,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_negative_f32_256x256",
-      "group": "slogdet",
-      "backend": "jax-cuda-jit",
-      "median": 0.54075175,
-      "iqr": 0.0029202499999999576,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_negative_f32_256x256",
-      "group": "slogdet",
-      "backend": "pytorch-cuda",
-      "median": 0.52991875,
-      "iqr": 0.0004912500000000541,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_negative_f32_256x256",
-      "group": "slogdet",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.75574425,
-      "iqr": 0.0024263749999999806,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_negative_f32_256x256",
-      "group": "slogdet",
-      "backend": "tenferro-cuda-eager",
-      "median": 0.8031185,
-      "iqr": 0.00233762500000001,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_negative_f64_256x256",
-      "group": "slogdet",
-      "backend": "jax-cuda",
-      "median": 0.57695775,
-      "iqr": 0.0011163750000000583,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_negative_f64_256x256",
-      "group": "slogdet",
-      "backend": "jax-cuda-jit",
-      "median": 0.5759955,
-      "iqr": 0.007972749999999973,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_negative_f64_256x256",
-      "group": "slogdet",
-      "backend": "pytorch-cuda",
-      "median": 0.5651125,
-      "iqr": 0.00108512500000002,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_negative_f64_256x256",
-      "group": "slogdet",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.80096075,
-      "iqr": 0.004744999999999999,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_negative_f64_256x256",
-      "group": "slogdet",
-      "backend": "tenferro-cuda-eager",
-      "median": 0.84202475,
-      "iqr": 0.006486500000000062,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_phase_c32_256x256",
-      "group": "slogdet",
-      "backend": "jax-cuda",
-      "median": 0.5549795,
-      "iqr": 0.005243999999999915,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_phase_c32_256x256",
-      "group": "slogdet",
-      "backend": "jax-cuda-jit",
-      "median": 0.578258,
-      "iqr": 0.0010562499999999808,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_phase_c32_256x256",
-      "group": "slogdet",
-      "backend": "pytorch-cuda",
-      "median": 0.57542025,
-      "iqr": 0.0008723749999999253,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_phase_c32_256x256",
-      "group": "slogdet",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.8039735,
-      "iqr": 0.016794125000000104,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_phase_c32_256x256",
-      "group": "slogdet",
-      "backend": "tenferro-cuda-eager",
-      "median": 0.85680775,
-      "iqr": 0.002362500000000045,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_phase_c64_256x256",
-      "group": "slogdet",
-      "backend": "jax-cuda",
-      "median": 0.63146225,
-      "iqr": 0.005073749999999988,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_phase_c64_256x256",
-      "group": "slogdet",
-      "backend": "jax-cuda-jit",
-      "median": 0.64378025,
-      "iqr": 0.011000374999999951,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_phase_c64_256x256",
-      "group": "slogdet",
-      "backend": "pytorch-cuda",
-      "median": 0.6286295,
-      "iqr": 0.0011202500000000448,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_phase_c64_256x256",
-      "group": "slogdet",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.89465675,
-      "iqr": 0.004606375000000051,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_phase_c64_256x256",
-      "group": "slogdet",
-      "backend": "tenferro-cuda-eager",
-      "median": 0.943996,
-      "iqr": 0.02955725000000009,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_positive_c32_256x256",
-      "group": "slogdet",
-      "backend": "jax-cuda",
-      "median": 0.5755655,
-      "iqr": 0.0013663749999999197,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_positive_c32_256x256",
-      "group": "slogdet",
-      "backend": "jax-cuda-jit",
-      "median": 0.57487525,
-      "iqr": 0.01224037499999997,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_positive_c32_256x256",
-      "group": "slogdet",
-      "backend": "pytorch-cuda",
-      "median": 0.5760855,
-      "iqr": 0.0008638749999999584,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_positive_c32_256x256",
-      "group": "slogdet",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.808431,
-      "iqr": 0.0017636249999999354,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_positive_c32_256x256",
-      "group": "slogdet",
-      "backend": "tenferro-cuda-eager",
-      "median": 0.85940275,
-      "iqr": 0.0013926250000000362,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_positive_c64_256x256",
-      "group": "slogdet",
-      "backend": "jax-cuda",
-      "median": 0.63199975,
-      "iqr": 0.00468500000000005,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_positive_c64_256x256",
-      "group": "slogdet",
-      "backend": "jax-cuda-jit",
-      "median": 0.65500075,
-      "iqr": 0.0022050000000000125,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_positive_c64_256x256",
-      "group": "slogdet",
-      "backend": "pytorch-cuda",
-      "median": 0.63160225,
-      "iqr": 0.0008850000000000247,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_positive_c64_256x256",
-      "group": "slogdet",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.862578,
-      "iqr": 0.024567125000000023,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_positive_c64_256x256",
-      "group": "slogdet",
-      "backend": "tenferro-cuda-eager",
-      "median": 0.94512825,
-      "iqr": 0.0023699999999999832,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_positive_f32_256x256",
-      "group": "slogdet",
-      "backend": "jax-cuda",
-      "median": 0.52869125,
-      "iqr": 0.003262499999999946,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_positive_f32_256x256",
-      "group": "slogdet",
-      "backend": "jax-cuda-jit",
-      "median": 0.52913625,
-      "iqr": 0.0030362500000000736,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_positive_f32_256x256",
-      "group": "slogdet",
-      "backend": "pytorch-cuda",
-      "median": 0.53084125,
-      "iqr": 0.001374999999999904,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_positive_f32_256x256",
-      "group": "slogdet",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.75594675,
-      "iqr": 0.0011200000000000099,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_positive_f32_256x256",
-      "group": "slogdet",
-      "backend": "tenferro-cuda-eager",
-      "median": 0.805596,
-      "iqr": 0.002144000000000146,
-      "status": "ok",
-      "verified": true
-    },
-    {
       "case": "slogdet_positive_f64_256x256",
       "group": "slogdet",
       "backend": "jax-cuda",
-      "median": 0.57376775,
-      "iqr": 0.001595000000000013,
+      "median": 0.57845925,
+      "iqr": 0.0012459999999999694,
       "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "slogdet_positive_f64_256x256",
-      "group": "slogdet",
-      "backend": "jax-cuda-jit",
-      "median": 0.57461025,
-      "iqr": 0.0010751249999999546,
-      "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 4
     },
     {
       "case": "slogdet_positive_f64_256x256",
       "group": "slogdet",
       "backend": "pytorch-cuda",
-      "median": 0.5678575,
-      "iqr": 0.0004824999999999413,
+      "median": 0.5668445,
+      "iqr": 0.0009718750000000664,
       "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 4
     },
     {
       "case": "slogdet_positive_f64_256x256",
       "group": "slogdet",
       "backend": "tenferro-cuda-direct",
-      "median": 0.80026075,
-      "iqr": 0.0022826249999999826,
+      "median": 0.846764,
+      "iqr": 0.00825050000000005,
       "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 4
     },
     {
       "case": "slogdet_positive_f64_256x256",
       "group": "slogdet",
       "backend": "tenferro-cuda-eager",
-      "median": 0.875256,
-      "iqr": 0.030997249999999976,
+      "median": 0.87701875,
+      "iqr": 0.0036957499999999976,
       "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_square_c32_256x256",
-      "group": "svd_full",
-      "backend": "jax-cuda",
-      "median": 20.594118,
-      "iqr": 0.05429200000000023,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_square_c32_256x256",
-      "group": "svd_full",
-      "backend": "jax-cuda-jit",
-      "median": 20.527546,
-      "iqr": 0.32403200000000254,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_square_c32_256x256",
-      "group": "svd_full",
-      "backend": "pytorch-cuda",
-      "median": 22.109271,
-      "iqr": 0.012361000000002065,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_square_c32_256x256",
-      "group": "svd_full",
-      "backend": "tenferro-cuda-direct",
-      "median": 20.262846,
-      "iqr": 0.011329999999997398,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_square_c32_256x256",
-      "group": "svd_full",
-      "backend": "tenferro-cuda-eager",
-      "median": 20.37373,
-      "iqr": 0.006145499999998805,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_square_c64_256x256",
-      "group": "svd_full",
-      "backend": "jax-cuda",
-      "median": 60.332232,
-      "iqr": 0.0965179999999961,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_square_c64_256x256",
-      "group": "svd_full",
-      "backend": "jax-cuda-jit",
-      "median": 60.210598,
-      "iqr": 0.037750999999992985,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_square_c64_256x256",
-      "group": "svd_full",
-      "backend": "pytorch-cuda",
-      "median": 63.68486,
-      "iqr": 0.02064000000000732,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_square_c64_256x256",
-      "group": "svd_full",
-      "backend": "tenferro-cuda-direct",
-      "median": 60.025221,
-      "iqr": 0.02333550000000173,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_square_c64_256x256",
-      "group": "svd_full",
-      "backend": "tenferro-cuda-eager",
-      "median": 60.144556,
-      "iqr": 0.011085500000000081,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_square_f32_256x256",
-      "group": "svd_full",
-      "backend": "jax-cuda",
-      "median": 10.981278,
-      "iqr": 0.006750000000000256,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_square_f32_256x256",
-      "group": "svd_full",
-      "backend": "jax-cuda-jit",
-      "median": 10.856134,
-      "iqr": 0.09366900000000022,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_square_f32_256x256",
-      "group": "svd_full",
-      "backend": "pytorch-cuda",
-      "median": 11.422574,
-      "iqr": 0.008314999999999628,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_square_f32_256x256",
-      "group": "svd_full",
-      "backend": "tenferro-cuda-direct",
-      "median": 10.707439,
-      "iqr": 0.014055499999999554,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_square_f32_256x256",
-      "group": "svd_full",
-      "backend": "tenferro-cuda-eager",
-      "median": 10.816072,
-      "iqr": 0.010749999999999815,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_square_f64_256x256",
-      "group": "svd_full",
-      "backend": "jax-cuda",
-      "median": 26.297599,
-      "iqr": 0.3206210000000027,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_square_f64_256x256",
-      "group": "svd_full",
-      "backend": "jax-cuda-jit",
-      "median": 25.819022,
-      "iqr": 0.06617250000000041,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_square_f64_256x256",
-      "group": "svd_full",
-      "backend": "pytorch-cuda",
-      "median": 25.809402,
-      "iqr": 0.009060999999999098,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_square_f64_256x256",
-      "group": "svd_full",
-      "backend": "tenferro-cuda-direct",
-      "median": 25.683777,
-      "iqr": 0.008955000000000268,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_square_f64_256x256",
-      "group": "svd_full",
-      "backend": "tenferro-cuda-eager",
-      "median": 25.806822,
-      "iqr": 0.013266000000001554,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_tall_c32_512x256",
-      "group": "svd_full",
-      "backend": "jax-cuda",
-      "median": 19.852431,
-      "iqr": 0.03503600000000162,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_tall_c32_512x256",
-      "group": "svd_full",
-      "backend": "jax-cuda-jit",
-      "median": 19.755748,
-      "iqr": 0.034731500000003024,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_tall_c32_512x256",
-      "group": "svd_full",
-      "backend": "pytorch-cuda",
-      "median": 20.031928,
-      "iqr": 0.03346700000000169,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_tall_c32_512x256",
-      "group": "svd_full",
-      "backend": "tenferro-cuda-direct",
-      "median": 19.53785,
-      "iqr": 0.017056000000000182,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_tall_c32_512x256",
-      "group": "svd_full",
-      "backend": "tenferro-cuda-eager",
-      "median": 19.663295,
-      "iqr": 0.014585999999997767,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_tall_c64_512x256",
-      "group": "svd_full",
-      "backend": "jax-cuda",
-      "median": 40.861194,
-      "iqr": 0.040275999999998646,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_tall_c64_512x256",
-      "group": "svd_full",
-      "backend": "jax-cuda-jit",
-      "median": 40.738469,
-      "iqr": 0.05953749999999758,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_tall_c64_512x256",
-      "group": "svd_full",
-      "backend": "pytorch-cuda",
-      "median": 41.01743,
-      "iqr": 0.02250600000000702,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_tall_c64_512x256",
-      "group": "svd_full",
-      "backend": "tenferro-cuda-direct",
-      "median": 40.615645,
-      "iqr": 0.01108500000000845,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_tall_c64_512x256",
-      "group": "svd_full",
-      "backend": "tenferro-cuda-eager",
-      "median": 40.624835,
-      "iqr": 0.02279500000000212,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_tall_f32_512x256",
-      "group": "svd_full",
-      "backend": "jax-cuda",
-      "median": 11.381283,
-      "iqr": 0.02028100000000066,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_tall_f32_512x256",
-      "group": "svd_full",
-      "backend": "jax-cuda-jit",
-      "median": 11.340851,
-      "iqr": 0.42976049999999866,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_tall_f32_512x256",
-      "group": "svd_full",
-      "backend": "pytorch-cuda",
-      "median": 11.89171,
-      "iqr": 0.005405500000000174,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_tall_f32_512x256",
-      "group": "svd_full",
-      "backend": "tenferro-cuda-direct",
-      "median": 11.142823,
-      "iqr": 0.010200000000001097,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_tall_f32_512x256",
-      "group": "svd_full",
-      "backend": "tenferro-cuda-eager",
-      "median": 11.237107,
-      "iqr": 0.007844999999999658,
-      "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 4
     },
     {
       "case": "svd_full_tall_f64_512x256",
       "group": "svd_full",
       "backend": "jax-cuda",
-      "median": 19.810171,
-      "iqr": 0.03684149999999775,
+      "median": 19.711012,
+      "iqr": 0.01555450000000036,
       "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_tall_f64_512x256",
-      "group": "svd_full",
-      "backend": "jax-cuda-jit",
-      "median": 19.642964,
-      "iqr": 0.11340399999999917,
-      "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 1
     },
     {
       "case": "svd_full_tall_f64_512x256",
       "group": "svd_full",
       "backend": "pytorch-cuda",
-      "median": 19.860732,
-      "iqr": 0.027255999999997726,
+      "median": 19.99031,
+      "iqr": 0.053336000000001604,
       "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 1
     },
     {
       "case": "svd_full_tall_f64_512x256",
       "group": "svd_full",
       "backend": "tenferro-cuda-direct",
-      "median": 19.497769,
-      "iqr": 0.014385000000000758,
+      "median": 19.713758,
+      "iqr": 0.017843499999997903,
       "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 1
     },
     {
       "case": "svd_full_tall_f64_512x256",
       "group": "svd_full",
       "backend": "tenferro-cuda-eager",
-      "median": 19.678885,
-      "iqr": 0.035570999999997355,
+      "median": 19.723696,
+      "iqr": 0.010965500000001072,
       "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_wide_c32_256x512",
-      "group": "svd_full",
-      "backend": "jax-cuda",
-      "median": 19.976606,
-      "iqr": 0.059471999999999525,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_wide_c32_256x512",
-      "group": "svd_full",
-      "backend": "jax-cuda-jit",
-      "median": 19.846772,
-      "iqr": 0.10912849999999708,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_wide_c32_256x512",
-      "group": "svd_full",
-      "backend": "pytorch-cuda",
-      "median": 20.229395,
-      "iqr": 0.012645000000002682,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_wide_c32_256x512",
-      "group": "svd_full",
-      "backend": "tenferro-cuda-direct",
-      "median": 19.699916,
-      "iqr": 0.015355999999997039,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_wide_c32_256x512",
-      "group": "svd_full",
-      "backend": "tenferro-cuda-eager",
-      "median": 19.794549,
-      "iqr": 0.024955999999999534,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_wide_c64_256x512",
-      "group": "svd_full",
-      "backend": "jax-cuda",
-      "median": 40.871404,
-      "iqr": 0.032991500000001395,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_wide_c64_256x512",
-      "group": "svd_full",
-      "backend": "jax-cuda-jit",
-      "median": 40.829853,
-      "iqr": 0.028866000000000724,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_wide_c64_256x512",
-      "group": "svd_full",
-      "backend": "pytorch-cuda",
-      "median": 41.587549,
-      "iqr": 0.021391000000008376,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_wide_c64_256x512",
-      "group": "svd_full",
-      "backend": "tenferro-cuda-direct",
-      "median": 40.786591,
-      "iqr": 0.026301499999995315,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_wide_c64_256x512",
-      "group": "svd_full",
-      "backend": "tenferro-cuda-eager",
-      "median": 40.784311,
-      "iqr": 0.030776000000003023,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_wide_f32_256x512",
-      "group": "svd_full",
-      "backend": "jax-cuda",
-      "median": 11.193125,
-      "iqr": 0.0771329999999999,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_wide_f32_256x512",
-      "group": "svd_full",
-      "backend": "jax-cuda-jit",
-      "median": 11.009459,
-      "iqr": 0.0813675000000007,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_wide_f32_256x512",
-      "group": "svd_full",
-      "backend": "pytorch-cuda",
-      "median": 11.097052,
-      "iqr": 0.008519500000002012,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_wide_f32_256x512",
-      "group": "svd_full",
-      "backend": "tenferro-cuda-direct",
-      "median": 10.879714,
-      "iqr": 0.026355999999999824,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_wide_f32_256x512",
-      "group": "svd_full",
-      "backend": "tenferro-cuda-eager",
-      "median": 10.965797,
-      "iqr": 0.008720500000000797,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_wide_f64_256x512",
-      "group": "svd_full",
-      "backend": "jax-cuda",
-      "median": 17.952194,
-      "iqr": 0.05008699999999777,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_wide_f64_256x512",
-      "group": "svd_full",
-      "backend": "jax-cuda-jit",
-      "median": 17.82362,
-      "iqr": 0.06934299999999993,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_wide_f64_256x512",
-      "group": "svd_full",
-      "backend": "pytorch-cuda",
-      "median": 18.234465,
-      "iqr": 0.021745499999997975,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_wide_f64_256x512",
-      "group": "svd_full",
-      "backend": "tenferro-cuda-direct",
-      "median": 17.586082,
-      "iqr": 0.032371499999996445,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svd_full_wide_f64_256x512",
-      "group": "svd_full",
-      "backend": "tenferro-cuda-eager",
-      "median": 17.713186,
-      "iqr": 0.015921000000002294,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svdvals_f32_512x512",
-      "group": "svdvals",
-      "backend": "jax-cuda",
-      "median": 31.4261,
-      "iqr": 0.07927250000000186,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svdvals_f32_512x512",
-      "group": "svdvals",
-      "backend": "jax-cuda-jit",
-      "median": 31.233144,
-      "iqr": 0.42075450000000103,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svdvals_f32_512x512",
-      "group": "svdvals",
-      "backend": "pytorch-cuda",
-      "median": 34.143406,
-      "iqr": 0.009584999999994182,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svdvals_f32_512x512",
-      "group": "svdvals",
-      "backend": "tenferro-cuda-direct",
-      "median": 31.11896,
-      "iqr": 0.017215000000000202,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svdvals_f32_512x512",
-      "group": "svdvals",
-      "backend": "tenferro-cuda-eager",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "EagerSessionLinalgExt has no values-only svdvals entry point; returning and discarding singular vectors is not equivalent."
+      "verified": true,
+      "operations_per_sample": 1
     },
     {
       "case": "svdvals_f64_512x512",
       "group": "svdvals",
       "backend": "jax-cuda",
-      "median": 78.018817,
-      "iqr": 0.034750999999999976,
+      "median": 77.984984,
+      "iqr": 0.11334399999998368,
       "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "svdvals_f64_512x512",
-      "group": "svdvals",
-      "backend": "jax-cuda-jit",
-      "median": 77.747218,
-      "iqr": 0.03665650000000653,
-      "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 1
     },
     {
       "case": "svdvals_f64_512x512",
       "group": "svdvals",
       "backend": "pytorch-cuda",
-      "median": 84.564548,
-      "iqr": 0.012140500000000998,
+      "median": 84.622498,
+      "iqr": 0.05492350000000101,
       "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 1
     },
     {
       "case": "svdvals_f64_512x512",
       "group": "svdvals",
       "backend": "tenferro-cuda-direct",
-      "median": 77.432006,
-      "iqr": 0.013610999999997375,
+      "median": 77.795155,
+      "iqr": 0.02074949999999376,
       "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 1
     },
     {
       "case": "svdvals_f64_512x512",
@@ -3612,94 +597,44 @@
       "reason": "EagerSessionLinalgExt has no values-only svdvals entry point; returning and discarding singular vectors is not equivalent."
     },
     {
-      "case": "triangular_solve_f32_512x512",
-      "group": "triangular_solve",
-      "backend": "jax-cuda",
-      "median": 0.1851403125,
-      "iqr": 0.0020944687499999948,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "triangular_solve_f32_512x512",
-      "group": "triangular_solve",
-      "backend": "jax-cuda-jit",
-      "median": 0.1812633125,
-      "iqr": 0.0019249999999999823,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "triangular_solve_f32_512x512",
-      "group": "triangular_solve",
-      "backend": "pytorch-cuda",
-      "median": 0.1208270625,
-      "iqr": 0.00010799999999999699,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "triangular_solve_f32_512x512",
-      "group": "triangular_solve",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.1693878125,
-      "iqr": 0.0006896875000000358,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "triangular_solve_f32_512x512",
-      "group": "triangular_solve",
-      "backend": "tenferro-cuda-eager",
-      "median": 0.2180795625,
-      "iqr": 0.00030906250000001245,
-      "status": "ok",
-      "verified": true
-    },
-    {
       "case": "triangular_solve_f64_512x512",
       "group": "triangular_solve",
       "backend": "jax-cuda",
-      "median": 0.2180851875,
-      "iqr": 0.0006447187499999951,
+      "median": 0.280473,
+      "iqr": 0.002013687499999972,
       "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "triangular_solve_f64_512x512",
-      "group": "triangular_solve",
-      "backend": "jax-cuda-jit",
-      "median": 0.215717625,
-      "iqr": 0.0003531562499999863,
-      "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 8
     },
     {
       "case": "triangular_solve_f64_512x512",
       "group": "triangular_solve",
       "backend": "pytorch-cuda",
-      "median": 0.308370875,
-      "iqr": 9.187500000001902e-05,
+      "median": 0.30795875,
+      "iqr": 0.0005955624999999798,
       "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 8
     },
     {
       "case": "triangular_solve_f64_512x512",
       "group": "triangular_solve",
       "backend": "tenferro-cuda-direct",
-      "median": 0.1935099375,
-      "iqr": 0.00030684375000000763,
+      "median": 0.1939405625,
+      "iqr": 0.0006161249999999951,
       "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 16
     },
     {
       "case": "triangular_solve_f64_512x512",
       "group": "triangular_solve",
       "backend": "tenferro-cuda-eager",
-      "median": 0.2411954375,
-      "iqr": 0.0012747187500000146,
+      "median": 0.254493875,
+      "iqr": 0.002434562500000015,
       "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 8
     }
   ]
 }

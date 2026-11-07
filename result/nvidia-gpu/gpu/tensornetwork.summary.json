@@ -2,40 +2,54 @@
   "schema_version": 1,
   "target_profile": "nvidia-gpu",
   "suite_id": "gpu/tensornetwork",
-  "timestamp": "2026-10-31T20:18:08.642468+00:00",
-  "tenferro_commit": "c15dfcf0ea5252effdef24cffbebf2f445916e20",
+  "timestamp": "2026-11-07T20:17:28+00:00",
+  "tenferro_commit": "ffd352bdb9f98537be747101bc278db8a50a1595",
   "hardware": {
     "gpu": "NVIDIA A100-SXM4-80GB",
-    "cpu": "AMD EPYC 7763 64-Core Processor",
-    "host": "347e6dfeb493"
+    "cpu": "AMD EPYC 7742 64-Core Processor",
+    "host": "86889f3412c3"
   },
   "unit": "ms",
   "rows": [
     {
       "case": "tensornetwork_permutation_optimized_f32",
       "group": "tensor_network_contract",
-      "backend": "pytorch-cuda",
-      "median": 107.9337315,
-      "iqr": 0.5981489999999923,
+      "backend": "jax-cuda-tree-jit",
+      "median": 131.363356,
+      "iqr": 2.0842529999999897,
       "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 1
+    },
+    {
+      "case": "tensornetwork_permutation_optimized_f32",
+      "group": "tensor_network_contract",
+      "backend": "pytorch-cuda",
+      "median": 107.81046649999999,
+      "iqr": 0.4168170000000089,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 1
     },
     {
       "case": "tensornetwork_permutation_optimized_f32",
       "group": "tensor_network_contract",
       "backend": "tenferro-cuda-eager",
-      "median": 305.9101845,
-      "iqr": 64.00893299999996,
+      "median": 103.62810049999999,
+      "iqr": 55.637668000000005,
       "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 1
     },
     {
       "case": "tensornetwork_permutation_optimized_f32",
       "group": "tensor_network_contract",
       "backend": "tenferro-cuda-trace",
-      "median": null,
-      "status": "runtime_failed",
-      "verified": false
+      "median": 78.020649,
+      "iqr": 25.614209000000002,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 1
     }
   ]
 }
