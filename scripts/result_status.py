@@ -6,6 +6,9 @@ occur in more than one category; its original rows remain the source of truth.
 
 FAILED_STATUSES = frozenset({
     'failed', 'compile_failed', 'runtime_failed', 'verification_failed', 'oom', 'not_configured',
+    # A planned case the runner wrote no row for is a failure to measure it, and
+    # its row must publish (with its reason) instead of leaving a hole.
+    'missing',
 })
 
 
