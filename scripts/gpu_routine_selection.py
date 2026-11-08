@@ -4,6 +4,7 @@ import copy
 import json
 import math
 import statistics
+import sys
 from pathlib import Path
 
 import yaml
@@ -11,6 +12,14 @@ import yaml
 import bench_selection
 
 DEFAULT_DRIVER = "gpu_suite"
+# Drivers whose runner owns its own arms and case list: it reads the suite file
+# itself and takes neither an arm nor a problem filter from the selection. A
+# plan that narrowed such a suite would call every row the runner actually
+# emitted `unexpected`, and one unexpected row fails the whole bundle.
+# Measured: a backend-filtered dispatch planned `pytorch-cuda` alone for
+# gpu/permutation and collected 35 rows the plan rejected, so a paid routine
+# collection was thrown away when it was packaged.
+UNFILTERED_DRIVERS = {"gpu_permutation"}
 
 
 def defaults(manifest_path, vendor_arms=False):
@@ -101,6 +110,7 @@ def materialize(manifest_path, requested, output, backend_override="", problem="
     output.mkdir(parents=True, exist_ok=True)
     expected, selected, files, drivers = [], [], [], {}
     instances_files = {}
+    skipped_unfiltered = []
     requested = {(Path(path).resolve().relative_to(root).as_posix() if Path(path).is_absolute()
                   else Path(path).as_posix()) for path in requested}
     known_files = {spec["file"] for spec in manifest["suites"].values()}
@@ -115,6 +125,18 @@ def materialize(manifest_path, requested, output, backend_override="", problem="
             backends += list(spec.get("vendor_backends") or [])
         if not set(backends) <= set(source["backends"]):
             raise ValueError(f"routine backends absent from {spec['file']}: {suite_id}")
+        # A driver in UNFILTERED_DRIVERS runs its own arms over its own cases and
+        # takes neither an arm nor a problem filter from the selection, so a plan
+        # cannot express a filter for it: it would collect rows the plan calls
+        # `unexpected` and one unexpected row fails the whole bundle (measured: a
+        # backend-filtered dispatch planned `pytorch-cuda` alone for
+        # gpu/permutation, collected 35 arms the plan rejected, and the paid
+        # routine collection was refused when packaged). Leave such a suite out
+        # of a filtered probe instead of narrowing it.
+        unfiltered = (spec.get("driver") or DEFAULT_DRIVER) in UNFILTERED_DRIVERS
+        if unfiltered and (backend_override or problem):
+            skipped_unfiltered.append(suite_id)
+            continue
         if backend_override:
             backends = [b for b in backend_override.split(",") if b in source["backends"]]
 
@@ -166,12 +188,18 @@ def materialize(manifest_path, requested, output, backend_override="", problem="
         files.append(path.as_posix())
         drivers[path.as_posix()] = spec.get("driver") or DEFAULT_DRIVER
     if not selected:
+        if skipped_unfiltered:
+            # Otherwise the plain message hides why the only requested suite
+            # produced nothing, which reads as a broken selection.
+            raise ValueError(
+                "no GPU cases selected: " + ", ".join(skipped_unfiltered)
+                + " takes no arm or problem filter, so a filtered selection cannot plan it")
         raise ValueError("no GPU cases selected")
     plan = dict(manifest_version=manifest["manifest_version"], effort=effort,
                 expected=expected, selected=selected, suite_files=files, suite_drivers=drivers,
                 suite_instances=instances_files,
                 backend_override=backend_override or None, vendor_arms=vendor_arms,
-                problem_filter=problem or None)
+                problem_filter=problem or None, skipped_unfiltered_suites=skipped_unfiltered)
     (output/"selection.json").write_text(json.dumps(plan,indent=2)+"\n")
     return plan
 
@@ -275,6 +303,12 @@ def main():
         return
     plan = materialize(args.manifest,args.suites,args.output,args.backends,args.problem,args.effort,
                        args.vendor_arms)
+    for suite_id in plan["skipped_unfiltered_suites"]:
+        # stderr: stdout is the `suite_path driver instances` row stream
+        # scripts/run_gpu_suite.sh parses with `mapfile`.
+        print(f"skipped {suite_id}: its runner takes no arm or problem filter, so a "
+              f"filtered selection cannot plan it (collect it with an unfiltered run)",
+              file=sys.stderr)
     for path in plan["suite_files"]:
         print(path, plan["suite_drivers"][path], plan["suite_instances"].get(path, "-"))
 

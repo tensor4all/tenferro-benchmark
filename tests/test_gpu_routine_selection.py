@@ -125,6 +125,35 @@ class RoutineSelectionTest(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,"no GPU cases"):
                 self.plan(Path(tmp)/"bad",problem="dense_solve_f64_4096_rhs16")
 
+    def test_a_filtered_probe_leaves_out_the_suite_whose_runner_takes_no_filter(self):
+        # gpu/permutation's runner emits its own arms over its own patterns and
+        # reads neither GPU_BENCH_BACKENDS nor GPU_BENCH_PROBLEM. A plan that
+        # narrowed it collected 35 rows it called `unexpected`, which refuses the
+        # whole bundle, so a filtered selection must drop the suite rather than
+        # narrow it (#385).
+        with tempfile.TemporaryDirectory() as tmp:
+            unfiltered = self.plan(Path(tmp)/"all")
+            self.assertEqual(len([key for key in unfiltered["selected"]
+                                  if key.startswith("gpu/permutation:")]), 44)
+            self.assertEqual(unfiltered["skipped_unfiltered_suites"], [])
+            for overrides in (dict(backend_override="tenferro-cuda-trace,tenferro-cuda-eager,pytorch-cuda"),
+                              dict(backend_override="pytorch-cuda"),
+                              dict(problem="dense_matmul_f64_3072")):
+                with self.subTest(**overrides):
+                    plan = self.plan(Path(tmp)/f"filtered-{len(str(overrides))}", **overrides)
+                    self.assertFalse([key for key in plan["selected"]
+                                      if key.startswith("gpu/permutation:")])
+                    self.assertEqual(plan["skipped_unfiltered_suites"], ["gpu/permutation"])
+                    self.assertFalse([key for key in plan["expected"]
+                                      if key.startswith("gpu/permutation:")])
+                    self.assertFalse([path for path in plan["suite_files"]
+                                      if Path(path).name == "gpu_permutation.yaml"])
+            # Asking only for the suite a filter cannot express says why, instead
+            # of reporting an empty selection as if the manifest were broken.
+            with self.assertRaisesRegex(ValueError, "gpu/permutation takes no arm or problem filter"):
+                selection.materialize(MANIFEST, ["benchmarks/gpu/permutation.yaml"],
+                                      Path(tmp)/"only-perm", backend_override="pytorch-cuda")
+
     def test_unknown_backend_and_stale_problem_are_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
