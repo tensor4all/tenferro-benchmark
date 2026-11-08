@@ -86,16 +86,17 @@ def validate(row, problem, defaults=None):
     loss = problem["linalg_ad"]["loss"]
     matrix, tangent, rhs = _inputs(problem)
     rtol, atol = modes.tolerances(problem, defaults)
+    # One reference per row: it depends on the case, not on which download it
+    # judges, so it is built once for both phases instead of per comparison.
+    prepared = modes.reference(mode, loss, problem["op"], matrix, tangent, rhs)
     verdict = None
     for phase in ("initial", "final"):
-        candidate = modes.check(
+        candidate = modes.compare(
             mode,
-            loss,
             problem["op"],
             _outputs(row, phase),
-            matrix,
+            prepared,
             tangent,
-            rhs,
             rtol,
             atol,
         )

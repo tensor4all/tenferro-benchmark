@@ -138,7 +138,7 @@
         {
           "if": { "properties": { "status": { "const": "not_run" } }, "required": ["status"] },
           "then": {
-            "required": ["reason"],
+            "required": ["reason", "mode"],
             "properties": {
               "mode": { "const": "measure_only" },
               "reason": { "type": "string", "minLength": 1, "pattern": "\\S" }
@@ -267,7 +267,7 @@
         "properties": {
           "verification": {
             "properties": {
-              "status": { "enum": ["skipped", "not_applicable"] }
+              "status": { "enum": ["skipped", "not_applicable", "not_run"] }
             }
           }
         }
@@ -307,7 +307,8 @@
                 "enum": [
                   "passed",
                   "skipped",
-                  "not_applicable"
+                  "not_applicable",
+                  "not_run"
                 ]
               }
             }

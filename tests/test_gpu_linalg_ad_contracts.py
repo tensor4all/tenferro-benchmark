@@ -8,6 +8,29 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from gpu_linalg_ad_contracts import cpu_reference, verify_arrays
 
 
+class NoDownloadWithoutACheck(unittest.TestCase):
+    """`measure_only` skips the host copies it exists to skip."""
+
+    def test_measure_only_touches_neither_the_outputs_nor_the_device(self):
+        from benchmark_gpu_linalg_ad import verified_arrays
+
+        def boom(*args, **kwargs):
+            raise AssertionError("measure_only must not read the outputs")
+
+        # A 4096² VJP gradient is 134,217,728 bytes per probe; the mode compares
+        # nothing, so it must not transfer it or even check where it lives.
+        self.assertIsNone(verified_arrays([object()], "measure_only", boom, boom))
+
+    def test_a_checked_row_still_places_and_downloads_every_leaf(self):
+        from benchmark_gpu_linalg_ad import verified_arrays
+
+        placed = []
+        arrays = verified_arrays([1, 2], "cpu_reference", placed.append,
+                                 lambda value: value * 10)
+        self.assertEqual(arrays, [10, 20])
+        self.assertEqual(placed, [1, 2])
+
+
 class AdVerification(unittest.TestCase):
     def test_latency_publication_requires_matching_scope_and_per_call_sync(self):
         import copy

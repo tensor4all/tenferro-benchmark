@@ -36,6 +36,7 @@ from benchmark_cpu_ops_python import jax_loss_lu as _jax_loss_lu  # noqa: E402
 from benchmark_cpu_ops_python import jax_loss_qr as _jax_loss_qr  # noqa: E402
 from benchmark_cpu_ops_python import jax_loss_solve_wrt_a as _jax_loss_solve_wrt_a  # noqa: E402
 from benchmark_cpu_ops_python import jax_loss_svd_s as _jax_loss_svd_s  # noqa: E402
+from gpu_linalg_ad_contracts import leaves  # noqa: E402
 
 LOSS_TORCH = {
     "grad_sum_svd_s": torch_loss_svd_s,
@@ -153,6 +154,20 @@ def _value_bytes(value) -> int:
     return int(np.prod(shape, dtype=np.int64)) * int(np.dtype(value.dtype).itemsize)
 
 
+def verified_arrays(result, mode, check_placement, download):
+    """The host copies one verdict reads, or ``None`` when no check runs.
+
+    ``measure_only`` exists to skip exactly this: a 4096² VJP gradient is
+    134,217,728 bytes per probe, and the mode compares nothing.
+    """
+    if mode == "measure_only":
+        return None
+    leaves_of_result = leaves(result)
+    for value in leaves_of_result:
+        check_placement(value)
+    return [download(value) for value in leaves_of_result]
+
+
 def run_jax(suite_id, problem, backend, device_ordinal, *, ts, bc, tc, verify_defaults=None):
     return run_framework(suite_id, problem, backend, device_ordinal, ts=ts, bc=bc, tc=tc,
                          verify_defaults=verify_defaults)
@@ -160,7 +175,7 @@ def run_jax(suite_id, problem, backend, device_ordinal, *, ts, bc, tc, verify_de
 
 def run_framework(suite_id, problem, backend, device_ordinal, *, ts, bc, tc, verify_defaults=None):
     import numpy as np
-    from gpu_linalg_ad_contracts import cpu_reference, leaves, verify_arrays
+    from gpu_linalg_ad_contracts import cpu_reference, verify_arrays
     from benchmark_gpu_public_api import measure
     from benchmark_gpu_python import _timing_stats
     import linalg_ad_verify_modes as verify_modes
@@ -249,18 +264,15 @@ def run_framework(suite_id, problem, backend, device_ordinal, *, ts, bc, tc, ver
             download = lambda value: value.detach().cpu().numpy()
             version = "torch=" + torch.__version__
         def check(result):
-            for value in leaves(result):
-                check_placement(value)
-            arrays = [download(v) for v in leaves(result)]
-            if mode == "measure_only":
+            arrays = verified_arrays(result, mode, check_placement, download)
+            if arrays is None:
                 return None
             if mode == "cpu_reference":
                 max_abs, max_rel, worst = verify_arrays(arrays, expected, rtol, atol)
                 return {"max_abs_error": max_abs, "max_rel_error": max_rel,
                         "residual": worst, "reference_backend": "cpu_fp64 AD re-execution",
                         "reason": None, "mode": mode, "diagnostic": difference}
-            return verify_modes.check(mode, loss_name, phase, arrays, matrix, tangent, rhs,
-                                      rtol, atol)
+            return verify_modes.compare(mode, phase, arrays, prepared, tangent, rtol, atol)
         probe_started = time.perf_counter()
         probe = runner()
         ready(probe)
@@ -274,6 +286,13 @@ def run_framework(suite_id, problem, backend, device_ordinal, *, ts, bc, tc, ver
         # comparison of both downloaded outputs, and it happens outside every clock.
         verify_ms = 0.0
         verify_started = time.perf_counter()
+        # The reference is built once for the whole row: the initial and the
+        # final download are judged against the same case.
+        prepared = (
+            None
+            if mode in {"cpu_reference", "measure_only"}
+            else verify_modes.reference(mode, loss_name, phase, matrix, tangent, rhs)
+        )
         verification = check(probe)
         verify_ms += (time.perf_counter() - verify_started) * 1000
         if expected is None:

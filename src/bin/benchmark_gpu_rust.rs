@@ -3165,13 +3165,11 @@ fn stub(
             "timing_scope": "steady_state_host_api_plus_device_sync"
         },
         "performance": { "tflops": null, "effective_bandwidth_gbps": null, "peak_memory_bytes": null },
-        "verification": {
-            "status": ver_status,
-            "mode": problem_verify_mode(problem).as_str(),
-            "reference_backend": null,
-            "max_abs_error": null, "max_rel_error": null, "residual": null,
-            "rtol": null, "atol": null, "reason": reason
-        },
+        "verification": verification_mode::unchecked_verification(
+            ver_status,
+            Some(problem_verify_mode(problem)),
+            reason,
+        ),
         "execution": {
             "device": "cuda", "device_ordinal": device_ordinal,
             "execution_path": path, "synchronization": "not executed",
