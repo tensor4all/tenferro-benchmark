@@ -63,10 +63,12 @@ is recorded in the run metadata and summaries. Passing a non-A100 reviewed
 A100 reports.
 
 The watchdog starts deleting after 7200 seconds (`POD_MAX_LIFETIME_SECONDS`). At the A100 PCIe
-rate of $1.79/h a full two-hour pod costs $3.58; a run that finishes early pays only for the time it
-used, so the cap is a ceiling on a wedged pod rather than the usual spend.
-Its 180-second cleanup budget stays below one hour when deletion succeeds;
-if the provider cannot confirm deletion, manual cleanup is required:
+rate of $1.79/h a full two-hour pod costs $3.58 of compute (extending 55 -> 120 min adds $1.94);
+a run that finishes early pays only for the time it used. That is the arithmetic, not a hard
+billing ceiling: deletion retries can add up to 180 s (~$0.09) and time before the watchdog is
+armed is billed too. Inside the two hours the collection step is bounded by
+`timeout-minutes: 95`, so packaging and upload finish before the watchdog deletes the runner.
+If the provider cannot confirm deletion, manual cleanup is required:
 
 - The pod startup script arms a watchdog that deletes the pod after the
   budget, independently of GitHub, using the pod-scoped `RUNPOD_POD_ID` and
@@ -77,11 +79,15 @@ if the provider cannot confirm deletion, manual cleanup is required:
   The benchmark job fails unless the watchdog is running and proves its
   pod-scoped credentials with a bounded read-only API call.
 - On the GitHub side, startup is bounded by `startup_timeout_seconds` (600 s),
-  the benchmark job by `timeout-minutes: 42`, and the cleanup job deletes the
-  pod after success, failure, timeout, or cancellation.
+  the collection step by `timeout-minutes: 95` (so packaging and upload finish
+  before the watchdog deletes the runner), the benchmark job by
+  `timeout-minutes: 130`, and the cleanup job deletes the pod after success,
+  failure, timeout, or cancellation. Both hosted timeouts are deliberately above
+  the watchdog: the pod stops itself first.
 
-If the standard suites outgrow the 42-minute job budget, split them across
-dispatches rather than raising the cap. It uses the same RunPod image and provisioning modules as
+If the standard suites still outgrow the 95-minute collection window, split them across
+dispatches rather than raising the pod lifetime again.
+It uses the same RunPod image and provisioning modules as
 `tenferro-rs`, adapted for this repository. Imported modules and tests are
 covered by `scripts/ci/LICENSE-tenferro-MIT`.
 
