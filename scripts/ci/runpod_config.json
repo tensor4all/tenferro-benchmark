@@ -50,6 +50,8 @@
   "container_disk_gb": 100,
   "volume_gb": 20,
   "volume_mount_path": "/workspace",
+  "network_volume_id": "",
+  "network_volume_mount_path": "/opt/bench-cache",
   "same_tier_retries": 1,
   "create_deadline_seconds": 60,
   "retry_base_seconds": 10,
