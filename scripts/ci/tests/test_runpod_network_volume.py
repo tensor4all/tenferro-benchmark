@@ -404,5 +404,50 @@ class DataCenterCatalogTests(unittest.TestCase):
             self.check("US-KS-2", gpu_ids=("NVIDIA A100 80GB PCIe",))
 
 
+class NetworkVolumeDeletionTests(unittest.TestCase):
+    def delete(self, replies, **kwargs):
+        clock, calls = Clock(), []
+        result = volume.delete_network_volume(
+            "https://example.test/v2", "secret", "vol-1",
+            transport=transport_replies(replies, calls),
+            monotonic=clock.monotonic, sleep=clock.sleep, **kwargs,
+        )
+        return result, calls
+
+    def test_the_name_is_confirmed_before_the_delete(self):
+        result, calls = self.delete(
+            [Response(200, {}, json.dumps(VOLUME).encode()), Response(204, {}, b"")],
+            expect_name="jax-compile-cache",
+        )
+        self.assertTrue(result["deleted"])
+        self.assertEqual([c.get_method() for c in calls], ["GET", "DELETE"])
+        self.assertEqual(calls[1].full_url, "https://example.test/v2/network-volumes/vol-1")
+
+    def test_a_name_mismatch_refuses_before_deleting(self):
+        clock, calls = Clock(), []
+        with self.assertRaisesRegex(ValueError, "refusing to delete"):
+            volume.delete_network_volume(
+                "https://example.test/v2", "secret", "vol-1", expect_name="other",
+                transport=transport_replies(
+                    [Response(200, {}, json.dumps(VOLUME).encode())], calls
+                ),
+                monotonic=clock.monotonic, sleep=clock.sleep,
+            )
+        self.assertEqual([c.get_method() for c in calls], ["GET"])
+
+    def test_a_dry_run_only_reads(self):
+        result, calls = self.delete(
+            [Response(200, {}, json.dumps(VOLUME).encode())], dry_run=True
+        )
+        self.assertFalse(result["deleted"])
+        self.assertEqual([c.get_method() for c in calls], ["GET"])
+
+    def test_an_already_deleted_volume_is_not_an_error(self):
+        result, calls = self.delete(
+            [Response(200, {}, json.dumps(VOLUME).encode()), Response(404, {}, b"")]
+        )
+        self.assertFalse(result["deleted"])
+
+
 if __name__ == "__main__":
     unittest.main()
