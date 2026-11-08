@@ -570,7 +570,11 @@ def run_python(backend, root, output):
                     "scope": "case wall clock outside the timed region: fixtures, H2D, library initialization, compilation, validation, output destruction",
                 }
                 if timing is not None:
-                    timing.update(first_call_ms=first_call_ms, **cache_delta)
+                    # The same interval as `overhead.verify_ms`, published in the
+                    # contract field every family shares, so a reader does not have
+                    # to know that this collector keeps a richer block.
+                    timing.update(first_call_ms=first_call_ms,
+                                  verification_time_ms=round(verify_ms, 3), **cache_delta)
                 row.update(status="unsupported" if numerical_exclusion else ("verification_only" if verify_only else "ok"), timing=timing,
                            verification={"max_error_over_tolerance": error, "reference": case["reference"]})
                 if numerical_exclusion:

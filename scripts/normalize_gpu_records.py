@@ -148,6 +148,14 @@ def fold(row, suite_id=None):
     if status not in {"ok", "unsupported", "skipped", "not_configured", "verification_only"}:
         median = None
     recorded_compile_ms = timing.get("compile_time_ms")
+    notes = {"sampling": {"operations_per_sample": timing.get("operations_per_sample") or 1,
+                          "batch_ms": values}}
+    # The family runners split their case wall so an untimed region cannot hide in a
+    # total. Carrying it here keeps that split with the record when only records.jsonl
+    # is read; it is wall time, not a sampling parameter.
+    phases = overhead_phases(row)
+    if phases:
+        notes["overhead"] = phases
     record = {
         "schema_version": 1,
         "suite_id": suite_id,
@@ -161,7 +169,7 @@ def fold(row, suite_id=None):
             "compile_time_ms": recorded_compile_ms,
             "compile_time_scope": compile_time_scope(row, recorded_compile_ms),
             "first_call_ms": timing.get("first_call_ms"),
-            "verification_time_ms": timing.get("verification_time_ms"),
+            "verification_time_ms": verification_time_ms(row),
             "first_run_ms": None,
             "median_ms": median, "min_ms": min(values) if values else None,
             "p95_ms": None, "iqr_ms": iqr,
@@ -179,8 +187,7 @@ def fold(row, suite_id=None):
             "synchronization": row.get("synchronization") or "recorded by the family runner",
             "layout": "", "dtype": str(row.get("dtype") or ""),
             "unsupported_reason": reason if status != "ok" else row.get("reason"),
-            "notes": json.dumps({"sampling": {"operations_per_sample": timing.get("operations_per_sample") or 1,
-                                              "batch_ms": values}}),
+            "notes": json.dumps(notes),
         },
     }
     # The compile accounting only exists on the arms that compile NVRTC modules, so a
@@ -189,6 +196,34 @@ def fold(row, suite_id=None):
         record["timing"]["compile_cache"] = row.get("compile_cache")
         record["timing"]["compile_modules"] = row.get("compile_modules")
     return record
+
+
+def verification_time_ms(row):
+    """The time a case spent proving its numbers, whichever arm file era recorded it.
+
+    A family runner publishes it as ``timing.verification_time_ms``; an arm that only
+    ever published its richer block measured the same interval as
+    ``overhead.verify_ms`` — CPU reference plus comparison, outside every operation
+    clock. Neither is a sampling parameter, so folding one into the other changes no
+    measurement; it only stops a reader from having to know which collector ran.
+    """
+    recorded = (row.get("timing") or {}).get("verification_time_ms")
+    return recorded if recorded is not None else (row.get("overhead") or {}).get("verify_ms")
+
+
+#: The untimed phases a family runner splits its case wall into. Kept as a subset so
+#: the notes carry wall time, never a sampling input.
+OVERHEAD_PHASES = ("timed_ms", "case_wall_ms", "untimed_ms", "fixture_ms", "verify_ms")
+
+
+def overhead_phases(row):
+    """The phase split the row recorded, or None when it recorded no block."""
+    overhead = row.get("overhead")
+    if not isinstance(overhead, dict):
+        return None
+    phases = {name: overhead[name] for name in OVERHEAD_PHASES
+              if isinstance(overhead.get(name), (int, float))}
+    return phases or None
 
 
 def nvrtc_compile_time_ms(row):

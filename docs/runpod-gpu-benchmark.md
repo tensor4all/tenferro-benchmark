@@ -242,7 +242,12 @@ bundle.
 
 `timing.verification_time_ms` is the untimed work that proves the numbers:
 building the CPU reference and comparing the output against it, summed over the
-case's checks. It is recorded because it dominates the pod's wall clock: on
+case's checks. Every collector that verifies numerically records it: the routine
+framework arms, the public API families (the Python arms also keep the wider
+`overhead` split, and `normalize_gpu_records` carries both the field and that
+split into the published record), the linalg AD arms, and the separate Rust AD
+verification pass. A collector that runs no CPU reference leaves it empty rather
+than recording a zero. It is recorded because it dominates the pod's wall clock: on
 `gpu/dense` with `jax-cuda`, 7 cases spent 8.8 s building references, 5.7 s
 comparing, 2.1 s compiling and 0.6 s measuring — so the measurement was 3% of
 the work the pod paid for. The field never moves the operation clocks.

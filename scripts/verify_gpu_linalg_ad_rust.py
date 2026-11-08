@@ -3,6 +3,7 @@
 import argparse
 import json
 from pathlib import Path
+import time
 import numpy as np
 import yaml
 
@@ -14,6 +15,10 @@ from gpu_linalg_ad_contracts import cpu_reference, verify_arrays
 def validate(row, problem):
     if row["status"] not in {"ok", "verification_only", "unsupported"}:
         return row
+    # What this row costs to prove: CPU AD reference plus central difference, then
+    # two elementwise comparisons. It is recorded so the suite's verification pass
+    # does not have to be guessed from the total process time.
+    started = time.perf_counter()
     try:
         notes = json.loads(row["execution"].get("notes") or "{}")
     except json.JSONDecodeError:
@@ -48,6 +53,8 @@ def validate(row, problem):
     notes.update(central_difference=difference, cuda_implementation_verified=True,
                  numerical_output_artifact="raw Rust records retain initial/final downloaded outputs")
     row["execution"]["notes"] = json.dumps(notes)
+    row.setdefault("timing", {})["verification_time_ms"] = round(
+        (time.perf_counter() - started) * 1000, 3)
     return row
 
 

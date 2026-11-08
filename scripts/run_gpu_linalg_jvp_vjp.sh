@@ -5,6 +5,20 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 # shellcheck source=scripts/gpu_preflight.sh
 source "$SCRIPT_DIR/gpu_preflight.sh"
+# This collector owns its arm loop, so it writes the wall records the generic
+# driver would have written: one row per arm process, and the non-arm stages
+# (build, separate CPU verification pass, report) in `wall_phases.json`. Without
+# them the suite published an empty wall file and could only be described as
+# "collection time".
+wall_now() { python3 -c 'import time; print(time.monotonic_ns())'; }
+wall_arm() {
+    python3 "$SCRIPT_DIR/gpu_wall_phase.py" arm --output "$1/wall_backends.jsonl" \
+        --backend "$2" --start-ns "$3" --end-ns "$4" --build-seconds "$5"
+}
+wall_phase() {
+    python3 "$SCRIPT_DIR/gpu_wall_phase.py" phase --output "$1/wall_phases.json" \
+        --phase "$2" --start-ns "$3" --end-ns "$4"
+}
 
 export GPU_BENCH_VERIFY_ONLY="${GPU_BENCH_VERIFY_ONLY:-0}"
 default_device=0
@@ -126,9 +140,11 @@ RUN_RUST=0
 for backend in "${AD_BACKENDS[@]}"; do
     [[ "$backend" == "tenferro-cuda-trace" ]] && RUN_RUST=1
 done
+rust_build_seconds=0.0
 if [[ "$RUN_RUST" == 1 ]]; then
+    rust_build_started="$(wall_now)"
     if [[ "${GPU_BENCH_PREBUILT_RUST:-0}" == "1" ]]; then
-        # The hosted build job ships this binary; the pod has no Rust toolchain.
+        # The hosted build job ships this binary; the benchmark pod has no Rust toolchain.
         python3 "$SCRIPT_DIR/ci/gpu_artifact.py" "$RUST_BIN"
     else
         echo "Building benchmark_gpu_linalg_ad..."
@@ -136,15 +152,23 @@ if [[ "$RUN_RUST" == 1 ]]; then
         RUST_MIN_STACK="$RUST_MIN_STACK" \
             cargo build --release --features cuda --bin benchmark_gpu_linalg_ad
     fi
+    wall_phase "$RUN_DIR" rust_build "$rust_build_started" "$(wall_now)"
+    rust_build_seconds="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["phases_seconds"]["rust_build"])' "$RUN_DIR/wall_phases.json")"
 
     echo "Running tenferro-cuda-trace linalg AD benchmarks..."
     : > "$RUST_JSONL"
+    rust_arm_started="$(wall_now)"
     CUBECL_DEBUG_LOG=0 \
     RUST_MIN_STACK="$RUST_MIN_STACK" \
         "$RUST_BIN" "$RUST_JSONL" "$DEVICE_ORDINAL" "" -- "$SUITE_FILE"
+    wall_arm "$RUN_DIR" tenferro-cuda-trace "$rust_arm_started" "$(wall_now)" "$rust_build_seconds"
     mv "$RUST_JSONL" "$RUN_DIR/rust_records_unverified.jsonl"
+    # The Rust arm ships raw outputs and the CPU reference runs in a separate
+    # process; that pass is a stage of the suite, not part of any arm's clock.
+    rust_verify_started="$(wall_now)"
     "${PYTHON[@]}" "$SCRIPT_DIR/verify_gpu_linalg_ad_rust.py" \
         "$RUN_DIR/rust_records_unverified.jsonl" "$RUST_JSONL" "$SUITE_FILE"
+    wall_phase "$RUN_DIR" rust_verification "$rust_verify_started" "$(wall_now)"
     cat "$RUST_JSONL" >> "$RESULT_JSONL"
     sleep "$GPU_BENCH_BACKEND_SLEEP"
 fi
@@ -154,8 +178,10 @@ for backend in "${AD_BACKENDS[@]}"; do
     echo "Running $backend linalg AD benchmarks..."
     chunk="$RUN_DIR/chunk_${backend}.jsonl"
     : > "$chunk"
+    python_arm_started="$(wall_now)"
     "${PYTHON[@]}" "$SCRIPT_DIR/benchmark_gpu_linalg_ad.py" \
         "$chunk" "$DEVICE_ORDINAL" "" "$backend" -- "$SUITE_FILE"
+    wall_arm "$RUN_DIR" "$backend" "$python_arm_started" "$(wall_now)" 0.0
     if [[ -s "$chunk" ]]; then
         cat "$chunk" >> "$RESULT_JSONL"
     fi
@@ -180,6 +206,7 @@ PYDEBUG
 fi
 "${VALIDATOR[@]}" --kind run "$RUN_YAML"
 "${VALIDATOR[@]}" --kind result "$RESULT_JSONL"
+report_started="$(wall_now)"
 "${FORMATTER[@]}" "$RESULT_JSONL" --run-metadata "$RUN_YAML" --output "$MARKDOWN_OUT"
 if [[ "${GPU_BENCH_SKIP_LATEST:-0}" != 1 ]]; then
     cp "$MARKDOWN_OUT" "$REPORT_OUT"
@@ -188,6 +215,7 @@ if [[ "${GPU_BENCH_SKIP_LATEST:-0}" != 1 ]]; then
     fi
 fi
 
+wall_phase "$RUN_DIR" report "$report_started" "$(wall_now)"
 echo ""
 echo "GPU linalg JVP/VJP benchmark suite complete: $suite_id"
 echo "Run YAML: $RUN_YAML"
