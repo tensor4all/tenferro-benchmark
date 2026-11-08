@@ -36,6 +36,50 @@ def catalog_url(config, *, cuda_filter):
     return config["catalog_url"] + "?" + urllib.parse.urlencode(params)
 
 
+def data_centers_url(config):
+    """Per-data-center GPU availability, which the pod catalog does not give."""
+    base = str(config["api_url"]).rsplit("/pods", 1)[0]
+    return base.rstrip("/") + "/catalog/datacenters?" + urllib.parse.urlencode(
+        {"include": "GPU_AVAILABILITY"}
+    )
+
+
+A100_LEVELS = {"HIGH": 3, "MEDIUM": 2, "LOW": 1, "NONE": 0}
+
+
+def inspect_data_centers(body, tiers):
+    """A100 availability per data center, best first.
+
+    A cache volume is pinned to one data center, so where the benchmark GPUs are
+    actually offered there decides where the volume can live.
+    """
+    payload = json.loads(body)
+    if not isinstance(payload, dict) or not isinstance(payload.get("dataCenters"), list):
+        raise ValueError("data center catalog requires a dataCenters array")
+    eligible = [gpu for _, ids in tiers for gpu in ids]
+    rows = []
+    for entry in payload["dataCenters"]:
+        if not isinstance(entry, dict):
+            continue
+        availability = {
+            gpu["id"]: gpu.get("availability")
+            for gpu in entry.get("gpuAvailability") or []
+            if isinstance(gpu, dict) and gpu.get("id") in eligible
+        }
+        if not availability:
+            continue
+        rows.append({
+            "id": entry.get("id"),
+            "network_volume_types": entry.get("networkVolumeTypes") or [],
+            "a100": availability,
+            "best_a100": max(
+                availability.values(), key=lambda level: A100_LEVELS.get(level, 0)
+            ),
+        })
+    rows.sort(key=lambda row: (-A100_LEVELS.get(row["best_a100"], 0), str(row["id"])))
+    return {"data_centers": rows}
+
+
 def inspect_catalog(body, config, tiers):
     """Retain only public catalog fields for the configured A100 IDs."""
     payload = json.loads(body)
@@ -83,6 +127,7 @@ def diagnose(config, key, *, fetch=request_with_retry):
         ("openapi", config["openapi_url"]),
         ("production", catalog_url(config, cuda_filter=True)),
         ("without_cuda_filter", catalog_url(config, cuda_filter=False)),
+        ("datacenters", data_centers_url(config)),
     ]
     for name, url in checks:
         request = urllib.request.Request(url, headers={
@@ -98,8 +143,10 @@ def diagnose(config, key, *, fetch=request_with_retry):
             continue
         try:
             payloads[name] = json.loads(response.body)
-            if name != "openapi":
+            if name not in ("openapi", "datacenters"):
                 check.update(inspect_catalog(response.body, config, tiers))
+            elif name == "datacenters":
+                check.update(inspect_data_centers(response.body, tiers))
         except (ValueError, TypeError, PricingError):
             report["errors"].append(f"{name}: invalid JSON or catalog format")
     if "openapi" in payloads and "without_cuda_filter" in payloads:
@@ -126,6 +173,14 @@ def summary(report):
         for row in check.get("gpus", []):
             # JSON avoids interpreting catalog strings as Markdown/Actions commands.
             lines.append("    " + json.dumps(row, ensure_ascii=True))
+        for row in check.get("data_centers", []):
+            lines.append("    " + json.dumps(row, ensure_ascii=True))
+        if check.get("data_centers"):
+            lines.extend([
+                "",
+                "Data centers that offer an A100; a cache volume must live in one of these",
+                "and support a network volume (`network_volume_types` non-empty).",
+            ])
         if "selection_log" in check:
             lines.extend(["", "Candidate selection:", ""])
             lines.extend("    " + line for line in check["selection_log"].splitlines())
