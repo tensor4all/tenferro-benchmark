@@ -3,6 +3,10 @@ suite_id: cpu/public_api_candidates
 title: CPU Public API Candidate Benchmarks
 description: Isolated compact QR, four-output RRQR, caller-output solve, masked log-softmax, sum-of-squares and selection. Collection selects only the declared candidate cases from the public API runners.
 defaults:
+  # Provisional: this catalogue still mixes size classes; the CPU family floors
+  # are a follow-up to docs/regime-floors.md, so the whole suite keeps the
+  # classification the dashboard published before the regime rule.
+  regime: throughput
   device: {kind: cpu, ordinal: 0}
   layout: {tenferro: col_major, framework: row_major_contiguous}
   run: {warmups: 3, runs: 15, timing_scope: steady_state_host_api}

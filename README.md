@@ -55,6 +55,7 @@ first:
 | `nvidia-gpu` | `gpu/elementwise` | [result/nvidia-gpu/gpu/elementwise.md](result/nvidia-gpu/gpu/elementwise.md) |
 | `nvidia-gpu` | `gpu/fft` | [result/nvidia-gpu/gpu/fft.md](result/nvidia-gpu/gpu/fft.md) |
 | `nvidia-gpu` | `gpu/isolated_ops` | [result/nvidia-gpu/gpu/isolated_ops.md](result/nvidia-gpu/gpu/isolated_ops.md) |
+| `nvidia-gpu` | `gpu/linalg_ad_latency` | [result/nvidia-gpu/gpu/linalg_ad_latency.md](result/nvidia-gpu/gpu/linalg_ad_latency.md) |
 | `nvidia-gpu` | `gpu/linalg_ad_throughput` | [result/nvidia-gpu/gpu/linalg_ad_throughput.md](result/nvidia-gpu/gpu/linalg_ad_throughput.md) |
 | `nvidia-gpu` | `gpu/linalg_jvp_vjp` | [result/nvidia-gpu/gpu/linalg_jvp_vjp.md](result/nvidia-gpu/gpu/linalg_jvp_vjp.md) |
 | `nvidia-gpu` | `gpu/linalg_public_api_throughput` | [result/nvidia-gpu/gpu/linalg_public_api_throughput.md](result/nvidia-gpu/gpu/linalg_public_api_throughput.md) |
@@ -65,7 +66,6 @@ first:
 | `nvidia-gpu` | `gpu/sparse` | [result/nvidia-gpu/gpu/sparse.md](result/nvidia-gpu/gpu/sparse.md) |
 | `nvidia-gpu` | `gpu/structural` | [result/nvidia-gpu/gpu/structural.md](result/nvidia-gpu/gpu/structural.md) |
 | `nvidia-gpu` | `gpu/tensornetwork` | [result/nvidia-gpu/gpu/tensornetwork.md](result/nvidia-gpu/gpu/tensornetwork.md) |
-| `nvidia-gpu` | `gpu/linalg_ad_latency` | [result/nvidia-gpu/gpu/linalg_ad_latency.md](result/nvidia-gpu/gpu/linalg_ad_latency.md) |
 | `nvidia-gpu` | `gpu/linalg_public_api_latency` | [result/nvidia-gpu/gpu/linalg_public_api_latency.md](result/nvidia-gpu/gpu/linalg_public_api_latency.md) |
 | `nvidia-gpu` | `gpu/perf_issues` | [result/nvidia-gpu/gpu/perf_issues.md](result/nvidia-gpu/gpu/perf_issues.md) |
 | `nvidia-gpu` | `gpu/command_wall` | [result/nvidia-gpu/gpu/command_wall.md](result/nvidia-gpu/gpu/command_wall.md) |

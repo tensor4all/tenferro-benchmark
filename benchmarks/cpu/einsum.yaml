@@ -8,6 +8,10 @@ description: >-
   bin_permuted_r4_abcd_dbef_acef_d32 carries #1863 (thread scaling of a
   representative standard contraction, read across the 1/4(/8)-thread runs).
 defaults:
+  # Provisional: this catalogue still mixes size classes; the CPU family floors
+  # are a follow-up to docs/regime-floors.md, so the whole suite keeps the
+  # classification the dashboard published before the regime rule.
+  regime: throughput
   device: {kind: cpu, ordinal: 0}
   run: {warmups: 3, runs: 7, timing_scope: steady_state_host_api}
   verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10}

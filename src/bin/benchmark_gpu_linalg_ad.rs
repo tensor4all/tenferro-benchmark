@@ -36,9 +36,20 @@ fn deferred_batch_k() -> usize {
         .unwrap_or(64)
 }
 
-/// Throughput mode is declared per suite problem by its `regime`.
-fn throughput_regime(problem: &serde_yaml::Value) -> bool {
-    problem["regime"].as_str() == Some("throughput")
+/// Whether this case is timed with one retirement per K calls.
+///
+/// The timing route belongs to the suite's collection mode (`defaults.measure`
+/// or a per-case `measure`), not to the workload class: `gpu/linalg_ad_throughput`
+/// keeps its deferred-batch route for a case whose `regime` is `latency` (a
+/// per-call overhead probe still measured with one retirement per batch).
+/// Suites that declare no `measure` keep the original mapping from `regime`.
+fn deferred_route(problem: &serde_yaml::Value, suite_measure: &str) -> bool {
+    let measure = problem["measure"].as_str().unwrap_or(suite_measure);
+    match measure {
+        "deferred_batch" => true,
+        "per_call" => false,
+        _ => problem["regime"].as_str() == Some("throughput"),
+    }
 }
 
 /// Enqueue `count` prepared runs on the caller-held engine and retire the whole
@@ -114,6 +125,7 @@ fn main() {
         let suite: serde_yaml::Value =
             serde_yaml::from_str(&suite_text).expect("invalid suite YAML");
         let suite_id = suite["suite_id"].as_str().unwrap_or("unknown").to_string();
+        let suite_measure = suite["defaults"]["measure"].as_str().unwrap_or("");
 
         for problem in suite["problems"].as_sequence().expect("problems list") {
             let pid = problem["id"].as_str().unwrap_or("");
@@ -136,6 +148,7 @@ fn main() {
                 dispatch(
                     &suite_id,
                     problem,
+                    suite_measure,
                     device_ordinal,
                     &timestamp,
                     benchmark_commit.as_deref(),
@@ -156,13 +169,14 @@ fn main() {
 fn dispatch(
     suite_id: &str,
     problem: &serde_yaml::Value,
+    suite_measure: &str,
     device_ordinal: usize,
     ts: &str,
     bc: Option<&str>,
     tc: Option<&str>,
 ) -> Value {
     let phase = problem["op"].as_str().unwrap_or("");
-    let throughput = throughput_regime(problem);
+    let throughput = deferred_route(problem, suite_measure);
     let backend = if throughput {
         DEFERRED_BATCH_BACKEND
     } else {

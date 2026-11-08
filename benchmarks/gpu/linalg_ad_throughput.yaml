@@ -2,15 +2,18 @@ schema_version: 1
 suite_id: gpu/linalg_ad_throughput
 title: GPU Linalg AD Throughput Benchmarks (Deferred Batch)
 description: >-
-  Throughput-mode trace linalg AD on CUDA for tenferro-rs. Each timed sample
-  enqueues K deferred prepared runs (Runtime::run_prepared_deferred) in one
-  caller-held session and pays one retirement barrier in a single
-  finish_prepared, so a sample's per-call time is sample_ms / K. These rows are
-  throughput measurements and are never comparable with, or averaged together
-  with, the per-call latency rows of `gpu/linalg_jvp_vjp` and
-  `gpu/linalg_ad_latency` (tenferro-rs #2087).
+  Deferred-batch linalg AD on CUDA for tenferro-rs. Each timed sample enqueues K
+  deferred prepared runs (Runtime::run_prepared_deferred) in one caller-held
+  session and pays one retirement barrier in a single finish_prepared, so a
+  sample's per-call time is sample_ms / K. Deferred batch is this suite's timing
+  mode (`defaults.measure`), not its workload class: the two cases it holds are
+  256x256, below the linalg_ad floor, so their `regime` is `latency` and the rows
+  document per-call framework overhead. They are never comparable with, or
+  averaged together with, the per-call latency rows of `gpu/linalg_jvp_vjp` and
+  `gpu/linalg_ad_latency`, which pay one retirement per call (tenferro-rs #2087).
 defaults:
   regime: throughput
+  measure: deferred_batch
   device:
     kind: cuda
     ordinal: 0
@@ -29,14 +32,20 @@ backends:
 - tenferro-cuda-trace-deferred-batch
 problems:
 # tenferro-rs #2087: the GPU-sized QR JVP case of `gpu/linalg_jvp_vjp`, measured
-# in throughput mode (K deferred runs share one retirement).
+# in deferred-batch mode (K deferred runs share one retirement). n=256 is 65,536
+# elements, below the linalg_ad floor of 1,048,576: a 256x256 QR JVP costs 1.43 ms
+# per call while the factorisation it wraps costs tens of microseconds, so the
+# row measures the trace runtime's per-call cost, not GPU work. The regime is
+# therefore `latency`; `defaults.measure` keeps the deferred-batch timing route
+# so the published numbers stay comparable with earlier runs of this suite.
 - id: linalg_ad_large_grad_sum_qr_jvp_f64_256
   family: linalg_ad
   op: jvp
-  regime: throughput
+  regime: latency
   intent: >-
-    QR JVP throughput at n=256 when K deferred prepared runs share one
-    retirement; throughput mode only, not a per-call latency row.
+    Per-call framework cost of a QR JVP at n=256 when K deferred prepared runs
+    share one retirement. Below the linalg_ad floor, so this is an overhead
+    diagnostic, not a throughput row.
   dtype:
     a: f64
   layout:
@@ -62,10 +71,11 @@ problems:
 - id: linalg_ad_large_grad_sum_qr_vjp_f64_256
   family: linalg_ad
   op: vjp
-  regime: throughput
+  regime: latency
   intent: >-
-    QR VJP throughput at n=256 when K deferred prepared runs share one
-    retirement; throughput mode only, not a per-call latency row.
+    Per-call framework cost of a QR VJP at n=256 when K deferred prepared runs
+    share one retirement. Below the linalg_ad floor, so this is an overhead
+    diagnostic, not a throughput row.
   dtype:
     a: f64
   layout:

@@ -83,10 +83,12 @@ jobs:
             benchmarks/cpu/overhead_smoke.yaml \
             benchmarks/cpu/perf_issues.yaml \
             benchmarks/gpu/dense.yaml \
+            benchmarks/gpu/dense_throughput.yaml \
             benchmarks/gpu/einsum.yaml \
             benchmarks/gpu/sparse.yaml \
             benchmarks/gpu/linalg_jvp_vjp.yaml \
             benchmarks/gpu/linalg_ad_latency.yaml \
+            benchmarks/gpu/linalg_ad_throughput.yaml \
             benchmarks/gpu/elementwise.yaml \
             benchmarks/gpu/perf_issues.yaml \
             benchmarks/gpu/fft.yaml \
@@ -95,12 +97,16 @@ jobs:
             benchmarks/gpu/structural.yaml \
             benchmarks/gpu/linalg_public_api_throughput.yaml \
             benchmarks/gpu/linalg_public_api_latency.yaml \
+            benchmarks/gpu/lstsq.yaml \
+            benchmarks/gpu/permutation.yaml \
+            benchmarks/gpu/tensornetwork.yaml \
             benchmarks/gpu/reuse_contraction.yaml
 
       - name: Check Python scripts compile
         run: |
           uv run python -m py_compile \
             scripts/generate_dashboard.py \
+            scripts/regime_policy.py \
             scripts/generate_history.py \
             scripts/report_summary.py \
             scripts/regenerate_report_summaries.py \
@@ -134,7 +140,7 @@ jobs:
         run: uv run campaign-sync-pins . --repo tenferro-benchmark --check
 
       - name: Validate results dashboard
-        run: uv run python -m unittest tests.test_generate_dashboard tests.test_generate_history tests.test_result_pipeline tests.test_cpu_thread_reports tests.test_publish_runs tests.test_publish_gpu_page tests.test_report_summary_reasons
+        run: uv run python -m unittest tests.test_generate_dashboard tests.test_generate_history tests.test_result_pipeline tests.test_cpu_thread_reports tests.test_publish_runs tests.test_publish_gpu_page tests.test_report_summary_reasons tests.test_regime_policy
 
       - name: Check the generated README results table and the trend points
         run: |

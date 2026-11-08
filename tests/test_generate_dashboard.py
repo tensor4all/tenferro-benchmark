@@ -174,7 +174,7 @@ class DashboardTests(unittest.TestCase):
         (self.benchmarks / "dense.yaml").write_text(
             "schema_version: 1\nsuite_id: gpu/dense\ndefaults:\n"
             "  regime: throughput\n  run: {runs: 7}\n"
-            "problems:\n  - {id: case_a}\n  - {id: case_b}\n"
+            "problems:\n  - {id: case_a, size_elements: 1048576}\n  - {id: case_b, size_elements: 1048576}\n"
             "  - {id: case_lat, regime: latency}\n"
         )
 
@@ -768,7 +768,7 @@ class PartialReceiptDashboardTests(unittest.TestCase):
         self.benchmarks.mkdir(parents=True)
         (self.benchmarks / "dense.yaml").write_text(
             "schema_version: 1\nsuite_id: gpu/dense\ndefaults:\n  regime: throughput\n"
-            "problems:\n  - {id: case_ok}\n  - {id: case_bad}\n"
+            "problems:\n  - {id: case_ok, size_elements: 1048576}\n  - {id: case_bad, size_elements: 1048576}\n"
         )
 
     def test_campaign_order_uses_utc_and_counts_one_run_across_suites(self):
@@ -789,6 +789,21 @@ class PartialReceiptDashboardTests(unittest.TestCase):
         rows = rows if rows is not None else [row("case_ok", "tenferro-cuda-eager", 10.0)]
         report.write_text(f"# {suite_id}\n\n{body}")
         summary.write_text(json.dumps(summary_document(rows, suite_id=suite_id)))
+        # The manifest declares the regime of every measured case: the loader has
+        # no default, and a throughput case needs a working set above its family
+        # floor.  The fixture cases are all large enough to stay throughput.
+        ids = sorted({str(item["case"]) for item in rows})
+        manifest = self.root / "benchmarks" / suite_dir.name / f"{stem}.yaml"
+        manifest.parent.mkdir(parents=True, exist_ok=True)
+        manifest.write_text(
+            "schema_version: 1\n"
+            f"suite_id: {suite_id}\n"
+            "defaults:\n  regime: throughput\n  run: {runs: 7}\n"
+            "problems:\n"
+            + "".join(
+                f"  - {{id: {case}, size_elements: 1048576}}\n" for case in ids
+            )
+        )
         if receipt is not None:
             document = receipt_document(report, summary, suite_id=suite_id, **receipt)
             report.with_suffix(".provenance.json").write_text(
@@ -1103,7 +1118,7 @@ class CollectionDatesTest(unittest.TestCase):
         for suite_id in ("gpu/dense", "gpu/einsum"):
             (self.benchmarks / f"{suite_id.split('/', 1)[1]}.yaml").write_text(
                 f"schema_version: 1\nsuite_id: {suite_id}\ndefaults:\n  regime: throughput\n"
-                "problems:\n  - {id: case_ok}\n"
+                "problems:\n  - {id: case_ok, size_elements: 1048576}\n"
             )
 
     def write_suite(self, suite_id, timestamp):
@@ -1189,7 +1204,10 @@ class FailedBackendTest(unittest.TestCase):
         self.benchmarks.mkdir(parents=True)
         (self.benchmarks / "dense.yaml").write_text(
             "schema_version: 1\nsuite_id: gpu/dense\ndefaults:\n  regime: throughput\n"
-            "problems:\n  - {id: case_ok}\n"
+            "problems:\n  - {id: case_ok, size_elements: 1048576}\n"
+            # A GPU suite is policed: every measured case is declared, so this
+            # fixture declares the case it measures (#383).
+            "  - {id: case_mixed, size_elements: 1048576}\n"
         )
         suite_dir = self.result / "nvidia-gpu" / "gpu"
         suite_dir.mkdir(parents=True)

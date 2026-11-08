@@ -3,6 +3,7 @@ suite_id: gpu/sparse
 title: GPU Sparse Benchmarks
 description: Sparse GPU benchmark contract suite using SuiteSparse-style metadata.
 defaults:
+  regime: throughput
   device: {kind: cuda, ordinal: 0}
   layout: {sparse: csr}
   run: {warmups: 3, runs: 7, timing_scope: steady_state_host_api_plus_device_sync}

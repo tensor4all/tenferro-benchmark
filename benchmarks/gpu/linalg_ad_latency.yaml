@@ -5,7 +5,7 @@ description: Single-call latency and per-op overhead of trace-mode linalg AD on 
   at n=2, 4, 8. Device kernel time is a small fraction of each measurement, so these
   rows are latency/overhead diagnostics, not GPU throughput.
 defaults:
-  regime: latency  # single-call latency: device kernel time is a small fraction
+  measure: per_call
   device:
     kind: cuda
     ordinal: 0
@@ -27,6 +27,7 @@ backends:
 problems:
 - id: linalg_ad_small_grad_sum_svd_s_jvp_f64_2
   family: linalg_ad
+  regime: latency
   op: jvp
   dtype:
     a: f64
@@ -52,6 +53,7 @@ problems:
   notes: shape=2x2
 - id: linalg_ad_small_grad_sum_svd_s_vjp_f64_2
   family: linalg_ad
+  regime: latency
   op: vjp
   dtype:
     a: f64
@@ -73,6 +75,7 @@ problems:
   notes: shape=2x2
 - id: linalg_ad_small_grad_sum_qr_jvp_f64_2
   family: linalg_ad
+  regime: latency
   op: jvp
   dtype:
     a: f64
@@ -98,6 +101,7 @@ problems:
   notes: shape=2x2
 - id: linalg_ad_small_grad_sum_qr_vjp_f64_2
   family: linalg_ad
+  regime: latency
   op: vjp
   dtype:
     a: f64
@@ -119,6 +123,7 @@ problems:
   notes: shape=2x2
 - id: linalg_ad_small_grad_sum_eigh_jvp_f64_2
   family: linalg_ad
+  regime: latency
   op: jvp
   dtype:
     a: f64
@@ -144,6 +149,7 @@ problems:
   notes: shape=2x2
 - id: linalg_ad_small_grad_sum_eigh_vjp_f64_2
   family: linalg_ad
+  regime: latency
   op: vjp
   dtype:
     a: f64
@@ -165,6 +171,7 @@ problems:
   notes: shape=2x2
 - id: linalg_ad_small_grad_sum_lu_jvp_f64_2
   family: linalg_ad
+  regime: latency
   op: jvp
   dtype:
     a: f64
@@ -190,6 +197,7 @@ problems:
   notes: shape=2x2
 - id: linalg_ad_small_grad_sum_lu_vjp_f64_2
   family: linalg_ad
+  regime: latency
   op: vjp
   dtype:
     a: f64
@@ -211,6 +219,7 @@ problems:
   notes: shape=2x2
 - id: linalg_ad_small_grad_sum_solve_jvp_f64_2
   family: linalg_ad
+  regime: latency
   op: jvp
   dtype:
     a: f64
@@ -238,6 +247,7 @@ problems:
   notes: shape=2x2,rhs=1
 - id: linalg_ad_small_grad_sum_solve_vjp_f64_2
   family: linalg_ad
+  regime: latency
   op: vjp
   dtype:
     a: f64
@@ -259,6 +269,7 @@ problems:
   notes: shape=2x2,rhs=1
 - id: linalg_ad_small_grad_sum_svd_s_jvp_f64_4
   family: linalg_ad
+  regime: latency
   op: jvp
   dtype:
     a: f64
@@ -284,6 +295,7 @@ problems:
   notes: shape=4x4
 - id: linalg_ad_small_grad_sum_svd_s_vjp_f64_4
   family: linalg_ad
+  regime: latency
   op: vjp
   dtype:
     a: f64
@@ -305,6 +317,7 @@ problems:
   notes: shape=4x4
 - id: linalg_ad_small_grad_sum_qr_jvp_f64_4
   family: linalg_ad
+  regime: latency
   op: jvp
   dtype:
     a: f64
@@ -330,6 +343,7 @@ problems:
   notes: shape=4x4
 - id: linalg_ad_small_grad_sum_qr_vjp_f64_4
   family: linalg_ad
+  regime: latency
   op: vjp
   dtype:
     a: f64
@@ -351,6 +365,7 @@ problems:
   notes: shape=4x4
 - id: linalg_ad_small_grad_sum_eigh_jvp_f64_4
   family: linalg_ad
+  regime: latency
   op: jvp
   dtype:
     a: f64
@@ -376,6 +391,7 @@ problems:
   notes: shape=4x4
 - id: linalg_ad_small_grad_sum_eigh_vjp_f64_4
   family: linalg_ad
+  regime: latency
   op: vjp
   dtype:
     a: f64
@@ -397,6 +413,7 @@ problems:
   notes: shape=4x4
 - id: linalg_ad_small_grad_sum_lu_jvp_f64_4
   family: linalg_ad
+  regime: latency
   op: jvp
   dtype:
     a: f64
@@ -422,6 +439,7 @@ problems:
   notes: shape=4x4
 - id: linalg_ad_small_grad_sum_lu_vjp_f64_4
   family: linalg_ad
+  regime: latency
   op: vjp
   dtype:
     a: f64
@@ -443,6 +461,7 @@ problems:
   notes: shape=4x4
 - id: linalg_ad_small_grad_sum_solve_jvp_f64_4
   family: linalg_ad
+  regime: latency
   op: jvp
   dtype:
     a: f64
@@ -470,6 +489,7 @@ problems:
   notes: shape=4x4,rhs=1
 - id: linalg_ad_small_grad_sum_solve_vjp_f64_4
   family: linalg_ad
+  regime: latency
   op: vjp
   dtype:
     a: f64
@@ -491,6 +511,7 @@ problems:
   notes: shape=4x4,rhs=1
 - id: linalg_ad_small_grad_sum_svd_s_jvp_f64_8
   family: linalg_ad
+  regime: latency
   op: jvp
   dtype:
     a: f64
@@ -516,6 +537,7 @@ problems:
   notes: shape=8x8
 - id: linalg_ad_small_grad_sum_svd_s_vjp_f64_8
   family: linalg_ad
+  regime: latency
   op: vjp
   dtype:
     a: f64
@@ -537,6 +559,7 @@ problems:
   notes: shape=8x8
 - id: linalg_ad_small_grad_sum_qr_jvp_f64_8
   family: linalg_ad
+  regime: latency
   op: jvp
   dtype:
     a: f64
@@ -562,6 +585,7 @@ problems:
   notes: shape=8x8
 - id: linalg_ad_small_grad_sum_qr_vjp_f64_8
   family: linalg_ad
+  regime: latency
   op: vjp
   dtype:
     a: f64
@@ -583,6 +607,7 @@ problems:
   notes: shape=8x8
 - id: linalg_ad_small_grad_sum_eigh_jvp_f64_8
   family: linalg_ad
+  regime: latency
   op: jvp
   dtype:
     a: f64
@@ -608,6 +633,7 @@ problems:
   notes: shape=8x8
 - id: linalg_ad_small_grad_sum_eigh_vjp_f64_8
   family: linalg_ad
+  regime: latency
   op: vjp
   dtype:
     a: f64
@@ -629,6 +655,7 @@ problems:
   notes: shape=8x8
 - id: linalg_ad_small_grad_sum_lu_jvp_f64_8
   family: linalg_ad
+  regime: latency
   op: jvp
   dtype:
     a: f64
@@ -654,6 +681,7 @@ problems:
   notes: shape=8x8
 - id: linalg_ad_small_grad_sum_lu_vjp_f64_8
   family: linalg_ad
+  regime: latency
   op: vjp
   dtype:
     a: f64
@@ -675,6 +703,7 @@ problems:
   notes: shape=8x8
 - id: linalg_ad_small_grad_sum_solve_jvp_f64_8
   family: linalg_ad
+  regime: latency
   op: jvp
   dtype:
     a: f64
@@ -702,6 +731,7 @@ problems:
   notes: shape=8x8,rhs=1
 - id: linalg_ad_small_grad_sum_solve_vjp_f64_8
   family: linalg_ad
+  regime: latency
   op: vjp
   dtype:
     a: f64

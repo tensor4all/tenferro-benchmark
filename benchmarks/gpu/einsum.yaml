@@ -3,6 +3,7 @@ suite_id: gpu/einsum
 title: GPU Einsum Benchmarks
 description: GPU einsum benchmark contract suite adapted from existing benchmark instances.
 defaults:
+  regime: throughput
   device: {kind: cuda, ordinal: 0}
   layout: {tenferro: col_major, framework: row_major_contiguous}
   run: {warmups: 3, runs: 7, timing_scope: steady_state_host_api_plus_device_sync}

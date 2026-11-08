@@ -7,6 +7,10 @@ description: >-
   64-workflow intervals per process. Interleaved append, R and new Q columns;
   shared and per-operation sessions, eager runtime reuse and BCGS2 diagnostic.
 defaults:
+  # Provisional: this catalogue still mixes size classes; the CPU family floors
+  # are a follow-up to docs/regime-floors.md, so the whole suite keeps the
+  # classification the dashboard published before the regime rule.
+  regime: throughput
   device: {kind: cpu, ordinal: 0}
   run: {warmups: 3, runs: 3, timing_scope: steady_state_host_api}
   verify: {reference: reconstruction-and-orthogonality, rtol: 1.0e-10, atol: 1.0e-10}

@@ -40,6 +40,7 @@ from typing import Any, Iterable
 import markdown
 import yaml
 
+import regime_policy
 from campaign_toolkit.descriptor import profiles_dir
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -176,16 +177,27 @@ def profile_label(profile: str) -> str:
 
 
 def load_suite_metadata(benchmarks_dir: Path) -> dict[str, dict[str, Any]]:
-    """Map ``suite_id`` to its regime and per-case run counts.
+    """Map ``suite_id`` to its regime, family, sizes and per-case run counts.
 
     The dashboard renders from ``result/`` summaries, but regimes and sample
-    counts are declared in the suite YAML that produced those summaries.  A
-    suite or case missing from the YAML keeps the safe default: throughput, no
-    sample count (so no confidence whisker).
+    counts are declared in the suite YAML that produced those summaries.  There
+    is no default regime: a GPU case that declares neither its own `regime` nor a
+    `defaults.regime` is an error, and a case that declares `throughput` below its
+    family floor is an error too (``scripts/regime_policy.py``).  The page a case
+    lands on is therefore a declaration, never a fallback.
+
+    A measured case with no entry in any manifest keeps its suite's placement
+    (the CPU catalogues are not policed yet, and a report-only view has no
+    manifest at all), but it is flagged: no family floor applies to it, the
+    suite page names it, and the throughput banner counts it instead of claiming
+    that every row cleared a floor (``build_suite_views``).  For a policed
+    (``gpu/``) suite the same case is an error, because every measured case there
+    is expected to be declared.
     """
     metadata: dict[str, dict[str, Any]] = {}
     if not benchmarks_dir.exists():
         return metadata
+    project_dir = benchmarks_dir.parent
     for path in sorted(benchmarks_dir.rglob("*.yaml")):
         if "manifests" in path.parts:
             continue
@@ -195,41 +207,80 @@ def load_suite_metadata(benchmarks_dir: Path) -> dict[str, dict[str, Any]]:
             continue
         if not isinstance(document, dict) or not document.get("suite_id"):
             continue
+        suite_id = str(document["suite_id"])
         defaults = document.get("defaults") or {}
         default_run = defaults.get("run") or {}
-        default_regime = defaults.get("regime") or THROUGHPUT
+        # Fail closed: an undeclared or below-floor throughput case refuses to
+        # load, so a suite cannot quietly publish overhead as throughput.
+        errors = regime_policy.check_suite(document, project_dir)
+        if errors:
+            raise SystemExit(
+                "regime policy violation:\n  " + "\n  ".join(errors)
+            )
+        _defaults, declared_problems = regime_policy.declared_cases(document, project_dir)
         problems: dict[str, dict[str, Any]] = {}
-        declared_problems = document.get("problems") or []
-        if isinstance(declared_problems, dict):
-            # Generated suites retain per-case regimes in their instance source.
-            source = declared_problems.get("source")
-            include = set(declared_problems.get("include") or [])
-            try:
-                instances = json.loads((benchmarks_dir.parent / source).read_text()) if source else []
-            except (OSError, ValueError):
-                instances = []
-            declared_problems = [row for row in instances if isinstance(row, dict)
-                                 and (not include or row.get("id") in include)]
         for problem in declared_problems:
-            if not isinstance(problem, dict) or not problem.get("id"):
+            problem_id = problem.get("id")
+            if not isinstance(problem_id, str) or not problem_id:
                 continue
             run = problem.get("run") or {}
-            problems[str(problem["id"])] = {
-                "regime": problem.get("regime") or default_regime,
+            regime, measure = regime_policy.resolve(suite_id, defaults, problem)
+            problems[problem_id] = {
+                "regime": regime,
+                "measure": measure,
+                "family": regime_policy.family_for(suite_id, problem),
+                "elements": regime_policy.case_elements(problem),
                 "runs": run.get("runs") or default_run.get("runs"),
             }
-        suite_id = str(document["suite_id"])
-        entry = {"regime": default_regime, "runs": default_run.get("runs"), "problems": problems}
+        entry = {
+            "regime": defaults.get("regime"),
+            "measure": defaults.get("measure"),
+            "family": regime_policy.family_for(suite_id),
+            "runs": default_run.get("runs"),
+            "problems": problems,
+        }
         previous = metadata.get(suite_id)
         if previous is None or len(problems) >= len(previous.get("problems") or {}):
             metadata[suite_id] = entry
     return metadata
 
 
-def case_regime(metadata: dict[str, dict[str, Any]], suite_id: str, case: str) -> str:
+def case_meta(metadata: dict[str, dict[str, Any]], suite_id: str, case: str) -> dict[str, Any]:
     suite = metadata.get(suite_id) or {}
-    problem = (suite.get("problems") or {}).get(case) or {}
-    return str(problem.get("regime") or suite.get("regime") or THROUGHPUT)
+    problem = (suite.get("problems") or {}).get(case)
+    declared = problem is not None
+    if problem is None and suite_id not in metadata and not regime_policy.is_policed(suite_id):
+        # A report can be filed under a suite id that differs from the one its
+        # sidecar names (`result/zen5-cpu/cpu/linalg_jvp_vjp.summary.json` is a
+        # cpu/einsum run).  Case ids are unique across the manifests, so the
+        # case's own declaration still applies.  This lookup is only for a
+        # report whose *suite* has no manifest at all: when the suite does have
+        # one, a case missing from it is a manifest question, not an invitation
+        # to borrow another suite's declaration (and its floor) -- a CPU
+        # declaration would otherwise clear a GPU floor it was never checked
+        # against.  A policed suite never borrows, not even when its own manifest
+        # is missing: that combination is the same unchecked floor.
+        for other_id, other in metadata.items():
+            if other_id == suite_id:
+                continue
+            candidate = (other.get("problems") or {}).get(case)
+            if candidate is not None:
+                suite, problem, declared = other, candidate, True
+                break
+    problem = problem or {}
+    return {
+        "declared": declared,
+        "regime": problem.get("regime") or suite.get("regime"),
+        "measure": problem.get("measure") or suite.get("measure"),
+        "family": problem.get("family") or suite.get("family"),
+        "elements": problem.get("elements"),
+    }
+
+
+def case_regime(metadata: dict[str, dict[str, Any]], suite_id: str, case: str) -> str | None:
+    """The regime the manifest declares for this case (no fallback value)."""
+    regime = case_meta(metadata, suite_id, case)["regime"]
+    return str(regime) if regime else None
 
 
 def case_runs(metadata: dict[str, dict[str, Any]], suite_id: str, case: str) -> int | None:
@@ -1584,6 +1635,13 @@ class CaseView:
     regime: str
     runs: int | None
     rows: list[dict[str, Any]]
+    family: str | None = None
+    elements: int | None = None
+    measure: str | None = None
+    provisional: bool = False
+    # True when no suite manifest has an entry for this measured case, so its
+    # regime is a documented fallback (latency) and no floor applies (#383).
+    undeclared: bool = False
 
 
 @dataclass
@@ -1848,13 +1906,44 @@ def build_suite_views(
         cases: list[CaseView] = []
         if document:
             for (case, group), rows in sorted(grouped_workloads(document).items()):
+                meta = case_meta(metadata, suite_id, case)
+                if not meta["declared"] and regime_policy.is_policed(suite_id):
+                    # A policed manifest is expected to declare every measured
+                    # case it produces; one it does not declare is a manifest
+                    # bug, and it cannot be published as throughput either,
+                    # because that claim needs a basis and a floor (#383).
+                    raise SystemExit(
+                        f"{suite_id}: measured case {case!r} declares no regime. "
+                        "The suite manifest has no entry for it; add the case with "
+                        "`regime: throughput|latency` (or `defaults.regime` to the "
+                        "suite) before publishing."
+                    )
+                provisional = not meta["regime"]
+                if provisional:
+                    # A measured GPU case must say which page it belongs to: the
+                    # GPU manifests are policed, so a case they declare without a
+                    # regime (or a GPU suite with no manifest) is a manifest bug.
+                    # A CPU report-only view keeps its pre-rule placement and the
+                    # page says it is provisional (docs/regime-floors.md).
+                    if regime_policy.is_policed(suite_id):
+                        raise SystemExit(
+                            f"{suite_id}: measured case {case!r} declares no regime. "
+                            "Add `regime: throughput|latency` to the case (or "
+                            "`defaults.regime` to the suite) before publishing."
+                        )
+                    meta = {**meta, "regime": THROUGHPUT}
                 cases.append(
                     CaseView(
                         case=case,
                         group=group,
-                        regime=case_regime(metadata, suite_id, case),
+                        regime=str(meta["regime"]),
                         runs=case_runs(metadata, suite_id, case),
                         rows=rows,
+                        family=meta["family"],
+                        elements=meta["elements"],
+                        measure=meta["measure"],
+                        provisional=provisional,
+                        undeclared=not meta["declared"],
                     )
                 )
         views.append(SuiteView(profile, suite_id, report, document, cases, load_provenance(report, profile, suite_id)))
@@ -2038,11 +2127,61 @@ def how_to_read() -> str:
     )
 
 
-def family_notice(family: str) -> str:
-    return (
-        f'<p class="notice">Throughput-regime {FAMILY_LABEL[family]} cases only. '
-        'Per-call latency results are on the <a href="latency/index.html">latency page</a>.</p>'
+def family_notice(family: str, cases: list[CaseView]) -> str:
+    """The throughput page's banner, generated from the cases it actually shows.
+
+    The old banner promised "throughput-regime cases only" while the page also
+    held 1k-element and 256² cases, because an undeclared suite defaulted to
+    throughput.  The banner now states the sizes of the cases rendered under it,
+    and says so plainly when the page has no throughput case at all.
+    """
+    label = FAMILY_LABEL[family]
+    latency_link = 'the <a href="latency/index.html">latency page</a>'
+    if not cases:
+        return (
+            f'<p class="notice"><strong>No throughput-regime {esc(label)} case.</strong> '
+            "Every maintained case on this page measures per-call latency or overhead; "
+            f"those results are on {latency_link}.</p>"
+        )
+    count = len(cases)
+    noun = "case" if count == 1 else "cases"
+    sizes = regime_policy.describe_sizes(case.elements for case in cases)
+    # The floor sentence is derived from the rows, never asserted (#383).  A row
+    # with no declared working set (or a family with no documented floor) has no
+    # floor to be above, and the banner says how many those are instead of
+    # claiming the whole page cleared one.
+    unfloored = [
+        case
+        for case in cases
+        if case.elements is None or case.family not in regime_policy.FAMILY_FLOORS
+    ]
+    floored = [case for case in cases if case not in unfloored]
+    above = [
+        case
+        for case in floored
+        if case.elements >= regime_policy.FAMILY_FLOORS[case.family].elements
+    ]
+    below = [case for case in floored if case not in above]
+    text = (
+        f'<p class="notice"><strong>Throughput-regime {esc(label)} cases only.</strong> '
+        f"The {count} {noun} on this page declare working sets {sizes}"
     )
+    if not unfloored and not below:
+        text += ", each at or above its family floor"
+    else:
+        if above:
+            text += f", {len(above)} of them at or above their family floor"
+        if unfloored:
+            verb = "carries" if len(unfloored) == 1 else "carry"
+            text += (
+                f"; {len(unfloored)} {verb} no family floor because the declared "
+                "working set is unknown or the family has none"
+            )
+        if below:
+            verb = "sits" if len(below) == 1 else "sit"
+            text += f"; {len(below)} {verb} below the family floor"
+    text += f". Per-call latency and overhead results are on {latency_link}.</p>"
+    return text
 
 
 COMMIT_DATE_CACHE: dict[tuple[str, str], str | None] = {}
@@ -2304,11 +2443,29 @@ def load_trend(
             heading = table.read_text(encoding="utf-8").splitlines()[:1]
             if heading and heading[0].startswith("# "):
                 title = heading[0][2:].removesuffix(" - plotted data")
-        suite = title.split(":", 1)[0].strip()
+        suite, _sep, named = title.partition(":")
+        suite, named = suite.strip(), named.strip()
+        # The rendered title carries the display axes after the case id
+        # (`...: case (group) - plotted data`, scripts/trend_points.py), while the
+        # manifest keys are the bare case id.
+        case_id = re.sub(r"\s+\([^()]*\)$", "", named).strip()
+        # A trend chart is one case over revisions, so its regime is that case's
+        # declaration; the suite's default is only the fallback (an undeclared
+        # case, or a suite no manifest covers).  Placing it by the suite default
+        # alone put a latency case's trend on the throughput page.
+        regime = case_regime(metadata or {}, suite, case_id) if named else None
+        if regime is None and named:
+            regime = case_regime(metadata or {}, suite, named)
+        if regime is None:
+            regime = case_regime(metadata or {}, suite, "")
+        if regime is None:
+            # These are rendered charts, not case measurements; keep the pre-rule
+            # placement rather than dropping a page.
+            regime = THROUGHPUT
         items.append(
             {
                 "title": title,
-                "regime": case_regime(metadata or {}, suite, ""),
+                "regime": regime,
                 "svg": chart.read_text(encoding="utf-8"),
                 "table": f"trend/{table.name}",
                 "points": f"trend/{points.name}" if points.is_file() else "",
@@ -2379,7 +2536,12 @@ def render_family(
         )
     else:
         body.append(how_to_read())
-        body.append(family_notice(family))
+        page_cases = [
+            case
+            for view in page_views
+            for case in view.regime_cases(THROUGHPUT)
+        ]
+        body.append(family_notice(family, page_cases))
     shown_trend = [item for item in trend or [] if item["regime"] == regime]
     if shown_trend:
         body.append('<p class="chart-legend"><a href="#trend">Trend across revisions</a></p>')
@@ -2496,15 +2658,17 @@ def render_case_table(
     suite_id: str,
     previous_rows: list[dict[str, Any]] | None,
     reference_map: dict[str, list[str]],
-    metadata: dict[str, dict[str, Any]],
-    regime: str,
+    cases: list["CaseView"],
 ) -> str:
     flags = suite_flags(document, previous_rows)
     neutral = not_measured_cases(document)
+    # The caller passes the cases already assigned to this section, so the table
+    # and the charts can never disagree with the page a case was declared for.
+    section = {(case.case, case.group) for case in cases}
     grouped = {
         key: rows
         for key, rows in grouped_workloads(document).items()
-        if case_regime(metadata, suite_id, key[0]) == regime
+        if key in section
     }
     by_case = case_rows(document)
     rules = ratio_rules_for(suite_id)
@@ -2618,6 +2782,31 @@ def render_suite_page(
     if document and suite_id != "cpu/overhead_smoke":
         unit = document.get("unit", "ms")
         grouped = case_rows(document)
+        if not has_throughput:
+            # Say it in words instead of an empty section: the suite id may still
+            # say "throughput" because the id carries the trend, while every case
+            # in it measures per-call overhead.
+            # A diagnostic suite (one outside MAINTAINED) is never listed on the
+            # family overview, so the notice must not send its readers there: the
+            # results are on this page, and only a maintained suite is also on the
+            # family latency page.
+            if (view.profile, suite_id) in MAINTAINED:
+                where = (
+                    "here and on "
+                    f'the <a href="../../{family}/latency/index.html">{esc(FAMILY_LABEL[family])} '
+                    "latency page</a></p>"
+                )
+            else:
+                where = (
+                    "in the latency section of this page. No family overview lists them: this "
+                    "is a diagnostic suite.</p>"
+                )
+            body.append(
+                '<p class="notice"><strong>This suite has no throughput-regime case.</strong> '
+                "Every measured case is declared `latency`, so its results are published as "
+                "per-call latency and overhead "
+                f"{where}"
+            )
         for regime in REGIMES:
             cases = view.regime_cases(regime)
             if not cases:
@@ -2629,6 +2818,14 @@ def render_suite_page(
                     '<p class="chart-legend">Dominated by launch, dispatch and synchronization; '
                     "these numbers are overhead, not device throughput.</p>"
                 )
+                deferred = [case for case in cases if case.measure == "deferred_batch"]
+                if deferred:
+                    body.append(
+                        '<p class="chart-legend">'
+                        f"{len(deferred)} of these cases were timed in deferred-batch mode "
+                        "(one retirement per K calls), so each row is the framework's per-call "
+                        "cost amortized over the batch, not a single call's latency.</p>"
+                    )
             else:
                 body.append(
                     '<p class="chart-legend">Grouped by the regime the suite declares. This regime is a '
@@ -2639,7 +2836,24 @@ def render_suite_page(
                     '<p class="chart-legend">Absolute medians on a log time axis. Bars are shorter '
                     "for faster calls; the dashed line is the best reference for each case.</p>"
                 )
-            body.append(render_case_table(document, suite_id, previous_rows, reference_map, metadata, regime))
+            undeclared = [case for case in cases if case.undeclared]
+            if undeclared:
+                # A drifted catalogue can leave hundreds here (the CPU reports'
+                # names do not match their manifest), so name a few and count the
+                # rest; the count is the information, the names are examples.
+                shown = ", ".join(f"<code>{esc(case.case)}</code>" for case in undeclared[:5])
+                if len(undeclared) > 5:
+                    shown += f" and {len(undeclared) - 5} others"
+                noun = "case has" if len(undeclared) == 1 else "cases have"
+                body.append(
+                    '<p class="chart-legend">'
+                    f"{len(undeclared)} of these {noun} no entry in the suite manifest "
+                    f"({shown}), so no family floor applies to "
+                    f"{'it' if len(undeclared) == 1 else 'them'}; each keeps the "
+                    "placement its suite declares, and the banner above counts the rows "
+                    "without a floor.</p>"
+                )
+            body.append(render_case_table(document, suite_id, previous_rows, reference_map, cases))
             ordered = sorted(
                 cases,
                 key=lambda case: case_sort_ratio(case_ratio_row(case, suite_id, reference_map, grouped)),

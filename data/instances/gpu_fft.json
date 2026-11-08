@@ -11,6 +11,7 @@
   "cases": [
     {
       "id": "fft_c32_n1024",
+      "regime": "latency",
       "op": "fft",
       "dtype": "c32",
       "n": 1024,
@@ -18,6 +19,7 @@
     },
     {
       "id": "fft_c64_n1024",
+      "regime": "latency",
       "op": "fft",
       "dtype": "c64",
       "n": 1024,
@@ -25,6 +27,7 @@
     },
     {
       "id": "ifft_c32_n1024",
+      "regime": "latency",
       "op": "ifft",
       "dtype": "c32",
       "n": 1024,
@@ -32,6 +35,7 @@
     },
     {
       "id": "ifft_c64_n1024",
+      "regime": "latency",
       "op": "ifft",
       "dtype": "c64",
       "n": 1024,
@@ -39,6 +43,7 @@
     },
     {
       "id": "rfft_f32_n1024",
+      "regime": "latency",
       "op": "rfft",
       "dtype": "f32",
       "n": 1024,
@@ -46,6 +51,7 @@
     },
     {
       "id": "rfft_f64_n1024",
+      "regime": "latency",
       "op": "rfft",
       "dtype": "f64",
       "n": 1024,
@@ -53,6 +59,7 @@
     },
     {
       "id": "irfft_c32_n1024",
+      "regime": "latency",
       "op": "irfft",
       "dtype": "c32",
       "n": 1024,
@@ -60,6 +67,7 @@
     },
     {
       "id": "irfft_c64_n1024",
+      "regime": "latency",
       "op": "irfft",
       "dtype": "c64",
       "n": 1024,

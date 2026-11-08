@@ -11,6 +11,7 @@
   "cases": [
     {
       "id": "pad_default_f32_n1024",
+      "regime": "latency",
       "op": "pad",
       "dtype": "f32",
       "n": 1024,
@@ -24,6 +25,7 @@
     },
     {
       "id": "pad_default_f64_n1024",
+      "regime": "latency",
       "op": "pad",
       "dtype": "f64",
       "n": 1024,
@@ -37,6 +39,7 @@
     },
     {
       "id": "slice_default_f32_n1024",
+      "regime": "latency",
       "op": "slice",
       "dtype": "f32",
       "n": 1024,
@@ -53,6 +56,7 @@
     },
     {
       "id": "slice_default_f64_n1024",
+      "regime": "latency",
       "op": "slice",
       "dtype": "f64",
       "n": 1024,
@@ -69,6 +73,7 @@
     },
     {
       "id": "reverse_default_f32_n1024",
+      "regime": "latency",
       "op": "reverse",
       "dtype": "f32",
       "n": 1024,
@@ -82,6 +87,7 @@
     },
     {
       "id": "reverse_default_f64_n1024",
+      "regime": "latency",
       "op": "reverse",
       "dtype": "f64",
       "n": 1024,
@@ -95,6 +101,7 @@
     },
     {
       "id": "concatenate_default_f32_n1024",
+      "regime": "latency",
       "op": "concatenate",
       "dtype": "f32",
       "n": 1024,
@@ -108,6 +115,7 @@
     },
     {
       "id": "concatenate_default_f64_n1024",
+      "regime": "latency",
       "op": "concatenate",
       "dtype": "f64",
       "n": 1024,
@@ -121,6 +129,7 @@
     },
     {
       "id": "extract_diag_default_f32_n1024",
+      "regime": "latency",
       "op": "extract_diag",
       "dtype": "f32",
       "n": 1024,
@@ -134,6 +143,7 @@
     },
     {
       "id": "extract_diag_default_f64_n1024",
+      "regime": "latency",
       "op": "extract_diag",
       "dtype": "f64",
       "n": 1024,
@@ -147,6 +157,7 @@
     },
     {
       "id": "embed_diag_default_f32_n32",
+      "regime": "latency",
       "op": "embed_diag",
       "dtype": "f32",
       "n": 32,
@@ -159,6 +170,7 @@
     },
     {
       "id": "embed_diag_default_f64_n32",
+      "regime": "latency",
       "op": "embed_diag",
       "dtype": "f64",
       "n": 32,
@@ -171,6 +183,7 @@
     },
     {
       "id": "tril_default_f32_n1024",
+      "regime": "latency",
       "op": "tril",
       "dtype": "f32",
       "n": 1024,
@@ -184,6 +197,7 @@
     },
     {
       "id": "tril_default_f64_n1024",
+      "regime": "latency",
       "op": "tril",
       "dtype": "f64",
       "n": 1024,
@@ -197,6 +211,7 @@
     },
     {
       "id": "triu_default_f32_n1024",
+      "regime": "latency",
       "op": "triu",
       "dtype": "f32",
       "n": 1024,
@@ -210,6 +225,7 @@
     },
     {
       "id": "triu_default_f64_n1024",
+      "regime": "latency",
       "op": "triu",
       "dtype": "f64",
       "n": 1024,
@@ -223,6 +239,7 @@
     },
     {
       "id": "take_along_axis_broadcast_indices_f32_n1024",
+      "regime": "latency",
       "op": "take_along_axis",
       "dtype": "f32",
       "n": 1024,
@@ -236,6 +253,7 @@
     },
     {
       "id": "take_along_axis_batched_indices_f32_n1024",
+      "regime": "latency",
       "op": "take_along_axis",
       "dtype": "f32",
       "n": 1024,
@@ -252,6 +270,7 @@
     },
     {
       "id": "take_along_axis_broadcast_indices_f64_n1024",
+      "regime": "latency",
       "op": "take_along_axis",
       "dtype": "f64",
       "n": 1024,
@@ -265,6 +284,7 @@
     },
     {
       "id": "take_along_axis_batched_indices_f64_n1024",
+      "regime": "latency",
       "op": "take_along_axis",
       "dtype": "f64",
       "n": 1024,
@@ -281,6 +301,7 @@
     },
     {
       "id": "scatter_default_f32_n1024",
+      "regime": "latency",
       "op": "scatter",
       "dtype": "f32",
       "n": 1024,
@@ -294,6 +315,7 @@
     },
     {
       "id": "scatter_default_f64_n1024",
+      "regime": "latency",
       "op": "scatter",
       "dtype": "f64",
       "n": 1024,
@@ -307,6 +329,7 @@
     },
     {
       "id": "cast_default_f32_n1024",
+      "regime": "latency",
       "op": "cast",
       "dtype": "f32",
       "n": 1024,
@@ -319,6 +342,7 @@
     },
     {
       "id": "cast_default_f64_n1024",
+      "regime": "latency",
       "op": "cast",
       "dtype": "f64",
       "n": 1024,
@@ -467,6 +491,7 @@
     },
     {
       "id": "embed_diag_default_f32_n1024",
+      "regime": "throughput",
       "op": "embed_diag",
       "dtype": "f32",
       "n": 1024,
@@ -475,10 +500,12 @@
       ],
       "variant": "default",
       "issue": 155,
-      "excluded": {}
+      "excluded": {},
+      "size_elements": 1048576
     },
     {
       "id": "embed_diag_default_f64_n1024",
+      "regime": "throughput",
       "op": "embed_diag",
       "dtype": "f64",
       "n": 1024,
@@ -487,7 +514,8 @@
       ],
       "variant": "default",
       "issue": 155,
-      "excluded": {}
+      "excluded": {},
+      "size_elements": 1048576
     },
     {
       "id": "tril_default_f32_n1048576",
@@ -651,6 +679,7 @@
     },
     {
       "id": "broadcast_in_dim_f32_n1024",
+      "regime": "latency",
       "op": "broadcast_in_dim",
       "dtype": "f32",
       "n": 32,
@@ -673,6 +702,7 @@
     },
     {
       "id": "broadcast_in_dim_f64_n1024",
+      "regime": "latency",
       "op": "broadcast_in_dim",
       "dtype": "f64",
       "n": 32,
@@ -695,6 +725,7 @@
     },
     {
       "id": "convert_f32_f64_n1024",
+      "regime": "latency",
       "op": "convert",
       "dtype": "f32",
       "n": 1024,
@@ -706,6 +737,7 @@
     },
     {
       "id": "broadcast_in_dim_f32_n1048576",
+      "regime": "throughput",
       "op": "broadcast_in_dim",
       "dtype": "f32",
       "n": 1024,
@@ -724,10 +756,12 @@
       "issue": 155,
       "unavailable": {
         "tenferro-cuda-eager": "Eager broadcast returns a lazy broadcast view, not the materialized full output required by this case."
-      }
+      },
+      "size_elements": 1048576
     },
     {
       "id": "broadcast_in_dim_f64_n1048576",
+      "regime": "throughput",
       "op": "broadcast_in_dim",
       "dtype": "f64",
       "n": 1024,
@@ -746,7 +780,8 @@
       "issue": 155,
       "unavailable": {
         "tenferro-cuda-eager": "Eager broadcast returns a lazy broadcast view, not the materialized full output required by this case."
-      }
+      },
+      "size_elements": 1048576
     },
     {
       "id": "convert_f32_f64_n1048576",
@@ -761,6 +796,7 @@
     },
     {
       "id": "dynamic_slice_in_bounds_f32_n1024",
+      "regime": "latency",
       "op": "dynamic_slice",
       "dtype": "f32",
       "n": 1024,
@@ -784,6 +820,7 @@
     },
     {
       "id": "dynamic_slice_clamped_f32_n1024",
+      "regime": "latency",
       "op": "dynamic_slice",
       "dtype": "f32",
       "n": 1024,
@@ -807,6 +844,7 @@
     },
     {
       "id": "gather_axis0_f32_n1024",
+      "regime": "latency",
       "op": "gather",
       "dtype": "f32",
       "n": 1024,
@@ -819,6 +857,7 @@
     },
     {
       "id": "gather_axis1_f32_n1024",
+      "regime": "latency",
       "op": "gather",
       "dtype": "f32",
       "n": 1024,
@@ -831,6 +870,7 @@
     },
     {
       "id": "dynamic_slice_in_bounds_f64_n1024",
+      "regime": "latency",
       "op": "dynamic_slice",
       "dtype": "f64",
       "n": 1024,
@@ -854,6 +894,7 @@
     },
     {
       "id": "dynamic_slice_clamped_f64_n1024",
+      "regime": "latency",
       "op": "dynamic_slice",
       "dtype": "f64",
       "n": 1024,
@@ -877,6 +918,7 @@
     },
     {
       "id": "gather_axis0_f64_n1024",
+      "regime": "latency",
       "op": "gather",
       "dtype": "f64",
       "n": 1024,
@@ -889,6 +931,7 @@
     },
     {
       "id": "gather_axis1_f64_n1024",
+      "regime": "latency",
       "op": "gather",
       "dtype": "f64",
       "n": 1024,
@@ -1041,6 +1084,7 @@
     },
     {
       "id": "pad_interior_f32_n1024",
+      "regime": "latency",
       "op": "pad",
       "dtype": "f32",
       "n": 1024,
@@ -1069,6 +1113,7 @@
     },
     {
       "id": "pad_crop_f32_n1024",
+      "regime": "latency",
       "op": "pad",
       "dtype": "f32",
       "n": 1024,
@@ -1094,6 +1139,7 @@
     },
     {
       "id": "pad_interior_crop_f32_n1024",
+      "regime": "latency",
       "op": "pad",
       "dtype": "f32",
       "n": 1024,
@@ -1122,6 +1168,7 @@
     },
     {
       "id": "pad_interior_f64_n1024",
+      "regime": "latency",
       "op": "pad",
       "dtype": "f64",
       "n": 1024,
@@ -1150,6 +1197,7 @@
     },
     {
       "id": "pad_crop_f64_n1024",
+      "regime": "latency",
       "op": "pad",
       "dtype": "f64",
       "n": 1024,
@@ -1175,6 +1223,7 @@
     },
     {
       "id": "pad_interior_crop_f64_n1024",
+      "regime": "latency",
       "op": "pad",
       "dtype": "f64",
       "n": 1024,
@@ -1365,6 +1414,7 @@
     },
     {
       "id": "reshape_copy_f32_n1024",
+      "regime": "latency",
       "op": "reshape",
       "dtype": "f32",
       "n": 1024,
@@ -1387,6 +1437,7 @@
     },
     {
       "id": "stack_axis0_f32_n1024",
+      "regime": "latency",
       "op": "stack",
       "dtype": "f32",
       "n": 1024,
@@ -1401,6 +1452,7 @@
     },
     {
       "id": "stack_axis2_f32_n1024",
+      "regime": "latency",
       "op": "stack",
       "dtype": "f32",
       "n": 1024,
@@ -1415,6 +1467,7 @@
     },
     {
       "id": "reshape_copy_f64_n1024",
+      "regime": "latency",
       "op": "reshape",
       "dtype": "f64",
       "n": 1024,
@@ -1437,6 +1490,7 @@
     },
     {
       "id": "stack_axis0_f64_n1024",
+      "regime": "latency",
       "op": "stack",
       "dtype": "f64",
       "n": 1024,
@@ -1451,6 +1505,7 @@
     },
     {
       "id": "stack_axis2_f64_n1024",
+      "regime": "latency",
       "op": "stack",
       "dtype": "f64",
       "n": 1024,
@@ -1465,6 +1520,7 @@
     },
     {
       "id": "reshape_copy_c32_n1024",
+      "regime": "latency",
       "op": "reshape",
       "dtype": "c32",
       "n": 1024,
@@ -1487,6 +1543,7 @@
     },
     {
       "id": "stack_axis0_c32_n1024",
+      "regime": "latency",
       "op": "stack",
       "dtype": "c32",
       "n": 1024,
@@ -1501,6 +1558,7 @@
     },
     {
       "id": "stack_axis2_c32_n1024",
+      "regime": "latency",
       "op": "stack",
       "dtype": "c32",
       "n": 1024,
@@ -1515,6 +1573,7 @@
     },
     {
       "id": "reshape_copy_c64_n1024",
+      "regime": "latency",
       "op": "reshape",
       "dtype": "c64",
       "n": 1024,
@@ -1537,6 +1596,7 @@
     },
     {
       "id": "stack_axis0_c64_n1024",
+      "regime": "latency",
       "op": "stack",
       "dtype": "c64",
       "n": 1024,
@@ -1551,6 +1611,7 @@
     },
     {
       "id": "stack_axis2_c64_n1024",
+      "regime": "latency",
       "op": "stack",
       "dtype": "c64",
       "n": 1024,
@@ -1565,6 +1626,7 @@
     },
     {
       "id": "reshape_copy_i32_n1024",
+      "regime": "latency",
       "op": "reshape",
       "dtype": "i32",
       "n": 1024,
@@ -1587,6 +1649,7 @@
     },
     {
       "id": "stack_axis0_i32_n1024",
+      "regime": "latency",
       "op": "stack",
       "dtype": "i32",
       "n": 1024,
@@ -1601,6 +1664,7 @@
     },
     {
       "id": "stack_axis2_i32_n1024",
+      "regime": "latency",
       "op": "stack",
       "dtype": "i32",
       "n": 1024,
@@ -1615,6 +1679,7 @@
     },
     {
       "id": "reshape_copy_i64_n1024",
+      "regime": "latency",
       "op": "reshape",
       "dtype": "i64",
       "n": 1024,
@@ -1637,6 +1702,7 @@
     },
     {
       "id": "stack_axis0_i64_n1024",
+      "regime": "latency",
       "op": "stack",
       "dtype": "i64",
       "n": 1024,
@@ -1651,6 +1717,7 @@
     },
     {
       "id": "stack_axis2_i64_n1024",
+      "regime": "latency",
       "op": "stack",
       "dtype": "i64",
       "n": 1024,

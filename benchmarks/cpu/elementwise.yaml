@@ -9,6 +9,10 @@ description: >-
   rather than the kernel. There is deliberately no external reference backend.
   See docs/elementwise-suite.md and tensor4all/tenferro-rs#2284.
 defaults:
+  # Provisional: this catalogue still mixes size classes; the CPU family floors
+  # are a follow-up to docs/regime-floors.md, so the whole suite keeps the
+  # classification the dashboard published before the regime rule.
+  regime: throughput
   device: {kind: cpu, ordinal: 0}
   run: {warmups: 3, runs: 7, timing_scope: steady_state_host_api}
 backends:
