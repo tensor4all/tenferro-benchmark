@@ -188,6 +188,12 @@ def materialize(manifest_path, requested, output, backend_override="", problem="
         files.append(path.as_posix())
         drivers[path.as_posix()] = spec.get("driver") or DEFAULT_DRIVER
     if not selected:
+        if skipped_unfiltered:
+            # Otherwise the plain message hides why the only requested suite
+            # produced nothing, which reads as a broken selection.
+            raise ValueError(
+                "no GPU cases selected: " + ", ".join(skipped_unfiltered)
+                + " takes no arm or problem filter, so a filtered selection cannot plan it")
         raise ValueError("no GPU cases selected")
     plan = dict(manifest_version=manifest["manifest_version"], effort=effort,
                 expected=expected, selected=selected, suite_files=files, suite_drivers=drivers,

@@ -148,6 +148,11 @@ class RoutineSelectionTest(unittest.TestCase):
                                       if key.startswith("gpu/permutation:")])
                     self.assertFalse([path for path in plan["suite_files"]
                                       if Path(path).name == "gpu_permutation.yaml"])
+            # Asking only for the suite a filter cannot express says why, instead
+            # of reporting an empty selection as if the manifest were broken.
+            with self.assertRaisesRegex(ValueError, "gpu/permutation takes no arm or problem filter"):
+                selection.materialize(MANIFEST, ["benchmarks/gpu/permutation.yaml"],
+                                      Path(tmp)/"only-perm", backend_override="pytorch-cuda")
 
     def test_unknown_backend_and_stale_problem_are_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
