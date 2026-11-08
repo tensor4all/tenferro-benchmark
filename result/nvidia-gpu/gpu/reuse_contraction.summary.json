@@ -2,31 +2,21 @@
   "schema_version": 1,
   "target_profile": "nvidia-gpu",
   "suite_id": "gpu/reuse_contraction",
-  "timestamp": "2026-11-08T09:06:27+00:00",
+  "timestamp": "2026-11-08T11:01:39+00:00",
   "tenferro_commit": "9a850b06155405acc99ecd0648829e9e6d3866ba",
   "hardware": {
     "gpu": "NVIDIA A100 80GB PCIe",
     "cpu": "AMD EPYC 9554 64-Core Processor",
-    "host": "053e3b59f698"
+    "host": "0db5d65f81dc"
   },
   "unit": "ms",
   "rows": [
     {
       "case": "abs_strided_read_f64_n1048576",
       "group": "abs_strided_read",
-      "backend": "jax-cuda",
-      "median": 0.03324784375,
-      "iqr": 0.0020139843749999928,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "abs_strided_read_f64_n1048576",
-      "group": "abs_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.00767215625,
-      "iqr": 8.167187500000058e-05,
+      "median": 0.00765559375,
+      "iqr": 6.05781250000003e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -43,18 +33,9 @@
     {
       "case": "add_into_f64_n1048576",
       "group": "add_into",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
-    },
-    {
-      "case": "add_into_f64_n1048576",
-      "group": "add_into",
       "backend": "pytorch-cuda",
-      "median": 0.0121000625,
-      "iqr": 0.00016257812499999996,
+      "median": 0.01202840625,
+      "iqr": 0.00017918750000000053,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -71,18 +52,9 @@
     {
       "case": "add_read_into_f64_n1048576",
       "group": "add_read_into",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
-    },
-    {
-      "case": "add_read_into_f64_n1048576",
-      "group": "add_read_into",
       "backend": "pytorch-cuda",
-      "median": 0.01177025,
-      "iqr": 0.00015142187499999835,
+      "median": 0.011710125,
+      "iqr": 0.0001818593749999993,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -99,19 +71,9 @@
     {
       "case": "add_strided_read_f64_n1048576",
       "group": "add_strided_read",
-      "backend": "jax-cuda",
-      "median": 0.04452915625,
-      "iqr": 0.0022086093749999966,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "add_strided_read_f64_n1048576",
-      "group": "add_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.0123751875,
-      "iqr": 8.560937500000192e-05,
+      "median": 0.01241025,
+      "iqr": 0.00019059374999999892,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -128,18 +90,9 @@
     {
       "case": "axpby_read_into_accum_f64_n1048576",
       "group": "axpby_read_into_accum",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No verified single-call scaled Ref update for alpha=0.5/beta=1; public Ref.addupdate has no alpha parameter."
-    },
-    {
-      "case": "axpby_read_into_accum_f64_n1048576",
-      "group": "axpby_read_into_accum",
       "backend": "pytorch-cuda",
-      "median": 0.01639809375,
-      "iqr": 0.0002006093750000007,
+      "median": 0.01647165625,
+      "iqr": 0.0001715000000000015,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -156,18 +109,9 @@
     {
       "case": "conj_into_c64_n1048576",
       "group": "conj_into",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
-    },
-    {
-      "case": "conj_into_c64_n1048576",
-      "group": "conj_into",
       "backend": "pytorch-cuda",
-      "median": 0.0253149375,
-      "iqr": 0.0002957500000000009,
+      "median": 0.02503325,
+      "iqr": 0.00019868750000000268,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 16
@@ -184,18 +128,9 @@
     {
       "case": "conj_read_into_c64_n1048576",
       "group": "conj_read_into",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
-    },
-    {
-      "case": "conj_read_into_c64_n1048576",
-      "group": "conj_read_into",
       "backend": "pytorch-cuda",
-      "median": 0.0252298125,
-      "iqr": 0.00028265624999999905,
+      "median": 0.025127125,
+      "iqr": 0.00030421874999999807,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 16
@@ -212,19 +147,9 @@
     {
       "case": "conj_strided_read_c64_n1048576",
       "group": "conj_strided_read",
-      "backend": "jax-cuda",
-      "median": 0.0633609375,
-      "iqr": 0.005943562500000013,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 16
-    },
-    {
-      "case": "conj_strided_read_c64_n1048576",
-      "group": "conj_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.0253405625,
-      "iqr": 0.00027453125000000134,
+      "median": 0.0250965,
+      "iqr": 0.0002296562499999981,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 16
@@ -241,19 +166,9 @@
     {
       "case": "cos_strided_read_f64_n1048576",
       "group": "cos_strided_read",
-      "backend": "jax-cuda",
-      "median": 0.03485396875,
-      "iqr": 0.002875109374999997,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "cos_strided_read_f64_n1048576",
-      "group": "cos_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.011003125,
-      "iqr": 0.00010184375000000037,
+      "median": 0.0108948125,
+      "iqr": 5.339062500000005e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -270,18 +185,9 @@
     {
       "case": "div_into_f64_n1048576",
       "group": "div_into",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
-    },
-    {
-      "case": "div_into_f64_n1048576",
-      "group": "div_into",
       "backend": "pytorch-cuda",
-      "median": 0.0137756875,
-      "iqr": 0.0001731250000000014,
+      "median": 0.01338484375,
+      "iqr": 0.0001789999999999986,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -298,18 +204,9 @@
     {
       "case": "div_read_into_f64_n1048576",
       "group": "div_read_into",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
-    },
-    {
-      "case": "div_read_into_f64_n1048576",
-      "group": "div_read_into",
       "backend": "pytorch-cuda",
-      "median": 0.01376915625,
-      "iqr": 0.00017090625000000005,
+      "median": 0.01328125,
+      "iqr": 0.00014801562499999928,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -326,19 +223,9 @@
     {
       "case": "div_strided_read_f64_n1048576",
       "group": "div_strided_read",
-      "backend": "jax-cuda",
-      "median": 0.0699861875,
-      "iqr": 0.0004098437499999996,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "div_strided_read_f64_n1048576",
-      "group": "div_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.013234875,
-      "iqr": 0.00014445312499999918,
+      "median": 0.01328809375,
+      "iqr": 0.00016824999999999826,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -355,19 +242,9 @@
     {
       "case": "dot_conj_l0r0_c64_n262144",
       "group": "dot_general_conj",
-      "backend": "jax-cuda",
-      "median": 0.07282675,
-      "iqr": 0.001559703125000006,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "dot_conj_l0r0_c64_n262144",
-      "group": "dot_general_conj",
       "backend": "pytorch-cuda",
-      "median": 0.01250928515625,
-      "iqr": 3.591601562499998e-05,
+      "median": 0.012425328125,
+      "iqr": 7.431640625001415e-06,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 256
@@ -376,8 +253,8 @@
       "case": "dot_conj_l0r0_c64_n262144",
       "group": "dot_general_conj",
       "backend": "tenferro-cuda-eager",
-      "median": 0.033845125,
-      "iqr": 0.00020303906249999337,
+      "median": 0.033413703125,
+      "iqr": 0.0003535781249999967,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 64
@@ -385,19 +262,9 @@
     {
       "case": "dot_general_batch_f64_s256",
       "group": "dot_general_axes",
-      "backend": "jax-cuda",
-      "median": 0.09314540625,
-      "iqr": 0.0018150312499999877,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "dot_general_batch_f64_s256",
-      "group": "dot_general_axes",
       "backend": "pytorch-cuda",
-      "median": 0.0165772109375,
-      "iqr": 0.00015339843749999707,
+      "median": 0.0165118671875,
+      "iqr": 2.664843749999868e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 128
@@ -406,8 +273,8 @@
       "case": "dot_general_batch_f64_s256",
       "group": "dot_general_axes",
       "backend": "tenferro-cuda-eager",
-      "median": 0.02383146875,
-      "iqr": 0.0003639062500000005,
+      "median": 0.023736953125,
+      "iqr": 0.00017432812499999784,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 64
@@ -415,18 +282,9 @@
     {
       "case": "dot_general_read_into_accum_cached_f64_s256",
       "group": "dot_general_read_into_accum_cached",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts."
-    },
-    {
-      "case": "dot_general_read_into_accum_cached_f64_s256",
-      "group": "dot_general_read_into_accum_cached",
       "backend": "pytorch-cuda",
-      "median": 0.008860125,
-      "iqr": 2.23769531250001e-05,
+      "median": 0.00882628125,
+      "iqr": 1.3572265625001051e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 256
@@ -443,18 +301,9 @@
     {
       "case": "dot_general_read_into_accum_f64_s256",
       "group": "dot_general_read_into_accum",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts."
-    },
-    {
-      "case": "dot_general_read_into_accum_f64_s256",
-      "group": "dot_general_read_into_accum",
       "backend": "pytorch-cuda",
-      "median": 0.008856171875,
-      "iqr": 1.4203124999999026e-05,
+      "median": 0.00882272265625,
+      "iqr": 1.0601562500000411e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 256
@@ -471,18 +320,9 @@
     {
       "case": "dot_general_read_into_f64_s256",
       "group": "dot_general_read_into",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts."
-    },
-    {
-      "case": "dot_general_read_into_f64_s256",
-      "group": "dot_general_read_into",
       "backend": "pytorch-cuda",
-      "median": 0.0075092421875,
-      "iqr": 3.61669921874995e-05,
+      "median": 0.007519669921875,
+      "iqr": 7.647460937501224e-06,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 512
@@ -499,18 +339,9 @@
     {
       "case": "einsum_plan_into_f64_s256",
       "group": "einsum_plan_into",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
-    },
-    {
-      "case": "einsum_plan_into_f64_s256",
-      "group": "einsum_plan_into",
       "backend": "pytorch-cuda",
-      "median": 0.007612997991967871,
-      "iqr": 4.500000000000077e-05,
+      "median": 0.0076104618473895585,
+      "iqr": 6.464859437751297e-06,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 498
@@ -527,22 +358,12 @@
     {
       "case": "einsum_plan_owned_f64_s256",
       "group": "einsum_plan_owned",
-      "backend": "jax-cuda",
-      "median": 0.06717946875,
-      "iqr": 0.003065125000000002,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "einsum_plan_owned_f64_s256",
-      "group": "einsum_plan_owned",
       "backend": "pytorch-cuda",
-      "median": 0.01112775390625,
-      "iqr": 0.0038363183593750003,
+      "median": 0.007651951807228915,
+      "iqr": 3.389558232932445e-06,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 256
+      "operations_per_sample": 498
     },
     {
       "case": "einsum_plan_owned_f64_s256",
@@ -556,22 +377,12 @@
     {
       "case": "einsum_plan_read_f64_s256",
       "group": "einsum_plan_read",
-      "backend": "jax-cuda",
-      "median": 0.06890175,
-      "iqr": 0.0007420625000000014,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "einsum_plan_read_f64_s256",
-      "group": "einsum_plan_read",
       "backend": "pytorch-cuda",
-      "median": 0.00787755078125,
-      "iqr": 0.00018621484375000094,
+      "median": 0.007618831325301205,
+      "iqr": 8.647590361446009e-06,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 256
+      "operations_per_sample": 498
     },
     {
       "case": "einsum_plan_read_f64_s256",
@@ -585,18 +396,9 @@
     {
       "case": "einsum_plan_read_into_accum_f64_s256",
       "group": "einsum_plan_read_into_accum",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
-    },
-    {
-      "case": "einsum_plan_read_into_accum_f64_s256",
-      "group": "einsum_plan_read_into_accum",
       "backend": "pytorch-cuda",
-      "median": 0.00880523828125,
-      "iqr": 5.627343750000055e-05,
+      "median": 0.00878090625,
+      "iqr": 1.9580078124997735e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 256
@@ -613,18 +415,9 @@
     {
       "case": "einsum_plan_read_into_f64_s256",
       "group": "einsum_plan_read_into",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
-    },
-    {
-      "case": "einsum_plan_read_into_f64_s256",
-      "group": "einsum_plan_read_into",
       "backend": "pytorch-cuda",
-      "median": 0.007583917670682731,
-      "iqr": 1.905522088353328e-05,
+      "median": 0.007590937751004016,
+      "iqr": 3.237951807229071e-06,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 498
@@ -641,22 +434,12 @@
     {
       "case": "einsum_plan_strided_read_f64_s256",
       "group": "einsum_plan_strided_read",
-      "backend": "jax-cuda",
-      "median": 0.066772625,
-      "iqr": 0.001199031249999996,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "einsum_plan_strided_read_f64_s256",
-      "group": "einsum_plan_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.0078602578125,
-      "iqr": 0.0003197792968749995,
+      "median": 0.007499795180722892,
+      "iqr": 4.656626506023727e-06,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 256
+      "operations_per_sample": 498
     },
     {
       "case": "einsum_plan_strided_read_f64_s256",
@@ -670,18 +453,9 @@
     {
       "case": "einsum_plan_strided_read_into_accum_f64_s256",
       "group": "einsum_plan_strided_read_into_accum",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
-    },
-    {
-      "case": "einsum_plan_strided_read_into_accum_f64_s256",
-      "group": "einsum_plan_strided_read_into_accum",
       "backend": "pytorch-cuda",
-      "median": 0.00866655078125,
-      "iqr": 7.100781250000097e-05,
+      "median": 0.00865665625,
+      "iqr": 1.9562499999998748e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 256
@@ -698,18 +472,9 @@
     {
       "case": "einsum_plan_strided_read_into_f64_s256",
       "group": "einsum_plan_strided_read_into",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
-    },
-    {
-      "case": "einsum_plan_strided_read_into_f64_s256",
-      "group": "einsum_plan_strided_read_into",
       "backend": "pytorch-cuda",
-      "median": 0.007505465863453816,
-      "iqr": 2.122590361445728e-05,
+      "median": 0.007505708835341365,
+      "iqr": 6.45582329317218e-06,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 498
@@ -726,19 +491,9 @@
     {
       "case": "erf_strided_read_f64_n1048576",
       "group": "erf_strided_read",
-      "backend": "jax-cuda",
-      "median": 0.04553846875,
-      "iqr": 0.0028738437499999936,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "erf_strided_read_f64_n1048576",
-      "group": "erf_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.014311875,
-      "iqr": 8.934374999999828e-05,
+      "median": 0.0142533125,
+      "iqr": 4.492187499999939e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -755,19 +510,9 @@
     {
       "case": "exp_strided_read_f64_n1048576",
       "group": "exp_strided_read",
-      "backend": "jax-cuda",
-      "median": 0.04564709375,
-      "iqr": 0.0016792500000000002,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "exp_strided_read_f64_n1048576",
-      "group": "exp_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.00812121875,
-      "iqr": 6.882812500000161e-05,
+      "median": 0.0080865625,
+      "iqr": 7.82500000000002e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -784,19 +529,9 @@
     {
       "case": "expm1_strided_read_f64_n1048576",
       "group": "expm1_strided_read",
-      "backend": "jax-cuda",
-      "median": 0.0337695625,
-      "iqr": 0.002045749999999999,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "expm1_strided_read_f64_n1048576",
-      "group": "expm1_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.00980225,
-      "iqr": 0.00022203125000000087,
+      "median": 0.00967265625,
+      "iqr": 8.764062499999961e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -813,19 +548,9 @@
     {
       "case": "log1p_strided_read_f64_n1048576",
       "group": "log1p_strided_read",
-      "backend": "jax-cuda",
-      "median": 0.03293609375,
-      "iqr": 0.0019323281249999935,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "log1p_strided_read_f64_n1048576",
-      "group": "log1p_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.01298609375,
-      "iqr": 6.243749999999999e-05,
+      "median": 0.01296828125,
+      "iqr": 6.55781250000001e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -842,19 +567,9 @@
     {
       "case": "log_strided_read_f64_n1048576",
       "group": "log_strided_read",
-      "backend": "jax-cuda",
-      "median": 0.03411346875,
-      "iqr": 0.0015451406250000105,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "log_strided_read_f64_n1048576",
-      "group": "log_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.0124840625,
-      "iqr": 4.178125000000102e-05,
+      "median": 0.01244403125,
+      "iqr": 4.085937500000053e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -871,19 +586,9 @@
     {
       "case": "maximum_strided_read_f64_n1048576",
       "group": "maximum_strided_read",
-      "backend": "jax-cuda",
-      "median": 0.04107925,
-      "iqr": 0.003150984374999999,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "maximum_strided_read_f64_n1048576",
-      "group": "maximum_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.0125250625,
-      "iqr": 0.00013660937500000088,
+      "median": 0.0124985,
+      "iqr": 0.00020999999999999838,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -900,19 +605,9 @@
     {
       "case": "minimum_strided_read_f64_n1048576",
       "group": "minimum_strided_read",
-      "backend": "jax-cuda",
-      "median": 0.0417136875,
-      "iqr": 0.0024868906250000017,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "minimum_strided_read_f64_n1048576",
-      "group": "minimum_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.0122696875,
-      "iqr": 0.00013596875000000154,
+      "median": 0.01222240625,
+      "iqr": 9.639062499999969e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -929,18 +624,9 @@
     {
       "case": "mul_into_f64_n1048576",
       "group": "mul_into",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
-    },
-    {
-      "case": "mul_into_f64_n1048576",
-      "group": "mul_into",
       "backend": "pytorch-cuda",
-      "median": 0.01208571875,
-      "iqr": 0.0002029687500000009,
+      "median": 0.0121241875,
+      "iqr": 0.00014021874999999885,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -957,18 +643,9 @@
     {
       "case": "mul_read_into_f64_n1048576",
       "group": "mul_read_into",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
-    },
-    {
-      "case": "mul_read_into_f64_n1048576",
-      "group": "mul_read_into",
       "backend": "pytorch-cuda",
-      "median": 0.0127635625,
-      "iqr": 0.00018414062499999898,
+      "median": 0.01238459375,
+      "iqr": 0.00020935937499999904,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -985,19 +662,9 @@
     {
       "case": "mul_strided_read_f64_n1048576",
       "group": "mul_strided_read",
-      "backend": "jax-cuda",
-      "median": 0.04244728125,
-      "iqr": 0.0016359218750000015,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "mul_strided_read_f64_n1048576",
-      "group": "mul_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.0120653125,
-      "iqr": 0.00023942187499999962,
+      "median": 0.01210103125,
+      "iqr": 0.00018276562499999933,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -1014,18 +681,9 @@
     {
       "case": "neg_into_f64_n1048576",
       "group": "neg_into",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
-    },
-    {
-      "case": "neg_into_f64_n1048576",
-      "group": "neg_into",
       "backend": "pytorch-cuda",
-      "median": 0.007654,
-      "iqr": 0.00015976562499999975,
+      "median": 0.00760990625,
+      "iqr": 4.431250000000008e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -1042,18 +700,9 @@
     {
       "case": "neg_read_into_f64_n1048576",
       "group": "neg_read_into",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
-    },
-    {
-      "case": "neg_read_into_f64_n1048576",
-      "group": "neg_read_into",
       "backend": "pytorch-cuda",
-      "median": 0.00781834375,
-      "iqr": 0.00014459374999999976,
+      "median": 0.0077235,
+      "iqr": 4.396874999999974e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -1070,19 +719,9 @@
     {
       "case": "neg_strided_read_f64_n1048576",
       "group": "neg_strided_read",
-      "backend": "jax-cuda",
-      "median": 0.035699,
-      "iqr": 0.0022966093750000013,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "neg_strided_read_f64_n1048576",
-      "group": "neg_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.0076884375,
-      "iqr": 8.540625000000041e-05,
+      "median": 0.007654625,
+      "iqr": 0.00011970312500000045,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -1099,19 +738,9 @@
     {
       "case": "norm_squared_read_f64_n262144",
       "group": "norm_squared_read",
-      "backend": "jax-cuda",
-      "median": 0.03982834375,
-      "iqr": 0.0012470312500000025,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 64
-    },
-    {
-      "case": "norm_squared_read_f64_n262144",
-      "group": "norm_squared_read",
       "backend": "pytorch-cuda",
-      "median": 0.0090215390625,
-      "iqr": 1.721484374999846e-05,
+      "median": 0.00915040234375,
+      "iqr": 1.0695312499999637e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 256
@@ -1128,19 +757,9 @@
     {
       "case": "pow_strided_read_f64_n1048576",
       "group": "pow_strided_read",
-      "backend": "jax-cuda",
-      "median": 0.0365659375,
-      "iqr": 0.0019515625000000036,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "pow_strided_read_f64_n1048576",
-      "group": "pow_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.02925490625,
-      "iqr": 0.00011390625000000376,
+      "median": 0.0291003125,
+      "iqr": 5.837500000000287e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -1157,19 +776,9 @@
     {
       "case": "reduce_max_strided_read_f64_n1048576",
       "group": "reduce_max_strided_read",
-      "backend": "jax-cuda",
-      "median": 0.0695183125,
-      "iqr": 0.001271054687499995,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 64
-    },
-    {
-      "case": "reduce_max_strided_read_f64_n1048576",
-      "group": "reduce_max_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.01362130859375,
-      "iqr": 1.8562499999999482e-05,
+      "median": 0.01358868359375,
+      "iqr": 1.507421874999762e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 256
@@ -1186,19 +795,9 @@
     {
       "case": "reduce_min_strided_read_f64_n1048576",
       "group": "reduce_min_strided_read",
-      "backend": "jax-cuda",
-      "median": 0.06773434375,
-      "iqr": 0.010004265625000008,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "reduce_min_strided_read_f64_n1048576",
-      "group": "reduce_min_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.01364184375,
-      "iqr": 1.1328125000001354e-05,
+      "median": 0.0136473671875,
+      "iqr": 7.666015625001216e-06,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 256
@@ -1215,19 +814,9 @@
     {
       "case": "reduce_prod_strided_read_f64_n1048576",
       "group": "reduce_prod_strided_read",
-      "backend": "jax-cuda",
-      "median": 0.037451484375,
-      "iqr": 0.001454382812500002,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 64
-    },
-    {
-      "case": "reduce_prod_strided_read_f64_n1048576",
-      "group": "reduce_prod_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.01350222265625,
-      "iqr": 1.6527343749999507e-05,
+      "median": 0.01349675,
+      "iqr": 1.511914062500043e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 256
@@ -1244,19 +833,9 @@
     {
       "case": "reduce_sum_squares_strided_read_f64_n1048576",
       "group": "reduce_sum_squares_strided_read",
-      "backend": "jax-cuda",
-      "median": 0.82857625,
-      "iqr": 0.007459875000000116,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 4
-    },
-    {
-      "case": "reduce_sum_squares_strided_read_f64_n1048576",
-      "group": "reduce_sum_squares_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.021163953125,
-      "iqr": 4.322656250000528e-05,
+      "median": 0.0211487578125,
+      "iqr": 2.64843750000035e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 128
@@ -1273,19 +852,9 @@
     {
       "case": "reduce_sum_strided_read_f64_n1048576",
       "group": "reduce_sum_strided_read",
-      "backend": "jax-cuda",
-      "median": 0.049141265625,
-      "iqr": 0.0018904218750000062,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 64
-    },
-    {
-      "case": "reduce_sum_strided_read_f64_n1048576",
-      "group": "reduce_sum_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.013530859375,
-      "iqr": 1.539453125000076e-05,
+      "median": 0.0135073125,
+      "iqr": 1.1994140624999039e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 256
@@ -1302,19 +871,9 @@
     {
       "case": "rem_strided_read_f64_n1048576",
       "group": "rem_strided_read",
-      "backend": "jax-cuda",
-      "median": 0.0348155,
-      "iqr": 0.0020189843749999978,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "rem_strided_read_f64_n1048576",
-      "group": "rem_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.01245528125,
-      "iqr": 0.0001730624999999996,
+      "median": 0.0124496875,
+      "iqr": 0.00017884375000000105,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -1331,19 +890,9 @@
     {
       "case": "rsqrt_strided_read_f64_n1048576",
       "group": "rsqrt_strided_read",
-      "backend": "jax-cuda",
-      "median": 0.04953046875,
-      "iqr": 0.0012429531250000014,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "rsqrt_strided_read_f64_n1048576",
-      "group": "rsqrt_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.007748875,
-      "iqr": 0.0001591250000000004,
+      "median": 0.0076133125,
+      "iqr": 5.539062500000032e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -1360,19 +909,9 @@
     {
       "case": "sign_strided_read_f64_n1048576",
       "group": "sign_strided_read",
-      "backend": "jax-cuda",
-      "median": 0.03338771875,
-      "iqr": 0.001669171875,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "sign_strided_read_f64_n1048576",
-      "group": "sign_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.0075645,
-      "iqr": 7.603125000000058e-05,
+      "median": 0.00754603125,
+      "iqr": 4.614062499999974e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -1389,19 +928,9 @@
     {
       "case": "sin_strided_read_f64_n1048576",
       "group": "sin_strided_read",
-      "backend": "jax-cuda",
-      "median": 0.0329780625,
-      "iqr": 0.0015482968749999937,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "sin_strided_read_f64_n1048576",
-      "group": "sin_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.01092896875,
-      "iqr": 5.768750000000045e-05,
+      "median": 0.01083846875,
+      "iqr": 5.6624999999999384e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -1418,19 +947,9 @@
     {
       "case": "sqrt_strided_read_f64_n1048576",
       "group": "sqrt_strided_read",
-      "backend": "jax-cuda",
-      "median": 0.033648125,
-      "iqr": 0.0026464531250000034,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "sqrt_strided_read_f64_n1048576",
-      "group": "sqrt_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.00775634375,
-      "iqr": 0.00012398437499999866,
+      "median": 0.007696875,
+      "iqr": 5.3703125000000365e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -1447,18 +966,9 @@
     {
       "case": "sub_into_f64_n1048576",
       "group": "sub_into",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
-    },
-    {
-      "case": "sub_into_f64_n1048576",
-      "group": "sub_into",
       "backend": "pytorch-cuda",
-      "median": 0.01194671875,
-      "iqr": 0.0002763437500000014,
+      "median": 0.01199771875,
+      "iqr": 8.04218750000002e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -1475,18 +985,9 @@
     {
       "case": "sub_read_into_f64_n1048576",
       "group": "sub_read_into",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
-    },
-    {
-      "case": "sub_read_into_f64_n1048576",
-      "group": "sub_read_into",
       "backend": "pytorch-cuda",
-      "median": 0.01205590625,
-      "iqr": 0.00013360937499999961,
+      "median": 0.0122011875,
+      "iqr": 0.00013757812500000098,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -1503,19 +1004,9 @@
     {
       "case": "sub_strided_read_f64_n1048576",
       "group": "sub_strided_read",
-      "backend": "jax-cuda",
-      "median": 0.072725,
-      "iqr": 0.0025320937500000057,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "sub_strided_read_f64_n1048576",
-      "group": "sub_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.01243309375,
-      "iqr": 0.00017964062499999794,
+      "median": 0.012389625,
+      "iqr": 0.0001287656249999991,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -1532,19 +1023,9 @@
     {
       "case": "tanh_strided_read_f64_n1048576",
       "group": "tanh_strided_read",
-      "backend": "jax-cuda",
-      "median": 0.04766796875,
-      "iqr": 0.0019133593749999997,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "tanh_strided_read_f64_n1048576",
-      "group": "tanh_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.0081269375,
-      "iqr": 3.600000000000131e-05,
+      "median": 0.008058375,
+      "iqr": 4.1609374999999546e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -1561,19 +1042,9 @@
     {
       "case": "tensordot_f64_n262144",
       "group": "tensordot",
-      "backend": "jax-cuda",
-      "median": 0.09515628125,
-      "iqr": 0.0023386562500000013,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "tensordot_f64_n262144",
-      "group": "tensordot",
       "backend": "pytorch-cuda",
-      "median": 0.0252978125,
-      "iqr": 0.0006980859375000023,
+      "median": 0.0250424296875,
+      "iqr": 0.0007812968750000003,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 128
@@ -1582,8 +1053,8 @@
       "case": "tensordot_f64_n262144",
       "group": "tensordot",
       "backend": "tenferro-cuda-eager",
-      "median": 0.046792875,
-      "iqr": 0.0038839999999999986,
+      "median": 0.044886125,
+      "iqr": 0.003165374999999998,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 8
@@ -1591,19 +1062,9 @@
     {
       "case": "vdot_read_f64_n262144",
       "group": "vdot_read",
-      "backend": "jax-cuda",
-      "median": 0.039747609375,
-      "iqr": 0.002091421874999999,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 64
-    },
-    {
-      "case": "vdot_read_f64_n262144",
-      "group": "vdot_read",
       "backend": "pytorch-cuda",
-      "median": 0.009296640625,
-      "iqr": 3.6203124999998476e-05,
+      "median": 0.00968750390625,
+      "iqr": 0.00010858593749999909,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 256

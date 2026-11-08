@@ -1,92 +1,76 @@
 # gpu/linalg_public_api_throughput: CUDA public API benchmark
 
-Measured cells: **37**. Unsupported cells: **11**, including **4** numerically verified but timing-excluded cells. Unsupported cells do not count as measured coverage.
+Measured cells: **24**. Unsupported cells: **8**, including **4** numerically verified but timing-excluded cells. Unsupported cells do not count as measured coverage.
 
-Logical traffic: this run measured a plain device copy of 67108864 bytes at **1401.5 GB/s** on this device. Every record carries the logical bytes the case must move per operation and the ratio of the case's implied rate to that copy rate, in the sampling table below. Logical bytes are the declared array sizes, not device DRAM traffic: a case whose operands stay in cache moves less DRAM than its arrays suggest, so a ratio above 1 is recorded, not rejected.
+Logical traffic: this run measured a plain device copy of 67108864 bytes at **1418.5 GB/s** on this device. Every record carries the logical bytes the case must move per operation and the ratio of the case's implied rate to that copy rate, in the sampling table below. Logical bytes are the declared array sizes, not device DRAM traffic: a case whose operands stay in cache moves less DRAM than its arrays suggest, so a ratio above 1 is recorded, not rejected.
 
-Raw run: `data/results/nvidia-gpu/gpu/linalg_public_api_throughput/20261108_090627/`.
+Raw run: `data/results/nvidia-gpu/gpu/linalg_public_api_throughput/20261108_110139/`.
 
 Large-shape view of the CUDA public linalg API surface: the 82 cases whose largest matrix dimension is at least 256. `large` is a shape class, not a measured classification: no row is asserted to be compute- or bandwidth-bound, and a memory-bound row takes the same time here as at a small shape (`householder_r_default_f32` measured 34.698 µs at 512x256 and 35.223 µs at 64x32). These rows are never comparable with, or averaged together with, the per-call overhead rows of `gpu/linalg_public_api_latency` (tenferro-rs #2087). Rows here are not lower than on pages published before this harness change for any timing reason: the sample clock starts inside `measure`, so engine construction was never part of a case median. What changed is repeated **untimed setup** work, which was removed: the CUDA engine is opened once per arm and held for the whole run instead of once per case, which shortens the untimed wall clock around the cases and moves no operation median on this page. The same problems, protocol and backends are split by shape class between the two suites. Issue 155.
 
-This run compiled **1 NVRTC modules** in 1 of its arms, because the CUDA artifact cache started cold. The untimed wall of the cases that compiled is **0.0 s** of its 20.1 s of recorded case wall clock, and that wall also holds their fixture read, transfers and verification, so it is not a compile time.
+This run compiled **1 NVRTC modules** in 1 of its arms, because the CUDA artifact cache started cold. The untimed wall of the cases that compiled is **0.0 s** of its 11.3 s of recorded case wall clock, and that wall also holds their fixture read, transfers and verification, so it is not a compile time.
 
 Values are median (IQR) **µs per operation**. Samples time batches of declared operations plus device synchronization; retained output memory is limited to 256 MiB. Batch counts and raw durations are preserved in JSONL.
 
-Cases marked † (**4** of 16) were sampled with a different number of operations per sample on different arms (see Ops/sample in the sampling table). Each value is still per operation, but the arms amortise launch and synchronization over different batch sizes, so a ratio between their columns is approximate and is not presented as a like-for-like comparison.
+Cases marked † (**3** of 16) were sampled with a different number of operations per sample on different arms (see Ops/sample in the sampling table). Each value is still per operation, but the arms amortise launch and synchronization over different batch sizes, so a ratio between their columns is approximate and is not presented as a like-for-like comparison.
 
 Setup, input transfers, library/plan initialization, JIT compilation, validation downloads and output destruction are outside timing. Intrinsic output allocation is inside timing; output-reuse rows instead use preallocated destinations across samples. Accumulating destinations are restored from prepared GPU seeds and synchronized before every batch clock, including initialization and calibration. Direct and eager each use one entered session across samples; direct FFT uses cached `FftExecutor`. JAX eager and compiled JIT are separate arms.
 
 All measured output elements are checked against independently generated NumPy/SciPy reference results before and after sampling. Unsupported rows include unavailable APIs and APIs whose internal setup cannot be excluded; these are not performance measurements. Short batches limited by output memory remain identifiable in the sampling table.
 
-| Case | tenferro-cuda-eager | pytorch-cuda | jax-cuda |
-| --- | ---: | ---: | ---: |
-| cholesky_f64_512x512 | 365.561 (2.947) | 318.192 (1.303) | 306.555 (1.144) |
-| svdvals_f64_512x512 | unsupported | 84887.160 (455.300) | 78363.819 (132.424) |
-| eigvalsh_f64_512x512 | 5623.728 (15.738) | 5600.073 (15.494) | 6161.938 (28.087) |
-| pinv_f64_512x512 | unsupported | 85127.703 (48.032) | 78754.667 (59.605) |
-| inv_f64_512x512 | unsupported | 1781.805 (4.529) | 1827.539 (7.544) |
-| det_f64_512x512 | 1782.997 (10.165) | 1305.088 (5.040) | 1364.111 (12.952) |
-| norm_f64_512x512 † | 77.502 (0.409) | 9.641 (0.009) | 30.318 (0.927) |
-| triangular_solve_f64_512x512 † | 239.389 (1.015) | 307.341 (0.509) | 239.330 (1.704) |
-| svd_full_tall_f64_512x256 | 19682.274 (24.957) | 20031.701 (68.311) | 19829.326 (24.367) |
-| slogdet_positive_f64_256x256 | 794.450 (4.938) | 564.662 (0.840) | 568.740 (3.340) |
-| householder_qr_tall_f64_512x256 | 1362.459 (10.021) | 1335.935 (9.695) | 1405.865 (9.274) |
-| householder_from_factors_default_f64_512x256 | 1580.553 (20.631) | unsupported | unsupported |
-| householder_append_default_f64_512x256 | unsupported | unsupported | unsupported |
-| householder_r_default_f64_512x256 † | 41.492 (0.284) | 4.714 (0.014) | 33.533 (1.519) |
-| householder_q_columns_prefix_f64_512x256 † | unsupported | 40.889 (0.268) | 111.561 (2.169) |
-| lu_tall_f64_s256 | 863.797 (9.897) | unsupported | unsupported |
+| Case | tenferro-cuda-eager | pytorch-cuda |
+| --- | ---: | ---: |
+| cholesky_f64_512x512 | 374.972 (9.053) | 318.283 (3.033) |
+| svdvals_f64_512x512 | unsupported | 84809.029 (37.375) |
+| eigvalsh_f64_512x512 | 5664.380 (40.100) | 5599.874 (12.114) |
+| pinv_f64_512x512 | unsupported | 85080.578 (39.825) |
+| inv_f64_512x512 | unsupported | 1782.295 (9.520) |
+| det_f64_512x512 | 1779.381 (21.064) | 1302.489 (4.301) |
+| norm_f64_512x512 † | 77.098 (0.381) | 9.631 (0.018) |
+| triangular_solve_f64_512x512 † | 239.348 (1.517) | 307.367 (0.361) |
+| svd_full_tall_f64_512x256 | 19733.352 (28.857) | 19958.802 (36.444) |
+| slogdet_positive_f64_256x256 | 793.749 (14.979) | 563.518 (1.217) |
+| householder_qr_tall_f64_512x256 | 1362.525 (11.951) | 1332.310 (5.533) |
+| householder_from_factors_default_f64_512x256 | 1572.420 (26.087) | unsupported |
+| householder_append_default_f64_512x256 | unsupported | unsupported |
+| householder_r_default_f64_512x256 † | 41.810 (2.977) | 4.763 (0.005) |
+| householder_q_columns_prefix_f64_512x256 | unsupported | 40.790 (0.152) |
+| lu_tall_f64_s256 | 860.962 (11.143) | unsupported |
 
 ## Sampling
 
 | Case | Backend | Ops/sample | Samples | Median batch ms | Bytes/op | Copy ratio | Verification error/tolerance |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| cholesky_f64_512x512 | jax-cuda | 8 | 15 | 2.452 | 4194304 | 0.010 | 4.418e-07 |
 | cholesky_f64_512x512 | pytorch-cuda | 8 | 15 | 2.546 | 4194304 | 0.009 | 4.418e-07 |
-| cholesky_f64_512x512 | tenferro-cuda-eager | 8 | 15 | 2.924 | 4194304 | 0.008 | 4.418e-07 |
-| det_f64_512x512 | jax-cuda | 2 | 15 | 2.728 | 2097160 | 0.001 | 1.426e-05 |
-| det_f64_512x512 | pytorch-cuda | 2 | 15 | 2.610 | 2097160 | 0.001 | 1.369e-05 |
-| det_f64_512x512 | tenferro-cuda-eager | 2 | 15 | 3.566 | 2097160 | 0.001 | 1.426e-05 |
-| eigvalsh_f64_512x512 | jax-cuda | 1 | 15 | 6.162 | 2101248 | 0.000 | 1.767e-06 |
+| cholesky_f64_512x512 | tenferro-cuda-eager | 8 | 15 | 3.000 | 4194304 | 0.008 | 4.418e-07 |
+| det_f64_512x512 | pytorch-cuda | 2 | 15 | 2.605 | 2097160 | 0.001 | 1.369e-05 |
+| det_f64_512x512 | tenferro-cuda-eager | 2 | 15 | 3.559 | 2097160 | 0.001 | 1.426e-05 |
 | eigvalsh_f64_512x512 | pytorch-cuda | 1 | 15 | 5.600 | 2101248 | 0.000 | 1.767e-06 |
-| eigvalsh_f64_512x512 | tenferro-cuda-eager | 1 | 15 | 5.624 | 2101248 | 0.000 | 1.767e-06 |
-| householder_append_default_f64_512x256 | jax-cuda | — | — | — | 3147776 | unavailable | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
+| eigvalsh_f64_512x512 | tenferro-cuda-eager | 1 | 15 | 5.664 | 2101248 | 0.000 | 1.767e-06 |
 | householder_append_default_f64_512x256 | pytorch-cuda | — | — | — | 3147776 | unavailable | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
 | householder_append_default_f64_512x256 | tenferro-cuda-eager | — | — | — | 3147776 | unavailable | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
-| householder_from_factors_default_f64_512x256 | jax-cuda | — | — | — | 3672064 | unavailable | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
 | householder_from_factors_default_f64_512x256 | pytorch-cuda | — | — | — | 3672064 | unavailable | No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted. |
-| householder_from_factors_default_f64_512x256 | tenferro-cuda-eager | 2 | 15 | 3.161 | 3672064 | 0.002 | 8.882e-07 |
-| householder_q_columns_prefix_f64_512x256 | jax-cuda | 32 | 15 | 3.570 | 1081344 | 0.007 | 1.136e-07 |
-| householder_q_columns_prefix_f64_512x256 | pytorch-cuda | 64 | 15 | 2.617 | 1081344 | 0.019 | 1.136e-07 |
+| householder_from_factors_default_f64_512x256 | tenferro-cuda-eager | 2 | 15 | 3.145 | 3672064 | 0.002 | 8.882e-07 |
+| householder_q_columns_prefix_f64_512x256 | pytorch-cuda | 64 | 15 | 2.611 | 1081344 | 0.019 | 1.136e-07 |
 | householder_q_columns_prefix_f64_512x256 | tenferro-cuda-eager | — | — | — | 1081344 | unavailable | CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing. |
-| householder_qr_tall_f64_512x256 | jax-cuda | 2 | 15 | 2.812 | 2099200 | 0.001 | 1.887e-06 |
-| householder_qr_tall_f64_512x256 | pytorch-cuda | 2 | 15 | 2.672 | 2099200 | 0.001 | 1.887e-06 |
+| householder_qr_tall_f64_512x256 | pytorch-cuda | 2 | 15 | 2.665 | 2099200 | 0.001 | 1.887e-06 |
 | householder_qr_tall_f64_512x256 | tenferro-cuda-eager | 2 | 15 | 2.725 | 2099200 | 0.001 | 9.992e-07 |
-| householder_r_default_f64_512x256 | jax-cuda | 64 | 15 | 2.146 | 1572864 | 0.033 | 9.976e-07 |
-| householder_r_default_f64_512x256 | pytorch-cuda | 128 | 15 | 0.603 | 1572864 | 0.238 | 9.976e-07 |
-| householder_r_default_f64_512x256 | tenferro-cuda-eager | 64 | 15 | 2.655 | 1572864 | 0.027 | 9.976e-07 |
-| inv_f64_512x512 | jax-cuda | 2 | 15 | 3.655 | 4194304 | 0.002 | 1.85e-06 |
-| inv_f64_512x512 | pytorch-cuda | 2 | 15 | 3.564 | 4194304 | 0.002 | 1.85e-06 |
+| householder_r_default_f64_512x256 | pytorch-cuda | 128 | 15 | 0.610 | 1572864 | 0.233 | 9.976e-07 |
+| householder_r_default_f64_512x256 | tenferro-cuda-eager | 64 | 15 | 2.676 | 1572864 | 0.027 | 9.976e-07 |
+| inv_f64_512x512 | pytorch-cuda | 2 | 15 | 3.565 | 4194304 | 0.002 | 1.85e-06 |
 | inv_f64_512x512 | tenferro-cuda-eager | — | — | — | 4194304 | unavailable | Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer. |
-| lu_tall_f64_s256 | jax-cuda | — | — | — | 4718600 | unavailable | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
 | lu_tall_f64_s256 | pytorch-cuda | — | — | — | 4718600 | unavailable | No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation. |
-| lu_tall_f64_s256 | tenferro-cuda-eager | 4 | 15 | 3.455 | 4718600 | 0.004 | 1.104e-06 |
-| norm_f64_512x512 | jax-cuda | 64 | 15 | 1.940 | 2097160 | 0.049 | 1.909e-07 |
-| norm_f64_512x512 | pytorch-cuda | 256 | 15 | 2.468 | 2097160 | 0.155 | 1.909e-07 |
-| norm_f64_512x512 | tenferro-cuda-eager | 32 | 15 | 2.480 | 2097160 | 0.019 | 1.909e-07 |
-| pinv_f64_512x512 | jax-cuda | 1 | 15 | 78.755 | 4194320 | 0.000 | 9.031e-06 |
-| pinv_f64_512x512 | pytorch-cuda | 1 | 15 | 85.128 | 4194320 | 0.000 | 8.691e-06 |
+| lu_tall_f64_s256 | tenferro-cuda-eager | 4 | 15 | 3.444 | 4718600 | 0.004 | 1.104e-06 |
+| norm_f64_512x512 | pytorch-cuda | 256 | 15 | 2.465 | 2097160 | 0.154 | 1.909e-07 |
+| norm_f64_512x512 | tenferro-cuda-eager | 32 | 15 | 2.467 | 2097160 | 0.019 | 1.909e-07 |
+| pinv_f64_512x512 | pytorch-cuda | 1 | 15 | 85.081 | 4194320 | 0.000 | 8.691e-06 |
 | pinv_f64_512x512 | tenferro-cuda-eager | — | — | — | 4194320 | unavailable | Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer. |
-| slogdet_positive_f64_256x256 | jax-cuda | 4 | 15 | 2.275 | 524304 | 0.001 | 1.243e-06 |
-| slogdet_positive_f64_256x256 | pytorch-cuda | 4 | 15 | 2.259 | 524304 | 0.001 | 1.087e-06 |
-| slogdet_positive_f64_256x256 | tenferro-cuda-eager | 4 | 15 | 3.178 | 524304 | 0.000 | 1.243e-06 |
-| svd_full_tall_f64_512x256 | jax-cuda | 1 | 15 | 19.829 | 3672064 | 0.000 | 7.76e-05 |
-| svd_full_tall_f64_512x256 | pytorch-cuda | 1 | 15 | 20.032 | 3672064 | 0.000 | 7.76e-05 |
-| svd_full_tall_f64_512x256 | tenferro-cuda-eager | 1 | 15 | 19.682 | 3672064 | 0.000 | 7.76e-05 |
-| svdvals_f64_512x512 | jax-cuda | 1 | 15 | 78.364 | 2101248 | 0.000 | 0.0002061 |
-| svdvals_f64_512x512 | pytorch-cuda | 1 | 15 | 84.887 | 2101248 | 0.000 | 0.0002065 |
+| slogdet_positive_f64_256x256 | pytorch-cuda | 4 | 15 | 2.254 | 524304 | 0.001 | 1.087e-06 |
+| slogdet_positive_f64_256x256 | tenferro-cuda-eager | 4 | 15 | 3.175 | 524304 | 0.000 | 1.243e-06 |
+| svd_full_tall_f64_512x256 | pytorch-cuda | 1 | 15 | 19.959 | 3672064 | 0.000 | 7.76e-05 |
+| svd_full_tall_f64_512x256 | tenferro-cuda-eager | 1 | 15 | 19.733 | 3672064 | 0.000 | 7.76e-05 |
+| svdvals_f64_512x512 | pytorch-cuda | 1 | 15 | 84.809 | 2101248 | 0.000 | 0.0002065 |
 | svdvals_f64_512x512 | tenferro-cuda-eager | — | — | — | 2101248 | unavailable | EagerSessionLinalgExt has no values-only svdvals entry point; returning and discarding singular vectors is not equivalent. |
-| triangular_solve_f64_512x512 | jax-cuda | 4 | 15 | 0.957 | 2162688 | 0.006 | 1.157e-06 |
 | triangular_solve_f64_512x512 | pytorch-cuda | 8 | 15 | 2.459 | 2162688 | 0.005 | 9.176e-07 |
 | triangular_solve_f64_512x512 | tenferro-cuda-eager | 16 | 15 | 3.830 | 2162688 | 0.006 | 1.157e-06 |
 
@@ -96,8 +80,8 @@ All measured output elements are checked against independently generated NumPy/S
 schema_version: 1
 target_profile: nvidia-gpu
 suite_id: gpu/linalg_public_api_throughput
-suite_file: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261108_090627/gpu_linalg_public_api_throughput.yaml
-timestamp: '2026-11-08T09:06:27+00:00'
+suite_file: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261108_110139/gpu_linalg_public_api_throughput.yaml
+timestamp: '2026-11-08T11:01:39+00:00'
 tenferro_rs:
   path: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/extern/tenferro-rs
   commit: 9a850b06155405acc99ecd0648829e9e6d3866ba
@@ -107,7 +91,7 @@ tenferro_rs:
   resolved_path: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/extern/tenferro-rs
 harness:
   path: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark
-  commit: 44b5fe8b1b4b339b68f9e9f7dd56d03f6cb08303
+  commit: 41f2cdf8bbdf08664bbffe7f2f31efd86ecea146
   dirty: false
 resolved_deps:
   strided-perm:
@@ -394,7 +378,7 @@ build:
     target_cpu: null
 environment:
   container: devcontainer
-  hostname: 053e3b59f698
+  hostname: 0db5d65f81dc
   os: Linux-6.8.0-147-generic-x86_64-with-glibc2.39
   arch: x86_64
   cpu: x86_64
@@ -420,7 +404,7 @@ environment:
     CUDA_HOME: /opt/tenferro-benchmark-ci/cuda
     CUDA_PATH: /opt/tenferro-benchmark-ci/cuda
     TENFERRO_CUTENSOR_PATH: /opt/tenferro-benchmark-ci/cutensor/lib/libcutensor.so.2
-    GPU_RUNTIME_SHA256: ecc740128a444e2b7d8a80ea018e5fbeb2da956dc2669f05886d8d7c97b49c67
+    GPU_RUNTIME_SHA256: 7cac8477f65d07d1a9f43b33d9f8fc8f336e03e4302840fc3eea4b16076e41cf
     UV_PROJECT_ENVIRONMENT: /opt/tenferro-benchmark-ci/venv
     BENCH_RUNS: '15'
     BENCH_WARMUPS: '3'
@@ -476,10 +460,10 @@ python_backends:
     available: true
     version: 0.10.1
     jaxlib_version: 0.10.1
-    backend: gpu
+    backend: cpu
     file: /opt/tenferro-benchmark-ci/venv/lib/python3.12/site-packages/jaxlib/__init__.py
-    provider: xla_gpu
-    dot_backend: xla_gpu
+    provider: xla_cpu
+    dot_backend: xla_cpu
     lapack_provider: none_detected
     library: /opt/tenferro-benchmark-ci/venv/lib/python3.12/site-packages/jaxlib/_ifrt_proxy.so
     linked_libraries: []
@@ -513,26 +497,26 @@ gpu_memory_calibration:
   traffic_model: one read plus one write of buffer_bytes per copy
   warmups: 3
   sample_ms:
-  - 0.107351
-  - 0.092619
-  - 0.098349
-  - 0.095764
-  - 0.091828
-  - 0.096836
-  - 0.095704
-  - 0.092619
-  - 0.097537
-  - 0.096846
-  - 0.091638
-  - 0.098208
-  - 0.094662
-  - 0.092108
-  - 0.095894
-  median_ms: 0.095764
-  bytes_per_second: 1401546802556.2842
+  - 0.092729
+  - 0.09341
+  - 0.096536
+  - 0.094191
+  - 0.094622
+  - 0.096356
+  - 0.094962
+  - 0.095594
+  - 0.097527
+  - 0.095723
+  - 0.091477
+  - 0.096124
+  - 0.094252
+  - 0.09289
+  - 0.092388
+  median_ms: 0.094622
+  bytes_per_second: 1418462175815.3494
   torch_version: 2.11.0+cu128
   cuda_version: '12.8'
-  timestamp: '2026-11-08T09:14:54.777910+00:00'
+  timestamp: '2026-11-08T11:07:22.978254+00:00'
 gpu_assignment:
   role: benchmark
   physical_device_index: 0
@@ -559,35 +543,29 @@ collection:
     src/bin/benchmark_gpu_public_api/runtime_ops.rs: c9d61b1e99bda517a59a6e34f625fd4d651bbbb19f6dc06ba4d0d1c0d50dfd6a
     src/bin/benchmark_gpu_public_api/state.rs: a8bbf8985bbc58c435e3c4dda7135161a141a90a10fa50d4f95128397ce949cb
     src/bin/benchmark_gpu_public_api/structural.rs: 8b61ac01b58edc090eafbc124ec135d5efeb4979631a939656ba78dd6e5c042a
-    /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/scripts/benchmark_gpu_public_api.py: 4f94c67a046ec57f95823fd01f3f73a710d97745fe6a58a3c6106dfec870d65c
+    /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/scripts/benchmark_gpu_public_api.py: 32aa2ab45453502fc16479f429191aa24f867c8d5ad5f59d5a2752a3da413ee5
     /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/scripts/gpu_public_api_ops.py: e88823db3f4a1fe43dc13c4743c9d78ece6af76a968724091af318dd8d7f2528
-    scripts/run_gpu_public_api.sh: 788b9fde4f8ca4162921baef1203b2e31bb747ec30327a425de3442cf872df52
-    data/results/nvidia-gpu/gpu/linalg_public_api_throughput/20261108_090627/fixtures/manifest.json: 8ac918ec3b3c102e5ae205c7547632fe9d4d7bbfd0f6cd3c1b00f3667f37aefc
+    scripts/run_gpu_public_api.sh: 257228952e48c61fa1714d0cb2d6fdfdb9b0cf3898f59307ba9e72e513aa1b50
+    data/results/nvidia-gpu/gpu/linalg_public_api_throughput/20261108_110139/fixtures/manifest.json: 8ac918ec3b3c102e5ae205c7547632fe9d4d7bbfd0f6cd3c1b00f3667f37aefc
     target/release/benchmark_gpu_public_api: 62f92e0c72d6fb46531ee8106f112567dfd32ddb482255a7cc41ba6819929786
   reference_numpy_version: 2.4.2
   measurement_cpu:
     policy: 'disabled (GPU_BENCH_CPU_SELECT unset): arms run on the allocation unpinned'
     arms:
-      jax-cuda:
-        arm: jax-cuda
-        status: disabled
-        reason: 'GPU_BENCH_CPU_SELECT is not 1: the arm runs on the allocation unpinned'
-        exit_code: 0
-        finished_at: '2026-11-08T09:15:21Z'
       pytorch-cuda:
         arm: pytorch-cuda
         status: disabled
         reason: 'GPU_BENCH_CPU_SELECT is not 1: the arm runs on the allocation unpinned'
         exit_code: 0
-        finished_at: '2026-11-08T09:15:12Z'
+        finished_at: '2026-11-08T11:07:39Z'
       tenferro-cuda-eager:
         arm: tenferro-cuda-eager
         status: disabled
         reason: 'GPU_BENCH_CPU_SELECT is not 1: the arm runs on the allocation unpinned'
         exit_code: 0
-        finished_at: '2026-11-08T09:15:02Z'
+        finished_at: '2026-11-08T11:07:30Z'
   compile:
-    case_wall_seconds: 20.123
+    case_wall_seconds: 11.347
     compiling_processes: 1
     modules_compiled: 1
     compile_time_ms: null
@@ -602,38 +580,25 @@ Each row records the wall clock it spent outside its timed region. These cases s
 
 | Case | Backend | Warning |
 | --- | --- | --- |
-| cholesky_f64_512x512 | tenferro-cuda-eager | cholesky_f64_512x512 untimed 151.1 ms is 344% of the 44.0 ms timed region (budget 20%) |
-| eigvalsh_f64_512x512 | tenferro-cuda-eager | eigvalsh_f64_512x512 untimed 53.4 ms is 63% of the 84.4 ms timed region (budget 20%) |
-| det_f64_512x512 | tenferro-cuda-eager | det_f64_512x512 untimed 17.8 ms is 33% of the 53.5 ms timed region (budget 20%) |
-| svd_full_tall_f64_512x256 | tenferro-cuda-eager | svd_full_tall_f64_512x256 untimed 704.1 ms is 238% of the 295.3 ms timed region (budget 20%) |
-| slogdet_positive_f64_256x256 | tenferro-cuda-eager | slogdet_positive_f64_256x256 untimed 11.4 ms is 24% of the 47.7 ms timed region (budget 20%) |
-| householder_qr_tall_f64_512x256 | tenferro-cuda-eager | householder_qr_tall_f64_512x256 untimed 449.4 ms is 1097% of the 41.0 ms timed region (budget 20%) |
-| householder_from_factors_default_f64_512x256 | tenferro-cuda-eager | householder_from_factors_default_f64_512x256 untimed 445.0 ms is 938% of the 47.4 ms timed region (budget 20%) |
-| householder_r_default_f64_512x256 | tenferro-cuda-eager | householder_r_default_f64_512x256 untimed 9.7 ms is 24% of the 40.0 ms timed region (budget 20%) |
-| lu_tall_f64_s256 | tenferro-cuda-eager | lu_tall_f64_s256 untimed 25.2 ms is 49% of the 51.9 ms timed region (budget 20%) |
-| cholesky_f64_512x512 | pytorch-cuda | cholesky_f64_512x512 untimed 464.1 ms is 1216% of the 38.2 ms timed region (budget 20%) |
-| svdvals_f64_512x512 | pytorch-cuda | svdvals_f64_512x512 untimed 608.9 ms is 47% of the 1287.5 ms timed region (budget 20%) |
-| eigvalsh_f64_512x512 | pytorch-cuda | eigvalsh_f64_512x512 untimed 61.4 ms is 73% of the 84.0 ms timed region (budget 20%) |
-| pinv_f64_512x512 | pytorch-cuda | pinv_f64_512x512 untimed 907.2 ms is 71% of the 1277.3 ms timed region (budget 20%) |
-| inv_f64_512x512 | pytorch-cuda | inv_f64_512x512 untimed 257.6 ms is 482% of the 53.4 ms timed region (budget 20%) |
-| det_f64_512x512 | pytorch-cuda | det_f64_512x512 untimed 473.1 ms is 1209% of the 39.1 ms timed region (budget 20%) |
-| norm_f64_512x512 | pytorch-cuda | norm_f64_512x512 untimed 37.5 ms is 101% of the 37.0 ms timed region (budget 20%) |
-| triangular_solve_f64_512x512 | pytorch-cuda | triangular_solve_f64_512x512 untimed 16.9 ms is 46% of the 36.9 ms timed region (budget 20%) |
-| svd_full_tall_f64_512x256 | pytorch-cuda | svd_full_tall_f64_512x256 untimed 444.6 ms is 148% of the 300.7 ms timed region (budget 20%) |
-| slogdet_positive_f64_256x256 | pytorch-cuda | slogdet_positive_f64_256x256 untimed 25.8 ms is 76% of the 33.9 ms timed region (budget 20%) |
-| householder_qr_tall_f64_512x256 | pytorch-cuda | householder_qr_tall_f64_512x256 untimed 304.1 ms is 759% of the 40.1 ms timed region (budget 20%) |
-| householder_r_default_f64_512x256 | pytorch-cuda | householder_r_default_f64_512x256 untimed 65.0 ms is 717% of the 9.1 ms timed region (budget 20%) |
-| householder_q_columns_prefix_f64_512x256 | pytorch-cuda | householder_q_columns_prefix_f64_512x256 untimed 24.4 ms is 62% of the 39.3 ms timed region (budget 20%) |
-| cholesky_f64_512x512 | jax-cuda | cholesky_f64_512x512 untimed 551.0 ms is 1497% of the 36.8 ms timed region (budget 20%) |
-| svdvals_f64_512x512 | jax-cuda | svdvals_f64_512x512 untimed 647.0 ms is 55% of the 1177.7 ms timed region (budget 20%) |
-| eigvalsh_f64_512x512 | jax-cuda | eigvalsh_f64_512x512 untimed 149.6 ms is 162% of the 92.3 ms timed region (budget 20%) |
-| pinv_f64_512x512 | jax-cuda | pinv_f64_512x512 untimed 1172.4 ms is 99% of the 1181.5 ms timed region (budget 20%) |
-| inv_f64_512x512 | jax-cuda | inv_f64_512x512 untimed 381.8 ms is 696% of the 54.8 ms timed region (budget 20%) |
-| det_f64_512x512 | jax-cuda | det_f64_512x512 untimed 182.2 ms is 445% of the 41.0 ms timed region (budget 20%) |
-| norm_f64_512x512 | jax-cuda | norm_f64_512x512 untimed 116.1 ms is 396% of the 29.3 ms timed region (budget 20%) |
-| triangular_solve_f64_512x512 | jax-cuda | triangular_solve_f64_512x512 untimed 105.2 ms is 731% of the 14.4 ms timed region (budget 20%) |
-| svd_full_tall_f64_512x256 | jax-cuda | svd_full_tall_f64_512x256 untimed 575.1 ms is 193% of the 297.4 ms timed region (budget 20%) |
-| slogdet_positive_f64_256x256 | jax-cuda | slogdet_positive_f64_256x256 untimed 201.0 ms is 588% of the 34.2 ms timed region (budget 20%) |
-| householder_qr_tall_f64_512x256 | jax-cuda | householder_qr_tall_f64_512x256 untimed 369.1 ms is 875% of the 42.2 ms timed region (budget 20%) |
-| householder_r_default_f64_512x256 | jax-cuda | householder_r_default_f64_512x256 untimed 216.2 ms is 669% of the 32.3 ms timed region (budget 20%) |
-| householder_q_columns_prefix_f64_512x256 | jax-cuda | householder_q_columns_prefix_f64_512x256 untimed 172.8 ms is 317% of the 54.6 ms timed region (budget 20%) |
+| cholesky_f64_512x512 | tenferro-cuda-eager | cholesky_f64_512x512 untimed 155.3 ms is 342% of the 45.4 ms timed region (budget 20%) |
+| eigvalsh_f64_512x512 | tenferro-cuda-eager | eigvalsh_f64_512x512 untimed 57.6 ms is 68% of the 85.0 ms timed region (budget 20%) |
+| det_f64_512x512 | tenferro-cuda-eager | det_f64_512x512 untimed 17.6 ms is 33% of the 53.6 ms timed region (budget 20%) |
+| svd_full_tall_f64_512x256 | tenferro-cuda-eager | svd_full_tall_f64_512x256 untimed 736.6 ms is 249% of the 296.0 ms timed region (budget 20%) |
+| slogdet_positive_f64_256x256 | tenferro-cuda-eager | slogdet_positive_f64_256x256 untimed 11.8 ms is 25% of the 48.0 ms timed region (budget 20%) |
+| householder_qr_tall_f64_512x256 | tenferro-cuda-eager | householder_qr_tall_f64_512x256 untimed 464.7 ms is 1137% of the 40.9 ms timed region (budget 20%) |
+| householder_from_factors_default_f64_512x256 | tenferro-cuda-eager | householder_from_factors_default_f64_512x256 untimed 466.2 ms is 987% of the 47.2 ms timed region (budget 20%) |
+| householder_r_default_f64_512x256 | tenferro-cuda-eager | householder_r_default_f64_512x256 untimed 10.1 ms is 25% of the 41.3 ms timed region (budget 20%) |
+| lu_tall_f64_s256 | tenferro-cuda-eager | lu_tall_f64_s256 untimed 26.1 ms is 51% of the 51.8 ms timed region (budget 20%) |
+| cholesky_f64_512x512 | pytorch-cuda | cholesky_f64_512x512 untimed 172.6 ms is 450% of the 38.4 ms timed region (budget 20%) |
+| svdvals_f64_512x512 | pytorch-cuda | svdvals_f64_512x512 untimed 606.3 ms is 48% of the 1272.7 ms timed region (budget 20%) |
+| eigvalsh_f64_512x512 | pytorch-cuda | eigvalsh_f64_512x512 untimed 61.1 ms is 73% of the 84.0 ms timed region (budget 20%) |
+| pinv_f64_512x512 | pytorch-cuda | pinv_f64_512x512 untimed 701.8 ms is 55% of the 1280.3 ms timed region (budget 20%) |
+| inv_f64_512x512 | pytorch-cuda | inv_f64_512x512 untimed 62.8 ms is 117% of the 53.5 ms timed region (budget 20%) |
+| det_f64_512x512 | pytorch-cuda | det_f64_512x512 untimed 482.5 ms is 1233% of the 39.1 ms timed region (budget 20%) |
+| norm_f64_512x512 | pytorch-cuda | norm_f64_512x512 untimed 39.6 ms is 107% of the 37.0 ms timed region (budget 20%) |
+| triangular_solve_f64_512x512 | pytorch-cuda | triangular_solve_f64_512x512 untimed 14.6 ms is 40% of the 36.9 ms timed region (budget 20%) |
+| svd_full_tall_f64_512x256 | pytorch-cuda | svd_full_tall_f64_512x256 untimed 196.1 ms is 65% of the 299.9 ms timed region (budget 20%) |
+| slogdet_positive_f64_256x256 | pytorch-cuda | slogdet_positive_f64_256x256 untimed 28.8 ms is 85% of the 33.8 ms timed region (budget 20%) |
+| householder_qr_tall_f64_512x256 | pytorch-cuda | householder_qr_tall_f64_512x256 untimed 202.8 ms is 508% of the 40.0 ms timed region (budget 20%) |
+| householder_r_default_f64_512x256 | pytorch-cuda | householder_r_default_f64_512x256 untimed 14.4 ms is 157% of the 9.1 ms timed region (budget 20%) |
+| householder_q_columns_prefix_f64_512x256 | pytorch-cuda | householder_q_columns_prefix_f64_512x256 untimed 18.6 ms is 48% of the 39.1 ms timed region (budget 20%) |

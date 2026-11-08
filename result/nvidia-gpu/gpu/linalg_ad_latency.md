@@ -2,8 +2,8 @@
 
 - Target profile: `nvidia-gpu`
 - Suite: `gpu/linalg_ad_latency`
-- Suite file: `/tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261108_090627/gpu_linalg_ad_latency.yaml`
-- Timestamp: `2026-11-08T09:06:27+00:00`
+- Suite file: `/tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261108_110139/gpu_linalg_ad_latency.yaml`
+- Timestamp: `2026-11-08T11:01:39+00:00`
 - tenferro-rs commit: `9a850b06155405acc99ecd0648829e9e6d3866ba`
 
 ## GPU Information
@@ -51,16 +51,16 @@ This suite exists to measure single-call latency and per-op overhead: the device
 
 | suite | benchmark | dtype | shape | tenferro-rs CUDA trace | tenferro-rs CUDA trace (deferred batch throughput) | PyTorch CUDA | JAX CUDA JIT |
 |---|---|---:|---|---:|---:|---:|---:|
-| small | `grad_sum_eigh_jvp` | f64 | `4x4` | 0.349 ± 0.003 | - | 0.328 ± 0.012 | 0.345 ± 0.011 |
-| small | `grad_sum_eigh_vjp` | f64 | `4x4` | 0.350 ± 0.008 | - | 0.351 ± 0.016 | 0.336 ± 0.005 |
-| small | `grad_sum_lu_jvp` | f64 | `4x4` | 0.339 ± 0.003 | - | 0.450 ± 0.012 | 0.190 ± 0.007 |
-| small | `grad_sum_lu_vjp` | f64 | `4x4` | 0.326 ± 0.005 | - | 0.490 ± 0.013 | 0.184 ± 0.005 |
-| small | `grad_sum_qr_jvp` | f64 | `4x4` | 0.450 ± 0.006 | - | 0.349 ± 0.010 | 0.209 ± 0.004 |
-| small | `grad_sum_qr_vjp` | f64 | `4x4` | 0.446 ± 0.009 | - | 0.474 ± 0.017 | 0.202 ± 0.004 |
-| small | `grad_sum_solve_jvp` | f64 | `4x4,rhs=1` | 0.363 ± 0.005 | - | 0.463 ± 0.010 | 0.196 ± 0.013 |
-| small | `grad_sum_solve_vjp` | f64 | `4x4,rhs=1` | 0.362 ± 0.007 | - | 0.503 ± 0.028 | 0.200 ± 0.002 |
-| small | `grad_sum_svd_s_jvp` | f64 | `4x4` | 0.764 ± 0.010 | - | 0.477 ± 0.013 | 0.447 ± 0.007 |
-| small | `grad_sum_svd_s_vjp` | f64 | `4x4` | 0.764 ± 0.007 | - | 0.417 ± 0.018 | 0.446 ± 0.006 |
+| small | `grad_sum_eigh_jvp` | f64 | `4x4` | 0.329 ± 0.004 | - | 0.328 ± 0.015 | - |
+| small | `grad_sum_eigh_vjp` | f64 | `4x4` | 0.333 ± 0.006 | - | 0.323 ± 0.011 | - |
+| small | `grad_sum_lu_jvp` | f64 | `4x4` | 0.333 ± 0.002 | - | 0.443 ± 0.014 | - |
+| small | `grad_sum_lu_vjp` | f64 | `4x4` | 0.313 ± 0.001 | - | 0.516 ± 0.082 | - |
+| small | `grad_sum_qr_jvp` | f64 | `4x4` | 0.408 ± 0.002 | - | 0.342 ± 0.018 | - |
+| small | `grad_sum_qr_vjp` | f64 | `4x4` | 0.397 ± 0.004 | - | 0.419 ± 0.019 | - |
+| small | `grad_sum_solve_jvp` | f64 | `4x4,rhs=1` | 0.342 ± 0.010 | - | 0.458 ± 0.011 | - |
+| small | `grad_sum_solve_vjp` | f64 | `4x4,rhs=1` | 0.336 ± 0.003 | - | 0.512 ± 0.029 | - |
+| small | `grad_sum_svd_s_jvp` | f64 | `4x4` | 0.742 ± 0.006 | - | 0.471 ± 0.015 | - |
+| small | `grad_sum_svd_s_vjp` | f64 | `4x4` | 0.730 ± 0.006 | - | 0.395 ± 0.015 | - |
 
 ## Sampling and unsupported routes
 
@@ -83,19 +83,9 @@ This suite exists to measure single-call latency and per-op overhead: the device
 | linalg_ad_small_grad_sum_eigh_jvp_f64_4 | pytorch-cuda | 8 | 15 | steady_state_host_api_plus_device_sync |
 | linalg_ad_small_grad_sum_eigh_vjp_f64_4 | pytorch-cuda | 8 | 15 | steady_state_host_api_plus_device_sync |
 | linalg_ad_small_grad_sum_lu_jvp_f64_4 | pytorch-cuda | 8 | 15 | steady_state_host_api_plus_device_sync |
-| linalg_ad_small_grad_sum_lu_vjp_f64_4 | pytorch-cuda | 4 | 15 | steady_state_host_api_plus_device_sync |
+| linalg_ad_small_grad_sum_lu_vjp_f64_4 | pytorch-cuda | 8 | 15 | steady_state_host_api_plus_device_sync |
 | linalg_ad_small_grad_sum_solve_jvp_f64_4 | pytorch-cuda | 8 | 15 | steady_state_host_api_plus_device_sync |
-| linalg_ad_small_grad_sum_solve_vjp_f64_4 | pytorch-cuda | 8 | 15 | steady_state_host_api_plus_device_sync |
-| linalg_ad_small_grad_sum_svd_s_jvp_f64_4 | jax-cuda | 8 | 15 | steady_state_host_api_plus_device_sync |
-| linalg_ad_small_grad_sum_svd_s_vjp_f64_4 | jax-cuda | 8 | 15 | steady_state_host_api_plus_device_sync |
-| linalg_ad_small_grad_sum_qr_jvp_f64_4 | jax-cuda | 16 | 15 | steady_state_host_api_plus_device_sync |
-| linalg_ad_small_grad_sum_qr_vjp_f64_4 | jax-cuda | 16 | 15 | steady_state_host_api_plus_device_sync |
-| linalg_ad_small_grad_sum_eigh_jvp_f64_4 | jax-cuda | 8 | 15 | steady_state_host_api_plus_device_sync |
-| linalg_ad_small_grad_sum_eigh_vjp_f64_4 | jax-cuda | 8 | 15 | steady_state_host_api_plus_device_sync |
-| linalg_ad_small_grad_sum_lu_jvp_f64_4 | jax-cuda | 16 | 15 | steady_state_host_api_plus_device_sync |
-| linalg_ad_small_grad_sum_lu_vjp_f64_4 | jax-cuda | 16 | 15 | steady_state_host_api_plus_device_sync |
-| linalg_ad_small_grad_sum_solve_jvp_f64_4 | jax-cuda | 16 | 15 | steady_state_host_api_plus_device_sync |
-| linalg_ad_small_grad_sum_solve_vjp_f64_4 | jax-cuda | 16 | 15 | steady_state_host_api_plus_device_sync |
+| linalg_ad_small_grad_sum_solve_vjp_f64_4 | pytorch-cuda | 4 | 15 | steady_state_host_api_plus_device_sync |
 
 ## Loss Definitions
 

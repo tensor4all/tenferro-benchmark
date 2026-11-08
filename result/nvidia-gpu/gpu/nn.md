@@ -1,10 +1,10 @@
 # gpu/nn: CUDA public API benchmark
 
-Measured cells: **20**. Unsupported cells: **13**, including **10** numerically verified but timing-excluded cells. Unsupported cells do not count as measured coverage.
+Measured cells: **10**. Unsupported cells: **12**, including **10** numerically verified but timing-excluded cells. Unsupported cells do not count as measured coverage.
 
-Logical traffic: this run measured a plain device copy of 67108864 bytes at **1415.8 GB/s** on this device. Every record carries the logical bytes the case must move per operation and the ratio of the case's implied rate to that copy rate, in the sampling table below. Logical bytes are the declared array sizes, not device DRAM traffic: a case whose operands stay in cache moves less DRAM than its arrays suggest, so a ratio above 1 is recorded, not rejected.
+Logical traffic: this run measured a plain device copy of 67108864 bytes at **1418.5 GB/s** on this device. Every record carries the logical bytes the case must move per operation and the ratio of the case's implied rate to that copy rate, in the sampling table below. Logical bytes are the declared array sizes, not device DRAM traffic: a case whose operands stay in cache moves less DRAM than its arrays suggest, so a ratio above 1 is recorded, not rejected.
 
-Raw run: `data/results/nvidia-gpu/gpu/nn/20261108_090627/`.
+Raw run: `data/results/nvidia-gpu/gpu/nn/20261108_110139/`.
 
 Isolated public APIs and explicit unsupported timing contracts. Issue 155.
 
@@ -12,63 +12,52 @@ This run did not compile: no NVRTC module was built in any of its arms. That des
 
 Values are median (IQR) **µs per operation**. Samples time batches of declared operations plus device synchronization; retained output memory is limited to 256 MiB. Batch counts and raw durations are preserved in JSONL.
 
-Cases marked † (**5** of 11) were sampled with a different number of operations per sample on different arms (see Ops/sample in the sampling table). Each value is still per operation, but the arms amortise launch and synchronization over different batch sizes, so a ratio between their columns is approximate and is not presented as a like-for-like comparison.
+Cases marked † (**1** of 11) were sampled with a different number of operations per sample on different arms (see Ops/sample in the sampling table). Each value is still per operation, but the arms amortise launch and synchronization over different batch sizes, so a ratio between their columns is approximate and is not presented as a like-for-like comparison.
 
 Setup, input transfers, library/plan initialization, JIT compilation, validation downloads and output destruction are outside timing. Intrinsic output allocation is inside timing; output-reuse rows instead use preallocated destinations across samples. Accumulating destinations are restored from prepared GPU seeds and synchronized before every batch clock, including initialization and calibration. Direct and eager each use one entered session across samples; direct FFT uses cached `FftExecutor`. JAX eager and compiled JIT are separate arms.
 
 All measured output elements are checked against independently generated NumPy/SciPy reference results before and after sampling. Unsupported rows include unavailable APIs and APIs whose internal setup cannot be excluded; these are not performance measurements. Short batches limited by output memory remain identifiable in the sampling table.
 
-| Case | tenferro-cuda-eager | pytorch-cuda | jax-cuda |
-| --- | ---: | ---: | ---: |
-| sigmoid_f64_n1048576 | unsupported | 9.984 (0.065) | 35.042 (3.126) |
-| silu_f64_n1048576 | unsupported | 11.129 (0.053) | 32.925 (2.071) |
-| softplus_f64_n1048576 † | 326.649 (3.920) | 25.751 (0.058) | 29.613 (1.651) |
-| gelu_f64_n1048576 † | unsupported | 15.013 (0.043) | 481.204 (8.022) |
-| gelu_tanh_f64_n1048576 † | unsupported | 9.490 (0.051) | 704.254 (9.741) |
-| softmax_f64_n1048576 † | unsupported | 16.425 (0.028) | 337.355 (20.898) |
-| log_softmax_f64_n1048576 | unsupported | 12.806 (0.036) | 31.811 (1.460) |
-| masked_softmax_f64_n1048576 | unsupported | unsupported | 672.061 (12.981) |
-| masked_log_softmax_f64_n1048576 | unsupported | unsupported | 44.764 (3.651) |
-| layer_norm_f64_n1048576 † | unsupported | 30.643 (0.048) | 134.270 (4.765) |
-| rms_norm_f64_n1048576 | unsupported | 30.491 (0.041) | unsupported |
+| Case | tenferro-cuda-eager | pytorch-cuda |
+| --- | ---: | ---: |
+| sigmoid_f64_n1048576 | unsupported | 9.988 (0.047) |
+| silu_f64_n1048576 | unsupported | 11.187 (0.066) |
+| softplus_f64_n1048576 † | 324.419 (2.539) | 25.778 (0.059) |
+| gelu_f64_n1048576 | unsupported | 14.946 (0.021) |
+| gelu_tanh_f64_n1048576 | unsupported | 9.426 (0.054) |
+| softmax_f64_n1048576 | unsupported | 16.338 (0.030) |
+| log_softmax_f64_n1048576 | unsupported | 12.772 (0.057) |
+| masked_softmax_f64_n1048576 | unsupported | unsupported |
+| masked_log_softmax_f64_n1048576 | unsupported | unsupported |
+| layer_norm_f64_n1048576 | unsupported | 30.804 (0.173) |
+| rms_norm_f64_n1048576 | unsupported | 30.402 (0.052) |
 
 ## Sampling
 
 | Case | Backend | Ops/sample | Samples | Median batch ms | Bytes/op | Copy ratio | Verification error/tolerance |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| gelu_f64_n1048576 | jax-cuda | 8 | 15 | 3.850 | 16777216 | 0.025 | 4.81e-08 |
-| gelu_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.480 | 16777216 | 0.789 | 4.899e-08 |
+| gelu_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.478 | 16777216 | 0.791 | 4.899e-08 |
 | gelu_f64_n1048576 | tenferro-cuda-eager | — | — | — | 16777216 | unavailable | CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer. |
-| gelu_tanh_f64_n1048576 | jax-cuda | 4 | 15 | 2.817 | 16777216 | 0.017 | 4.349e-08 |
-| gelu_tanh_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.304 | 16777216 | 1.249 | 4.349e-08 |
+| gelu_tanh_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.302 | 16777216 | 1.255 | 4.349e-08 |
 | gelu_tanh_f64_n1048576 | tenferro-cuda-eager | — | — | — | 16777216 | unavailable | CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer. |
-| layer_norm_f64_n1048576 | jax-cuda | 16 | 15 | 2.148 | 16777216 | 0.088 | 3.398e-07 |
-| layer_norm_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.981 | 16777216 | 0.387 | 3.138e-07 |
+| layer_norm_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.986 | 16777216 | 0.384 | 3.138e-07 |
 | layer_norm_f64_n1048576 | tenferro-cuda-eager | — | — | — | 16777216 | unavailable | CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer. |
-| log_softmax_f64_n1048576 | jax-cuda | 32 | 15 | 1.018 | 16777216 | 0.373 | 2.377e-07 |
-| log_softmax_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.410 | 16777216 | 0.925 | 2.377e-07 |
+| log_softmax_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.409 | 16777216 | 0.926 | 2.377e-07 |
 | log_softmax_f64_n1048576 | tenferro-cuda-eager | — | — | — | 16777216 | unavailable | CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer. |
-| masked_log_softmax_f64_n1048576 | jax-cuda | 32 | 15 | 1.432 | 17825792 | 0.281 | 2.489e-07 |
 | masked_log_softmax_f64_n1048576 | pytorch-cuda | — | — | — | 17825792 | unavailable | No equivalent stable single PyTorch public masked-softmax operation; masked_fill plus softmax would change the operation contract. |
 | masked_log_softmax_f64_n1048576 | tenferro-cuda-eager | — | — | — | 17825792 | unavailable | CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer. |
-| masked_softmax_f64_n1048576 | jax-cuda | 4 | 15 | 2.688 | 17825792 | 0.019 | 8.658e-10 |
 | masked_softmax_f64_n1048576 | pytorch-cuda | — | — | — | 17825792 | unavailable | No equivalent stable single PyTorch public masked-softmax operation; masked_fill plus softmax would change the operation contract. |
 | masked_softmax_f64_n1048576 | tenferro-cuda-eager | — | — | — | 17825792 | unavailable | CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer. |
-| rms_norm_f64_n1048576 | jax-cuda | — | — | — | 16777216 | unavailable | No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API. |
-| rms_norm_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.976 | 16777216 | 0.389 | 2.654e-07 |
+| rms_norm_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.973 | 16777216 | 0.389 | 2.654e-07 |
 | rms_norm_f64_n1048576 | tenferro-cuda-eager | — | — | — | 16777216 | unavailable | CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer. |
-| sigmoid_f64_n1048576 | jax-cuda | 32 | 15 | 1.121 | 16777216 | 0.338 | 7.964e-08 |
-| sigmoid_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.319 | 16777216 | 1.187 | 7.964e-08 |
+| sigmoid_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.320 | 16777216 | 1.184 | 7.964e-08 |
 | sigmoid_f64_n1048576 | tenferro-cuda-eager | — | — | — | 16777216 | unavailable | CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer. |
-| silu_f64_n1048576 | jax-cuda | 32 | 15 | 1.054 | 16777216 | 0.360 | 4.848e-08 |
-| silu_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.356 | 16777216 | 1.065 | 4.848e-08 |
+| silu_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.358 | 16777216 | 1.057 | 4.848e-08 |
 | silu_f64_n1048576 | tenferro-cuda-eager | — | — | — | 16777216 | unavailable | CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer. |
-| softmax_f64_n1048576 | jax-cuda | 8 | 15 | 2.699 | 16777216 | 0.035 | 8.661e-10 |
-| softmax_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.526 | 16777216 | 0.721 | 8.661e-10 |
+| softmax_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.523 | 16777216 | 0.724 | 8.661e-10 |
 | softmax_f64_n1048576 | tenferro-cuda-eager | — | — | — | 16777216 | unavailable | CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer. |
-| softplus_f64_n1048576 | jax-cuda | 32 | 15 | 0.948 | 16777216 | 0.400 | 1.467e-07 |
-| softplus_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.824 | 16777216 | 0.460 | 1.467e-07 |
-| softplus_f64_n1048576 | tenferro-cuda-eager | 8 | 15 | 2.613 | 16777216 | 0.036 | 1.467e-07 |
+| softplus_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.825 | 16777216 | 0.459 | 1.467e-07 |
+| softplus_f64_n1048576 | tenferro-cuda-eager | 8 | 15 | 2.595 | 16777216 | 0.036 | 1.467e-07 |
 
 ## Run metadata
 
@@ -76,8 +65,8 @@ All measured output elements are checked against independently generated NumPy/S
 schema_version: 1
 target_profile: nvidia-gpu
 suite_id: gpu/nn
-suite_file: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261108_090627/gpu_nn.yaml
-timestamp: '2026-11-08T09:06:27+00:00'
+suite_file: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261108_110139/gpu_nn.yaml
+timestamp: '2026-11-08T11:01:39+00:00'
 tenferro_rs:
   path: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/extern/tenferro-rs
   commit: 9a850b06155405acc99ecd0648829e9e6d3866ba
@@ -87,7 +76,7 @@ tenferro_rs:
   resolved_path: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/extern/tenferro-rs
 harness:
   path: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark
-  commit: 44b5fe8b1b4b339b68f9e9f7dd56d03f6cb08303
+  commit: 41f2cdf8bbdf08664bbffe7f2f31efd86ecea146
   dirty: false
 resolved_deps:
   strided-perm:
@@ -374,7 +363,7 @@ build:
     target_cpu: null
 environment:
   container: devcontainer
-  hostname: 053e3b59f698
+  hostname: 0db5d65f81dc
   os: Linux-6.8.0-147-generic-x86_64-with-glibc2.39
   arch: x86_64
   cpu: x86_64
@@ -400,7 +389,7 @@ environment:
     CUDA_HOME: /opt/tenferro-benchmark-ci/cuda
     CUDA_PATH: /opt/tenferro-benchmark-ci/cuda
     TENFERRO_CUTENSOR_PATH: /opt/tenferro-benchmark-ci/cutensor/lib/libcutensor.so.2
-    GPU_RUNTIME_SHA256: ecc740128a444e2b7d8a80ea018e5fbeb2da956dc2669f05886d8d7c97b49c67
+    GPU_RUNTIME_SHA256: 7cac8477f65d07d1a9f43b33d9f8fc8f336e03e4302840fc3eea4b16076e41cf
     UV_PROJECT_ENVIRONMENT: /opt/tenferro-benchmark-ci/venv
     BENCH_RUNS: '15'
     BENCH_WARMUPS: '3'
@@ -456,10 +445,10 @@ python_backends:
     available: true
     version: 0.10.1
     jaxlib_version: 0.10.1
-    backend: gpu
+    backend: cpu
     file: /opt/tenferro-benchmark-ci/venv/lib/python3.12/site-packages/jaxlib/__init__.py
-    provider: xla_gpu
-    dot_backend: xla_gpu
+    provider: xla_cpu
+    dot_backend: xla_cpu
     lapack_provider: none_detected
     library: /opt/tenferro-benchmark-ci/venv/lib/python3.12/site-packages/jaxlib/_ifrt_proxy.so
     linked_libraries: []
@@ -493,26 +482,26 @@ gpu_memory_calibration:
   traffic_model: one read plus one write of buffer_bytes per copy
   warmups: 3
   sample_ms:
-  - 0.093591
-  - 0.09213
-  - 0.096916
-  - 0.093951
-  - 0.093482
-  - 0.096104
-  - 0.096024
-  - 0.094623
-  - 0.096425
-  - 0.094802
-  - 0.093912
-  - 0.095083
-  - 0.095804
-  - 0.094082
-  - 0.094932
-  median_ms: 0.094802
-  bytes_per_second: 1415768950022.1514
+  - 0.094282
+  - 0.091707
+  - 0.096035
+  - 0.094122
+  - 0.094091
+  - 0.096825
+  - 0.095865
+  - 0.091918
+  - 0.096505
+  - 0.095584
+  - 0.094622
+  - 0.095874
+  - 0.096465
+  - 0.093791
+  - 0.094232
+  median_ms: 0.094622
+  bytes_per_second: 1418462175815.3494
   torch_version: 2.11.0+cu128
   cuda_version: '12.8'
-  timestamp: '2026-11-08T09:15:53.513682+00:00'
+  timestamp: '2026-11-08T11:07:59.712030+00:00'
 gpu_assignment:
   role: benchmark
   physical_device_index: 0
@@ -539,35 +528,29 @@ collection:
     src/bin/benchmark_gpu_public_api/runtime_ops.rs: c9d61b1e99bda517a59a6e34f625fd4d651bbbb19f6dc06ba4d0d1c0d50dfd6a
     src/bin/benchmark_gpu_public_api/state.rs: a8bbf8985bbc58c435e3c4dda7135161a141a90a10fa50d4f95128397ce949cb
     src/bin/benchmark_gpu_public_api/structural.rs: 8b61ac01b58edc090eafbc124ec135d5efeb4979631a939656ba78dd6e5c042a
-    /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/scripts/benchmark_gpu_public_api.py: 4f94c67a046ec57f95823fd01f3f73a710d97745fe6a58a3c6106dfec870d65c
+    /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/scripts/benchmark_gpu_public_api.py: 32aa2ab45453502fc16479f429191aa24f867c8d5ad5f59d5a2752a3da413ee5
     /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/scripts/gpu_public_api_ops.py: e88823db3f4a1fe43dc13c4743c9d78ece6af76a968724091af318dd8d7f2528
-    scripts/run_gpu_public_api.sh: 788b9fde4f8ca4162921baef1203b2e31bb747ec30327a425de3442cf872df52
-    data/results/nvidia-gpu/gpu/nn/20261108_090627/fixtures/manifest.json: 6019f8eb30ec023ad89d15545a6d050a2188b62ec40b3d90c773ad6e58eabea1
+    scripts/run_gpu_public_api.sh: 257228952e48c61fa1714d0cb2d6fdfdb9b0cf3898f59307ba9e72e513aa1b50
+    data/results/nvidia-gpu/gpu/nn/20261108_110139/fixtures/manifest.json: 6019f8eb30ec023ad89d15545a6d050a2188b62ec40b3d90c773ad6e58eabea1
     target/release/benchmark_gpu_public_api: 62f92e0c72d6fb46531ee8106f112567dfd32ddb482255a7cc41ba6819929786
   reference_numpy_version: 2.4.2
   measurement_cpu:
     policy: 'disabled (GPU_BENCH_CPU_SELECT unset): arms run on the allocation unpinned'
     arms:
-      jax-cuda:
-        arm: jax-cuda
-        status: disabled
-        reason: 'GPU_BENCH_CPU_SELECT is not 1: the arm runs on the allocation unpinned'
-        exit_code: 0
-        finished_at: '2026-11-08T09:16:23Z'
       pytorch-cuda:
         arm: pytorch-cuda
         status: disabled
         reason: 'GPU_BENCH_CPU_SELECT is not 1: the arm runs on the allocation unpinned'
         exit_code: 0
-        finished_at: '2026-11-08T09:16:10Z'
+        finished_at: '2026-11-08T11:08:05Z'
       tenferro-cuda-eager:
         arm: tenferro-cuda-eager
         status: disabled
         reason: 'GPU_BENCH_CPU_SELECT is not 1: the arm runs on the allocation unpinned'
         exit_code: 0
-        finished_at: '2026-11-08T09:16:00Z'
+        finished_at: '2026-11-08T11:08:02Z'
   compile:
-    case_wall_seconds: 19.935
+    case_wall_seconds: 1.821
     compiling_processes: 0
     modules_compiled: 0
     compile_time_ms: null
@@ -582,23 +565,13 @@ Each row records the wall clock it spent outside its timed region. These cases s
 
 | Case | Backend | Warning |
 | --- | --- | --- |
-| softplus_f64_n1048576 | tenferro-cuda-eager | softplus_f64_n1048576 untimed 65.6 ms is 167% of the 39.3 ms timed region (budget 20%) |
-| sigmoid_f64_n1048576 | pytorch-cuda | sigmoid_f64_n1048576 untimed 1050.6 ms is 21942% of the 4.8 ms timed region (budget 20%) |
-| silu_f64_n1048576 | pytorch-cuda | silu_f64_n1048576 untimed 952.7 ms is 17816% of the 5.3 ms timed region (budget 20%) |
-| softplus_f64_n1048576 | pytorch-cuda | softplus_f64_n1048576 untimed 929.8 ms is 7520% of the 12.4 ms timed region (budget 20%) |
-| gelu_f64_n1048576 | pytorch-cuda | gelu_f64_n1048576 untimed 918.3 ms is 12740% of the 7.2 ms timed region (budget 20%) |
-| gelu_tanh_f64_n1048576 | pytorch-cuda | gelu_tanh_f64_n1048576 untimed 910.2 ms is 19983% of the 4.6 ms timed region (budget 20%) |
-| softmax_f64_n1048576 | pytorch-cuda | softmax_f64_n1048576 untimed 926.1 ms is 11732% of the 7.9 ms timed region (budget 20%) |
-| log_softmax_f64_n1048576 | pytorch-cuda | log_softmax_f64_n1048576 untimed 908.8 ms is 14781% of the 6.1 ms timed region (budget 20%) |
-| layer_norm_f64_n1048576 | pytorch-cuda | layer_norm_f64_n1048576 untimed 921.1 ms is 6262% of the 14.7 ms timed region (budget 20%) |
-| rms_norm_f64_n1048576 | pytorch-cuda | rms_norm_f64_n1048576 untimed 918.3 ms is 6275% of the 14.6 ms timed region (budget 20%) |
-| sigmoid_f64_n1048576 | jax-cuda | sigmoid_f64_n1048576 untimed 1152.6 ms is 6961% of the 16.6 ms timed region (budget 20%) |
-| silu_f64_n1048576 | jax-cuda | silu_f64_n1048576 untimed 977.6 ms is 6083% of the 16.1 ms timed region (budget 20%) |
-| softplus_f64_n1048576 | jax-cuda | softplus_f64_n1048576 untimed 984.4 ms is 6818% of the 14.4 ms timed region (budget 20%) |
-| gelu_f64_n1048576 | jax-cuda | gelu_f64_n1048576 untimed 1193.6 ms is 2058% of the 58.0 ms timed region (budget 20%) |
-| gelu_tanh_f64_n1048576 | jax-cuda | gelu_tanh_f64_n1048576 untimed 1102.4 ms is 2614% of the 42.2 ms timed region (budget 20%) |
-| softmax_f64_n1048576 | jax-cuda | softmax_f64_n1048576 untimed 1438.2 ms is 3592% of the 40.0 ms timed region (budget 20%) |
-| log_softmax_f64_n1048576 | jax-cuda | log_softmax_f64_n1048576 untimed 1028.1 ms is 6657% of the 15.4 ms timed region (budget 20%) |
-| masked_softmax_f64_n1048576 | jax-cuda | masked_softmax_f64_n1048576 untimed 1280.0 ms is 3162% of the 40.5 ms timed region (budget 20%) |
-| masked_log_softmax_f64_n1048576 | jax-cuda | masked_log_softmax_f64_n1048576 untimed 255.8 ms is 1182% of the 21.6 ms timed region (budget 20%) |
-| layer_norm_f64_n1048576 | jax-cuda | layer_norm_f64_n1048576 untimed 1125.3 ms is 3475% of the 32.4 ms timed region (budget 20%) |
+| softplus_f64_n1048576 | tenferro-cuda-eager | softplus_f64_n1048576 untimed 65.8 ms is 169% of the 39.0 ms timed region (budget 20%) |
+| sigmoid_f64_n1048576 | pytorch-cuda | sigmoid_f64_n1048576 untimed 242.9 ms is 5063% of the 4.8 ms timed region (budget 20%) |
+| silu_f64_n1048576 | pytorch-cuda | silu_f64_n1048576 untimed 127.1 ms is 2365% of the 5.4 ms timed region (budget 20%) |
+| softplus_f64_n1048576 | pytorch-cuda | softplus_f64_n1048576 untimed 117.2 ms is 947% of the 12.4 ms timed region (budget 20%) |
+| gelu_f64_n1048576 | pytorch-cuda | gelu_f64_n1048576 untimed 107.4 ms is 1497% of the 7.2 ms timed region (budget 20%) |
+| gelu_tanh_f64_n1048576 | pytorch-cuda | gelu_tanh_f64_n1048576 untimed 110.7 ms is 2443% of the 4.5 ms timed region (budget 20%) |
+| softmax_f64_n1048576 | pytorch-cuda | softmax_f64_n1048576 untimed 115.2 ms is 1468% of the 7.8 ms timed region (budget 20%) |
+| log_softmax_f64_n1048576 | pytorch-cuda | log_softmax_f64_n1048576 untimed 112.8 ms is 1837% of the 6.1 ms timed region (budget 20%) |
+| layer_norm_f64_n1048576 | pytorch-cuda | layer_norm_f64_n1048576 untimed 121.5 ms is 823% of the 14.8 ms timed region (budget 20%) |
+| rms_norm_f64_n1048576 | pytorch-cuda | rms_norm_f64_n1048576 untimed 106.6 ms is 731% of the 14.6 ms timed region (budget 20%) |

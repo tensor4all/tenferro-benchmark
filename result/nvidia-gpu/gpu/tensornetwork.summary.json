@@ -2,31 +2,21 @@
   "schema_version": 1,
   "target_profile": "nvidia-gpu",
   "suite_id": "gpu/tensornetwork",
-  "timestamp": "2026-11-08T09:06:27+00:00",
+  "timestamp": "2026-11-08T11:01:39+00:00",
   "tenferro_commit": "9a850b06155405acc99ecd0648829e9e6d3866ba",
   "hardware": {
     "gpu": "NVIDIA A100 80GB PCIe",
     "cpu": "AMD EPYC 9554 64-Core Processor",
-    "host": "053e3b59f698"
+    "host": "0db5d65f81dc"
   },
   "unit": "ms",
   "rows": [
     {
       "case": "tensornetwork_permutation_optimized_f32",
       "group": "tensor_network_contract",
-      "backend": "jax-cuda",
-      "median": 91.01850300000001,
-      "iqr": 0.06808200000000397,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 1
-    },
-    {
-      "case": "tensornetwork_permutation_optimized_f32",
-      "group": "tensor_network_contract",
       "backend": "pytorch-cuda",
-      "median": 102.666975,
-      "iqr": 0.5096380000000096,
+      "median": 102.557647,
+      "iqr": 0.25132899999999836,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 1
@@ -35,8 +25,8 @@
       "case": "tensornetwork_permutation_optimized_f32",
       "group": "tensor_network_contract",
       "backend": "tenferro-cuda-eager",
-      "median": 86.271123,
-      "iqr": 5.473483000000002,
+      "median": 84.9317085,
+      "iqr": 2.9295449999999903,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 1
@@ -45,8 +35,8 @@
       "case": "tensornetwork_permutation_optimized_f32",
       "group": "tensor_network_contract",
       "backend": "tenferro-cuda-trace",
-      "median": 65.4210905,
-      "iqr": 4.479587999999993,
+      "median": 64.60061200000001,
+      "iqr": 39.733658000000005,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 1
