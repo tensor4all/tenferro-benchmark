@@ -53,8 +53,25 @@
           "iqr": { "type": ["number", "null"] },
           "status": { "type": "string", "minLength": 1 },
           "verified": { "type": "boolean" },
+          "verification": {
+            "description": "Which check produced verified. Absent for records written before the mode existed, where cpu_reference was the only check.",
+            "enum": ["cpu_reference", "analytic", "finite_difference", "measure_only"]
+          },
           "reason": { "type": "string" }
         },
+        "allOf": [
+          {
+            "description": "measure_only is the absence of a check, so the row is never verified and has to say why.",
+            "if": { "properties": { "verification": { "const": "measure_only" } }, "required": ["verification"] },
+            "then": {
+              "required": ["reason"],
+              "properties": {
+                "verified": { "const": false },
+                "reason": { "type": "string", "minLength": 1, "pattern": "\\S" }
+              }
+            }
+          }
+        ],
         "additionalProperties": true
       }
     },

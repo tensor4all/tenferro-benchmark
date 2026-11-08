@@ -121,7 +121,11 @@
       "required": ["status", "reference_backend", "rtol", "atol"],
       "additionalProperties": false,
       "properties": {
-        "status": { "enum": ["passed", "failed", "skipped", "not_applicable"] },
+        "status": { "enum": ["passed", "failed", "skipped", "not_applicable", "not_run"] },
+        "mode": {
+          "description": "Which check produced status. Absent on records written before the mode existed, where cpu_reference was the only check.",
+          "enum": ["cpu_reference", "analytic", "finite_difference", "measure_only"]
+        },
         "reference_backend": { "type": ["string", "null"] },
         "max_abs_error": { "type": ["number", "null"] },
         "max_rel_error": { "type": ["number", "null"] },
@@ -129,7 +133,34 @@
         "rtol": { "type": ["number", "null"], "minimum": 0 },
         "atol": { "type": ["number", "null"], "minimum": 0 },
         "reason": { "type": ["string", "null"] }
-      }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "status": { "const": "not_run" } }, "required": ["status"] },
+          "then": {
+            "required": ["reason"],
+            "properties": {
+              "mode": { "const": "measure_only" },
+              "reason": { "type": "string", "minLength": 1, "pattern": "\\S" }
+            }
+          }
+        },
+        {
+          "description": "measure_only is the absence of a check: it cannot carry a verdict or evidence, and it has to state why.",
+          "if": { "properties": { "mode": { "const": "measure_only" } }, "required": ["mode"] },
+          "then": {
+            "required": ["status", "reason"],
+            "properties": {
+              "status": { "const": "not_run" },
+              "reason": { "type": "string", "minLength": 1, "pattern": "\\S" },
+              "reference_backend": { "type": "null" },
+              "max_abs_error": { "type": "null" },
+              "max_rel_error": { "type": "null" },
+              "residual": { "type": "null" }
+            }
+          }
+        }
+      ]
     },
     "execution": {
       "type": "object",
@@ -202,7 +233,7 @@
           },
           "verification": {
             "properties": {
-              "status": { "const": "passed" }
+              "status": { "enum": ["passed", "not_run"] }
             }
           }
         }

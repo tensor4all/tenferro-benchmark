@@ -11,6 +11,7 @@ use std::time::{Duration, Instant};
 
 use serde_json::{json, Value};
 use tenferro_ad::AdContext;
+use tenferro_einsum_benchmark::verification_mode;
 use tenferro_gpu::cuda::{
     cuda_runtime_engine_registration, download_tensor, gpu_available, upload_tensor, CudaEngine,
     CudaRuntime,
@@ -132,6 +133,12 @@ fn main() {
             if !problem_filter.is_empty() && pid != problem_filter {
                 continue;
             }
+            // Resolve and enforce the verification contract before anything runs:
+            // a manifest may not declare a check this runner cannot honour, and
+            // may not drop the check without saying why.
+            let problem = verification_mode::resolve(problem, &suite["defaults"])
+                .unwrap_or_else(|error| panic!("{suite_path}: {error}"));
+            let problem = &problem;
             let rec = if !cuda_available {
                 stub(
                     &suite_id,
@@ -177,6 +184,10 @@ fn dispatch(
 ) -> Value {
     let phase = problem["op"].as_str().unwrap_or("");
     let throughput = deferred_route(problem, suite_measure);
+    let verify_mode = verification_mode::resolved_mode(problem).expect("verify.mode resolved at load");
+    let measure_only_reason = verification_mode::resolved_measure_only_reason(problem)
+        .map(str::to_string);
+    let measure_only = verify_mode.is_measure_only();
     let backend = if throughput {
         DEFERRED_BATCH_BACKEND
     } else {
@@ -276,7 +287,14 @@ fn dispatch(
                 .collect::<tenferro_tensor::Result<Vec<_>>>()
                 .map_err(|e| format!("initial materialization: {e}"))?;
             sync_runtime(&transfer_rt)?;
-            initial = export_outputs(&transfer_rt, &probe, device_ordinal)?;
+            // A measure_only case runs no check, so it neither downloads nor
+            // serialises its outputs: the whole point of the mode is that the
+            // verification share of the case is zero, and the record says so.
+            initial = if measure_only {
+                Vec::new()
+            } else {
+                export_outputs(&transfer_rt, &probe, device_ordinal)?
+            };
             let bytes = probe
                 .iter()
                 .map(|v| v.shape().iter().product::<usize>() * 8)
@@ -324,7 +342,11 @@ fn dispatch(
                 .collect::<tenferro_tensor::Result<Vec<_>>>()
                 .map_err(|e| format!("final materialization: {e}"))?;
             sync_runtime(&transfer_rt)?;
-            final_values = export_outputs(&transfer_rt, &final_outputs, device_ordinal)?;
+            final_values = if measure_only {
+                Vec::new()
+            } else {
+                export_outputs(&transfer_rt, &final_outputs, device_ordinal)?
+            };
         } else {
             // Throughput mode: K prepared runs enqueued per timed sample on one
             // caller-held engine, then one retirement. Per-call time is
@@ -394,10 +416,18 @@ fn dispatch(
             })();
             count = effective_k;
             let (initial_out, final_out) = sampled?;
-            initial = export_outputs(&transfer_rt, &initial_out, device_ordinal)?;
+            initial = if measure_only {
+                Vec::new()
+            } else {
+                export_outputs(&transfer_rt, &initial_out, device_ordinal)?
+            };
             let final_outputs =
                 final_out.ok_or("no deferred-batch result available for verification")?;
-            final_values = export_outputs(&transfer_rt, &final_outputs, device_ordinal)?;
+            final_values = if measure_only {
+                Vec::new()
+            } else {
+                export_outputs(&transfer_rt, &final_outputs, device_ordinal)?
+            };
         }
 
         Ok((
@@ -465,9 +495,20 @@ fn dispatch(
             rec["execution"]["synchronization"] = json!(
                 "native CUDA synchronization; initial/final verification downloads outside timing"
             );
-            rec["verification"]["status"] = json!("skipped");
-            rec["verification"]["reason"] = json!("awaiting independent CPU AD verification");
-            rec["execution"]["notes"] = json!(json!({"verification_outputs":verification_outputs,
+            rec["verification"]["mode"] = json!(verify_mode.as_str());
+            if measure_only {
+                // The row is a measurement and stays `ok`; only its
+                // verification says that no check was run, and why.
+                rec["verification"]["status"] = json!("not_run");
+                rec["verification"]["reference_backend"] = Value::Null;
+                rec["verification"]["reason"] = json!(measure_only_reason
+                    .clone()
+                    .expect("measure_only reason resolved at load"));
+            } else {
+                rec["verification"]["status"] = json!("skipped");
+                rec["verification"]["reason"] = json!("awaiting independent CPU AD verification");
+            }
+            rec["execution"]["notes"] = json!(json!({"verification_outputs":if measure_only {Value::Null} else {verification_outputs},
                 "sampling":if verify_only {Value::Null} else {sampling},
                 "session_policy": if throughput {
                     "K Runtime::run calls are enqueued on one caller-held CUDA engine and paid one caller-side retirement barrier per K-run batch"
@@ -817,7 +858,8 @@ fn stub(
         },
         "performance": { "tflops": null, "effective_bandwidth_gbps": null, "peak_memory_bytes": null },
         "verification": {
-            "status": "skipped", "reference_backend": null,
+            "status": "skipped", "mode": verification_mode::resolved_mode(problem).map(|m| m.as_str()),
+            "reference_backend": null,
             "max_abs_error": null, "max_rel_error": null, "residual": null,
             "rtol": null, "atol": null, "reason": reason
         },

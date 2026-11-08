@@ -35,19 +35,24 @@ def cpu_reference(loss_fn, matrix, tangent, rhs, phase):
 
 
 def verify_arrays(actual, expected, rtol, atol):
+    """Compare two AD rows and raise unless every element is within tolerance.
+
+    The elementwise rule lives in one place (`elementwise_errors`); it scores an
+    element that has no tolerance at all as a failure instead of dividing 0 by 0,
+    which used to turn the maximum into NaN and let the row through.
+    """
+    from linalg_ad_verify_modes import elementwise_errors
+
     if len(actual) != len(expected):
         raise ValueError("AD output arity mismatch")
     max_abs, max_rel, worst = 0., 0., 0.
     for value, reference in zip(actual, expected):
-        value = np.asarray(value)
-        if value.shape != reference.shape or value.dtype != np.dtype("float64"):
-            raise ValueError("AD output shape/dtype mismatch")
-        if not np.all(np.isfinite(value)) or not np.all(np.isfinite(reference)):
-            raise ValueError("nonfinite AD output/reference")
-        error = np.abs(value-reference)
-        max_abs = max(max_abs, float(np.max(error)))
-        max_rel = max(max_rel, float(np.max(error/np.maximum(np.abs(reference), atol))))
-        worst = max(worst, float(np.max(error/(atol+rtol*np.abs(reference)))))
-    if worst > 1:
+        abs_error, rel_error, ratio = elementwise_errors(
+            np.asarray(value), np.asarray(reference), rtol, atol
+        )
+        max_abs = max(max_abs, abs_error)
+        max_rel = max(max_rel, rel_error)
+        worst = max(worst, ratio)
+    if not worst <= 1:
         raise ValueError(f"AD error/tolerance={worst}")
     return max_abs, max_rel, worst

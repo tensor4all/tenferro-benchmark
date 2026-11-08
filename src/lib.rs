@@ -1,6 +1,7 @@
 pub mod fingerprint;
 pub mod tensornetwork;
 pub mod thread_enforcement;
+pub mod verification_mode;
 
 use std::fmt::Display;
 

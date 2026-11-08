@@ -13,6 +13,7 @@ use std::time::{Duration, Instant};
 use serde_json::{json, Value};
 use tenferro_ad::{EagerRuntime, EagerSession, EagerTensor};
 use tenferro_cpu::CpuEngine;
+use tenferro_einsum_benchmark::verification_mode::{self, VerificationMode};
 use tenferro_einsum::{EagerSessionEinsumExt, TraceContextEinsumExt};
 use tenferro_einsum_benchmark::fingerprint::Fingerprint;
 use tenferro_einsum_benchmark::tensornetwork::{
@@ -126,6 +127,22 @@ fn main() {
             let pid = problem["id"].as_str().unwrap_or("");
             if !problem_filter.is_empty() && pid != problem_filter {
                 continue;
+            }
+            // Resolve the verification contract before anything runs. This
+            // runner implements the CPU-reference check and the explicit
+            // opt-out; a manifest that names a check it does not implement is
+            // refused here rather than silently verified some other way.
+            let problem = verification_mode::resolve(problem, &suite["defaults"])
+                .unwrap_or_else(|error| panic!("{suite_path}: {error}"));
+            let problem = &problem;
+            match verification_mode::resolved_mode(problem) {
+                Some(VerificationMode::CpuReference) | Some(VerificationMode::MeasureOnly) => {}
+                other => panic!(
+                    "{suite_path}: {pid}: verify.mode={} is not implemented by \
+                     benchmark_gpu_rust; that suite belongs to the runner that \
+                     implements it",
+                    other.map(VerificationMode::as_str).unwrap_or("unknown")
+                ),
             }
             let candidates = backend_candidates(problem, &suite_backends);
 
@@ -280,6 +297,45 @@ fn verification_only() -> bool {
     std::env::var("GPU_BENCH_VERIFY_ONLY").as_deref() == Ok("1")
 }
 
+/// The verification mode of a problem that `main` already resolved.
+fn problem_verify_mode(problem: &serde_yaml::Value) -> VerificationMode {
+    verification_mode::resolved_mode(problem).expect("verify.mode resolved at load")
+}
+
+/// The reason a `measure_only` problem gives for carrying no check.
+fn problem_measure_only_reason(problem: &serde_yaml::Value) -> Option<String> {
+    if problem_verify_mode(problem) != VerificationMode::MeasureOnly {
+        return None;
+    }
+    Some(
+        verification_mode::resolved_measure_only_reason(problem)
+            .expect("measure_only reason resolved at load")
+            .to_string(),
+    )
+}
+
+/// State the absence of a check on a row that was measured.
+///
+/// `status` stays `ok` because the measurement did run; the missing evidence
+/// is stated in `verification` so a consumer that filters on `status` keeps the
+/// number while a consumer that reads `verification` can never mistake it for a
+/// verified one.
+fn mark_measure_only(record: &mut Value, reason: &str) {
+    record["verification"]["status"] = json!("not_run");
+    record["verification"]["mode"] = json!("measure_only");
+    for field in [
+        "reference_backend",
+        "max_abs_error",
+        "max_rel_error",
+        "residual",
+        "rtol",
+        "atol",
+    ] {
+        record["verification"][field] = Value::Null;
+    }
+    record["verification"]["reason"] = json!(reason);
+}
+
 fn apply_sampling_record(record: &mut Value, sampling: &Value, fingerprints: &[Fingerprint]) {
     let mut notes = sampling.clone();
     notes["fingerprints"] = serde_json::to_value(fingerprints).unwrap_or(Value::Null);
@@ -424,6 +480,7 @@ fn run_eager_tensor_network(
     let n_runs = yaml_usize(&problem["run"]["runs"], 10);
     let rtol = problem["verify"]["rtol"].as_f64().unwrap_or(1e-4);
     let atol = problem["verify"]["atol"].as_f64().unwrap_or(1e-5);
+    let measure_only_reason = problem_measure_only_reason(problem);
     let exec_path = "phase2-measured-tenferro-cuda-eager-tensornetwork";
 
     let result = panic::catch_unwind(panic::AssertUnwindSafe(|| -> Result<_, String> {
@@ -463,10 +520,13 @@ fn run_eager_tensor_network(
             },
         )?;
         let validation_start = case_start.elapsed().as_nanos();
-        let cpu_scalar = constant_tree_scalar(&network.tree, &spec)?;
-        let gpu_scalar = scalar_f32_from_eager_gpu(&mut compute_bk, &outputs[0], &transfer_rt)?;
-        let (ver_status, max_abs, max_rel) =
-            verify_tensor_network_scalar(gpu_scalar, cpu_scalar, rtol, atol);
+        let (ver_status, max_abs, max_rel) = if measure_only_reason.is_some() {
+            ("not_run".to_string(), None, None)
+        } else {
+            let cpu_scalar = constant_tree_scalar(&network.tree, &spec)?;
+            let gpu_scalar = scalar_f32_from_eager_gpu(&mut compute_bk, &outputs[0], &transfer_rt)?;
+            verify_tensor_network_scalar(gpu_scalar, cpu_scalar, rtol, atol)
+        };
         // A scalar network result has no output vector to fingerprint.
         let fingerprints: Vec<Fingerprint> = Vec::new();
 
@@ -480,7 +540,7 @@ fn run_eager_tensor_network(
 
     match result {
         Ok(Ok((times_ms, ver_status, max_abs, max_rel, sampling, fingerprints))) => {
-            if ver_status != "passed" {
+            if ver_status != "passed" && ver_status != "not_run" {
                 return stub(
                     suite_id,
                     problem,
@@ -520,6 +580,9 @@ fn run_eager_tensor_network(
             apply_sampling_record(&mut record, &sampling, &fingerprints);
             record["verification"]["reference_backend"] =
                 json!("analytic_constant_tree_fp64_from_exact_f32_inputs");
+            if let Some(reason) = &measure_only_reason {
+                mark_measure_only(&mut record, reason);
+            }
             record
         }
         Ok(Err(msg)) => stub(
@@ -988,6 +1051,7 @@ fn run_trace_tensor_network(
     let rtol = problem["verify"]["rtol"].as_f64().unwrap_or(1e-4);
     let atol = problem["verify"]["atol"].as_f64().unwrap_or(1e-5);
     let deferred = is_deferred_batch_backend(backend);
+    let measure_only_reason = problem_measure_only_reason(problem);
     let exec_path = if deferred {
         "trace-run-prepared-in-held-session-tensornetwork-deferred-batch"
     } else if held_session {
@@ -1060,18 +1124,20 @@ fn run_trace_tensor_network(
                 &transfer_rt,
             )?
         };
-        let downloaded =
-            download_tensor(&transfer_rt, &last_out[0]).map_err(|e| format!("download: {e}"))?;
-        let gpu_scalar = Some(scalar_f32_tensor(&downloaded)?);
+        let (ver_status, max_abs, max_rel) = if measure_only_reason.is_some() {
+            ("not_run".to_string(), None, None)
+        } else {
+            let downloaded = download_tensor(&transfer_rt, &last_out[0])
+                .map_err(|e| format!("download: {e}"))?;
+            let gpu_scalar = scalar_f32_tensor(&downloaded)?;
 
-        let cpu_ctx = EagerRuntime::new().expect("CPU reference runtime");
-        let mut cpu_engine = tenferro_einsum_benchmark::cpu_engine(None)?;
-        let cpu_inputs = build_tensor_network_cpu_inputs(&network, &spec, cpu_ctx)?;
-        let contracted = contract_tree_eager(&mut cpu_engine, &network.tree, &cpu_inputs)?;
-        let cpu_scalar = scalar_f32(&mut cpu_engine, &contracted)?;
-        let gpu_scalar = gpu_scalar.ok_or("missing timed tensor network result")?;
-        let (ver_status, max_abs, max_rel) =
-            verify_tensor_network_scalar(gpu_scalar, cpu_scalar, rtol, atol);
+            let cpu_ctx = EagerRuntime::new().expect("CPU reference runtime");
+            let mut cpu_engine = tenferro_einsum_benchmark::cpu_engine(None)?;
+            let cpu_inputs = build_tensor_network_cpu_inputs(&network, &spec, cpu_ctx)?;
+            let contracted = contract_tree_eager(&mut cpu_engine, &network.tree, &cpu_inputs)?;
+            let cpu_scalar = scalar_f32(&mut cpu_engine, &contracted)?;
+            verify_tensor_network_scalar(gpu_scalar, cpu_scalar, rtol, atol)
+        };
         // A scalar network result has no output vector to fingerprint.
         let fingerprints: Vec<Fingerprint> = Vec::new();
 
@@ -1118,6 +1184,9 @@ fn run_trace_tensor_network(
                 tc,
             );
             apply_sampling_record(&mut record, &sampling, &fingerprints);
+            if let Some(reason) = &measure_only_reason {
+                mark_measure_only(&mut record, reason);
+            }
             record
         }
         Ok(Err(msg)) => trace_failure(
@@ -1207,6 +1276,7 @@ fn run_eager(
     let n_runs = yaml_usize(&problem["run"]["runs"], 7);
     let rtol = problem["verify"]["rtol"].as_f64().unwrap_or(1e-5);
     let atol = problem["verify"]["atol"].as_f64().unwrap_or(1e-8);
+    let measure_only_reason = problem_measure_only_reason(problem);
     let exec_path = if per_call_session {
         "phase2-measured-tenferro-cuda-eager-per-call-session"
     } else {
@@ -1285,7 +1355,9 @@ fn run_eager(
         let validation_start = case_start.elapsed().as_nanos();
 
         // Verify last result against CPU reference
-        let (ver_status, max_abs, max_rel, fingerprints) = if let Some(ref g) = last_out {
+        let (ver_status, max_abs, max_rel, fingerprints) = if measure_only_reason.is_some() {
+            ("not_run".to_string(), None, None, Vec::new())
+        } else if let Some(ref g) = last_out {
             // The CPU reference runs on a CPU engine; the GPU outputs are
             // materialized through the caller-held CUDA engine below.
             let cpu_out = if matches!(op, "qr" | "solve" | "svd" | "eigh") {
@@ -1324,7 +1396,7 @@ fn run_eager(
 
     match result {
         Ok(Ok((times_ms, ver_status, max_abs, max_rel, sampling, fingerprints))) => {
-            if ver_status != "passed" {
+            if ver_status != "passed" && ver_status != "not_run" {
                 return stub(
                     suite_id,
                     problem,
@@ -1362,6 +1434,9 @@ fn run_eager(
                 tc,
             );
             apply_sampling_record(&mut record, &sampling, &fingerprints);
+            if let Some(reason) = &measure_only_reason {
+                mark_measure_only(&mut record, reason);
+            }
             record
         }
         Ok(Err(msg)) => stub(
@@ -1411,6 +1486,7 @@ fn run_semantic_trace_einsum(
     let rtol = problem["verify"]["rtol"].as_f64().unwrap_or(1e-5);
     let atol = problem["verify"]["atol"].as_f64().unwrap_or(1e-8);
     let deferred = is_deferred_batch_backend(backend);
+    let measure_only_reason = problem_measure_only_reason(problem);
     let exec_path = if deferred {
         "trace-run-prepared-in-held-session-einsum-deferred-batch"
     } else if held_session {
@@ -1490,25 +1566,30 @@ fn run_semantic_trace_einsum(
             )?
         };
 
-        let gpu_outputs = last_out
-            .iter()
-            .map(|tensor| {
-                download_tensor(&transfer_rt, tensor).map_err(|e| format!("download result: {e}"))
-            })
-            .collect::<Result<Vec<_>, _>>()?;
-        let cpu_input_refs: Vec<&Tensor> = cpu_inputs.iter().collect();
-        let (cpu_runtime, mut cpu_engine) = cpu_runtime_with_extensions(false)?;
-        let cpu_outputs =
-            run_cpu_reference(&cpu_runtime, &mut cpu_engine, &program, &cpu_input_refs)
-                .map_err(|e| format!("CPU reference: {e}"))?;
-        let (ver_status, max_abs, max_rel, fingerprints) = verify_tensors(
-            "einsum",
-            &gpu_outputs,
-            &cpu_outputs,
-            &cpu_inputs,
-            rtol,
-            atol,
-        );
+        let (ver_status, max_abs, max_rel, fingerprints) = if measure_only_reason.is_some() {
+            ("not_run".to_string(), None, None, Vec::new())
+        } else {
+            let gpu_outputs = last_out
+                .iter()
+                .map(|tensor| {
+                    download_tensor(&transfer_rt, tensor)
+                        .map_err(|e| format!("download result: {e}"))
+                })
+                .collect::<Result<Vec<_>, _>>()?;
+            let cpu_input_refs: Vec<&Tensor> = cpu_inputs.iter().collect();
+            let (cpu_runtime, mut cpu_engine) = cpu_runtime_with_extensions(false)?;
+            let cpu_outputs =
+                run_cpu_reference(&cpu_runtime, &mut cpu_engine, &program, &cpu_input_refs)
+                    .map_err(|e| format!("CPU reference: {e}"))?;
+            verify_tensors(
+                "einsum",
+                &gpu_outputs,
+                &cpu_outputs,
+                &cpu_inputs,
+                rtol,
+                atol,
+            )
+        };
 
         Ok((times_ms, ver_status, max_abs, max_rel, sampling, fingerprints))
     }));
@@ -1553,6 +1634,9 @@ fn run_semantic_trace_einsum(
                 tc,
             );
             apply_sampling_record(&mut record, &sampling, &fingerprints);
+            if let Some(reason) = &measure_only_reason {
+                mark_measure_only(&mut record, reason);
+            }
             record
         }
         Ok(Err(msg)) => trace_failure(
@@ -1660,6 +1744,7 @@ fn run_trace(
     let n_runs = yaml_usize(&problem["run"]["runs"], 7);
     let rtol = problem["verify"]["rtol"].as_f64().unwrap_or(1e-5);
     let atol = problem["verify"]["atol"].as_f64().unwrap_or(1e-8);
+    let measure_only_reason = problem_measure_only_reason(problem);
     let exec_path = if deferred {
         "trace-run-prepared-in-held-session-deferred-batch"
     } else if held_session {
@@ -1720,22 +1805,25 @@ fn run_trace(
         };
 
         // Verify via download + CPU reference
-        let gpu_tensors: Vec<Tensor> = last_out
-            .iter()
-            .filter_map(|t| download_tensor(&transfer_rt, t).ok())
-            .collect();
-        let cpu_out = if op == "solve" {
-            Vec::new()
+        let (ver_status, max_abs, max_rel, fingerprints) = if measure_only_reason.is_some() {
+            ("not_run".to_string(), None, None, Vec::new())
         } else {
-            run_cpu_trace(op, problem, seed, gen).unwrap_or_default()
+            let gpu_tensors: Vec<Tensor> = last_out
+                .iter()
+                .filter_map(|t| download_tensor(&transfer_rt, t).ok())
+                .collect();
+            let cpu_out = if op == "solve" {
+                Vec::new()
+            } else {
+                run_cpu_trace(op, problem, seed, gen).unwrap_or_default()
+            };
+            let cpu_inputs: Vec<Tensor> = cpu_inputs
+                .iter()
+                .map(|(_, t)| t.duplicate())
+                .collect::<Result<_, _>>()
+                .map_err(|e| e.to_string())?;
+            verify_tensors(op, &gpu_tensors, &cpu_out, &cpu_inputs, rtol, atol)
         };
-        let cpu_inputs: Vec<Tensor> = cpu_inputs
-            .iter()
-            .map(|(_, t)| t.duplicate())
-            .collect::<Result<_, _>>()
-            .map_err(|e| e.to_string())?;
-        let (ver_status, max_abs, max_rel, fingerprints) =
-            verify_tensors(op, &gpu_tensors, &cpu_out, &cpu_inputs, rtol, atol);
 
         Ok((times_ms, ver_status, max_abs, max_rel, sampling, fingerprints))
     }));
@@ -1780,6 +1868,9 @@ fn run_trace(
                 tc,
             );
             apply_sampling_record(&mut record, &sampling, &fingerprints);
+            if let Some(reason) = &measure_only_reason {
+                mark_measure_only(&mut record, reason);
+            }
             record
         }
         Ok(Err(msg)) => trace_failure(
@@ -3075,7 +3166,9 @@ fn stub(
         },
         "performance": { "tflops": null, "effective_bandwidth_gbps": null, "peak_memory_bytes": null },
         "verification": {
-            "status": ver_status, "reference_backend": null,
+            "status": ver_status,
+            "mode": problem_verify_mode(problem).as_str(),
+            "reference_backend": null,
             "max_abs_error": null, "max_rel_error": null, "residual": null,
             "rtol": null, "atol": null, "reason": reason
         },
@@ -3126,7 +3219,9 @@ fn ok_record(
         },
         "performance": { "tflops": null, "effective_bandwidth_gbps": null, "peak_memory_bytes": null },
         "verification": {
-            "status": ver_status, "reference_backend": "cpu_fp64",
+            "status": ver_status,
+            "mode": problem_verify_mode(problem).as_str(),
+            "reference_backend": "cpu_fp64",
             "max_abs_error": max_abs, "max_rel_error": max_rel, "residual": null,
             "rtol": rtol, "atol": atol, "reason": null
         },
