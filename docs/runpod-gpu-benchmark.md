@@ -464,6 +464,14 @@ arms, and a run that drops the JAX control is not the weekly matrix even when
 every suite completes (#42473121688 dispatched the old three-arm default and
 lost `jax-cuda` on all fourteen suites).
 
+That run also shows why the bundle cannot detect it alone: the routine selection
+writes the expected rows from the arms it was given, so a narrowed run validates
+against itself. `prepare_result_bundle` therefore compares each suite's plan with
+`benchmarks/gpu/manifests/routine.yaml` and records `narrowed_routine_arms`, and
+`ingest_benchmark_results` refuses to publish routine pages when that list is
+non-empty. The raw artifact is still uploaded and archived; only the published
+report is left on the last complete measurement.
+
 For hosted preparation/cache diagnostics without renting a GPU, dispatch with
 `-f prepare_only=true`. This still prepares and verifies both artifacts, but
 skips provisioning and measurements. It produces no new benchmark receipt.

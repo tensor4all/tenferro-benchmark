@@ -240,6 +240,26 @@ def request_publication():
                    text=True, check=True)
 
 
+def refuse_narrowed_routine_arms(bundle: Path, profile: str) -> None:
+    """A routine page may only be published from the routine arm set.
+
+    The bundle is self-consistent when a dispatch narrows the arms, so validation
+    cannot tell the difference; the manifest can. Refusing here keeps the raw
+    artifact available (it is already uploaded) while leaving the published
+    report on the last complete measurement instead of replacing it with one arm
+    fewer. Run 42473121688 dropped `jax-cuda` on all fourteen suites this way.
+    """
+    if profile != 'nvidia-gpu':
+        return
+    publication = json.loads((Path(bundle) / 'publication.json').read_text())
+    gaps = publication.get('narrowed_routine_arms') or {}
+    if not gaps:
+        return
+    detail = '; '.join(f'{suite}: {", ".join(arms)}' for suite, arms in sorted(gaps.items()))
+    raise ValueError('Routine reports require the routine arm set; this run omitted ' + detail +
+                     '. The raw bundle stays available as an artifact.')
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--run-id', type=int, required=True)
@@ -270,6 +290,7 @@ def main():
             validated = prepare_bundle(bundle, profile, source, Path(directory) / 'recovered')
         else:
             validated = validate_bundle(bundle, profile, source)
+            refuse_narrowed_routine_arms(bundle, profile)
         if args.validate_only:
             decisions = {receipt['suite_id']: 'validated' for receipt, _ in validated}
             commit = None

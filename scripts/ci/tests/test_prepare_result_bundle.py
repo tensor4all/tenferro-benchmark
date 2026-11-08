@@ -177,6 +177,31 @@ class PackagePartialGPUTest(unittest.TestCase):
         self.assertEqual(receipt['case_outcomes']['failed'], {'count':2,'cases':['failed_case','matmul']})
         self.assertTrue(all(row['median'] is None for row in json.loads(payload['result/nvidia-gpu/gpu/dense.summary.json'])['rows']))
 
+    def test_a_run_that_dropped_a_routine_arm_is_recorded(self):
+        fixture = self.fixture
+        metadata = yaml.safe_load((fixture.run/'run.yaml').read_text())
+        metadata.setdefault('collection', {})['expected_case_ids'] = ['gpu/dense:matmul:tenferro-cuda-trace']
+        (fixture.run/'run.yaml').write_text(yaml.safe_dump(metadata))
+        self.package()
+        publication = json.loads((fixture.root/'partial-bundle'/'publication.json').read_text())
+        self.assertEqual(publication['narrowed_routine_arms'],
+                         {'gpu/dense': ['jax-cuda', 'pytorch-cuda', 'tenferro-cuda-eager']})
+
+    def test_a_complete_routine_arm_set_records_no_gap(self):
+        fixture = self.fixture
+        arms = ['tenferro-cuda-trace', 'tenferro-cuda-eager', 'pytorch-cuda', 'jax-cuda']
+        metadata = yaml.safe_load((fixture.run/'run.yaml').read_text())
+        metadata.setdefault('collection', {})['expected_case_ids'] = [
+            f'gpu/dense:matmul:{arm}' for arm in arms]
+        (fixture.run/'run.yaml').write_text(yaml.safe_dump(metadata))
+        rows = [dict(fixture.row, backend=arm) for arm in arms]
+        (fixture.run/'records.jsonl').write_text(''.join(json.dumps(row)+'\n' for row in rows))
+        (fixture.run/'report.summary.json').write_text(
+            json.dumps(test_gpu_ingestion.build_summary(rows, fixture.metadata)))
+        self.package()
+        publication = json.loads((fixture.root/'partial-bundle'/'publication.json').read_text())
+        self.assertNotIn('narrowed_routine_arms', publication)
+
     def test_derived_fixtures_and_caches_are_inventoried_not_shipped(self):
         self.add_failure()
         fixture = self.fixture
