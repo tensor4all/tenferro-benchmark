@@ -1,10 +1,10 @@
 # gpu/reuse_contraction: CUDA public API benchmark
 
-Measured cells: **94**. Unsupported cells: **74**, including **0** numerically verified but timing-excluded cells. Unsupported cells do not count as measured coverage.
+Measured cells: **150**. Unsupported cells: **74**, including **0** numerically verified but timing-excluded cells. Unsupported cells do not count as measured coverage.
 
-Logical traffic: this run measured a plain device copy of 67108864 bytes at **1410.5 GB/s** on this device. Every record carries the logical bytes the case must move per operation and the ratio of the case's implied rate to that copy rate, in the sampling table below. Logical bytes are the declared array sizes, not device DRAM traffic: a case whose operands stay in cache moves less DRAM than its arrays suggest, so a ratio above 1 is recorded, not rejected.
+Logical traffic: this run measured a plain device copy of 67108864 bytes at **1440.2 GB/s** on this device. Every record carries the logical bytes the case must move per operation and the ratio of the case's implied rate to that copy rate, in the sampling table below. Logical bytes are the declared array sizes, not device DRAM traffic: a case whose operands stay in cache moves less DRAM than its arrays suggest, so a ratio above 1 is recorded, not rejected.
 
-Raw run: `data/results/nvidia-gpu/gpu/reuse_contraction/20261108_090627/`.
+Raw run: `data/results/nvidia-gpu/gpu/reuse_contraction/20261108_115237/`.
 
 Isolated public APIs and explicit unsupported timing contracts. Issue 155.
 
@@ -12,7 +12,7 @@ This run did not compile: no NVRTC module was built in any of its arms. That des
 
 Values are median (IQR) **µs per operation**. Samples time batches of declared operations plus device synchronization; retained output memory is limited to 256 MiB. Batch counts and raw durations are preserved in JSONL.
 
-Cases marked † (**13** of 56) were sampled with a different number of operations per sample on different arms (see Ops/sample in the sampling table). Each value is still per operation, but the arms amortise launch and synchronization over different batch sizes, so a ratio between their columns is approximate and is not presented as a like-for-like comparison.
+Cases marked † (**25** of 56) were sampled with a different number of operations per sample on different arms (see Ops/sample in the sampling table). Each value is still per operation, but the arms amortise launch and synchronization over different batch sizes, so a ratio between their columns is approximate and is not presented as a like-for-like comparison.
 
 Setup, input transfers, library/plan initialization, JIT compilation, validation downloads and output destruction are outside timing. Intrinsic output allocation is inside timing; output-reuse rows instead use preallocated destinations across samples. Accumulating destinations are restored from prepared GPU seeds and synchronized before every batch clock, including initialization and calibration. Direct and eager each use one entered session across samples; direct FFT uses cached `FftExecutor`. JAX eager and compiled JIT are separate arms.
 
@@ -24,236 +24,292 @@ Generalized batch dot preserves native output order: tenferro [m,n,b], PyTorch/J
 
 Prepared einsum uses the public ConcreteEinsumPlan for ik,kj->ij, built once outside execution and sampling. Native matrix multiplication/reuse/accumulation references match the selected mathematical and output-ownership contracts; they do not assert an equivalent prepared-plan interface. Transposed input views/values, read/write handles and accumulation seed restoration are untimed.
 
-| Case | tenferro-cuda-eager | pytorch-cuda | jax-cuda |
-| --- | ---: | ---: | ---: |
-| add_into_f64_n1048576 | unsupported | 12.100 (0.163) | unsupported |
-| add_read_into_f64_n1048576 | unsupported | 11.770 (0.151) | unsupported |
-| sub_into_f64_n1048576 | unsupported | 11.947 (0.276) | unsupported |
-| sub_read_into_f64_n1048576 | unsupported | 12.056 (0.134) | unsupported |
-| mul_into_f64_n1048576 | unsupported | 12.086 (0.203) | unsupported |
-| mul_read_into_f64_n1048576 | unsupported | 12.764 (0.184) | unsupported |
-| div_into_f64_n1048576 | unsupported | 13.776 (0.173) | unsupported |
-| div_read_into_f64_n1048576 | unsupported | 13.769 (0.171) | unsupported |
-| neg_into_f64_n1048576 | unsupported | 7.654 (0.160) | unsupported |
-| neg_read_into_f64_n1048576 | unsupported | 7.818 (0.145) | unsupported |
-| conj_into_c64_n1048576 | unsupported | 25.315 (0.296) | unsupported |
-| conj_read_into_c64_n1048576 | unsupported | 25.230 (0.283) | unsupported |
-| tensordot_f64_n262144 † | 46.793 (3.884) | 25.298 (0.698) | 95.156 (2.339) |
-| vdot_read_f64_n262144 † | unsupported | 9.297 (0.036) | 39.748 (2.091) |
-| norm_squared_read_f64_n262144 † | unsupported | 9.022 (0.017) | 39.828 (1.247) |
-| axpby_read_into_accum_f64_n1048576 | unsupported | 16.398 (0.201) | unsupported |
-| dot_general_read_into_f64_s256 | unsupported | 7.509 (0.036) | unsupported |
-| dot_general_read_into_accum_f64_s256 | unsupported | 8.856 (0.014) | unsupported |
-| dot_general_read_into_accum_cached_f64_s256 | unsupported | 8.860 (0.022) | unsupported |
-| add_strided_read_f64_n1048576 | unsupported | 12.375 (0.086) | 44.529 (2.209) |
-| mul_strided_read_f64_n1048576 | unsupported | 12.065 (0.239) | 42.447 (1.636) |
-| neg_strided_read_f64_n1048576 | unsupported | 7.688 (0.085) | 35.699 (2.297) |
-| exp_strided_read_f64_n1048576 | unsupported | 8.121 (0.069) | 45.647 (1.679) |
-| tanh_strided_read_f64_n1048576 | unsupported | 8.127 (0.036) | 47.668 (1.913) |
-| reduce_sum_strided_read_f64_n1048576 † | unsupported | 13.531 (0.015) | 49.141 (1.890) |
-| conj_strided_read_c64_n1048576 | unsupported | 25.341 (0.275) | 63.361 (5.944) |
-| dot_general_batch_f64_s256 † | 23.831 (0.364) | 16.577 (0.153) | 93.145 (1.815) |
-| dot_conj_l0r0_c64_n262144 † | 33.845 (0.203) | 12.509 (0.036) | 72.827 (1.560) |
-| einsum_plan_owned_f64_s256 † | unsupported | 11.128 (3.836) | 67.179 (3.065) |
-| einsum_plan_read_f64_s256 † | unsupported | 7.878 (0.186) | 68.902 (0.742) |
-| einsum_plan_strided_read_f64_s256 † | unsupported | 7.860 (0.320) | 66.773 (1.199) |
-| einsum_plan_into_f64_s256 | unsupported | 7.613 (0.045) | unsupported |
-| einsum_plan_read_into_f64_s256 | unsupported | 7.584 (0.019) | unsupported |
-| einsum_plan_read_into_accum_f64_s256 | unsupported | 8.805 (0.056) | unsupported |
-| einsum_plan_strided_read_into_f64_s256 | unsupported | 7.505 (0.021) | unsupported |
-| einsum_plan_strided_read_into_accum_f64_s256 | unsupported | 8.667 (0.071) | unsupported |
-| sub_strided_read_f64_n1048576 | unsupported | 12.433 (0.180) | 72.725 (2.532) |
-| div_strided_read_f64_n1048576 | unsupported | 13.235 (0.144) | 69.986 (0.410) |
-| rem_strided_read_f64_n1048576 | unsupported | 12.455 (0.173) | 34.816 (2.019) |
-| pow_strided_read_f64_n1048576 | unsupported | 29.255 (0.114) | 36.566 (1.952) |
-| maximum_strided_read_f64_n1048576 | unsupported | 12.525 (0.137) | 41.079 (3.151) |
-| minimum_strided_read_f64_n1048576 | unsupported | 12.270 (0.136) | 41.714 (2.487) |
-| abs_strided_read_f64_n1048576 | unsupported | 7.672 (0.082) | 33.248 (2.014) |
-| sign_strided_read_f64_n1048576 | unsupported | 7.564 (0.076) | 33.388 (1.669) |
-| expm1_strided_read_f64_n1048576 | unsupported | 9.802 (0.222) | 33.770 (2.046) |
-| log_strided_read_f64_n1048576 | unsupported | 12.484 (0.042) | 34.113 (1.545) |
-| log1p_strided_read_f64_n1048576 | unsupported | 12.986 (0.062) | 32.936 (1.932) |
-| erf_strided_read_f64_n1048576 | unsupported | 14.312 (0.089) | 45.538 (2.874) |
-| sin_strided_read_f64_n1048576 | unsupported | 10.929 (0.058) | 32.978 (1.548) |
-| cos_strided_read_f64_n1048576 | unsupported | 11.003 (0.102) | 34.854 (2.875) |
-| sqrt_strided_read_f64_n1048576 | unsupported | 7.756 (0.124) | 33.648 (2.646) |
-| rsqrt_strided_read_f64_n1048576 | unsupported | 7.749 (0.159) | 49.530 (1.243) |
-| reduce_prod_strided_read_f64_n1048576 † | unsupported | 13.502 (0.017) | 37.451 (1.454) |
-| reduce_max_strided_read_f64_n1048576 † | unsupported | 13.621 (0.019) | 69.518 (1.271) |
-| reduce_min_strided_read_f64_n1048576 † | unsupported | 13.642 (0.011) | 67.734 (10.004) |
-| reduce_sum_squares_strided_read_f64_n1048576 † | unsupported | 21.164 (0.043) | 828.576 (7.460) |
+| Case | tenferro-cuda-direct | tenferro-cuda-eager | pytorch-cuda | jax-cuda |
+| --- | ---: | ---: | ---: | ---: |
+| add_into_f64_n1048576 | 22.474 (0.368) | unsupported | 12.031 (0.167) | unsupported |
+| add_read_into_f64_n1048576 | 22.192 (0.208) | unsupported | 12.022 (0.169) | unsupported |
+| sub_into_f64_n1048576 | 22.278 (0.213) | unsupported | 11.922 (0.177) | unsupported |
+| sub_read_into_f64_n1048576 | 22.221 (0.222) | unsupported | 12.255 (0.116) | unsupported |
+| mul_into_f64_n1048576 | 22.123 (0.417) | unsupported | 12.160 (0.194) | unsupported |
+| mul_read_into_f64_n1048576 | 22.323 (0.222) | unsupported | 12.601 (0.093) | unsupported |
+| div_into_f64_n1048576 | 22.126 (0.400) | unsupported | 12.926 (0.083) | unsupported |
+| div_read_into_f64_n1048576 | 22.314 (0.179) | unsupported | 13.061 (0.116) | unsupported |
+| neg_into_f64_n1048576 | 18.443 (0.369) | unsupported | 7.929 (0.041) | unsupported |
+| neg_read_into_f64_n1048576 | 18.507 (0.478) | unsupported | 7.963 (0.049) | unsupported |
+| conj_into_c64_n1048576 | 33.145 (0.846) | unsupported | 23.878 (0.247) | unsupported |
+| conj_read_into_c64_n1048576 | 33.051 (0.421) | unsupported | 24.028 (0.325) | unsupported |
+| tensordot_f64_n262144 † | 44.686 (0.928) | 47.725 (1.723) | 26.029 (0.724) | 169.804 (10.312) |
+| vdot_read_f64_n262144 † | 70.256 (1.117) | unsupported | 10.355 (0.355) | 86.825 (1.836) |
+| norm_squared_read_f64_n262144 † | 26.411 (1.474) | unsupported | 9.956 (0.161) | 84.252 (1.515) |
+| axpby_read_into_accum_f64_n1048576 | 34.925 (4.396) | unsupported | 15.780 (0.113) | unsupported |
+| dot_general_read_into_f64_s256 † | 17.863 (0.465) | unsupported | 9.351 (0.472) | unsupported |
+| dot_general_read_into_accum_f64_s256 † | 19.831 (0.234) | unsupported | 10.963 (0.336) | unsupported |
+| dot_general_read_into_accum_cached_f64_s256 † | 19.299 (0.691) | unsupported | 11.035 (0.922) | unsupported |
+| add_strided_read_f64_n1048576 † | 107.241 (1.067) | unsupported | 12.395 (0.211) | 82.318 (8.066) |
+| mul_strided_read_f64_n1048576 | 106.619 (1.327) | unsupported | 12.614 (0.256) | 91.205 (11.946) |
+| neg_strided_read_f64_n1048576 | 63.291 (0.442) | unsupported | 8.006 (0.070) | 77.289 (1.640) |
+| exp_strided_read_f64_n1048576 | 64.279 (0.771) | unsupported | 8.460 (0.143) | 76.628 (12.246) |
+| tanh_strided_read_f64_n1048576 | 65.362 (1.198) | unsupported | 8.350 (0.125) | 79.001 (10.256) |
+| reduce_sum_strided_read_f64_n1048576 † | 80.539 (0.605) | unsupported | 13.720 (0.093) | 80.258 (2.287) |
+| conj_strided_read_c64_n1048576 | 95.338 (4.482) | unsupported | 24.022 (0.296) | 76.407 (8.005) |
+| dot_general_batch_f64_s256 † | 26.432 (1.794) | 30.177 (2.280) | 21.525 (1.121) | 115.161 (6.429) |
+| dot_conj_l0r0_c64_n262144 † | 35.947 (0.534) | 36.749 (0.494) | 12.725 (0.018) | 78.188 (1.014) |
+| einsum_plan_owned_f64_s256 † | 22.120 (0.621) | unsupported | 10.997 (0.531) | 68.624 (1.266) |
+| einsum_plan_read_f64_s256 † | 23.495 (1.176) | unsupported | 11.161 (0.169) | 69.096 (2.092) |
+| einsum_plan_strided_read_f64_s256 † | 73.338 (1.609) | unsupported | 10.257 (0.723) | 69.267 (2.202) |
+| einsum_plan_into_f64_s256 † | 17.224 (0.412) | unsupported | 8.982 (0.368) | unsupported |
+| einsum_plan_read_into_f64_s256 † | 18.079 (0.109) | unsupported | 8.967 (0.225) | unsupported |
+| einsum_plan_read_into_accum_f64_s256 † | 20.067 (0.322) | unsupported | 11.520 (0.193) | unsupported |
+| einsum_plan_strided_read_into_f64_s256 † | 69.998 (1.670) | unsupported | 9.010 (0.160) | unsupported |
+| einsum_plan_strided_read_into_accum_f64_s256 † | 73.242 (1.716) | unsupported | 11.606 (0.207) | unsupported |
+| sub_strided_read_f64_n1048576 | 113.736 (2.541) | unsupported | 12.489 (0.086) | 75.846 (1.142) |
+| div_strided_read_f64_n1048576 | 114.380 (1.483) | unsupported | 12.984 (0.125) | 72.629 (2.133) |
+| rem_strided_read_f64_n1048576 † | 145.683 (4.004) | unsupported | 12.395 (0.091) | 76.829 (1.632) |
+| pow_strided_read_f64_n1048576 † | 145.073 (3.243) | unsupported | 29.409 (0.082) | 85.537 (2.034) |
+| maximum_strided_read_f64_n1048576 † | 130.128 (0.914) | unsupported | 12.460 (0.215) | 81.081 (1.041) |
+| minimum_strided_read_f64_n1048576 | 125.661 (1.477) | unsupported | 12.180 (0.079) | 92.832 (2.065) |
+| abs_strided_read_f64_n1048576 | 66.379 (0.817) | unsupported | 8.117 (0.108) | 83.664 (2.848) |
+| sign_strided_read_f64_n1048576 | 66.763 (0.551) | unsupported | 8.006 (0.147) | 67.015 (1.391) |
+| expm1_strided_read_f64_n1048576 | 68.554 (0.595) | unsupported | 9.959 (0.045) | 66.030 (0.518) |
+| log_strided_read_f64_n1048576 | 70.854 (0.839) | unsupported | 12.802 (0.093) | 74.544 (5.074) |
+| log1p_strided_read_f64_n1048576 | 70.997 (0.551) | unsupported | 13.281 (0.168) | 84.046 (14.086) |
+| erf_strided_read_f64_n1048576 | 73.466 (1.300) | unsupported | 14.518 (0.116) | 96.564 (2.370) |
+| sin_strided_read_f64_n1048576 | 69.460 (1.186) | unsupported | 11.363 (0.141) | 82.478 (2.080) |
+| cos_strided_read_f64_n1048576 | 69.637 (0.678) | unsupported | 11.468 (0.116) | 69.447 (1.440) |
+| sqrt_strided_read_f64_n1048576 | 65.147 (0.723) | unsupported | 8.064 (0.098) | 67.796 (1.156) |
+| rsqrt_strided_read_f64_n1048576 | 67.045 (0.663) | unsupported | 8.103 (0.126) | 93.739 (0.994) |
+| reduce_prod_strided_read_f64_n1048576 † | 82.987 (1.997) | unsupported | 13.582 (0.025) | 81.201 (3.743) |
+| reduce_max_strided_read_f64_n1048576 † | 83.604 (1.155) | unsupported | 13.745 (0.028) | 84.141 (5.757) |
+| reduce_min_strided_read_f64_n1048576 † | 80.371 (0.210) | unsupported | 13.778 (0.032) | 88.129 (13.204) |
+| reduce_sum_squares_strided_read_f64_n1048576 † | 81.866 (2.551) | unsupported | 21.529 (0.087) | 1057.379 (42.042) |
 
 ## Sampling
 
 | Case | Backend | Ops/sample | Samples | Median batch ms | Bytes/op | Copy ratio | Verification error/tolerance |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| abs_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 1.064 | 16777216 | 0.358 | 0 |
-| abs_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.246 | 16777216 | 1.550 | 0 |
+| abs_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 2.677 | 16777216 | 0.139 | 0 |
+| abs_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.260 | 16777216 | 1.435 | 0 |
+| abs_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.124 | 16777216 | 0.175 | 0 |
 | abs_strided_read_f64_n1048576 | tenferro-cuda-eager | — | — | — | 16777216 | unavailable | No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation. |
 | add_into_f64_n1048576 | jax-cuda | — | — | — | 25165824 | unavailable | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
-| add_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.387 | 25165824 | 1.474 | 0 |
+| add_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.385 | 25165824 | 1.452 | 0 |
+| add_into_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.719 | 25165824 | 0.778 | 0 |
 | add_into_f64_n1048576 | tenferro-cuda-eager | — | — | — | 25165824 | unavailable | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
 | add_read_into_f64_n1048576 | jax-cuda | — | — | — | 25165824 | unavailable | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
-| add_read_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.377 | 25165824 | 1.516 | 0 |
+| add_read_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.385 | 25165824 | 1.453 | 0 |
+| add_read_into_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.710 | 25165824 | 0.787 | 0 |
 | add_read_into_f64_n1048576 | tenferro-cuda-eager | — | — | — | 25165824 | unavailable | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
-| add_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 1.425 | 25165824 | 0.401 | 0 |
-| add_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.396 | 25165824 | 1.442 | 0 |
+| add_strided_read_f64_n1048576 | jax-cuda | 16 | 15 | 1.317 | 25165824 | 0.212 | 0 |
+| add_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.397 | 25165824 | 1.410 | 0 |
+| add_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.432 | 25165824 | 0.163 | 0 |
 | add_strided_read_f64_n1048576 | tenferro-cuda-eager | — | — | — | 25165824 | unavailable | No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation. |
 | axpby_read_into_accum_f64_n1048576 | jax-cuda | — | — | — | 25165824 | unavailable | No verified single-call scaled Ref update for alpha=0.5/beta=1; public Ref.addupdate has no alpha parameter. |
-| axpby_read_into_accum_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.525 | 25165824 | 1.088 | 0 |
+| axpby_read_into_accum_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.505 | 25165824 | 1.107 | 0 |
+| axpby_read_into_accum_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.118 | 25165824 | 0.500 | 0 |
 | axpby_read_into_accum_f64_n1048576 | tenferro-cuda-eager | — | — | — | 25165824 | unavailable | No matching public caller-owned accumulating output API; donation is not output reuse. |
 | conj_into_c64_n1048576 | jax-cuda | — | — | — | 33554432 | unavailable | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
-| conj_into_c64_n1048576 | pytorch-cuda | 16 | 15 | 0.405 | 33554432 | 0.940 | 0 |
+| conj_into_c64_n1048576 | pytorch-cuda | 16 | 15 | 0.382 | 33554432 | 0.976 | 0 |
+| conj_into_c64_n1048576 | tenferro-cuda-direct | 16 | 15 | 0.530 | 33554432 | 0.703 | 0 |
 | conj_into_c64_n1048576 | tenferro-cuda-eager | — | — | — | 33554432 | unavailable | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
 | conj_read_into_c64_n1048576 | jax-cuda | — | — | — | 33554432 | unavailable | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
-| conj_read_into_c64_n1048576 | pytorch-cuda | 16 | 15 | 0.404 | 33554432 | 0.943 | 0 |
+| conj_read_into_c64_n1048576 | pytorch-cuda | 16 | 15 | 0.384 | 33554432 | 0.970 | 0 |
+| conj_read_into_c64_n1048576 | tenferro-cuda-direct | 16 | 15 | 0.529 | 33554432 | 0.705 | 0 |
 | conj_read_into_c64_n1048576 | tenferro-cuda-eager | — | — | — | 33554432 | unavailable | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
-| conj_strided_read_c64_n1048576 | jax-cuda | 16 | 15 | 1.014 | 33554432 | 0.375 | 0 |
-| conj_strided_read_c64_n1048576 | pytorch-cuda | 16 | 15 | 0.405 | 33554432 | 0.939 | 0 |
+| conj_strided_read_c64_n1048576 | jax-cuda | 16 | 15 | 1.223 | 33554432 | 0.305 | 0 |
+| conj_strided_read_c64_n1048576 | pytorch-cuda | 16 | 15 | 0.384 | 33554432 | 0.970 | 0 |
+| conj_strided_read_c64_n1048576 | tenferro-cuda-direct | 16 | 15 | 1.525 | 33554432 | 0.244 | 0 |
 | conj_strided_read_c64_n1048576 | tenferro-cuda-eager | — | — | — | 33554432 | unavailable | No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation. |
-| cos_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 1.115 | 16777216 | 0.341 | 5.905e-08 |
-| cos_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.352 | 16777216 | 1.081 | 5.905e-08 |
+| cos_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 2.222 | 16777216 | 0.168 | 5.905e-08 |
+| cos_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.367 | 16777216 | 1.016 | 5.905e-08 |
+| cos_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.228 | 16777216 | 0.167 | 5.905e-08 |
 | cos_strided_read_f64_n1048576 | tenferro-cuda-eager | — | — | — | 16777216 | unavailable | No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation. |
 | div_into_f64_n1048576 | jax-cuda | — | — | — | 25165824 | unavailable | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
-| div_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.441 | 25165824 | 1.295 | 0 |
+| div_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.414 | 25165824 | 1.352 | 0 |
+| div_into_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.708 | 25165824 | 0.790 | 0 |
 | div_into_f64_n1048576 | tenferro-cuda-eager | — | — | — | 25165824 | unavailable | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
 | div_read_into_f64_n1048576 | jax-cuda | — | — | — | 25165824 | unavailable | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
-| div_read_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.441 | 25165824 | 1.296 | 0 |
+| div_read_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.418 | 25165824 | 1.338 | 0 |
+| div_read_into_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.714 | 25165824 | 0.783 | 0 |
 | div_read_into_f64_n1048576 | tenferro-cuda-eager | — | — | — | 25165824 | unavailable | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
-| div_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 2.240 | 25165824 | 0.255 | 0 |
-| div_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.424 | 25165824 | 1.348 | 0 |
+| div_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 2.324 | 25165824 | 0.241 | 0 |
+| div_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.415 | 25165824 | 1.346 | 0 |
+| div_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.660 | 25165824 | 0.153 | 0 |
 | div_strided_read_f64_n1048576 | tenferro-cuda-eager | — | — | — | 25165824 | unavailable | No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation. |
-| dot_conj_l0r0_c64_n262144 | jax-cuda | 32 | 15 | 2.330 | 8388624 | 0.082 | 1.221e-05 |
-| dot_conj_l0r0_c64_n262144 | pytorch-cuda | 256 | 15 | 3.202 | 8388624 | 0.475 | 1.366e-05 |
-| dot_conj_l0r0_c64_n262144 | tenferro-cuda-eager | 64 | 15 | 2.166 | 8388624 | 0.176 | 1.212e-05 |
-| dot_general_batch_f64_s256 | jax-cuda | 32 | 15 | 2.981 | 3210240 | 0.024 | 0 |
-| dot_general_batch_f64_s256 | pytorch-cuda | 128 | 15 | 2.122 | 3210240 | 0.137 | 0 |
-| dot_general_batch_f64_s256 | tenferro-cuda-eager | 64 | 15 | 1.525 | 3210240 | 0.095 | 0 |
+| dot_conj_l0r0_c64_n262144 | jax-cuda | 32 | 15 | 2.502 | 8388624 | 0.074 | 1.221e-05 |
+| dot_conj_l0r0_c64_n262144 | pytorch-cuda | 256 | 15 | 3.258 | 8388624 | 0.458 | 1.366e-05 |
+| dot_conj_l0r0_c64_n262144 | tenferro-cuda-direct | 64 | 15 | 2.301 | 8388624 | 0.162 | 1.212e-05 |
+| dot_conj_l0r0_c64_n262144 | tenferro-cuda-eager | 64 | 15 | 2.352 | 8388624 | 0.158 | 1.212e-05 |
+| dot_general_batch_f64_s256 | jax-cuda | 16 | 15 | 1.843 | 3210240 | 0.019 | 7.463e-07 |
+| dot_general_batch_f64_s256 | pytorch-cuda | 128 | 15 | 2.755 | 3210240 | 0.104 | 7.463e-07 |
+| dot_general_batch_f64_s256 | tenferro-cuda-direct | 128 | 15 | 3.383 | 3210240 | 0.084 | 7.463e-07 |
+| dot_general_batch_f64_s256 | tenferro-cuda-eager | 64 | 15 | 1.931 | 3210240 | 0.074 | 7.463e-07 |
 | dot_general_read_into_accum_cached_f64_s256 | jax-cuda | — | — | — | 2097152 | unavailable | No matching public caller-owned output API; allocation-returning dot and donation are different contracts. |
-| dot_general_read_into_accum_cached_f64_s256 | pytorch-cuda | 256 | 15 | 2.268 | 2097152 | 0.168 | 0 |
+| dot_general_read_into_accum_cached_f64_s256 | pytorch-cuda | 256 | 15 | 2.825 | 2097152 | 0.132 | 0 |
+| dot_general_read_into_accum_cached_f64_s256 | tenferro-cuda-direct | 128 | 15 | 2.470 | 2097152 | 0.075 | 0 |
 | dot_general_read_into_accum_cached_f64_s256 | tenferro-cuda-eager | — | — | — | 2097152 | unavailable | No matching public caller-owned output API; allocation-returning dot and donation are different contracts. |
 | dot_general_read_into_accum_f64_s256 | jax-cuda | — | — | — | 2097152 | unavailable | No matching public caller-owned output API; allocation-returning dot and donation are different contracts. |
-| dot_general_read_into_accum_f64_s256 | pytorch-cuda | 256 | 15 | 2.267 | 2097152 | 0.168 | 0 |
+| dot_general_read_into_accum_f64_s256 | pytorch-cuda | 256 | 15 | 2.806 | 2097152 | 0.133 | 0 |
+| dot_general_read_into_accum_f64_s256 | tenferro-cuda-direct | 128 | 15 | 2.538 | 2097152 | 0.073 | 0 |
 | dot_general_read_into_accum_f64_s256 | tenferro-cuda-eager | — | — | — | 2097152 | unavailable | No matching public caller-owned output API; allocation-returning dot and donation are different contracts. |
 | dot_general_read_into_f64_s256 | jax-cuda | — | — | — | 2097152 | unavailable | No matching public caller-owned output API; allocation-returning dot and donation are different contracts. |
-| dot_general_read_into_f64_s256 | pytorch-cuda | 512 | 15 | 3.845 | 2097152 | 0.198 | 0 |
+| dot_general_read_into_f64_s256 | pytorch-cuda | 256 | 15 | 2.394 | 2097152 | 0.156 | 0 |
+| dot_general_read_into_f64_s256 | tenferro-cuda-direct | 128 | 15 | 2.286 | 2097152 | 0.082 | 0 |
 | dot_general_read_into_f64_s256 | tenferro-cuda-eager | — | — | — | 2097152 | unavailable | No matching public caller-owned output API; allocation-returning dot and donation are different contracts. |
 | einsum_plan_into_f64_s256 | jax-cuda | — | — | — | 1070080 | unavailable | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
-| einsum_plan_into_f64_s256 | pytorch-cuda | 498 | 15 | 3.791 | 1070080 | 0.100 | 1.093e-06 |
+| einsum_plan_into_f64_s256 | pytorch-cuda | 256 | 15 | 2.299 | 1070080 | 0.083 | 0 |
+| einsum_plan_into_f64_s256 | tenferro-cuda-direct | 128 | 15 | 2.205 | 1070080 | 0.043 | 0 |
 | einsum_plan_into_f64_s256 | tenferro-cuda-eager | — | — | — | 1070080 | unavailable | ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established. |
-| einsum_plan_owned_f64_s256 | jax-cuda | 32 | 15 | 2.150 | 1070080 | 0.011 | 1.093e-06 |
-| einsum_plan_owned_f64_s256 | pytorch-cuda | 256 | 15 | 2.849 | 1070080 | 0.068 | 1.093e-06 |
+| einsum_plan_owned_f64_s256 | jax-cuda | 32 | 15 | 2.196 | 1070080 | 0.011 | 0 |
+| einsum_plan_owned_f64_s256 | pytorch-cuda | 256 | 15 | 2.815 | 1070080 | 0.068 | 0 |
+| einsum_plan_owned_f64_s256 | tenferro-cuda-direct | 128 | 15 | 2.831 | 1070080 | 0.034 | 0 |
 | einsum_plan_owned_f64_s256 | tenferro-cuda-eager | — | — | — | 1070080 | unavailable | ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established. |
-| einsum_plan_read_f64_s256 | jax-cuda | 32 | 15 | 2.205 | 1070080 | 0.011 | 1.093e-06 |
-| einsum_plan_read_f64_s256 | pytorch-cuda | 256 | 15 | 2.017 | 1070080 | 0.096 | 1.093e-06 |
+| einsum_plan_read_f64_s256 | jax-cuda | 32 | 15 | 2.211 | 1070080 | 0.011 | 0 |
+| einsum_plan_read_f64_s256 | pytorch-cuda | 256 | 15 | 2.857 | 1070080 | 0.067 | 0 |
+| einsum_plan_read_f64_s256 | tenferro-cuda-direct | 128 | 15 | 3.007 | 1070080 | 0.032 | 0 |
 | einsum_plan_read_f64_s256 | tenferro-cuda-eager | — | — | — | 1070080 | unavailable | ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established. |
 | einsum_plan_read_into_accum_f64_s256 | jax-cuda | — | — | — | 1608704 | unavailable | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
-| einsum_plan_read_into_accum_f64_s256 | pytorch-cuda | 256 | 15 | 2.254 | 1608704 | 0.130 | 3.261e-07 |
+| einsum_plan_read_into_accum_f64_s256 | pytorch-cuda | 256 | 15 | 2.949 | 1608704 | 0.097 | 0 |
+| einsum_plan_read_into_accum_f64_s256 | tenferro-cuda-direct | 128 | 15 | 2.569 | 1608704 | 0.056 | 0 |
 | einsum_plan_read_into_accum_f64_s256 | tenferro-cuda-eager | — | — | — | 1608704 | unavailable | ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established. |
 | einsum_plan_read_into_f64_s256 | jax-cuda | — | — | — | 1070080 | unavailable | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
-| einsum_plan_read_into_f64_s256 | pytorch-cuda | 498 | 15 | 3.777 | 1070080 | 0.100 | 1.093e-06 |
+| einsum_plan_read_into_f64_s256 | pytorch-cuda | 256 | 15 | 2.295 | 1070080 | 0.083 | 0 |
+| einsum_plan_read_into_f64_s256 | tenferro-cuda-direct | 128 | 15 | 2.314 | 1070080 | 0.041 | 0 |
 | einsum_plan_read_into_f64_s256 | tenferro-cuda-eager | — | — | — | 1070080 | unavailable | ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established. |
-| einsum_plan_strided_read_f64_s256 | jax-cuda | 32 | 15 | 2.137 | 1070080 | 0.011 | 1.093e-06 |
-| einsum_plan_strided_read_f64_s256 | pytorch-cuda | 256 | 15 | 2.012 | 1070080 | 0.097 | 1.093e-06 |
+| einsum_plan_strided_read_f64_s256 | jax-cuda | 32 | 15 | 2.217 | 1070080 | 0.011 | 0 |
+| einsum_plan_strided_read_f64_s256 | pytorch-cuda | 256 | 15 | 2.626 | 1070080 | 0.072 | 0 |
+| einsum_plan_strided_read_f64_s256 | tenferro-cuda-direct | 32 | 15 | 2.347 | 1070080 | 0.010 | 0 |
 | einsum_plan_strided_read_f64_s256 | tenferro-cuda-eager | — | — | — | 1070080 | unavailable | ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established. |
 | einsum_plan_strided_read_into_accum_f64_s256 | jax-cuda | — | — | — | 1608704 | unavailable | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
-| einsum_plan_strided_read_into_accum_f64_s256 | pytorch-cuda | 256 | 15 | 2.219 | 1608704 | 0.132 | 3.261e-07 |
+| einsum_plan_strided_read_into_accum_f64_s256 | pytorch-cuda | 256 | 15 | 2.971 | 1608704 | 0.096 | 0 |
+| einsum_plan_strided_read_into_accum_f64_s256 | tenferro-cuda-direct | 32 | 15 | 2.344 | 1608704 | 0.015 | 0 |
 | einsum_plan_strided_read_into_accum_f64_s256 | tenferro-cuda-eager | — | — | — | 1608704 | unavailable | ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established. |
 | einsum_plan_strided_read_into_f64_s256 | jax-cuda | — | — | — | 1070080 | unavailable | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
-| einsum_plan_strided_read_into_f64_s256 | pytorch-cuda | 498 | 15 | 3.738 | 1070080 | 0.101 | 1.093e-06 |
+| einsum_plan_strided_read_into_f64_s256 | pytorch-cuda | 256 | 15 | 2.307 | 1070080 | 0.082 | 0 |
+| einsum_plan_strided_read_into_f64_s256 | tenferro-cuda-direct | 32 | 15 | 2.240 | 1070080 | 0.011 | 0 |
 | einsum_plan_strided_read_into_f64_s256 | tenferro-cuda-eager | — | — | — | 1070080 | unavailable | ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established. |
-| erf_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 1.457 | 16777216 | 0.261 | 8.536e-08 |
-| erf_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.458 | 16777216 | 0.831 | 8.536e-08 |
+| erf_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 3.090 | 16777216 | 0.121 | 8.536e-08 |
+| erf_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.465 | 16777216 | 0.802 | 8.536e-08 |
+| erf_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.351 | 16777216 | 0.159 | 8.536e-08 |
 | erf_strided_read_f64_n1048576 | tenferro-cuda-eager | — | — | — | 16777216 | unavailable | No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation. |
-| exp_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 1.461 | 16777216 | 0.261 | 1.093e-07 |
-| exp_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.260 | 16777216 | 1.465 | 1.093e-07 |
+| exp_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 2.452 | 16777216 | 0.152 | 1.095e-07 |
+| exp_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.271 | 16777216 | 1.377 | 1.095e-07 |
+| exp_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.057 | 16777216 | 0.181 | 1.095e-07 |
 | exp_strided_read_f64_n1048576 | tenferro-cuda-eager | — | — | — | 16777216 | unavailable | No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation. |
-| expm1_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 1.081 | 16777216 | 0.352 | 7.39e-08 |
-| expm1_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.314 | 16777216 | 1.213 | 7.39e-08 |
+| expm1_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 2.113 | 16777216 | 0.176 | 7.39e-08 |
+| expm1_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.319 | 16777216 | 1.170 | 7.39e-08 |
+| expm1_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.194 | 16777216 | 0.170 | 7.39e-08 |
 | expm1_strided_read_f64_n1048576 | tenferro-cuda-eager | — | — | — | 16777216 | unavailable | No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation. |
-| log1p_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 1.054 | 16777216 | 0.361 | 1.106e-07 |
-| log1p_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.416 | 16777216 | 0.916 | 1.106e-07 |
+| log1p_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 2.689 | 16777216 | 0.139 | 1.11e-07 |
+| log1p_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.425 | 16777216 | 0.877 | 1.11e-07 |
+| log1p_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.272 | 16777216 | 0.164 | 1.11e-07 |
 | log1p_strided_read_f64_n1048576 | tenferro-cuda-eager | — | — | — | 16777216 | unavailable | No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation. |
-| log_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 1.092 | 16777216 | 0.349 | 4.308e-08 |
-| log_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.399 | 16777216 | 0.953 | 4.308e-08 |
+| log_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 2.385 | 16777216 | 0.156 | 4.308e-08 |
+| log_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.410 | 16777216 | 0.910 | 4.308e-08 |
+| log_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.267 | 16777216 | 0.164 | 4.308e-08 |
 | log_strided_read_f64_n1048576 | tenferro-cuda-eager | — | — | — | 16777216 | unavailable | No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation. |
-| maximum_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 1.315 | 25165824 | 0.434 | 0 |
-| maximum_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.401 | 25165824 | 1.424 | 0 |
+| maximum_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 2.595 | 25165824 | 0.216 | 0 |
+| maximum_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.399 | 25165824 | 1.402 | 0 |
+| maximum_strided_read_f64_n1048576 | tenferro-cuda-direct | 16 | 15 | 2.082 | 25165824 | 0.134 | 0 |
 | maximum_strided_read_f64_n1048576 | tenferro-cuda-eager | — | — | — | 25165824 | unavailable | No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation. |
-| minimum_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 1.335 | 25165824 | 0.428 | 0 |
-| minimum_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.393 | 25165824 | 1.454 | 0 |
+| minimum_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 2.971 | 25165824 | 0.188 | 0 |
+| minimum_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.390 | 25165824 | 1.435 | 0 |
+| minimum_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 4.021 | 25165824 | 0.139 | 0 |
 | minimum_strided_read_f64_n1048576 | tenferro-cuda-eager | — | — | — | 25165824 | unavailable | No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation. |
 | mul_into_f64_n1048576 | jax-cuda | — | — | — | 25165824 | unavailable | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
-| mul_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.387 | 25165824 | 1.476 | 0 |
+| mul_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.389 | 25165824 | 1.437 | 0 |
+| mul_into_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.708 | 25165824 | 0.790 | 0 |
 | mul_into_f64_n1048576 | tenferro-cuda-eager | — | — | — | 25165824 | unavailable | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
 | mul_read_into_f64_n1048576 | jax-cuda | — | — | — | 25165824 | unavailable | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
-| mul_read_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.408 | 25165824 | 1.398 | 0 |
+| mul_read_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.403 | 25165824 | 1.387 | 0 |
+| mul_read_into_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.714 | 25165824 | 0.783 | 0 |
 | mul_read_into_f64_n1048576 | tenferro-cuda-eager | — | — | — | 25165824 | unavailable | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
-| mul_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 1.358 | 25165824 | 0.420 | 0 |
-| mul_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.386 | 25165824 | 1.479 | 0 |
+| mul_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 2.919 | 25165824 | 0.192 | 0 |
+| mul_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.404 | 25165824 | 1.385 | 0 |
+| mul_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.412 | 25165824 | 0.164 | 0 |
 | mul_strided_read_f64_n1048576 | tenferro-cuda-eager | — | — | — | 25165824 | unavailable | No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation. |
 | neg_into_f64_n1048576 | jax-cuda | — | — | — | 16777216 | unavailable | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
-| neg_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.245 | 16777216 | 1.554 | 0 |
+| neg_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.254 | 16777216 | 1.469 | 0 |
+| neg_into_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.590 | 16777216 | 0.632 | 0 |
 | neg_into_f64_n1048576 | tenferro-cuda-eager | — | — | — | 16777216 | unavailable | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
 | neg_read_into_f64_n1048576 | jax-cuda | — | — | — | 16777216 | unavailable | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
-| neg_read_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.250 | 16777216 | 1.521 | 0 |
+| neg_read_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.255 | 16777216 | 1.463 | 0 |
+| neg_read_into_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.592 | 16777216 | 0.629 | 0 |
 | neg_read_into_f64_n1048576 | tenferro-cuda-eager | — | — | — | 16777216 | unavailable | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
-| neg_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 1.142 | 16777216 | 0.333 | 0 |
-| neg_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.246 | 16777216 | 1.547 | 0 |
+| neg_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 2.473 | 16777216 | 0.151 | 0 |
+| neg_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.256 | 16777216 | 1.455 | 0 |
+| neg_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.025 | 16777216 | 0.184 | 0 |
 | neg_strided_read_f64_n1048576 | tenferro-cuda-eager | — | — | — | 16777216 | unavailable | No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation. |
-| norm_squared_read_f64_n262144 | jax-cuda | 64 | 15 | 2.549 | 2097160 | 0.037 | 4.991e-07 |
-| norm_squared_read_f64_n262144 | pytorch-cuda | 256 | 15 | 2.310 | 2097160 | 0.165 | 4.991e-07 |
+| norm_squared_read_f64_n262144 | jax-cuda | 32 | 15 | 2.696 | 2097160 | 0.017 | 1.664e-07 |
+| norm_squared_read_f64_n262144 | pytorch-cuda | 256 | 15 | 2.549 | 2097160 | 0.146 | 1.664e-07 |
+| norm_squared_read_f64_n262144 | tenferro-cuda-direct | 128 | 15 | 3.381 | 2097160 | 0.055 | 1.664e-07 |
 | norm_squared_read_f64_n262144 | tenferro-cuda-eager | — | — | — | 2097160 | unavailable | No matching immediate EagerSession reduction method; the direct BackendSession API is measured separately. |
-| pow_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 1.170 | 25165824 | 0.488 | 1.48e-07 |
-| pow_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.936 | 25165824 | 0.610 | 1.48e-07 |
+| pow_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 2.737 | 25165824 | 0.204 | 1.48e-07 |
+| pow_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.941 | 25165824 | 0.594 | 1.48e-07 |
+| pow_strided_read_f64_n1048576 | tenferro-cuda-direct | 16 | 15 | 2.321 | 25165824 | 0.120 | 1.48e-07 |
 | pow_strided_read_f64_n1048576 | tenferro-cuda-eager | — | — | — | 25165824 | unavailable | No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation. |
-| reduce_max_strided_read_f64_n1048576 | jax-cuda | 64 | 15 | 4.449 | 8392704 | 0.086 | 0 |
-| reduce_max_strided_read_f64_n1048576 | pytorch-cuda | 256 | 15 | 3.487 | 8392704 | 0.437 | 0 |
+| reduce_max_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 2.693 | 8392704 | 0.069 | 0 |
+| reduce_max_strided_read_f64_n1048576 | pytorch-cuda | 256 | 15 | 3.519 | 8392704 | 0.424 | 0 |
+| reduce_max_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.675 | 8392704 | 0.070 | 0 |
 | reduce_max_strided_read_f64_n1048576 | tenferro-cuda-eager | — | — | — | 8392704 | unavailable | No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation. |
-| reduce_min_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 2.167 | 8392704 | 0.088 | 0 |
-| reduce_min_strided_read_f64_n1048576 | pytorch-cuda | 256 | 15 | 3.492 | 8392704 | 0.436 | 0 |
+| reduce_min_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 2.820 | 8392704 | 0.066 | 0 |
+| reduce_min_strided_read_f64_n1048576 | pytorch-cuda | 256 | 15 | 3.527 | 8392704 | 0.423 | 0 |
+| reduce_min_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.572 | 8392704 | 0.073 | 0 |
 | reduce_min_strided_read_f64_n1048576 | tenferro-cuda-eager | — | — | — | 8392704 | unavailable | No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation. |
-| reduce_prod_strided_read_f64_n1048576 | jax-cuda | 64 | 15 | 2.397 | 8392704 | 0.159 | 4.995e-06 |
-| reduce_prod_strided_read_f64_n1048576 | pytorch-cuda | 256 | 15 | 3.457 | 8392704 | 0.441 | 4.106e-06 |
+| reduce_prod_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 2.598 | 8392704 | 0.072 | 4.995e-06 |
+| reduce_prod_strided_read_f64_n1048576 | pytorch-cuda | 256 | 15 | 3.477 | 8392704 | 0.429 | 4.106e-06 |
+| reduce_prod_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.656 | 8392704 | 0.070 | 4.661e-06 |
 | reduce_prod_strided_read_f64_n1048576 | tenferro-cuda-eager | — | — | — | 8392704 | unavailable | No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation. |
-| reduce_sum_squares_strided_read_f64_n1048576 | jax-cuda | 4 | 15 | 3.314 | 8392704 | 0.007 | 3.311e-07 |
-| reduce_sum_squares_strided_read_f64_n1048576 | pytorch-cuda | 128 | 15 | 2.709 | 8392704 | 0.281 | 3.309e-07 |
+| reduce_sum_squares_strided_read_f64_n1048576 | jax-cuda | 2 | 15 | 2.115 | 8392704 | 0.006 | 3.311e-07 |
+| reduce_sum_squares_strided_read_f64_n1048576 | pytorch-cuda | 128 | 15 | 2.756 | 8392704 | 0.271 | 3.309e-07 |
+| reduce_sum_squares_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.620 | 8392704 | 0.071 | 3.312e-07 |
 | reduce_sum_squares_strided_read_f64_n1048576 | tenferro-cuda-eager | — | — | — | 8392704 | unavailable | No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation. |
-| reduce_sum_strided_read_f64_n1048576 | jax-cuda | 64 | 15 | 3.145 | 8392704 | 0.121 | 7.159e-06 |
-| reduce_sum_strided_read_f64_n1048576 | pytorch-cuda | 256 | 15 | 3.464 | 8392704 | 0.440 | 5.935e-06 |
+| reduce_sum_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 2.568 | 8392704 | 0.073 | 7.159e-06 |
+| reduce_sum_strided_read_f64_n1048576 | pytorch-cuda | 256 | 15 | 3.512 | 8392704 | 0.425 | 5.935e-06 |
+| reduce_sum_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.577 | 8392704 | 0.072 | 4.724e-06 |
 | reduce_sum_strided_read_f64_n1048576 | tenferro-cuda-eager | — | — | — | 8392704 | unavailable | No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation. |
-| rem_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 1.114 | 25165824 | 0.512 | 0 |
-| rem_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.399 | 25165824 | 1.432 | 0 |
+| rem_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 2.459 | 25165824 | 0.227 | 0 |
+| rem_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.397 | 25165824 | 1.410 | 0 |
+| rem_strided_read_f64_n1048576 | tenferro-cuda-direct | 16 | 15 | 2.331 | 25165824 | 0.120 | 0 |
 | rem_strided_read_f64_n1048576 | tenferro-cuda-eager | — | — | — | 25165824 | unavailable | No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation. |
-| rsqrt_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 1.585 | 16777216 | 0.240 | 6.504e-08 |
-| rsqrt_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.248 | 16777216 | 1.535 | 6.504e-08 |
+| rsqrt_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 3.000 | 16777216 | 0.124 | 6.504e-08 |
+| rsqrt_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.259 | 16777216 | 1.438 | 6.504e-08 |
+| rsqrt_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.145 | 16777216 | 0.174 | 6.504e-08 |
 | rsqrt_strided_read_f64_n1048576 | tenferro-cuda-eager | — | — | — | 16777216 | unavailable | No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation. |
-| sign_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 1.068 | 16777216 | 0.356 | 0 |
-| sign_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.242 | 16777216 | 1.572 | 0 |
+| sign_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 2.144 | 16777216 | 0.174 | 0 |
+| sign_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.256 | 16777216 | 1.455 | 0 |
+| sign_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.136 | 16777216 | 0.174 | 0 |
 | sign_strided_read_f64_n1048576 | tenferro-cuda-eager | — | — | — | 16777216 | unavailable | No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation. |
-| sin_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 1.055 | 16777216 | 0.361 | 4.153e-08 |
-| sin_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.350 | 16777216 | 1.088 | 4.153e-08 |
+| sin_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 2.639 | 16777216 | 0.141 | 4.153e-08 |
+| sin_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.364 | 16777216 | 1.025 | 4.153e-08 |
+| sin_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.223 | 16777216 | 0.168 | 4.153e-08 |
 | sin_strided_read_f64_n1048576 | tenferro-cuda-eager | — | — | — | 16777216 | unavailable | No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation. |
-| sqrt_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 1.077 | 16777216 | 0.353 | 0 |
-| sqrt_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.248 | 16777216 | 1.533 | 0 |
+| sqrt_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 2.169 | 16777216 | 0.172 | 0 |
+| sqrt_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.258 | 16777216 | 1.445 | 0 |
+| sqrt_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.085 | 16777216 | 0.179 | 0 |
 | sqrt_strided_read_f64_n1048576 | tenferro-cuda-eager | — | — | — | 16777216 | unavailable | No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation. |
 | sub_into_f64_n1048576 | jax-cuda | — | — | — | 25165824 | unavailable | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
-| sub_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.382 | 25165824 | 1.493 | 0 |
+| sub_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.381 | 25165824 | 1.466 | 0 |
+| sub_into_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.713 | 25165824 | 0.784 | 0 |
 | sub_into_f64_n1048576 | tenferro-cuda-eager | — | — | — | 25165824 | unavailable | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
 | sub_read_into_f64_n1048576 | jax-cuda | — | — | — | 25165824 | unavailable | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
-| sub_read_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.386 | 25165824 | 1.480 | 0 |
+| sub_read_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.392 | 25165824 | 1.426 | 0 |
+| sub_read_into_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.711 | 25165824 | 0.786 | 0 |
 | sub_read_into_f64_n1048576 | tenferro-cuda-eager | — | — | — | 25165824 | unavailable | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
-| sub_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 2.327 | 25165824 | 0.245 | 0 |
-| sub_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.398 | 25165824 | 1.435 | 0 |
+| sub_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 2.427 | 25165824 | 0.230 | 0 |
+| sub_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.400 | 25165824 | 1.399 | 0 |
+| sub_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.640 | 25165824 | 0.154 | 0 |
 | sub_strided_read_f64_n1048576 | tenferro-cuda-eager | — | — | — | 25165824 | unavailable | No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation. |
-| tanh_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 1.525 | 16777216 | 0.250 | 4.437e-08 |
-| tanh_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.260 | 16777216 | 1.464 | 4.437e-08 |
+| tanh_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 2.528 | 16777216 | 0.147 | 4.437e-08 |
+| tanh_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.267 | 16777216 | 1.395 | 4.437e-08 |
+| tanh_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.092 | 16777216 | 0.178 | 4.437e-08 |
 | tanh_strided_read_f64_n1048576 | tenferro-cuda-eager | — | — | — | 16777216 | unavailable | No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation. |
-| tensordot_f64_n262144 | jax-cuda | 32 | 15 | 3.045 | 6291456 | 0.047 | 6.714e-06 |
-| tensordot_f64_n262144 | pytorch-cuda | 128 | 15 | 3.238 | 6291456 | 0.176 | 6.714e-06 |
-| tensordot_f64_n262144 | tenferro-cuda-eager | 8 | 15 | 0.374 | 6291456 | 0.095 | 6.714e-06 |
-| vdot_read_f64_n262144 | jax-cuda | 64 | 15 | 2.544 | 4194312 | 0.075 | 2.995e-06 |
-| vdot_read_f64_n262144 | pytorch-cuda | 256 | 15 | 2.380 | 4194312 | 0.320 | 2.995e-06 |
+| tensordot_f64_n262144 | jax-cuda | 16 | 15 | 2.717 | 6291456 | 0.026 | 6.714e-06 |
+| tensordot_f64_n262144 | pytorch-cuda | 128 | 15 | 3.332 | 6291456 | 0.168 | 6.714e-06 |
+| tensordot_f64_n262144 | tenferro-cuda-direct | 64 | 15 | 2.860 | 6291456 | 0.098 | 6.714e-06 |
+| tensordot_f64_n262144 | tenferro-cuda-eager | 32 | 15 | 1.527 | 6291456 | 0.092 | 6.714e-06 |
+| vdot_read_f64_n262144 | jax-cuda | 32 | 15 | 2.778 | 4194312 | 0.034 | 2.995e-06 |
+| vdot_read_f64_n262144 | pytorch-cuda | 256 | 15 | 2.651 | 4194312 | 0.281 | 2.995e-06 |
+| vdot_read_f64_n262144 | tenferro-cuda-direct | 32 | 15 | 2.248 | 4194312 | 0.041 | 2.995e-06 |
 | vdot_read_f64_n262144 | tenferro-cuda-eager | — | — | — | 4194312 | unavailable | No matching immediate EagerSession reduction method; the direct BackendSession API is measured separately. |
 
 ## Run metadata
@@ -262,8 +318,8 @@ Prepared einsum uses the public ConcreteEinsumPlan for ik,kj->ij, built once out
 schema_version: 1
 target_profile: nvidia-gpu
 suite_id: gpu/reuse_contraction
-suite_file: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261108_090627/gpu_reuse_contraction.yaml
-timestamp: '2026-11-08T09:06:27+00:00'
+suite_file: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261108_115237/gpu_reuse_contraction.yaml
+timestamp: '2026-11-08T11:52:37+00:00'
 tenferro_rs:
   path: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/extern/tenferro-rs
   commit: 9a850b06155405acc99ecd0648829e9e6d3866ba
@@ -273,7 +329,7 @@ tenferro_rs:
   resolved_path: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/extern/tenferro-rs
 harness:
   path: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark
-  commit: 44b5fe8b1b4b339b68f9e9f7dd56d03f6cb08303
+  commit: cf44136e09063a2ca09d2fe0dbb38e8849cb4522
   dirty: false
 resolved_deps:
   strided-perm:
@@ -285,17 +341,16 @@ resolved_deps:
   - 0.1.0
   - 0.5.1
 host:
-  cpu: AMD EPYC 9554 64-Core Processor
+  cpu: AMD EPYC 7763 64-Core Processor
   logical_cpus: 252
   power:
     smt:
       active: '0'
       control: notsupported
   numa:
-    nodes: 2
+    nodes: 1
     cpulists:
-      '0': 0-125
-      '1': 126-251
+      '0': 0-251
   smt_siblings:
   - '0'
   - '1'
@@ -560,8 +615,8 @@ build:
     target_cpu: null
 environment:
   container: devcontainer
-  hostname: 053e3b59f698
-  os: Linux-6.8.0-147-generic-x86_64-with-glibc2.39
+  hostname: 941a9a84f64c
+  os: Linux-6.8.0-138-generic-x86_64-with-glibc2.39
   arch: x86_64
   cpu: x86_64
   affinity:
@@ -617,8 +672,8 @@ python_backends:
       \ oneAPI Math Kernel Library Version 2024.2-Product Build 20240605 for Intel(R)\
       \ 64 architecture applications\n  - Intel(R) MKL-DNN v3.10.2 (Git Hash f1d471933dc852f956fd05389f9313c7148783d5)\n\
       \  - OpenMP 201511 (a.k.a. OpenMP 4.5)\n  - LAPACK is enabled (usually provided\
-      \ by MKL)\n  - NNPACK is enabled\n  - CPU capability usage: AVX512\n  - CUDA\
-      \ Runtime 12.8\n  - NVCC architecture flags: -gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_86,code=sm_86;-gencode;arch=compute_90,code=sm_90;-gencode;arch=compute_100,code=sm_100;-gencode;arch=compute_120,code=sm_120\n\
+      \ by MKL)\n  - NNPACK is enabled\n  - CPU capability usage: AVX2\n  - CUDA Runtime\
+      \ 12.8\n  - NVCC architecture flags: -gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_86,code=sm_86;-gencode;arch=compute_90,code=sm_90;-gencode;arch=compute_100,code=sm_100;-gencode;arch=compute_120,code=sm_120\n\
       \  - CuDNN 91.9  (built against CUDA 12.9)\n  - Magma 2.6.1\n  - Build settings:\
       \ BLAS_INFO=mkl, BUILD_TYPE=Release, COMMIT_SHA=70d99e998b4955e0049d13a98d77ae1b14db1f45,\
       \ CUDA_VERSION=12.8, CUDNN_VERSION=9.19.0, CXX_COMPILER=/opt/rh/gcc-toolset-13/root/usr/bin/c++,\
@@ -655,7 +710,7 @@ julia:
 cuda:
   device_ordinal: 0
   device_name: NVIDIA A100 80GB PCIe
-  device_uuid: GPU-12b45076-79d5-7b84-cb5c-7c6300074c8a
+  device_uuid: GPU-e8de7039-b03e-2d5e-3147-bf92141dbc74
   device_memory_bytes: 85899345920
   driver_version: 595.91.07
   runtime_version: '12.8'
@@ -679,31 +734,31 @@ gpu_memory_calibration:
   traffic_model: one read plus one write of buffer_bytes per copy
   warmups: 3
   sample_ms:
-  - 0.094503
-  - 0.092109
-  - 0.096365
-  - 0.094383
-  - 0.092979
-  - 0.096314
-  - 0.095204
-  - 0.092058
-  - 0.096244
-  - 0.096185
-  - 0.092869
-  - 0.096406
-  - 0.095274
-  - 0.09341
-  - 0.095153
-  median_ms: 0.095153
-  bytes_per_second: 1410546467268.5044
+  - 0.092643
+  - 0.092013
+  - 0.093194
+  - 0.094117
+  - 0.102623
+  - 0.09564
+  - 0.093546
+  - 0.093335
+  - 0.092985
+  - 0.091633
+  - 0.092574
+  - 0.091332
+  - 0.091221
+  - 0.093666
+  - 0.095078
+  median_ms: 0.093194
+  bytes_per_second: 1440197094233.5344
   torch_version: 2.11.0+cu128
   cuda_version: '12.8'
-  timestamp: '2026-11-08T09:19:27.016206+00:00'
+  timestamp: '2026-11-08T12:08:39.009031+00:00'
 gpu_assignment:
   role: benchmark
   physical_device_index: 0
-  device_uuid: GPU-12b45076-79d5-7b84-cb5c-7c6300074c8a
-  cuda_visible_devices: GPU-12b45076-79d5-7b84-cb5c-7c6300074c8a
+  device_uuid: GPU-e8de7039-b03e-2d5e-3147-bf92141dbc74
+  cuda_visible_devices: GPU-e8de7039-b03e-2d5e-3147-bf92141dbc74
   process_device_ordinal: 0
   verification_only: false
 collection:
@@ -725,10 +780,10 @@ collection:
     src/bin/benchmark_gpu_public_api/runtime_ops.rs: c9d61b1e99bda517a59a6e34f625fd4d651bbbb19f6dc06ba4d0d1c0d50dfd6a
     src/bin/benchmark_gpu_public_api/state.rs: a8bbf8985bbc58c435e3c4dda7135161a141a90a10fa50d4f95128397ce949cb
     src/bin/benchmark_gpu_public_api/structural.rs: 8b61ac01b58edc090eafbc124ec135d5efeb4979631a939656ba78dd6e5c042a
-    /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/scripts/benchmark_gpu_public_api.py: 4f94c67a046ec57f95823fd01f3f73a710d97745fe6a58a3c6106dfec870d65c
+    /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/scripts/benchmark_gpu_public_api.py: 32aa2ab45453502fc16479f429191aa24f867c8d5ad5f59d5a2752a3da413ee5
     /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/scripts/gpu_public_api_ops.py: e88823db3f4a1fe43dc13c4743c9d78ece6af76a968724091af318dd8d7f2528
-    scripts/run_gpu_public_api.sh: 788b9fde4f8ca4162921baef1203b2e31bb747ec30327a425de3442cf872df52
-    data/results/nvidia-gpu/gpu/reuse_contraction/20261108_090627/fixtures/manifest.json: 706a6a5d725bf440a03748d8ba95eeff194de50a81b8547ec97f56312b6629ef
+    scripts/run_gpu_public_api.sh: 257228952e48c61fa1714d0cb2d6fdfdb9b0cf3898f59307ba9e72e513aa1b50
+    data/results/nvidia-gpu/gpu/reuse_contraction/20261108_115237/fixtures/manifest.json: 706a6a5d725bf440a03748d8ba95eeff194de50a81b8547ec97f56312b6629ef
     target/release/benchmark_gpu_public_api: 62f92e0c72d6fb46531ee8106f112567dfd32ddb482255a7cc41ba6819929786
   reference_numpy_version: 2.4.2
   measurement_cpu:
@@ -739,21 +794,27 @@ collection:
         status: disabled
         reason: 'GPU_BENCH_CPU_SELECT is not 1: the arm runs on the allocation unpinned'
         exit_code: 0
-        finished_at: '2026-11-08T09:20:53Z'
+        finished_at: '2026-11-08T12:09:26Z'
       pytorch-cuda:
         arm: pytorch-cuda
         status: disabled
         reason: 'GPU_BENCH_CPU_SELECT is not 1: the arm runs on the allocation unpinned'
         exit_code: 0
-        finished_at: '2026-11-08T09:20:26Z'
+        finished_at: '2026-11-08T12:09:13Z'
+      tenferro-cuda-direct:
+        arm: tenferro-cuda-direct
+        status: disabled
+        reason: 'GPU_BENCH_CPU_SELECT is not 1: the arm runs on the allocation unpinned'
+        exit_code: 0
+        finished_at: '2026-11-08T12:09:01Z'
       tenferro-cuda-eager:
         arm: tenferro-cuda-eager
         status: disabled
         reason: 'GPU_BENCH_CPU_SELECT is not 1: the arm runs on the allocation unpinned'
         exit_code: 0
-        finished_at: '2026-11-08T09:19:46Z'
+        finished_at: '2026-11-08T12:09:04Z'
   compile:
-    case_wall_seconds: 65.191
+    case_wall_seconds: 36.301
     compiling_processes: 0
     modules_compiled: 0
     compile_time_ms: null
@@ -768,97 +829,152 @@ Each row records the wall clock it spent outside its timed region. These cases s
 
 | Case | Backend | Warning |
 | --- | --- | --- |
-| tensordot_f64_n262144 | tenferro-cuda-eager | tensordot_f64_n262144 untimed 2260.6 ms is 40561% of the 5.6 ms timed region (budget 20%) |
-| dot_general_batch_f64_s256 | tenferro-cuda-eager | dot_general_batch_f64_s256 untimed 12.4 ms is 54% of the 22.9 ms timed region (budget 20%) |
-| dot_conj_l0r0_c64_n262144 | tenferro-cuda-eager | dot_conj_l0r0_c64_n262144 untimed 16.9 ms is 52% of the 32.5 ms timed region (budget 20%) |
-| add_into_f64_n1048576 | pytorch-cuda | add_into_f64_n1048576 untimed 1011.0 ms is 17409% of the 5.8 ms timed region (budget 20%) |
-| add_read_into_f64_n1048576 | pytorch-cuda | add_read_into_f64_n1048576 untimed 899.2 ms is 15943% of the 5.6 ms timed region (budget 20%) |
-| sub_into_f64_n1048576 | pytorch-cuda | sub_into_f64_n1048576 untimed 868.5 ms is 15112% of the 5.7 ms timed region (budget 20%) |
-| sub_read_into_f64_n1048576 | pytorch-cuda | sub_read_into_f64_n1048576 untimed 867.0 ms is 14995% of the 5.8 ms timed region (budget 20%) |
-| mul_into_f64_n1048576 | pytorch-cuda | mul_into_f64_n1048576 untimed 900.8 ms is 15562% of the 5.8 ms timed region (budget 20%) |
-| mul_read_into_f64_n1048576 | pytorch-cuda | mul_read_into_f64_n1048576 untimed 1343.3 ms is 21892% of the 6.1 ms timed region (budget 20%) |
-| div_into_f64_n1048576 | pytorch-cuda | div_into_f64_n1048576 untimed 1346.2 ms is 20263% of the 6.6 ms timed region (budget 20%) |
-| div_read_into_f64_n1048576 | pytorch-cuda | div_read_into_f64_n1048576 untimed 1326.2 ms is 20050% of the 6.6 ms timed region (budget 20%) |
-| neg_into_f64_n1048576 | pytorch-cuda | neg_into_f64_n1048576 untimed 885.4 ms is 23974% of the 3.7 ms timed region (budget 20%) |
-| neg_read_into_f64_n1048576 | pytorch-cuda | neg_read_into_f64_n1048576 untimed 958.6 ms is 25451% of the 3.8 ms timed region (budget 20%) |
-| conj_into_c64_n1048576 | pytorch-cuda | conj_into_c64_n1048576 untimed 919.3 ms is 15172% of the 6.1 ms timed region (budget 20%) |
-| conj_read_into_c64_n1048576 | pytorch-cuda | conj_read_into_c64_n1048576 untimed 904.5 ms is 14914% of the 6.1 ms timed region (budget 20%) |
-| tensordot_f64_n262144 | pytorch-cuda | tensordot_f64_n262144 untimed 335.8 ms is 685% of the 49.0 ms timed region (budget 20%) |
-| vdot_read_f64_n262144 | pytorch-cuda | vdot_read_f64_n262144 untimed 11.1 ms is 31% of the 35.8 ms timed region (budget 20%) |
-| norm_squared_read_f64_n262144 | pytorch-cuda | norm_squared_read_f64_n262144 untimed 9.5 ms is 27% of the 34.7 ms timed region (budget 20%) |
-| axpby_read_into_accum_f64_n1048576 | pytorch-cuda | axpby_read_into_accum_f64_n1048576 untimed 903.3 ms is 11475% of the 7.9 ms timed region (budget 20%) |
-| dot_general_read_into_f64_s256 | pytorch-cuda | dot_general_read_into_f64_s256 untimed 354.9 ms is 614% of the 57.8 ms timed region (budget 20%) |
-| dot_general_read_into_accum_f64_s256 | pytorch-cuda | dot_general_read_into_accum_f64_s256 untimed 104.0 ms is 305% of the 34.1 ms timed region (budget 20%) |
-| dot_general_read_into_accum_cached_f64_s256 | pytorch-cuda | dot_general_read_into_accum_cached_f64_s256 untimed 88.5 ms is 259% of the 34.1 ms timed region (budget 20%) |
-| add_strided_read_f64_n1048576 | pytorch-cuda | add_strided_read_f64_n1048576 untimed 908.7 ms is 15290% of the 5.9 ms timed region (budget 20%) |
-| mul_strided_read_f64_n1048576 | pytorch-cuda | mul_strided_read_f64_n1048576 untimed 913.4 ms is 15889% of the 5.7 ms timed region (budget 20%) |
-| neg_strided_read_f64_n1048576 | pytorch-cuda | neg_strided_read_f64_n1048576 untimed 885.2 ms is 23929% of the 3.7 ms timed region (budget 20%) |
-| exp_strided_read_f64_n1048576 | pytorch-cuda | exp_strided_read_f64_n1048576 untimed 979.2 ms is 25054% of the 3.9 ms timed region (budget 20%) |
-| tanh_strided_read_f64_n1048576 | pytorch-cuda | tanh_strided_read_f64_n1048576 untimed 893.3 ms is 22873% of the 3.9 ms timed region (budget 20%) |
-| reduce_sum_strided_read_f64_n1048576 | pytorch-cuda | reduce_sum_strided_read_f64_n1048576 untimed 27.3 ms is 53% of the 52.0 ms timed region (budget 20%) |
-| conj_strided_read_c64_n1048576 | pytorch-cuda | conj_strided_read_c64_n1048576 untimed 938.3 ms is 15413% of the 6.1 ms timed region (budget 20%) |
-| dot_general_batch_f64_s256 | pytorch-cuda | dot_general_batch_f64_s256 untimed 229.8 ms is 708% of the 32.5 ms timed region (budget 20%) |
-| dot_conj_l0r0_c64_n262144 | pytorch-cuda | dot_conj_l0r0_c64_n262144 untimed 15.8 ms is 33% of the 48.0 ms timed region (budget 20%) |
-| einsum_plan_owned_f64_s256 | pytorch-cuda | einsum_plan_owned_f64_s256 untimed 78.6 ms is 200% of the 39.3 ms timed region (budget 20%) |
-| einsum_plan_read_f64_s256 | pytorch-cuda | einsum_plan_read_f64_s256 untimed 68.8 ms is 227% of the 30.3 ms timed region (budget 20%) |
-| einsum_plan_strided_read_f64_s256 | pytorch-cuda | einsum_plan_strided_read_f64_s256 untimed 66.3 ms is 218% of the 30.3 ms timed region (budget 20%) |
-| einsum_plan_into_f64_s256 | pytorch-cuda | einsum_plan_into_f64_s256 untimed 69.6 ms is 122% of the 57.0 ms timed region (budget 20%) |
-| einsum_plan_read_into_f64_s256 | pytorch-cuda | einsum_plan_read_into_f64_s256 untimed 80.2 ms is 141% of the 56.7 ms timed region (budget 20%) |
-| einsum_plan_read_into_accum_f64_s256 | pytorch-cuda | einsum_plan_read_into_accum_f64_s256 untimed 88.6 ms is 262% of the 33.9 ms timed region (budget 20%) |
-| einsum_plan_strided_read_into_f64_s256 | pytorch-cuda | einsum_plan_strided_read_into_f64_s256 untimed 73.9 ms is 132% of the 56.1 ms timed region (budget 20%) |
-| einsum_plan_strided_read_into_accum_f64_s256 | pytorch-cuda | einsum_plan_strided_read_into_accum_f64_s256 untimed 100.0 ms is 298% of the 33.5 ms timed region (budget 20%) |
-| sub_strided_read_f64_n1048576 | pytorch-cuda | sub_strided_read_f64_n1048576 untimed 903.5 ms is 15153% of the 6.0 ms timed region (budget 20%) |
-| div_strided_read_f64_n1048576 | pytorch-cuda | div_strided_read_f64_n1048576 untimed 909.1 ms is 14276% of the 6.4 ms timed region (budget 20%) |
-| rem_strided_read_f64_n1048576 | pytorch-cuda | rem_strided_read_f64_n1048576 untimed 921.1 ms is 15406% of the 6.0 ms timed region (budget 20%) |
-| pow_strided_read_f64_n1048576 | pytorch-cuda | pow_strided_read_f64_n1048576 untimed 922.8 ms is 6567% of the 14.1 ms timed region (budget 20%) |
-| maximum_strided_read_f64_n1048576 | pytorch-cuda | maximum_strided_read_f64_n1048576 untimed 978.1 ms is 16262% of the 6.0 ms timed region (budget 20%) |
-| minimum_strided_read_f64_n1048576 | pytorch-cuda | minimum_strided_read_f64_n1048576 untimed 924.4 ms is 15672% of the 5.9 ms timed region (budget 20%) |
-| abs_strided_read_f64_n1048576 | pytorch-cuda | abs_strided_read_f64_n1048576 untimed 885.5 ms is 23771% of the 3.7 ms timed region (budget 20%) |
-| sign_strided_read_f64_n1048576 | pytorch-cuda | sign_strided_read_f64_n1048576 untimed 1007.8 ms is 27661% of the 3.6 ms timed region (budget 20%) |
-| expm1_strided_read_f64_n1048576 | pytorch-cuda | expm1_strided_read_f64_n1048576 untimed 884.0 ms is 18653% of the 4.7 ms timed region (budget 20%) |
-| log_strided_read_f64_n1048576 | pytorch-cuda | log_strided_read_f64_n1048576 untimed 965.8 ms is 16090% of the 6.0 ms timed region (budget 20%) |
-| log1p_strided_read_f64_n1048576 | pytorch-cuda | log1p_strided_read_f64_n1048576 untimed 920.7 ms is 14774% of the 6.2 ms timed region (budget 20%) |
-| erf_strided_read_f64_n1048576 | pytorch-cuda | erf_strided_read_f64_n1048576 untimed 898.7 ms is 13078% of the 6.9 ms timed region (budget 20%) |
-| sin_strided_read_f64_n1048576 | pytorch-cuda | sin_strided_read_f64_n1048576 untimed 974.5 ms is 18587% of the 5.2 ms timed region (budget 20%) |
-| cos_strided_read_f64_n1048576 | pytorch-cuda | cos_strided_read_f64_n1048576 untimed 891.4 ms is 16859% of the 5.3 ms timed region (budget 20%) |
-| sqrt_strided_read_f64_n1048576 | pytorch-cuda | sqrt_strided_read_f64_n1048576 untimed 883.0 ms is 23580% of the 3.7 ms timed region (budget 20%) |
-| rsqrt_strided_read_f64_n1048576 | pytorch-cuda | rsqrt_strided_read_f64_n1048576 untimed 964.2 ms is 25596% of the 3.8 ms timed region (budget 20%) |
-| reduce_prod_strided_read_f64_n1048576 | pytorch-cuda | reduce_prod_strided_read_f64_n1048576 untimed 644.3 ms is 1243% of the 51.9 ms timed region (budget 20%) |
-| reduce_max_strided_read_f64_n1048576 | pytorch-cuda | reduce_max_strided_read_f64_n1048576 untimed 19.7 ms is 38% of the 52.3 ms timed region (budget 20%) |
-| reduce_min_strided_read_f64_n1048576 | pytorch-cuda | reduce_min_strided_read_f64_n1048576 untimed 20.2 ms is 38% of the 52.4 ms timed region (budget 20%) |
-| reduce_sum_squares_strided_read_f64_n1048576 | pytorch-cuda | reduce_sum_squares_strided_read_f64_n1048576 untimed 19.9 ms is 49% of the 40.7 ms timed region (budget 20%) |
-| tensordot_f64_n262144 | jax-cuda | tensordot_f64_n262144 untimed 843.3 ms is 1836% of the 45.9 ms timed region (budget 20%) |
-| vdot_read_f64_n262144 | jax-cuda | vdot_read_f64_n262144 untimed 154.3 ms is 401% of the 38.5 ms timed region (budget 20%) |
-| norm_squared_read_f64_n262144 | jax-cuda | norm_squared_read_f64_n262144 untimed 12.4 ms is 32% of the 38.3 ms timed region (budget 20%) |
-| add_strided_read_f64_n1048576 | jax-cuda | add_strided_read_f64_n1048576 untimed 1063.5 ms is 4902% of the 21.7 ms timed region (budget 20%) |
-| mul_strided_read_f64_n1048576 | jax-cuda | mul_strided_read_f64_n1048576 untimed 962.1 ms is 4723% of the 20.4 ms timed region (budget 20%) |
-| neg_strided_read_f64_n1048576 | jax-cuda | neg_strided_read_f64_n1048576 untimed 940.7 ms is 5467% of the 17.2 ms timed region (budget 20%) |
-| exp_strided_read_f64_n1048576 | jax-cuda | exp_strided_read_f64_n1048576 untimed 964.8 ms is 4405% of the 21.9 ms timed region (budget 20%) |
-| tanh_strided_read_f64_n1048576 | jax-cuda | tanh_strided_read_f64_n1048576 untimed 970.0 ms is 4246% of the 22.8 ms timed region (budget 20%) |
-| reduce_sum_strided_read_f64_n1048576 | jax-cuda | reduce_sum_strided_read_f64_n1048576 untimed 134.3 ms is 285% of the 47.2 ms timed region (budget 20%) |
-| conj_strided_read_c64_n1048576 | jax-cuda | conj_strided_read_c64_n1048576 untimed 1060.4 ms is 6759% of the 15.7 ms timed region (budget 20%) |
-| dot_general_batch_f64_s256 | jax-cuda | dot_general_batch_f64_s256 untimed 706.9 ms is 1570% of the 45.0 ms timed region (budget 20%) |
-| dot_conj_l0r0_c64_n262144 | jax-cuda | dot_conj_l0r0_c64_n262144 untimed 121.5 ms is 347% of the 35.0 ms timed region (budget 20%) |
-| einsum_plan_owned_f64_s256 | jax-cuda | einsum_plan_owned_f64_s256 untimed 448.8 ms is 1376% of the 32.6 ms timed region (budget 20%) |
-| einsum_plan_read_f64_s256 | jax-cuda | einsum_plan_read_f64_s256 untimed 67.5 ms is 205% of the 33.0 ms timed region (budget 20%) |
-| einsum_plan_strided_read_f64_s256 | jax-cuda | einsum_plan_strided_read_f64_s256 untimed 244.1 ms is 758% of the 32.2 ms timed region (budget 20%) |
-| sub_strided_read_f64_n1048576 | jax-cuda | sub_strided_read_f64_n1048576 untimed 959.8 ms is 2724% of the 35.2 ms timed region (budget 20%) |
-| div_strided_read_f64_n1048576 | jax-cuda | div_strided_read_f64_n1048576 untimed 957.6 ms is 2845% of the 33.7 ms timed region (budget 20%) |
-| rem_strided_read_f64_n1048576 | jax-cuda | rem_strided_read_f64_n1048576 untimed 972.2 ms is 5826% of the 16.7 ms timed region (budget 20%) |
-| pow_strided_read_f64_n1048576 | jax-cuda | pow_strided_read_f64_n1048576 untimed 982.0 ms is 5540% of the 17.7 ms timed region (budget 20%) |
-| maximum_strided_read_f64_n1048576 | jax-cuda | maximum_strided_read_f64_n1048576 untimed 936.7 ms is 4731% of the 19.8 ms timed region (budget 20%) |
-| minimum_strided_read_f64_n1048576 | jax-cuda | minimum_strided_read_f64_n1048576 untimed 962.4 ms is 4732% of the 20.3 ms timed region (budget 20%) |
-| abs_strided_read_f64_n1048576 | jax-cuda | abs_strided_read_f64_n1048576 untimed 961.0 ms is 5977% of the 16.1 ms timed region (budget 20%) |
-| sign_strided_read_f64_n1048576 | jax-cuda | sign_strided_read_f64_n1048576 untimed 941.3 ms is 5838% of the 16.1 ms timed region (budget 20%) |
-| expm1_strided_read_f64_n1048576 | jax-cuda | expm1_strided_read_f64_n1048576 untimed 981.8 ms is 6010% of the 16.3 ms timed region (budget 20%) |
-| log_strided_read_f64_n1048576 | jax-cuda | log_strided_read_f64_n1048576 untimed 952.8 ms is 5815% of the 16.4 ms timed region (budget 20%) |
-| log1p_strided_read_f64_n1048576 | jax-cuda | log1p_strided_read_f64_n1048576 untimed 971.1 ms is 6078% of the 16.0 ms timed region (budget 20%) |
-| erf_strided_read_f64_n1048576 | jax-cuda | erf_strided_read_f64_n1048576 untimed 976.8 ms is 4393% of the 22.2 ms timed region (budget 20%) |
-| sin_strided_read_f64_n1048576 | jax-cuda | sin_strided_read_f64_n1048576 untimed 1019.9 ms is 6377% of the 16.0 ms timed region (budget 20%) |
-| cos_strided_read_f64_n1048576 | jax-cuda | cos_strided_read_f64_n1048576 untimed 1008.5 ms is 5835% of the 17.3 ms timed region (budget 20%) |
-| sqrt_strided_read_f64_n1048576 | jax-cuda | sqrt_strided_read_f64_n1048576 untimed 970.3 ms is 5905% of the 16.4 ms timed region (budget 20%) |
-| rsqrt_strided_read_f64_n1048576 | jax-cuda | rsqrt_strided_read_f64_n1048576 untimed 964.1 ms is 4038% of the 23.9 ms timed region (budget 20%) |
-| reduce_prod_strided_read_f64_n1048576 | jax-cuda | reduce_prod_strided_read_f64_n1048576 untimed 134.7 ms is 372% of the 36.3 ms timed region (budget 20%) |
-| reduce_max_strided_read_f64_n1048576 | jax-cuda | reduce_max_strided_read_f64_n1048576 untimed 174.6 ms is 264% of the 66.2 ms timed region (budget 20%) |
-| reduce_min_strided_read_f64_n1048576 | jax-cuda | reduce_min_strided_read_f64_n1048576 untimed 75.8 ms is 223% of the 33.9 ms timed region (budget 20%) |
-| reduce_sum_squares_strided_read_f64_n1048576 | jax-cuda | reduce_sum_squares_strided_read_f64_n1048576 untimed 165.0 ms is 332% of the 49.6 ms timed region (budget 20%) |
+| add_into_f64_n1048576 | tenferro-cuda-direct | add_into_f64_n1048576 untimed 595.3 ms is 5529% of the 10.8 ms timed region (budget 20%) |
+| add_read_into_f64_n1048576 | tenferro-cuda-direct | add_read_into_f64_n1048576 untimed 435.2 ms is 4084% of the 10.7 ms timed region (budget 20%) |
+| sub_into_f64_n1048576 | tenferro-cuda-direct | sub_into_f64_n1048576 untimed 433.6 ms is 4046% of the 10.7 ms timed region (budget 20%) |
+| sub_read_into_f64_n1048576 | tenferro-cuda-direct | sub_read_into_f64_n1048576 untimed 424.6 ms is 3958% of the 10.7 ms timed region (budget 20%) |
+| mul_into_f64_n1048576 | tenferro-cuda-direct | mul_into_f64_n1048576 untimed 410.1 ms is 3854% of the 10.6 ms timed region (budget 20%) |
+| mul_read_into_f64_n1048576 | tenferro-cuda-direct | mul_read_into_f64_n1048576 untimed 396.1 ms is 3691% of the 10.7 ms timed region (budget 20%) |
+| div_into_f64_n1048576 | tenferro-cuda-direct | div_into_f64_n1048576 untimed 385.0 ms is 3618% of the 10.6 ms timed region (budget 20%) |
+| div_read_into_f64_n1048576 | tenferro-cuda-direct | div_read_into_f64_n1048576 untimed 389.3 ms is 3632% of the 10.7 ms timed region (budget 20%) |
+| neg_into_f64_n1048576 | tenferro-cuda-direct | neg_into_f64_n1048576 untimed 403.9 ms is 4560% of the 8.9 ms timed region (budget 20%) |
+| neg_read_into_f64_n1048576 | tenferro-cuda-direct | neg_read_into_f64_n1048576 untimed 434.4 ms is 4861% of the 8.9 ms timed region (budget 20%) |
+| conj_into_c64_n1048576 | tenferro-cuda-direct | conj_into_c64_n1048576 untimed 470.9 ms is 5912% of the 8.0 ms timed region (budget 20%) |
+| conj_read_into_c64_n1048576 | tenferro-cuda-direct | conj_read_into_c64_n1048576 untimed 493.2 ms is 6167% of the 8.0 ms timed region (budget 20%) |
+| tensordot_f64_n262144 | tenferro-cuda-direct | tensordot_f64_n262144 untimed 2659.7 ms is 6113% of the 43.5 ms timed region (budget 20%) |
+| vdot_read_f64_n262144 | tenferro-cuda-direct | vdot_read_f64_n262144 untimed 10.1 ms is 29% of the 34.3 ms timed region (budget 20%) |
+| axpby_read_into_accum_f64_n1048576 | tenferro-cuda-direct | axpby_read_into_accum_f64_n1048576 untimed 380.3 ms is 2167% of the 17.6 ms timed region (budget 20%) |
+| dot_general_read_into_f64_s256 | tenferro-cuda-direct | dot_general_read_into_f64_s256 untimed 320.3 ms is 937% of the 34.2 ms timed region (budget 20%) |
+| dot_general_read_into_accum_f64_s256 | tenferro-cuda-direct | dot_general_read_into_accum_f64_s256 untimed 349.5 ms is 894% of the 39.1 ms timed region (budget 20%) |
+| dot_general_read_into_accum_cached_f64_s256 | tenferro-cuda-direct | dot_general_read_into_accum_cached_f64_s256 untimed 381.1 ms is 992% of the 38.4 ms timed region (budget 20%) |
+| add_strided_read_f64_n1048576 | tenferro-cuda-direct | add_strided_read_f64_n1048576 untimed 132.8 ms is 259% of the 51.3 ms timed region (budget 20%) |
+| mul_strided_read_f64_n1048576 | tenferro-cuda-direct | mul_strided_read_f64_n1048576 untimed 131.7 ms is 257% of the 51.3 ms timed region (budget 20%) |
+| neg_strided_read_f64_n1048576 | tenferro-cuda-direct | neg_strided_read_f64_n1048576 untimed 116.5 ms is 383% of the 30.4 ms timed region (budget 20%) |
+| exp_strided_read_f64_n1048576 | tenferro-cuda-direct | exp_strided_read_f64_n1048576 untimed 115.1 ms is 372% of the 30.9 ms timed region (budget 20%) |
+| tanh_strided_read_f64_n1048576 | tenferro-cuda-direct | tanh_strided_read_f64_n1048576 untimed 133.5 ms is 417% of the 32.0 ms timed region (budget 20%) |
+| reduce_sum_strided_read_f64_n1048576 | tenferro-cuda-direct | reduce_sum_strided_read_f64_n1048576 untimed 29.0 ms is 74% of the 39.2 ms timed region (budget 20%) |
+| conj_strided_read_c64_n1048576 | tenferro-cuda-direct | conj_strided_read_c64_n1048576 untimed 158.1 ms is 679% of the 23.3 ms timed region (budget 20%) |
+| dot_general_batch_f64_s256 | tenferro-cuda-direct | dot_general_batch_f64_s256 untimed 38.8 ms is 75% of the 51.5 ms timed region (budget 20%) |
+| dot_conj_l0r0_c64_n262144 | tenferro-cuda-direct | dot_conj_l0r0_c64_n262144 untimed 27.7 ms is 80% of the 34.5 ms timed region (budget 20%) |
+| einsum_plan_owned_f64_s256 | tenferro-cuda-direct | einsum_plan_owned_f64_s256 untimed 9.4 ms is 22% of the 42.9 ms timed region (budget 20%) |
+| einsum_plan_read_f64_s256 | tenferro-cuda-direct | einsum_plan_read_f64_s256 untimed 10.1 ms is 22% of the 46.0 ms timed region (budget 20%) |
+| einsum_plan_strided_read_f64_s256 | tenferro-cuda-direct | einsum_plan_strided_read_f64_s256 untimed 8.2 ms is 23% of the 36.0 ms timed region (budget 20%) |
+| einsum_plan_into_f64_s256 | tenferro-cuda-direct | einsum_plan_into_f64_s256 untimed 482.2 ms is 1462% of the 33.0 ms timed region (budget 20%) |
+| einsum_plan_read_into_f64_s256 | tenferro-cuda-direct | einsum_plan_read_into_f64_s256 untimed 507.5 ms is 1455% of the 34.9 ms timed region (budget 20%) |
+| einsum_plan_read_into_accum_f64_s256 | tenferro-cuda-direct | einsum_plan_read_into_accum_f64_s256 untimed 549.1 ms is 1429% of the 38.4 ms timed region (budget 20%) |
+| einsum_plan_strided_read_into_f64_s256 | tenferro-cuda-direct | einsum_plan_strided_read_into_f64_s256 untimed 577.4 ms is 1712% of the 33.7 ms timed region (budget 20%) |
+| einsum_plan_strided_read_into_accum_f64_s256 | tenferro-cuda-direct | einsum_plan_strided_read_into_accum_f64_s256 untimed 539.2 ms is 1523% of the 35.4 ms timed region (budget 20%) |
+| sub_strided_read_f64_n1048576 | tenferro-cuda-direct | sub_strided_read_f64_n1048576 untimed 158.0 ms is 286% of the 55.2 ms timed region (budget 20%) |
+| div_strided_read_f64_n1048576 | tenferro-cuda-direct | div_strided_read_f64_n1048576 untimed 171.4 ms is 310% of the 55.3 ms timed region (budget 20%) |
+| rem_strided_read_f64_n1048576 | tenferro-cuda-direct | rem_strided_read_f64_n1048576 untimed 155.9 ms is 445% of the 35.1 ms timed region (budget 20%) |
+| pow_strided_read_f64_n1048576 | tenferro-cuda-direct | pow_strided_read_f64_n1048576 untimed 167.0 ms is 479% of the 34.8 ms timed region (budget 20%) |
+| maximum_strided_read_f64_n1048576 | tenferro-cuda-direct | maximum_strided_read_f64_n1048576 untimed 155.5 ms is 493% of the 31.6 ms timed region (budget 20%) |
+| minimum_strided_read_f64_n1048576 | tenferro-cuda-direct | minimum_strided_read_f64_n1048576 untimed 168.1 ms is 279% of the 60.3 ms timed region (budget 20%) |
+| abs_strided_read_f64_n1048576 | tenferro-cuda-direct | abs_strided_read_f64_n1048576 untimed 144.3 ms is 452% of the 31.9 ms timed region (budget 20%) |
+| sign_strided_read_f64_n1048576 | tenferro-cuda-direct | sign_strided_read_f64_n1048576 untimed 140.6 ms is 438% of the 32.1 ms timed region (budget 20%) |
+| expm1_strided_read_f64_n1048576 | tenferro-cuda-direct | expm1_strided_read_f64_n1048576 untimed 138.1 ms is 420% of the 32.9 ms timed region (budget 20%) |
+| log_strided_read_f64_n1048576 | tenferro-cuda-direct | log_strided_read_f64_n1048576 untimed 130.1 ms is 372% of the 35.0 ms timed region (budget 20%) |
+| log1p_strided_read_f64_n1048576 | tenferro-cuda-direct | log1p_strided_read_f64_n1048576 untimed 144.7 ms is 424% of the 34.2 ms timed region (budget 20%) |
+| erf_strided_read_f64_n1048576 | tenferro-cuda-direct | erf_strided_read_f64_n1048576 untimed 146.7 ms is 414% of the 35.4 ms timed region (budget 20%) |
+| sin_strided_read_f64_n1048576 | tenferro-cuda-direct | sin_strided_read_f64_n1048576 untimed 139.8 ms is 414% of the 33.8 ms timed region (budget 20%) |
+| cos_strided_read_f64_n1048576 | tenferro-cuda-direct | cos_strided_read_f64_n1048576 untimed 146.5 ms is 437% of the 33.6 ms timed region (budget 20%) |
+| sqrt_strided_read_f64_n1048576 | tenferro-cuda-direct | sqrt_strided_read_f64_n1048576 untimed 127.4 ms is 408% of the 31.3 ms timed region (budget 20%) |
+| rsqrt_strided_read_f64_n1048576 | tenferro-cuda-direct | rsqrt_strided_read_f64_n1048576 untimed 147.2 ms is 458% of the 32.2 ms timed region (budget 20%) |
+| reduce_prod_strided_read_f64_n1048576 | tenferro-cuda-direct | reduce_prod_strided_read_f64_n1048576 untimed 36.7 ms is 91% of the 40.2 ms timed region (budget 20%) |
+| reduce_max_strided_read_f64_n1048576 | tenferro-cuda-direct | reduce_max_strided_read_f64_n1048576 untimed 20.6 ms is 51% of the 40.5 ms timed region (budget 20%) |
+| reduce_min_strided_read_f64_n1048576 | tenferro-cuda-direct | reduce_min_strided_read_f64_n1048576 untimed 21.0 ms is 54% of the 38.6 ms timed region (budget 20%) |
+| reduce_sum_squares_strided_read_f64_n1048576 | tenferro-cuda-direct | reduce_sum_squares_strided_read_f64_n1048576 untimed 17.8 ms is 45% of the 39.3 ms timed region (budget 20%) |
+| tensordot_f64_n262144 | tenferro-cuda-eager | tensordot_f64_n262144 untimed 2640.3 ms is 11570% of the 22.8 ms timed region (budget 20%) |
+| dot_general_batch_f64_s256 | tenferro-cuda-eager | dot_general_batch_f64_s256 untimed 13.8 ms is 46% of the 29.6 ms timed region (budget 20%) |
+| dot_conj_l0r0_c64_n262144 | tenferro-cuda-eager | dot_conj_l0r0_c64_n262144 untimed 20.4 ms is 58% of the 35.4 ms timed region (budget 20%) |
+| add_into_f64_n1048576 | pytorch-cuda | add_into_f64_n1048576 untimed 282.9 ms is 4900% of the 5.8 ms timed region (budget 20%) |
+| add_read_into_f64_n1048576 | pytorch-cuda | add_read_into_f64_n1048576 untimed 97.0 ms is 1674% of the 5.8 ms timed region (budget 20%) |
+| sub_into_f64_n1048576 | pytorch-cuda | sub_into_f64_n1048576 untimed 80.2 ms is 1409% of the 5.7 ms timed region (budget 20%) |
+| sub_read_into_f64_n1048576 | pytorch-cuda | sub_read_into_f64_n1048576 untimed 81.5 ms is 1386% of the 5.9 ms timed region (budget 20%) |
+| mul_into_f64_n1048576 | pytorch-cuda | mul_into_f64_n1048576 untimed 91.6 ms is 1569% of the 5.8 ms timed region (budget 20%) |
+| mul_read_into_f64_n1048576 | pytorch-cuda | mul_read_into_f64_n1048576 untimed 76.1 ms is 1262% of the 6.0 ms timed region (budget 20%) |
+| div_into_f64_n1048576 | pytorch-cuda | div_into_f64_n1048576 untimed 94.1 ms is 1516% of the 6.2 ms timed region (budget 20%) |
+| div_read_into_f64_n1048576 | pytorch-cuda | div_read_into_f64_n1048576 untimed 77.0 ms is 1227% of the 6.3 ms timed region (budget 20%) |
+| neg_into_f64_n1048576 | pytorch-cuda | neg_into_f64_n1048576 untimed 107.7 ms is 2829% of the 3.8 ms timed region (budget 20%) |
+| neg_read_into_f64_n1048576 | pytorch-cuda | neg_read_into_f64_n1048576 untimed 79.2 ms is 2069% of the 3.8 ms timed region (budget 20%) |
+| conj_into_c64_n1048576 | pytorch-cuda | conj_into_c64_n1048576 untimed 133.6 ms is 2326% of the 5.7 ms timed region (budget 20%) |
+| conj_read_into_c64_n1048576 | pytorch-cuda | conj_read_into_c64_n1048576 untimed 141.6 ms is 2449% of the 5.8 ms timed region (budget 20%) |
+| tensordot_f64_n262144 | pytorch-cuda | tensordot_f64_n262144 untimed 71.6 ms is 143% of the 50.1 ms timed region (budget 20%) |
+| vdot_read_f64_n262144 | pytorch-cuda | vdot_read_f64_n262144 untimed 13.4 ms is 33% of the 41.1 ms timed region (budget 20%) |
+| norm_squared_read_f64_n262144 | pytorch-cuda | norm_squared_read_f64_n262144 untimed 9.4 ms is 24% of the 38.5 ms timed region (budget 20%) |
+| axpby_read_into_accum_f64_n1048576 | pytorch-cuda | axpby_read_into_accum_f64_n1048576 untimed 89.2 ms is 1176% of the 7.6 ms timed region (budget 20%) |
+| dot_general_read_into_f64_s256 | pytorch-cuda | dot_general_read_into_f64_s256 untimed 43.1 ms is 120% of the 35.9 ms timed region (budget 20%) |
+| dot_general_read_into_accum_f64_s256 | pytorch-cuda | dot_general_read_into_accum_f64_s256 untimed 66.0 ms is 156% of the 42.2 ms timed region (budget 20%) |
+| dot_general_read_into_accum_cached_f64_s256 | pytorch-cuda | dot_general_read_into_accum_cached_f64_s256 untimed 40.9 ms is 97% of the 42.2 ms timed region (budget 20%) |
+| add_strided_read_f64_n1048576 | pytorch-cuda | add_strided_read_f64_n1048576 untimed 116.7 ms is 1956% of the 6.0 ms timed region (budget 20%) |
+| mul_strided_read_f64_n1048576 | pytorch-cuda | mul_strided_read_f64_n1048576 untimed 103.5 ms is 1698% of the 6.1 ms timed region (budget 20%) |
+| neg_strided_read_f64_n1048576 | pytorch-cuda | neg_strided_read_f64_n1048576 untimed 83.4 ms is 2163% of the 3.9 ms timed region (budget 20%) |
+| exp_strided_read_f64_n1048576 | pytorch-cuda | exp_strided_read_f64_n1048576 untimed 126.6 ms is 3057% of the 4.1 ms timed region (budget 20%) |
+| tanh_strided_read_f64_n1048576 | pytorch-cuda | tanh_strided_read_f64_n1048576 untimed 89.1 ms is 2208% of the 4.0 ms timed region (budget 20%) |
+| reduce_sum_strided_read_f64_n1048576 | pytorch-cuda | reduce_sum_strided_read_f64_n1048576 untimed 28.2 ms is 53% of the 52.9 ms timed region (budget 20%) |
+| conj_strided_read_c64_n1048576 | pytorch-cuda | conj_strided_read_c64_n1048576 untimed 215.8 ms is 3734% of the 5.8 ms timed region (budget 20%) |
+| dot_general_batch_f64_s256 | pytorch-cuda | dot_general_batch_f64_s256 untimed 39.2 ms is 95% of the 41.3 ms timed region (budget 20%) |
+| dot_conj_l0r0_c64_n262144 | pytorch-cuda | dot_conj_l0r0_c64_n262144 untimed 14.2 ms is 29% of the 48.9 ms timed region (budget 20%) |
+| einsum_plan_owned_f64_s256 | pytorch-cuda | einsum_plan_owned_f64_s256 untimed 13.8 ms is 33% of the 42.1 ms timed region (budget 20%) |
+| einsum_plan_read_f64_s256 | pytorch-cuda | einsum_plan_read_f64_s256 untimed 14.6 ms is 34% of the 42.9 ms timed region (budget 20%) |
+| einsum_plan_strided_read_f64_s256 | pytorch-cuda | einsum_plan_strided_read_f64_s256 untimed 13.3 ms is 33% of the 40.3 ms timed region (budget 20%) |
+| einsum_plan_into_f64_s256 | pytorch-cuda | einsum_plan_into_f64_s256 untimed 12.0 ms is 35% of the 34.6 ms timed region (budget 20%) |
+| einsum_plan_read_into_f64_s256 | pytorch-cuda | einsum_plan_read_into_f64_s256 untimed 28.5 ms is 83% of the 34.4 ms timed region (budget 20%) |
+| einsum_plan_read_into_accum_f64_s256 | pytorch-cuda | einsum_plan_read_into_accum_f64_s256 untimed 44.8 ms is 101% of the 44.6 ms timed region (budget 20%) |
+| einsum_plan_strided_read_into_f64_s256 | pytorch-cuda | einsum_plan_strided_read_into_f64_s256 untimed 11.8 ms is 34% of the 34.7 ms timed region (budget 20%) |
+| einsum_plan_strided_read_into_accum_f64_s256 | pytorch-cuda | einsum_plan_strided_read_into_accum_f64_s256 untimed 42.0 ms is 93% of the 45.0 ms timed region (budget 20%) |
+| sub_strided_read_f64_n1048576 | pytorch-cuda | sub_strided_read_f64_n1048576 untimed 119.5 ms is 1984% of the 6.0 ms timed region (budget 20%) |
+| div_strided_read_f64_n1048576 | pytorch-cuda | div_strided_read_f64_n1048576 untimed 103.5 ms is 1659% of the 6.2 ms timed region (budget 20%) |
+| rem_strided_read_f64_n1048576 | pytorch-cuda | rem_strided_read_f64_n1048576 untimed 138.3 ms is 2318% of the 6.0 ms timed region (budget 20%) |
+| pow_strided_read_f64_n1048576 | pytorch-cuda | pow_strided_read_f64_n1048576 untimed 121.9 ms is 863% of the 14.1 ms timed region (budget 20%) |
+| maximum_strided_read_f64_n1048576 | pytorch-cuda | maximum_strided_read_f64_n1048576 untimed 108.9 ms is 1823% of the 6.0 ms timed region (budget 20%) |
+| minimum_strided_read_f64_n1048576 | pytorch-cuda | minimum_strided_read_f64_n1048576 untimed 93.2 ms is 1587% of the 5.9 ms timed region (budget 20%) |
+| abs_strided_read_f64_n1048576 | pytorch-cuda | abs_strided_read_f64_n1048576 untimed 78.4 ms is 1993% of the 3.9 ms timed region (budget 20%) |
+| sign_strided_read_f64_n1048576 | pytorch-cuda | sign_strided_read_f64_n1048576 untimed 75.8 ms is 1940% of the 3.9 ms timed region (budget 20%) |
+| expm1_strided_read_f64_n1048576 | pytorch-cuda | expm1_strided_read_f64_n1048576 untimed 82.5 ms is 1728% of the 4.8 ms timed region (budget 20%) |
+| log_strided_read_f64_n1048576 | pytorch-cuda | log_strided_read_f64_n1048576 untimed 97.0 ms is 1577% of the 6.1 ms timed region (budget 20%) |
+| log1p_strided_read_f64_n1048576 | pytorch-cuda | log1p_strided_read_f64_n1048576 untimed 82.3 ms is 1285% of the 6.4 ms timed region (budget 20%) |
+| erf_strided_read_f64_n1048576 | pytorch-cuda | erf_strided_read_f64_n1048576 untimed 96.4 ms is 1380% of the 7.0 ms timed region (budget 20%) |
+| sin_strided_read_f64_n1048576 | pytorch-cuda | sin_strided_read_f64_n1048576 untimed 89.9 ms is 1643% of the 5.5 ms timed region (budget 20%) |
+| cos_strided_read_f64_n1048576 | pytorch-cuda | cos_strided_read_f64_n1048576 untimed 90.4 ms is 1633% of the 5.5 ms timed region (budget 20%) |
+| sqrt_strided_read_f64_n1048576 | pytorch-cuda | sqrt_strided_read_f64_n1048576 untimed 77.0 ms is 1982% of the 3.9 ms timed region (budget 20%) |
+| rsqrt_strided_read_f64_n1048576 | pytorch-cuda | rsqrt_strided_read_f64_n1048576 untimed 80.1 ms is 2049% of the 3.9 ms timed region (budget 20%) |
+| reduce_prod_strided_read_f64_n1048576 | pytorch-cuda | reduce_prod_strided_read_f64_n1048576 untimed 852.2 ms is 1615% of the 52.8 ms timed region (budget 20%) |
+| reduce_max_strided_read_f64_n1048576 | pytorch-cuda | reduce_max_strided_read_f64_n1048576 untimed 22.3 ms is 42% of the 52.8 ms timed region (budget 20%) |
+| reduce_min_strided_read_f64_n1048576 | pytorch-cuda | reduce_min_strided_read_f64_n1048576 untimed 24.7 ms is 47% of the 52.9 ms timed region (budget 20%) |
+| reduce_sum_squares_strided_read_f64_n1048576 | pytorch-cuda | reduce_sum_squares_strided_read_f64_n1048576 untimed 28.2 ms is 68% of the 41.4 ms timed region (budget 20%) |
+| tensordot_f64_n262144 | jax-cuda | tensordot_f64_n262144 untimed 809.8 ms is 1936% of the 41.8 ms timed region (budget 20%) |
+| vdot_read_f64_n262144 | jax-cuda | vdot_read_f64_n262144 untimed 171.5 ms is 413% of the 41.5 ms timed region (budget 20%) |
+| norm_squared_read_f64_n262144 | jax-cuda | norm_squared_read_f64_n262144 untimed 12.5 ms is 31% of the 40.5 ms timed region (budget 20%) |
+| add_strided_read_f64_n1048576 | jax-cuda | add_strided_read_f64_n1048576 untimed 352.3 ms is 1704% of the 20.7 ms timed region (budget 20%) |
+| mul_strided_read_f64_n1048576 | jax-cuda | mul_strided_read_f64_n1048576 untimed 243.5 ms is 564% of the 43.2 ms timed region (budget 20%) |
+| neg_strided_read_f64_n1048576 | jax-cuda | neg_strided_read_f64_n1048576 untimed 225.5 ms is 607% of the 37.1 ms timed region (budget 20%) |
+| exp_strided_read_f64_n1048576 | jax-cuda | exp_strided_read_f64_n1048576 untimed 230.1 ms is 619% of the 37.2 ms timed region (budget 20%) |
+| tanh_strided_read_f64_n1048576 | jax-cuda | tanh_strided_read_f64_n1048576 untimed 223.4 ms is 578% of the 38.6 ms timed region (budget 20%) |
+| reduce_sum_strided_read_f64_n1048576 | jax-cuda | reduce_sum_strided_read_f64_n1048576 untimed 162.8 ms is 423% of the 38.5 ms timed region (budget 20%) |
+| conj_strided_read_c64_n1048576 | jax-cuda | conj_strided_read_c64_n1048576 untimed 440.5 ms is 2364% of the 18.6 ms timed region (budget 20%) |
+| dot_general_batch_f64_s256 | jax-cuda | dot_general_batch_f64_s256 untimed 688.6 ms is 2509% of the 27.4 ms timed region (budget 20%) |
+| dot_conj_l0r0_c64_n262144 | jax-cuda | dot_conj_l0r0_c64_n262144 untimed 97.4 ms is 259% of the 37.6 ms timed region (budget 20%) |
+| einsum_plan_owned_f64_s256 | jax-cuda | einsum_plan_owned_f64_s256 untimed 497.4 ms is 1508% of the 33.0 ms timed region (budget 20%) |
+| einsum_plan_read_f64_s256 | jax-cuda | einsum_plan_read_f64_s256 untimed 13.3 ms is 40% of the 33.5 ms timed region (budget 20%) |
+| einsum_plan_strided_read_f64_s256 | jax-cuda | einsum_plan_strided_read_f64_s256 untimed 216.5 ms is 649% of the 33.4 ms timed region (budget 20%) |
+| sub_strided_read_f64_n1048576 | jax-cuda | sub_strided_read_f64_n1048576 untimed 220.6 ms is 608% of the 36.3 ms timed region (budget 20%) |
+| div_strided_read_f64_n1048576 | jax-cuda | div_strided_read_f64_n1048576 untimed 228.6 ms is 657% of the 34.8 ms timed region (budget 20%) |
+| rem_strided_read_f64_n1048576 | jax-cuda | rem_strided_read_f64_n1048576 untimed 259.9 ms is 702% of the 37.0 ms timed region (budget 20%) |
+| pow_strided_read_f64_n1048576 | jax-cuda | pow_strided_read_f64_n1048576 untimed 269.6 ms is 649% of the 41.5 ms timed region (budget 20%) |
+| maximum_strided_read_f64_n1048576 | jax-cuda | maximum_strided_read_f64_n1048576 untimed 201.8 ms is 516% of the 39.1 ms timed region (budget 20%) |
+| minimum_strided_read_f64_n1048576 | jax-cuda | minimum_strided_read_f64_n1048576 untimed 237.3 ms is 528% of the 45.0 ms timed region (budget 20%) |
+| abs_strided_read_f64_n1048576 | jax-cuda | abs_strided_read_f64_n1048576 untimed 202.7 ms is 505% of the 40.1 ms timed region (budget 20%) |
+| sign_strided_read_f64_n1048576 | jax-cuda | sign_strided_read_f64_n1048576 untimed 219.3 ms is 682% of the 32.2 ms timed region (budget 20%) |
+| expm1_strided_read_f64_n1048576 | jax-cuda | expm1_strided_read_f64_n1048576 untimed 230.3 ms is 726% of the 31.7 ms timed region (budget 20%) |
+| log_strided_read_f64_n1048576 | jax-cuda | log_strided_read_f64_n1048576 untimed 225.3 ms is 641% of the 35.1 ms timed region (budget 20%) |
+| log1p_strided_read_f64_n1048576 | jax-cuda | log1p_strided_read_f64_n1048576 untimed 248.1 ms is 628% of the 39.5 ms timed region (budget 20%) |
+| erf_strided_read_f64_n1048576 | jax-cuda | erf_strided_read_f64_n1048576 untimed 242.5 ms is 520% of the 46.7 ms timed region (budget 20%) |
+| sin_strided_read_f64_n1048576 | jax-cuda | sin_strided_read_f64_n1048576 untimed 256.7 ms is 647% of the 39.7 ms timed region (budget 20%) |
+| cos_strided_read_f64_n1048576 | jax-cuda | cos_strided_read_f64_n1048576 untimed 256.6 ms is 769% of the 33.4 ms timed region (budget 20%) |
+| sqrt_strided_read_f64_n1048576 | jax-cuda | sqrt_strided_read_f64_n1048576 untimed 230.4 ms is 710% of the 32.4 ms timed region (budget 20%) |
+| rsqrt_strided_read_f64_n1048576 | jax-cuda | rsqrt_strided_read_f64_n1048576 untimed 222.3 ms is 493% of the 45.1 ms timed region (budget 20%) |
+| reduce_prod_strided_read_f64_n1048576 | jax-cuda | reduce_prod_strided_read_f64_n1048576 untimed 151.1 ms is 387% of the 39.1 ms timed region (budget 20%) |
+| reduce_max_strided_read_f64_n1048576 | jax-cuda | reduce_max_strided_read_f64_n1048576 untimed 214.4 ms is 534% of the 40.1 ms timed region (budget 20%) |
+| reduce_min_strided_read_f64_n1048576 | jax-cuda | reduce_min_strided_read_f64_n1048576 untimed 92.3 ms is 223% of the 41.4 ms timed region (budget 20%) |
+| reduce_sum_squares_strided_read_f64_n1048576 | jax-cuda | reduce_sum_squares_strided_read_f64_n1048576 untimed 197.2 ms is 624% of the 31.6 ms timed region (budget 20%) |
