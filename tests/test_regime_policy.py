@@ -249,7 +249,7 @@ class RegimePagesTests(unittest.TestCase):
                 "  run: {runs: 7}\n",
                 "  - {id: declared_case, regime: throughput, size_elements: 1048576}\n",
             ),
-            [("declared_case", 1.0), ("undeclared_case", 2.0)],
+            [("declared_one", 1.0), ("stray_case", 2.0)],
         )
         with self.assertRaises(SystemExit) as raised:
             self.generate()
@@ -288,6 +288,57 @@ class RegimePagesTests(unittest.TestCase):
         output = self.generate()
         self.assertNotIn("qr_jvp_f64_256", (output / "gpu/index.html").read_text())
         self.assertIn("qr_jvp_f64_256", (output / "gpu/latency/index.html").read_text())
+
+    def test_measured_case_with_no_manifest_entry_goes_to_latency(self):
+        # #383 item 1.  A case id the manifest does not contain cannot inherit the
+        # suite's throughput default: a throughput claim needs a basis and a floor,
+        # and an undeclared case has neither.  It is published as the weaker claim
+        # (a per-call measurement) and the page names it.
+        suite = suite_yaml(
+            "cpu/cpu_ops",
+            "  regime: throughput\n  run: {runs: 7}\n",
+            "  - {id: declared_one, size_elements: 1048576}\n",
+        )
+        (self.root / "benchmarks/cpu").mkdir(parents=True)
+        (self.root / "benchmarks/cpu/cpu_ops.yaml").write_text(suite)
+        out = self.result / "zen5-cpu/cpu"
+        out.mkdir(parents=True)
+        (out / "cpu_ops.md").write_text("# report\n")
+        (out / "cpu_ops.summary.json").write_text(
+            json.dumps(summary("zen5-cpu", "cpu/cpu_ops", [("declared_one", 1.0), ("stray_case", 2.0)]))
+        )
+        output = self.generate()
+        latency = (output / "cpu/latency/index.html").read_text()
+        self.assertIn("stray_case", latency)
+        self.assertNotIn("declared_one", latency)
+        throughput = (output / "cpu/index.html").read_text()
+        self.assertIn("declared_one", throughput)
+        self.assertNotIn("stray_case", throughput)
+        suite_page = (output / "zen5-cpu/cpu/cpu_ops.html").read_text()
+        self.assertIn("no entry in the suite manifest", suite_page)
+        self.assertIn("<code>stray_case</code>", suite_page)
+
+    def test_throughput_banner_counts_rows_that_have_no_floor(self):
+        # #383 item 3.  "each at or above its family floor" is a claim about the
+        # table, so it must be derived from the rows: a throughput case with no
+        # declared working set has no floor, and the banner says so.
+        self.add_suite(
+            "dense",
+            suite_yaml(
+                "gpu/dense",
+                "  regime: throughput\n  run: {runs: 7}\n",
+                "  - {id: big_matmul, family: dense, matmul: {m: 3072, n: 3072, k: 3072}}\n"
+                "  - {id: no_size, family: dense, floor_exempt: 'size lives outside the declaration'}\n",
+            ),
+            [("big_matmul", 3.16), ("no_size", 0.02)],
+        )
+        page = (self.generate() / "gpu/index.html").read_text()
+        notice = re.search(r'<p class="notice"><strong>Throughput.*?</p>', page, re.S)
+        self.assertIsNotNone(notice, page)
+        text = re.sub(r"\s+", " ", notice.group(0))
+        self.assertIn("1 of them at or above their family floor", text)
+        self.assertIn("1 carries no family floor", text)
+        self.assertNotIn("each at or above its family floor", text)
 
     def test_throughput_banner_states_the_rendered_size_range(self):
         self.add_suite(

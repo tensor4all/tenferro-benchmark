@@ -133,5 +133,19 @@ The rule is enforced for `gpu/` suites. The CPU catalogues still mix size
 classes (their `throughput` default is marked provisional in each YAML) and
 their floors are a follow-up: enforcing today's table on them would move several
 hundred cases, which is a separate decision about what the CPU pages are for.
-The CPU throughput banner therefore states the size range it actually holds and
-omits the "at or above its family floor" claim.
+The CPU throughput banner therefore states the size range it actually holds,
+how many of those cases sit below their (provisional) family floor and how many
+carry no floor at all, and it claims "each at or above its family floor" only
+when every row supports it. All three counts are derived from the rows the page
+actually renders, so the sentence cannot claim more than the table shows.
+
+## A measured case that no manifest declares
+
+A summary can contain a case the suite YAML does not declare — a stale report, a
+renamed case, or a suite id that drifted. That case cannot be published as
+`throughput`: a throughput claim says the case has an evidence basis and a floor,
+and an undeclared case has neither. It is published as `latency` (the weaker
+claim: a per-call measurement) and the suite page names the cases whose placement
+is that fallback. The suite-id mismatch fallback is unaffected: a case declared
+under a different suite id is still a declared case. A policed `gpu/` suite is
+stricter still: a measured case with no manifest entry is an error at load.

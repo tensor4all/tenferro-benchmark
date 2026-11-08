@@ -1205,6 +1205,9 @@ class FailedBackendTest(unittest.TestCase):
         (self.benchmarks / "dense.yaml").write_text(
             "schema_version: 1\nsuite_id: gpu/dense\ndefaults:\n  regime: throughput\n"
             "problems:\n  - {id: case_ok, size_elements: 1048576}\n"
+            # A GPU suite is policed: every measured case is declared, so this
+            # fixture declares the case it measures (#383).
+            "  - {id: case_mixed, size_elements: 1048576}\n"
         )
         suite_dir = self.result / "nvidia-gpu" / "gpu"
         suite_dir.mkdir(parents=True)

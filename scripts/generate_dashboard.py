@@ -186,9 +186,12 @@ def load_suite_metadata(benchmarks_dir: Path) -> dict[str, dict[str, Any]]:
     family floor is an error too (``scripts/regime_policy.py``).  The page a case
     lands on is therefore a declaration, never a fallback.
 
-    A case still missing from the YAML keeps only its sample count out: the
-    regime error above is raised before rendering, so a rendered case always has
-    a declared regime.
+    A measured case with no entry in any manifest is not given the suite's
+    default regime: a `throughput` claim needs a basis and a floor, and an
+    undeclared case has neither, so it is published as a latency measurement and
+    the page names it (``build_suite_views``).  For a policed (``gpu/``) suite
+    the same case is an error instead, because every measured case there is
+    expected to be declared.
     """
     metadata: dict[str, dict[str, Any]] = {}
     if not benchmarks_dir.exists():
@@ -244,6 +247,7 @@ def load_suite_metadata(benchmarks_dir: Path) -> dict[str, dict[str, Any]]:
 def case_meta(metadata: dict[str, dict[str, Any]], suite_id: str, case: str) -> dict[str, Any]:
     suite = metadata.get(suite_id) or {}
     problem = (suite.get("problems") or {}).get(case)
+    declared = problem is not None
     if problem is None:
         # A report can be filed under a suite id that differs from the one its
         # sidecar names (`result/zen5-cpu/cpu/linalg_jvp_vjp.summary.json` is a
@@ -254,10 +258,11 @@ def case_meta(metadata: dict[str, dict[str, Any]], suite_id: str, case: str) -> 
                 continue
             candidate = (other.get("problems") or {}).get(case)
             if candidate is not None:
-                suite, problem = other, candidate
+                suite, problem, declared = other, candidate, True
                 break
     problem = problem or {}
     return {
+        "declared": declared,
         "regime": problem.get("regime") or suite.get("regime"),
         "measure": problem.get("measure") or suite.get("measure"),
         "family": problem.get("family") or suite.get("family"),
@@ -1627,6 +1632,9 @@ class CaseView:
     elements: int | None = None
     measure: str | None = None
     provisional: bool = False
+    # True when no suite manifest has an entry for this measured case, so its
+    # regime is a documented fallback (latency) and no floor applies (#383).
+    undeclared: bool = False
 
 
 @dataclass
@@ -1892,21 +1900,38 @@ def build_suite_views(
         if document:
             for (case, group), rows in sorted(grouped_workloads(document).items()):
                 meta = case_meta(metadata, suite_id, case)
-                provisional = not meta["regime"]
-                if provisional:
-                    # A measured GPU case must say which page it belongs to: the
-                    # GPU manifests are policed, so a case they do not declare (or
-                    # a GPU suite with no manifest) is a manifest bug.  A CPU
-                    # report-only view with no manifest keeps its pre-rule
-                    # placement and the page can say it is provisional
-                    # (docs/regime-floors.md).
+                if not meta["declared"]:
+                    # No manifest entry for this measured case (#383).  It cannot
+                    # be a *throughput* claim: that claim says the case has a
+                    # basis and a floor, and this one has neither.  The weaker
+                    # claim -- a per-call measurement -- is the only honest one,
+                    # so it goes to latency and the page names it.  The suite-id
+                    # mismatch fallback above is preserved: a case declared under
+                    # another suite is still declared.
                     if regime_policy.is_policed(suite_id):
                         raise SystemExit(
                             f"{suite_id}: measured case {case!r} declares no regime. "
-                            "Add `regime: throughput|latency` to the case (or "
-                            "`defaults.regime` to the suite) before publishing."
+                            "The suite manifest has no entry for it; add the case with "
+                            "`regime: throughput|latency` (or `defaults.regime` to the "
+                            "suite) before publishing."
                         )
-                    meta = {**meta, "regime": THROUGHPUT}
+                    meta = {**meta, "regime": LATENCY}
+                    provisional = True
+                else:
+                    provisional = not meta["regime"]
+                    if provisional:
+                        # A measured GPU case must say which page it belongs to: the
+                        # GPU manifests are policed, so a case they declare without a
+                        # regime (or a GPU suite with no manifest) is a manifest bug.
+                        # A CPU report-only view keeps its pre-rule placement and the
+                        # page says it is provisional (docs/regime-floors.md).
+                        if regime_policy.is_policed(suite_id):
+                            raise SystemExit(
+                                f"{suite_id}: measured case {case!r} declares no regime. "
+                                "Add `regime: throughput|latency` to the case (or "
+                                "`defaults.regime` to the suite) before publishing."
+                            )
+                        meta = {**meta, "regime": THROUGHPUT}
                 cases.append(
                     CaseView(
                         case=case,
@@ -1918,6 +1943,7 @@ def build_suite_views(
                         elements=meta["elements"],
                         measure=meta["measure"],
                         provisional=provisional,
+                        undeclared=not meta["declared"],
                     )
                 )
         views.append(SuiteView(profile, suite_id, report, document, cases, load_provenance(report, profile, suite_id)))
@@ -2120,18 +2146,40 @@ def family_notice(family: str, cases: list[CaseView]) -> str:
     count = len(cases)
     noun = "case" if count == 1 else "cases"
     sizes = regime_policy.describe_sizes(case.elements for case in cases)
-    at_floor = all(
-        case.elements is None
-        or case.family not in regime_policy.FAMILY_FLOORS
-        or case.elements >= regime_policy.FAMILY_FLOORS[case.family].elements
+    # The floor sentence is derived from the rows, never asserted (#383).  A row
+    # with no declared working set (or a family with no documented floor) has no
+    # floor to be above, and the banner says how many those are instead of
+    # claiming the whole page cleared one.
+    unfloored = [
+        case
         for case in cases
-    )
+        if case.elements is None or case.family not in regime_policy.FAMILY_FLOORS
+    ]
+    floored = [case for case in cases if case not in unfloored]
+    above = [
+        case
+        for case in floored
+        if case.elements >= regime_policy.FAMILY_FLOORS[case.family].elements
+    ]
+    below = [case for case in floored if case not in above]
     text = (
         f'<p class="notice"><strong>Throughput-regime {esc(label)} cases only.</strong> '
         f"The {count} {noun} on this page declare working sets {sizes}"
     )
-    if at_floor:
+    if not unfloored and not below:
         text += ", each at or above its family floor"
+    else:
+        if above:
+            text += f", {len(above)} of them at or above their family floor"
+        if unfloored:
+            verb = "carries" if len(unfloored) == 1 else "carry"
+            text += (
+                f"; {len(unfloored)} {verb} no family floor because the declared "
+                "working set is unknown or the family has none"
+            )
+        if below:
+            verb = "sits" if len(below) == 1 else "sit"
+            text += f"; {len(below)} {verb} below the family floor"
     text += f". Per-call latency and overhead results are on {latency_link}.</p>"
     return text
 
@@ -2742,6 +2790,19 @@ def render_suite_page(
                     '<p class="chart-legend">Dominated by launch, dispatch and synchronization; '
                     "these numbers are overhead, not device throughput.</p>"
                 )
+                undeclared = [case for case in cases if case.undeclared]
+                if undeclared:
+                    names = ", ".join(
+                        f"<code>{esc(case.case)}</code>" for case in undeclared
+                    )
+                    noun = "case has" if len(undeclared) == 1 else "cases have"
+                    body.append(
+                        '<p class="chart-legend">'
+                        f"{len(undeclared)} of these {noun} no entry in the suite "
+                        f"manifest ({names}). Their placement here is the fallback: an "
+                        "undeclared case cannot claim a throughput basis or a family "
+                        "floor, so it is published as a per-call measurement.</p>"
+                    )
                 deferred = [case for case in cases if case.measure == "deferred_batch"]
                 if deferred:
                     body.append(
