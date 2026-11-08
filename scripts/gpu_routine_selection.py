@@ -4,6 +4,7 @@ import copy
 import json
 import math
 import statistics
+import sys
 from pathlib import Path
 
 import yaml
@@ -297,8 +298,11 @@ def main():
     plan = materialize(args.manifest,args.suites,args.output,args.backends,args.problem,args.effort,
                        args.vendor_arms)
     for suite_id in plan["skipped_unfiltered_suites"]:
+        # stderr: stdout is the `suite_path driver instances` row stream
+        # scripts/run_gpu_suite.sh parses with `mapfile`.
         print(f"skipped {suite_id}: its runner takes no arm or problem filter, so a "
-              f"filtered selection cannot plan it (collect it with an unfiltered run)")
+              f"filtered selection cannot plan it (collect it with an unfiltered run)",
+              file=sys.stderr)
     for path in plan["suite_files"]:
         print(path, plan["suite_drivers"][path], plan["suite_instances"].get(path, "-"))
 
