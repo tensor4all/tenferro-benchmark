@@ -190,6 +190,14 @@ most one mount kind per pod, so a configured volume replaces the host-local
 `RUNPOD_NETWORK_VOLUME_ID`, and `runpod_contract.py` validates its shape before
 a paid request is made.
 
+A stale volume keeps billing, and the data center it was created in may stop
+offering the A100. "Delete a network volume" removes one: it requires the id and
+the name (a name is not a unique key, so the name is confirmed against the id
+before anything is deleted), runs a dry run by default, and refuses the volume
+named by `RUNPOD_JAX_CACHE_VOLUME_ID`. `debug-runpod-a100` reports the data
+centers that offer the A100 and support a network volume, which is where a
+replacement belongs.
+
 A pod can only attach a volume in the pod's own data center, and the scheduler
 otherwise picks one freely. `runpod_provision.py` therefore reads the binding
 back from `GET /v2/network-volumes/{id}` and sends `dataCenterIds: [<that data

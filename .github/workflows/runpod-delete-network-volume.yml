@@ -1,0 +1,80 @@
+name: Delete a network volume
+
+# Removes a volume that is no longer the JAX compile cache. Deleting the volume
+# named by RUNPOD_JAX_CACHE_VOLUME_ID is refused: clear that variable first if it
+# really is the one to remove. Dry run by default.
+
+on:
+  workflow_dispatch:
+    inputs:
+      volume_id:
+        description: Network volume id to delete
+        required: true
+      confirm_name:
+        description: The volume's name; the run refuses a mismatch (names are not unique ids)
+        required: true
+      dry_run:
+        description: Print what would be deleted without deleting anything
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: runpod-network-volume-delete
+  cancel-in-progress: false
+
+jobs:
+  delete-volume:
+    name: Delete one network volume
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout trusted tooling
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Refuse to delete the volume the benchmark pods mount
+        env:
+          ACTIVE_VOLUME_ID: ${{ vars.RUNPOD_JAX_CACHE_VOLUME_ID }}
+          VOLUME_ID: ${{ inputs.volume_id }}
+        run: |
+          set -euo pipefail
+          if [ -n "$ACTIVE_VOLUME_ID" ] && [ "$VOLUME_ID" = "$ACTIVE_VOLUME_ID" ]; then
+            echo "::error::refusing to delete $VOLUME_ID: it is RUNPOD_JAX_CACHE_VOLUME_ID"
+            exit 1
+          fi
+
+      - name: Delete the volume
+        env:
+          RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+          VOLUME_ID: ${{ inputs.volume_id }}
+          CONFIRM_NAME: ${{ inputs.confirm_name }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          args=(--volume-id "$VOLUME_ID" --confirm-name "$CONFIRM_NAME")
+          if [ "$DRY_RUN" = "true" ]; then args+=(--dry-run); fi
+          python3 -m scripts.ci.runpod_network_volume delete "${args[@]}" \
+            | tee "$RUNNER_TEMP/delete.json"
+
+      - name: Summarise
+        if: ${{ always() }}
+        env:
+          VOLUME_ID: ${{ inputs.volume_id }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          {
+            echo "### Delete RunPod network volume"
+            echo
+            echo "- volume: \`$VOLUME_ID\`"
+            echo "- actor: @${GITHUB_ACTOR}, revision: \`${GITHUB_SHA}\`"
+            echo
+            echo '```json'
+            cat "$RUNNER_TEMP/delete.json" 2>/dev/null || echo "{}"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

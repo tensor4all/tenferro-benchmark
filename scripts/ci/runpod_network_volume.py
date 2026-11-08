@@ -155,6 +155,43 @@ def pod_data_center(api_base, api_key, volume_id, **kwargs) -> str:
     return data_center
 
 
+def delete_network_volume(api_base, api_key, volume_id, *, expect_name=None, dry_run=False,
+                          deadline_seconds=60.0, transport=None, monotonic=time.monotonic,
+                          sleep=time.sleep):
+    """Delete one volume, refusing when its name does not match `expect_name`.
+
+    Names are not unique, so the name is confirmed against the id before
+    anything irreversible happens. A 404 means the volume is already gone, which
+    is the outcome the caller asked for.
+    """
+    if not volume_id:
+        raise ValueError("a volume id is required")
+    volume = fetch_network_volume(api_base, api_key, volume_id, transport=transport,
+                                  monotonic=monotonic, sleep=sleep,
+                                  deadline_seconds=deadline_seconds)
+    if expect_name is not None and volume.get("name") != expect_name:
+        raise ValueError(
+            f"network volume {volume_id} is named {volume.get('name')!r}, not "
+            f"{expect_name!r}; refusing to delete it"
+        )
+    if dry_run:
+        return {"deleted": False, "volume": volume,
+                "note": "dry run: nothing was deleted"}
+    request = urllib.request.Request(
+        api_base.rstrip("/") + "/network-volumes/" + urllib.parse.quote(volume_id, safe=""),
+        method="DELETE",
+        headers=_headers(api_key),
+    )
+    response = _call(request, deadline_seconds=deadline_seconds, transport=transport,
+                     monotonic=monotonic, sleep=sleep)
+    if response.status not in (200, 202, 204, 404):
+        raise ValueError(
+            f"network volume deletion failed (HTTP {response.status}): "
+            f"{_diagnostic(response.body, api_key)}"
+        )
+    return {"deleted": response.status != 404, "volume": volume}
+
+
 def list_data_centers(api_base, api_key, *, deadline_seconds=60.0, transport=None,
                       monotonic=time.monotonic, sleep=time.sleep):
     """The data center catalog with per-GPU availability."""
@@ -372,6 +409,12 @@ def main(argv=None):
                         help="required: a network volume is pinned to one data center")
     create.add_argument("--dry-run", action="store_true")
 
+    delete = sub.add_parser("delete", help="delete one volume, confirming its name")
+    delete.add_argument("--volume-id", required=True)
+    delete.add_argument("--confirm-name", default=None,
+                        help="refuse unless the volume carries this name")
+    delete.add_argument("--dry-run", action="store_true")
+
     args = parser.parse_args(argv)
     api_key = os.environ.get("RUNPOD_API_KEY")
     if not api_key:
@@ -383,6 +426,14 @@ def main(argv=None):
         if args.command == "list":
             print(json.dumps(list_network_volumes(api_base, api_key),
                              ensure_ascii=False, indent=1))
+            return 0
+
+        if args.command == "delete":
+            result = delete_network_volume(
+                api_base, api_key, args.volume_id,
+                expect_name=args.confirm_name, dry_run=args.dry_run,
+            )
+            print(json.dumps(result, ensure_ascii=False, indent=1))
             return 0
 
         validate_create_request(name=args.name, size_gb=args.size_gb,
