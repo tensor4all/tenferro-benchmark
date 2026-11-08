@@ -10,6 +10,7 @@ import html
 import json
 import os
 import random
+import re
 import sys
 import time
 import urllib.error
@@ -128,12 +129,18 @@ def build_pod_payload(
     jit_config: str,
     gpu_type_ids: Sequence[str],
     extra_env: Mapping[str, str] | None = None,
+    data_center: str | None = None,
 ) -> dict[str, object]:
     """Build the reviewed SECURE Cloud request from repository configuration.
 
     ``extra_env`` carries non-secret startup-script configuration (for
     example the CUDA smoke-proof parameters); credentials must never be
     passed through it.
+
+    ``data_center`` pins placement to one data center. A pod that mounts a
+    network volume is rejected unless it lands in that volume's data center,
+    and the scheduler otherwise chooses freely, so the caller reads the
+    binding from the volume and passes the result here.
 
     A configured network volume replaces the host-local persistent mount:
     REST v2 accepts at most one mount kind per pod, and only a network volume
@@ -153,7 +160,7 @@ def build_pod_payload(
         }
     else:
         mounts = {"network": [{"volumeId": volume[0], "path": volume[1]}]}
-    return {
+    payload: dict[str, object] = {
         "cloud": config["cloud_type"],
         "name": f"tenferro-benchmark-gpu-{os.environ.get('GITHUB_RUN_ID', 'local')}",
         "image": image_name,
@@ -173,6 +180,17 @@ def build_pod_payload(
             "RUNNER_ALLOW_RUNASROOT": "1",
         },
     }
+    if data_center:
+        payload["dataCenterIds"] = [_validated_data_center(data_center)]
+    return payload
+
+
+def _validated_data_center(data_center: str) -> str:
+    """A data center id we are willing to send: one token, no control characters."""
+    value = data_center.strip()
+    if not value or not re.fullmatch(r"[A-Za-z0-9_-]+", value):
+        raise PermanentRunPodError(f"invalid data center id: {data_center!r}")
+    return value
 
 
 def _redact(value: object) -> object:

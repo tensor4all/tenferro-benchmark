@@ -49,6 +49,7 @@ from scripts.ci.runpod_client import (
     network_volume,
 )
 from scripts.ci.runpod_contract import configured_gpu_tiers
+from scripts.ci.runpod_network_volume import pod_api_base, pod_data_center
 from scripts.ci.runpod_pricing import (
     candidate_plan,
     http_transport as pricing_http_transport,
@@ -605,6 +606,15 @@ def main() -> int:
         runner_group_id = int(os.environ.get("PROVISION_RUNNER_GROUP_ID", "1"))
         if not api_key:
             raise PermanentRunPodError("RUNPOD_API_KEY is required")
+        data_center = ""
+        if volume is not None:
+            # A pod may only mount a network volume from that volume's own data
+            # center; the scheduler otherwise picks freely and the mount is
+            # rejected. Read the binding instead of duplicating it in a variable.
+            data_center = pod_data_center(
+                pod_api_base(str(config["api_url"])), api_key, volume[0]
+            )
+            print(f"RunPod network volume data center: {data_center}")
         if not gh_token or not org or not label_prefix:
             raise PermanentRunPodError(
                 "PROVISION_GH_TOKEN, PROVISION_ORG, and "
@@ -643,6 +653,7 @@ def main() -> int:
                 jit_config,
                 request.gpu_type_ids,
                 extra_env=extra_env,
+                data_center=data_center or None,
             )
             print(
                 f"RunPod request candidate={request.tier_name}, secrets "
