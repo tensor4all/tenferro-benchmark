@@ -45,6 +45,18 @@ limiting factor. Catalog stock is a snapshot and does not prove a create request
 will succeed; account balance, placement errors, and CUDA startup/runner failures
 still require the provisioning logs from `benchmark-runpod-gpu`.
 
+## tenferro-rs revision the GPU job builds
+
+The RunPod workflow builds `pins/tenferro-rs.rev` — the same revision CI checks
+out — and the pod is pinned to the commit that build produced. The pin is owned
+by `campaign-sync-pins` and shared with the sibling repositories, so it is not
+edited here: a bump arrives through that sync, and any source change the new API
+needs lands in the same pull request.
+
+Building a fresh `main` checkout here instead is what hid a break once: the GPU
+job tracked `main` while CI compiled the pin, so a renamed driver enum failed
+every weekly collection while CI stayed green.
+
 ## Weekly schedule, GPU type, and rental cap
 
 The schedule fires four retry slots across the weekend (UTC): Saturday 08:00,
