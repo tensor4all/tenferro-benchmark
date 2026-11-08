@@ -84,10 +84,12 @@ FAMILY_FLOORS: dict[str, Floor] = {
         "elementwise",
         262_144,
         "the two published elementwise_chain points (1k = 69.6 µs, 1M = 99.6 µs in "
-        "throughput mode) fit t = 69.6 µs + 27.9 ps * n, so doubling n moves the time "
-        "by 10% only above n ~ 2.8e5; 1k is a constant (1000x the elements buys "
-        "1.43x the time).  The floor is a minimum, not a promise of purity: at 1M the "
-        "fixed share is still ~70%.",
+        "throughput mode) fit t = 69.6 µs + 27.9 ps * n, so doubling the work moves the "
+        "time by 10% only above n ~ 2.8e5.  At 2^18 the gain is ~9.8%, just under that "
+        "criterion: 2^18 is kept because it is the size the published reuse_contraction "
+        "cases are measured at and moving them is a separate decision; 1k is a constant "
+        "(1000x the elements buys 1.43x the time), and at 1M the fixed share is ~70%.",
+        provisional=True,
     ),
     "fft": Floor(
         "fft",
