@@ -2,12 +2,12 @@
   "schema_version": 1,
   "target_profile": "nvidia-gpu",
   "suite_id": "gpu/dense",
-  "timestamp": "2026-11-07T20:17:28+00:00",
-  "tenferro_commit": "ffd352bdb9f98537be747101bc278db8a50a1595",
+  "timestamp": "2026-11-08T07:26:29+00:00",
+  "tenferro_commit": "9a850b06155405acc99ecd0648829e9e6d3866ba",
   "hardware": {
-    "gpu": "NVIDIA A100-SXM4-80GB",
-    "cpu": "AMD EPYC 7742 64-Core Processor",
-    "host": "86889f3412c3"
+    "gpu": "NVIDIA A100 80GB PCIe",
+    "cpu": "AMD EPYC 7763 64-Core Processor",
+    "host": "f0bc52df1674"
   },
   "unit": "ms",
   "rows": [
@@ -15,38 +15,8 @@
       "case": "dense_batched_matmul_f64_b1024_256",
       "group": "batched_matmul",
       "backend": "jax-cuda",
-      "median": 2.531197,
-      "iqr": 0.005860999999999894,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 1
-    },
-    {
-      "case": "dense_batched_matmul_f64_b1024_256",
-      "group": "batched_matmul",
-      "backend": "pytorch-cuda",
-      "median": 2.504687,
-      "iqr": 0.0025039999999996176,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 1
-    },
-    {
-      "case": "dense_batched_matmul_f64_b1024_256",
-      "group": "batched_matmul",
-      "backend": "tenferro-cuda-eager",
-      "median": 2.34253,
-      "iqr": 0.00324599999999986,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 1
-    },
-    {
-      "case": "dense_batched_matmul_f64_b1024_256",
-      "group": "batched_matmul",
-      "backend": "tenferro-cuda-trace",
-      "median": 2.345897,
-      "iqr": 0.0039679999999999715,
+      "median": 2.276204,
+      "iqr": 0.0342450000000003,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 1
@@ -55,78 +25,18 @@
       "case": "dense_batched_matmul_f64_b16_32",
       "group": "batched_matmul",
       "backend": "jax-cuda",
-      "median": 0.09792303125,
-      "iqr": 0.010441624999999996,
+      "median": 0.0836025,
+      "iqr": 0.0067912500000000126,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
     },
     {
-      "case": "dense_batched_matmul_f64_b16_32",
-      "group": "batched_matmul",
-      "backend": "pytorch-cuda",
-      "median": 0.013316046875,
-      "iqr": 0.00014606250000000036,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 128
-    },
-    {
-      "case": "dense_batched_matmul_f64_b16_32",
-      "group": "batched_matmul",
-      "backend": "tenferro-cuda-eager",
-      "median": 0.027881640625000002,
-      "iqr": 0.0004952343750000004,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 128
-    },
-    {
-      "case": "dense_batched_matmul_f64_b16_32",
-      "group": "batched_matmul",
-      "backend": "tenferro-cuda-trace",
-      "median": 0.032330359375,
-      "iqr": 0.00034581250000000063,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 64
-    },
-    {
       "case": "dense_eigh_f64_1024",
       "group": "eigh",
       "backend": "jax-cuda",
-      "median": 14.148783,
-      "iqr": 0.04775099999999988,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 1
-    },
-    {
-      "case": "dense_eigh_f64_1024",
-      "group": "eigh",
-      "backend": "pytorch-cuda",
-      "median": 14.343731,
-      "iqr": 0.12574799999999975,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 1
-    },
-    {
-      "case": "dense_eigh_f64_1024",
-      "group": "eigh",
-      "backend": "tenferro-cuda-eager",
-      "median": 14.012906000000001,
-      "iqr": 0.0022740000000016636,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 1
-    },
-    {
-      "case": "dense_eigh_f64_1024",
-      "group": "eigh",
-      "backend": "tenferro-cuda-trace",
-      "median": 14.312992999999999,
-      "iqr": 0.03245199999999926,
+      "median": 14.582008,
+      "iqr": 0.04472499999999968,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 1
@@ -135,38 +45,8 @@
       "case": "dense_matmul_f64_3072",
       "group": "matmul",
       "backend": "jax-cuda",
-      "median": 3.252682,
-      "iqr": 0.041607999999999645,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 1
-    },
-    {
-      "case": "dense_matmul_f64_3072",
-      "group": "matmul",
-      "backend": "pytorch-cuda",
-      "median": 3.81169,
-      "iqr": 0.00146299999999977,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 1
-    },
-    {
-      "case": "dense_matmul_f64_3072",
-      "group": "matmul",
-      "backend": "tenferro-cuda-eager",
-      "median": 3.162662,
-      "iqr": 0.0018929999999994784,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 1
-    },
-    {
-      "case": "dense_matmul_f64_3072",
-      "group": "matmul",
-      "backend": "tenferro-cuda-trace",
-      "median": 3.1655580000000003,
-      "iqr": 0.0009410000000000807,
+      "median": 3.337812,
+      "iqr": 0.04121700000000006,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 1
@@ -175,38 +55,8 @@
       "case": "dense_qr_f64_1536",
       "group": "qr",
       "backend": "jax-cuda",
-      "median": 14.527087,
-      "iqr": 0.053309999999999746,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 1
-    },
-    {
-      "case": "dense_qr_f64_1536",
-      "group": "qr",
-      "backend": "pytorch-cuda",
-      "median": 14.425736,
-      "iqr": 0.03021600000000113,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 1
-    },
-    {
-      "case": "dense_qr_f64_1536",
-      "group": "qr",
-      "backend": "tenferro-cuda-eager",
-      "median": 11.873899,
-      "iqr": 0.04330200000000062,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 1
-    },
-    {
-      "case": "dense_qr_f64_1536",
-      "group": "qr",
-      "backend": "tenferro-cuda-trace",
-      "median": 11.892494,
-      "iqr": 0.008657000000001247,
+      "median": 12.052927,
+      "iqr": 0.04088600000000042,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 1
@@ -215,38 +65,8 @@
       "case": "dense_solve_f64_2048_rhs16",
       "group": "solve",
       "backend": "jax-cuda",
-      "median": 10.618816,
-      "iqr": 0.028874000000000066,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 1
-    },
-    {
-      "case": "dense_solve_f64_2048_rhs16",
-      "group": "solve",
-      "backend": "pytorch-cuda",
-      "median": 10.222466,
-      "iqr": 0.010540999999999912,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 1
-    },
-    {
-      "case": "dense_solve_f64_2048_rhs16",
-      "group": "solve",
-      "backend": "tenferro-cuda-eager",
-      "median": 10.380995,
-      "iqr": 0.01285400000000081,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 1
-    },
-    {
-      "case": "dense_solve_f64_2048_rhs16",
-      "group": "solve",
-      "backend": "tenferro-cuda-trace",
-      "median": 10.421282,
-      "iqr": 0.009679999999999467,
+      "median": 10.86523,
+      "iqr": 0.42111699999999885,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 1
@@ -255,38 +75,8 @@
       "case": "dense_svd_f64_256",
       "group": "svd",
       "backend": "jax-cuda",
-      "median": 12.056635,
-      "iqr": 0.1303769999999993,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 1
-    },
-    {
-      "case": "dense_svd_f64_256",
-      "group": "svd",
-      "backend": "pytorch-cuda",
-      "median": 12.275008,
-      "iqr": 0.016051000000000926,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 1
-    },
-    {
-      "case": "dense_svd_f64_256",
-      "group": "svd",
-      "backend": "tenferro-cuda-eager",
-      "median": 12.028211,
-      "iqr": 0.018444999999999823,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 1
-    },
-    {
-      "case": "dense_svd_f64_256",
-      "group": "svd",
-      "backend": "tenferro-cuda-trace",
-      "median": 12.019524,
-      "iqr": 0.013213999999999615,
+      "median": 13.919447,
+      "iqr": 2.433052,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 1
