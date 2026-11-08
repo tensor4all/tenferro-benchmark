@@ -2,12 +2,12 @@
   "schema_version": 1,
   "target_profile": "nvidia-gpu",
   "suite_id": "gpu/reuse_contraction",
-  "timestamp": "2026-11-07T20:17:28+00:00",
-  "tenferro_commit": "ffd352bdb9f98537be747101bc278db8a50a1595",
+  "timestamp": "2026-11-08T09:06:27+00:00",
+  "tenferro_commit": "9a850b06155405acc99ecd0648829e9e6d3866ba",
   "hardware": {
-    "gpu": "NVIDIA A100-SXM4-80GB",
-    "cpu": "AMD EPYC 7742 64-Core Processor",
-    "host": "86889f3412c3"
+    "gpu": "NVIDIA A100 80GB PCIe",
+    "cpu": "AMD EPYC 9554 64-Core Processor",
+    "host": "053e3b59f698"
   },
   "unit": "ms",
   "rows": [
@@ -15,8 +15,8 @@
       "case": "abs_strided_read_f64_n1048576",
       "group": "abs_strided_read",
       "backend": "jax-cuda",
-      "median": 0.0507929375,
-      "iqr": 0.0013239218750000017,
+      "median": 0.03324784375,
+      "iqr": 0.0020139843749999928,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -25,18 +25,8 @@
       "case": "abs_strided_read_f64_n1048576",
       "group": "abs_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.01059628125,
-      "iqr": 0.00026753124999999954,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "abs_strided_read_f64_n1048576",
-      "group": "abs_strided_read",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.08139959375,
-      "iqr": 0.0004970312500000018,
+      "median": 0.00767215625,
+      "iqr": 8.167187500000058e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -63,18 +53,8 @@
       "case": "add_into_f64_n1048576",
       "group": "add_into",
       "backend": "pytorch-cuda",
-      "median": 0.01202303125,
-      "iqr": 4.2406250000001644e-05,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "add_into_f64_n1048576",
-      "group": "add_into",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.02615446875,
-      "iqr": 0.00016092187499999744,
+      "median": 0.0121000625,
+      "iqr": 0.00016257812499999996,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -101,18 +81,8 @@
       "case": "add_read_into_f64_n1048576",
       "group": "add_read_into",
       "backend": "pytorch-cuda",
-      "median": 0.01195196875,
-      "iqr": 4.7140624999999006e-05,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "add_read_into_f64_n1048576",
-      "group": "add_read_into",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.0261848125,
-      "iqr": 7.500000000000215e-05,
+      "median": 0.01177025,
+      "iqr": 0.00015142187499999835,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -130,8 +100,8 @@
       "case": "add_strided_read_f64_n1048576",
       "group": "add_strided_read",
       "backend": "jax-cuda",
-      "median": 0.057954,
-      "iqr": 0.00195228125,
+      "median": 0.04452915625,
+      "iqr": 0.0022086093749999966,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -140,21 +110,11 @@
       "case": "add_strided_read_f64_n1048576",
       "group": "add_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.01226040625,
-      "iqr": 3.63281249999986e-05,
+      "median": 0.0123751875,
+      "iqr": 8.560937500000192e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
-    },
-    {
-      "case": "add_strided_read_f64_n1048576",
-      "group": "add_strided_read",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.135146875,
-      "iqr": 0.0014574374999999917,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 16
     },
     {
       "case": "add_strided_read_f64_n1048576",
@@ -178,18 +138,8 @@
       "case": "axpby_read_into_accum_f64_n1048576",
       "group": "axpby_read_into_accum",
       "backend": "pytorch-cuda",
-      "median": 0.0169195,
-      "iqr": 0.00026051562499999903,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "axpby_read_into_accum_f64_n1048576",
-      "group": "axpby_read_into_accum",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.038364125,
-      "iqr": 0.0005878437499999972,
+      "median": 0.01639809375,
+      "iqr": 0.0002006093750000007,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -216,18 +166,8 @@
       "case": "conj_into_c64_n1048576",
       "group": "conj_into",
       "backend": "pytorch-cuda",
-      "median": 0.0250555,
-      "iqr": 0.0003544062500000014,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 16
-    },
-    {
-      "case": "conj_into_c64_n1048576",
-      "group": "conj_into",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.0373775625,
-      "iqr": 0.00044431249999999506,
+      "median": 0.0253149375,
+      "iqr": 0.0002957500000000009,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 16
@@ -254,18 +194,8 @@
       "case": "conj_read_into_c64_n1048576",
       "group": "conj_read_into",
       "backend": "pytorch-cuda",
-      "median": 0.0251238125,
-      "iqr": 0.00020787499999999973,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 16
-    },
-    {
-      "case": "conj_read_into_c64_n1048576",
-      "group": "conj_read_into",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.0375015625,
-      "iqr": 0.0003450624999999999,
+      "median": 0.0252298125,
+      "iqr": 0.00028265624999999905,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 16
@@ -283,8 +213,8 @@
       "case": "conj_strided_read_c64_n1048576",
       "group": "conj_strided_read",
       "backend": "jax-cuda",
-      "median": 0.0576215,
-      "iqr": 0.0031716250000000112,
+      "median": 0.0633609375,
+      "iqr": 0.005943562500000013,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 16
@@ -293,18 +223,8 @@
       "case": "conj_strided_read_c64_n1048576",
       "group": "conj_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.0252659375,
-      "iqr": 0.00028834374999999954,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 16
-    },
-    {
-      "case": "conj_strided_read_c64_n1048576",
-      "group": "conj_strided_read",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.11233625,
-      "iqr": 0.0019367812500000053,
+      "median": 0.0253405625,
+      "iqr": 0.00027453125000000134,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 16
@@ -322,8 +242,8 @@
       "case": "cos_strided_read_f64_n1048576",
       "group": "cos_strided_read",
       "backend": "jax-cuda",
-      "median": 0.05061075,
-      "iqr": 0.0015054843750000046,
+      "median": 0.03485396875,
+      "iqr": 0.002875109374999997,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -332,18 +252,8 @@
       "case": "cos_strided_read_f64_n1048576",
       "group": "cos_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.01360103125,
-      "iqr": 4.60000000000009e-05,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "cos_strided_read_f64_n1048576",
-      "group": "cos_strided_read",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.08540903125,
-      "iqr": 0.00014353124999999523,
+      "median": 0.011003125,
+      "iqr": 0.00010184375000000037,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -370,18 +280,8 @@
       "case": "div_into_f64_n1048576",
       "group": "div_into",
       "backend": "pytorch-cuda",
-      "median": 0.01312640625,
-      "iqr": 9.500000000000133e-05,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "div_into_f64_n1048576",
-      "group": "div_into",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.02625934375,
-      "iqr": 0.00011115624999999754,
+      "median": 0.0137756875,
+      "iqr": 0.0001731250000000014,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -408,18 +308,8 @@
       "case": "div_read_into_f64_n1048576",
       "group": "div_read_into",
       "backend": "pytorch-cuda",
-      "median": 0.0130425,
-      "iqr": 0.00012428125000000026,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "div_read_into_f64_n1048576",
-      "group": "div_read_into",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.0262424375,
-      "iqr": 5.618749999999895e-05,
+      "median": 0.01376915625,
+      "iqr": 0.00017090625000000005,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -437,8 +327,8 @@
       "case": "div_strided_read_f64_n1048576",
       "group": "div_strided_read",
       "backend": "jax-cuda",
-      "median": 0.05230675,
-      "iqr": 0.0022332968749999987,
+      "median": 0.0699861875,
+      "iqr": 0.0004098437499999996,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -447,21 +337,11 @@
       "case": "div_strided_read_f64_n1048576",
       "group": "div_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.01309853125,
-      "iqr": 6.7781250000001e-05,
+      "median": 0.013234875,
+      "iqr": 0.00014445312499999918,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
-    },
-    {
-      "case": "div_strided_read_f64_n1048576",
-      "group": "div_strided_read",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.1347505,
-      "iqr": 0.0003919374999999947,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 16
     },
     {
       "case": "div_strided_read_f64_n1048576",
@@ -476,18 +356,18 @@
       "case": "dot_conj_l0r0_c64_n262144",
       "group": "dot_general_conj",
       "backend": "jax-cuda",
-      "median": 0.08940596875,
-      "iqr": 0.026384359375,
+      "median": 0.07282675,
+      "iqr": 0.001559703125000006,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 64
+      "operations_per_sample": 32
     },
     {
       "case": "dot_conj_l0r0_c64_n262144",
       "group": "dot_general_conj",
       "backend": "pytorch-cuda",
-      "median": 0.0154568515625,
-      "iqr": 1.2656249999999647e-05,
+      "median": 0.01250928515625,
+      "iqr": 3.591601562499998e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 256
@@ -495,19 +375,9 @@
     {
       "case": "dot_conj_l0r0_c64_n262144",
       "group": "dot_general_conj",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.043798,
-      "iqr": 0.001201796875000008,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 64
-    },
-    {
-      "case": "dot_conj_l0r0_c64_n262144",
-      "group": "dot_general_conj",
       "backend": "tenferro-cuda-eager",
-      "median": 0.03976834375,
-      "iqr": 0.00041492187500000166,
+      "median": 0.033845125,
+      "iqr": 0.00020303906249999337,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 64
@@ -516,8 +386,8 @@
       "case": "dot_general_batch_f64_s256",
       "group": "dot_general_axes",
       "backend": "jax-cuda",
-      "median": 0.07834790625,
-      "iqr": 0.0010883124999999938,
+      "median": 0.09314540625,
+      "iqr": 0.0018150312499999877,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -526,8 +396,8 @@
       "case": "dot_general_batch_f64_s256",
       "group": "dot_general_axes",
       "backend": "pytorch-cuda",
-      "median": 0.025378703125,
-      "iqr": 0.0001790078124999997,
+      "median": 0.0165772109375,
+      "iqr": 0.00015339843749999707,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 128
@@ -535,19 +405,9 @@
     {
       "case": "dot_general_batch_f64_s256",
       "group": "dot_general_axes",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.031611046875,
-      "iqr": 0.00022643750000000268,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 64
-    },
-    {
-      "case": "dot_general_batch_f64_s256",
-      "group": "dot_general_axes",
       "backend": "tenferro-cuda-eager",
-      "median": 0.03210103125,
-      "iqr": 0.000132835937500006,
+      "median": 0.02383146875,
+      "iqr": 0.0003639062500000005,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 64
@@ -565,21 +425,11 @@
       "case": "dot_general_read_into_accum_cached_f64_s256",
       "group": "dot_general_read_into_accum_cached",
       "backend": "pytorch-cuda",
-      "median": 0.0132862265625,
-      "iqr": 0.00014159765624999904,
+      "median": 0.008860125,
+      "iqr": 2.23769531250001e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 256
-    },
-    {
-      "case": "dot_general_read_into_accum_cached_f64_s256",
-      "group": "dot_general_read_into_accum_cached",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.024338921875,
-      "iqr": 0.00012730859375000014,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 128
     },
     {
       "case": "dot_general_read_into_accum_cached_f64_s256",
@@ -603,21 +453,11 @@
       "case": "dot_general_read_into_accum_f64_s256",
       "group": "dot_general_read_into_accum",
       "backend": "pytorch-cuda",
-      "median": 0.01321824609375,
-      "iqr": 9.711718750000063e-05,
+      "median": 0.008856171875,
+      "iqr": 1.4203124999999026e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 256
-    },
-    {
-      "case": "dot_general_read_into_accum_f64_s256",
-      "group": "dot_general_read_into_accum",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.0222519296875,
-      "iqr": 0.0007861406249999973,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 128
     },
     {
       "case": "dot_general_read_into_accum_f64_s256",
@@ -641,21 +481,11 @@
       "case": "dot_general_read_into_f64_s256",
       "group": "dot_general_read_into",
       "backend": "pytorch-cuda",
-      "median": 0.01192662109375,
-      "iqr": 3.876562500000104e-05,
+      "median": 0.0075092421875,
+      "iqr": 3.61669921874995e-05,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 256
-    },
-    {
-      "case": "dot_general_read_into_f64_s256",
-      "group": "dot_general_read_into",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.020777578125,
-      "iqr": 0.0009536406250000018,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 128
+      "operations_per_sample": 512
     },
     {
       "case": "dot_general_read_into_f64_s256",
@@ -679,21 +509,11 @@
       "case": "einsum_plan_into_f64_s256",
       "group": "einsum_plan_into",
       "backend": "pytorch-cuda",
-      "median": 0.01076312890625,
-      "iqr": 0.00041065820312499897,
+      "median": 0.007612997991967871,
+      "iqr": 4.500000000000077e-05,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 256
-    },
-    {
-      "case": "einsum_plan_into_f64_s256",
-      "group": "einsum_plan_into",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.0202311640625,
-      "iqr": 0.0002050703125000032,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 128
+      "operations_per_sample": 498
     },
     {
       "case": "einsum_plan_into_f64_s256",
@@ -708,185 +528,135 @@
       "case": "einsum_plan_owned_f64_s256",
       "group": "einsum_plan_owned",
       "backend": "jax-cuda",
-      "median": 0.050546375,
-      "iqr": 0.000953273437500006,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 64
-    },
-    {
-      "case": "einsum_plan_owned_f64_s256",
-      "group": "einsum_plan_owned",
-      "backend": "pytorch-cuda",
-      "median": 0.0128895,
-      "iqr": 8.521679687500255e-05,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 256
-    },
-    {
-      "case": "einsum_plan_owned_f64_s256",
-      "group": "einsum_plan_owned",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.0277035703125,
-      "iqr": 0.0002833046874999995,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 128
-    },
-    {
-      "case": "einsum_plan_owned_f64_s256",
-      "group": "einsum_plan_owned",
-      "backend": "tenferro-cuda-eager",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
-    },
-    {
-      "case": "einsum_plan_read_f64_s256",
-      "group": "einsum_plan_read",
-      "backend": "jax-cuda",
-      "median": 0.051279015625,
-      "iqr": 0.0009466328125000006,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 64
-    },
-    {
-      "case": "einsum_plan_read_f64_s256",
-      "group": "einsum_plan_read",
-      "backend": "pytorch-cuda",
-      "median": 0.01293528515625,
-      "iqr": 5.692187499999925e-05,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 256
-    },
-    {
-      "case": "einsum_plan_read_f64_s256",
-      "group": "einsum_plan_read",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.0276017421875,
-      "iqr": 6.672656250000103e-05,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 128
-    },
-    {
-      "case": "einsum_plan_read_f64_s256",
-      "group": "einsum_plan_read",
-      "backend": "tenferro-cuda-eager",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
-    },
-    {
-      "case": "einsum_plan_read_into_accum_f64_s256",
-      "group": "einsum_plan_read_into_accum",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
-    },
-    {
-      "case": "einsum_plan_read_into_accum_f64_s256",
-      "group": "einsum_plan_read_into_accum",
-      "backend": "pytorch-cuda",
-      "median": 0.0129742265625,
-      "iqr": 0.00020265039062499976,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 256
-    },
-    {
-      "case": "einsum_plan_read_into_accum_f64_s256",
-      "group": "einsum_plan_read_into_accum",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.0223409296875,
-      "iqr": 0.0001216328125000013,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 128
-    },
-    {
-      "case": "einsum_plan_read_into_accum_f64_s256",
-      "group": "einsum_plan_read_into_accum",
-      "backend": "tenferro-cuda-eager",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
-    },
-    {
-      "case": "einsum_plan_read_into_f64_s256",
-      "group": "einsum_plan_read_into",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
-    },
-    {
-      "case": "einsum_plan_read_into_f64_s256",
-      "group": "einsum_plan_read_into",
-      "backend": "pytorch-cuda",
-      "median": 0.01069640625,
-      "iqr": 5.3068359374998375e-05,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 256
-    },
-    {
-      "case": "einsum_plan_read_into_f64_s256",
-      "group": "einsum_plan_read_into",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.0208473203125,
-      "iqr": 0.00013216015624999827,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 128
-    },
-    {
-      "case": "einsum_plan_read_into_f64_s256",
-      "group": "einsum_plan_read_into",
-      "backend": "tenferro-cuda-eager",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
-    },
-    {
-      "case": "einsum_plan_strided_read_f64_s256",
-      "group": "einsum_plan_strided_read",
-      "backend": "jax-cuda",
-      "median": 0.0511998125,
-      "iqr": 0.0011309765624999968,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 64
-    },
-    {
-      "case": "einsum_plan_strided_read_f64_s256",
-      "group": "einsum_plan_strided_read",
-      "backend": "pytorch-cuda",
-      "median": 0.01335561328125,
-      "iqr": 0.0001764101562500009,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 256
-    },
-    {
-      "case": "einsum_plan_strided_read_f64_s256",
-      "group": "einsum_plan_strided_read",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.08387771875,
-      "iqr": 0.001909390625000007,
+      "median": 0.06717946875,
+      "iqr": 0.003065125000000002,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
+    },
+    {
+      "case": "einsum_plan_owned_f64_s256",
+      "group": "einsum_plan_owned",
+      "backend": "pytorch-cuda",
+      "median": 0.01112775390625,
+      "iqr": 0.0038363183593750003,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 256
+    },
+    {
+      "case": "einsum_plan_owned_f64_s256",
+      "group": "einsum_plan_owned",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
+    },
+    {
+      "case": "einsum_plan_read_f64_s256",
+      "group": "einsum_plan_read",
+      "backend": "jax-cuda",
+      "median": 0.06890175,
+      "iqr": 0.0007420625000000014,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "einsum_plan_read_f64_s256",
+      "group": "einsum_plan_read",
+      "backend": "pytorch-cuda",
+      "median": 0.00787755078125,
+      "iqr": 0.00018621484375000094,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 256
+    },
+    {
+      "case": "einsum_plan_read_f64_s256",
+      "group": "einsum_plan_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
+    },
+    {
+      "case": "einsum_plan_read_into_accum_f64_s256",
+      "group": "einsum_plan_read_into_accum",
+      "backend": "jax-cuda",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+    },
+    {
+      "case": "einsum_plan_read_into_accum_f64_s256",
+      "group": "einsum_plan_read_into_accum",
+      "backend": "pytorch-cuda",
+      "median": 0.00880523828125,
+      "iqr": 5.627343750000055e-05,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 256
+    },
+    {
+      "case": "einsum_plan_read_into_accum_f64_s256",
+      "group": "einsum_plan_read_into_accum",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
+    },
+    {
+      "case": "einsum_plan_read_into_f64_s256",
+      "group": "einsum_plan_read_into",
+      "backend": "jax-cuda",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+    },
+    {
+      "case": "einsum_plan_read_into_f64_s256",
+      "group": "einsum_plan_read_into",
+      "backend": "pytorch-cuda",
+      "median": 0.007583917670682731,
+      "iqr": 1.905522088353328e-05,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 498
+    },
+    {
+      "case": "einsum_plan_read_into_f64_s256",
+      "group": "einsum_plan_read_into",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
+    },
+    {
+      "case": "einsum_plan_strided_read_f64_s256",
+      "group": "einsum_plan_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.066772625,
+      "iqr": 0.001199031249999996,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "einsum_plan_strided_read_f64_s256",
+      "group": "einsum_plan_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.0078602578125,
+      "iqr": 0.0003197792968749995,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 256
     },
     {
       "case": "einsum_plan_strided_read_f64_s256",
@@ -910,21 +680,11 @@
       "case": "einsum_plan_strided_read_into_accum_f64_s256",
       "group": "einsum_plan_strided_read_into_accum",
       "backend": "pytorch-cuda",
-      "median": 0.01340594140625,
-      "iqr": 0.00011216601562499991,
+      "median": 0.00866655078125,
+      "iqr": 7.100781250000097e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 256
-    },
-    {
-      "case": "einsum_plan_strided_read_into_accum_f64_s256",
-      "group": "einsum_plan_strided_read_into_accum",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.07944809375,
-      "iqr": 0.001474515624999992,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
     },
     {
       "case": "einsum_plan_strided_read_into_accum_f64_s256",
@@ -948,21 +708,11 @@
       "case": "einsum_plan_strided_read_into_f64_s256",
       "group": "einsum_plan_strided_read_into",
       "backend": "pytorch-cuda",
-      "median": 0.0109251171875,
-      "iqr": 4.5416015625000805e-05,
+      "median": 0.007505465863453816,
+      "iqr": 2.122590361445728e-05,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 256
-    },
-    {
-      "case": "einsum_plan_strided_read_into_f64_s256",
-      "group": "einsum_plan_strided_read_into",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.078547,
-      "iqr": 0.004787328125000004,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
+      "operations_per_sample": 498
     },
     {
       "case": "einsum_plan_strided_read_into_f64_s256",
@@ -977,8 +727,8 @@
       "case": "erf_strided_read_f64_n1048576",
       "group": "erf_strided_read",
       "backend": "jax-cuda",
-      "median": 0.0643254375,
-      "iqr": 0.0017501875,
+      "median": 0.04553846875,
+      "iqr": 0.0028738437499999936,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -987,18 +737,8 @@
       "case": "erf_strided_read_f64_n1048576",
       "group": "erf_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.01752065625,
-      "iqr": 5.3218750000000314e-05,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "erf_strided_read_f64_n1048576",
-      "group": "erf_strided_read",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.0891699375,
-      "iqr": 0.0002474999999999977,
+      "median": 0.014311875,
+      "iqr": 8.934374999999828e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -1016,8 +756,8 @@
       "case": "exp_strided_read_f64_n1048576",
       "group": "exp_strided_read",
       "backend": "jax-cuda",
-      "median": 0.05145703125,
-      "iqr": 0.0019889218750000076,
+      "median": 0.04564709375,
+      "iqr": 0.0016792500000000002,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -1026,18 +766,8 @@
       "case": "exp_strided_read_f64_n1048576",
       "group": "exp_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.01000515625,
-      "iqr": 5.6671874999999e-05,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "exp_strided_read_f64_n1048576",
-      "group": "exp_strided_read",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.082646,
-      "iqr": 0.0007965000000000055,
+      "median": 0.00812121875,
+      "iqr": 6.882812500000161e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -1055,8 +785,8 @@
       "case": "expm1_strided_read_f64_n1048576",
       "group": "expm1_strided_read",
       "backend": "jax-cuda",
-      "median": 0.04870525,
-      "iqr": 0.001599437499999995,
+      "median": 0.0337695625,
+      "iqr": 0.002045749999999999,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -1065,18 +795,8 @@
       "case": "expm1_strided_read_f64_n1048576",
       "group": "expm1_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.0119156875,
-      "iqr": 5.93437499999995e-05,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "expm1_strided_read_f64_n1048576",
-      "group": "expm1_strided_read",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.083693,
-      "iqr": 0.0006751718749999913,
+      "median": 0.00980225,
+      "iqr": 0.00022203125000000087,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -1094,8 +814,8 @@
       "case": "log1p_strided_read_f64_n1048576",
       "group": "log1p_strided_read",
       "backend": "jax-cuda",
-      "median": 0.04784546875,
-      "iqr": 0.001080796875000005,
+      "median": 0.03293609375,
+      "iqr": 0.0019323281249999935,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -1104,18 +824,8 @@
       "case": "log1p_strided_read_f64_n1048576",
       "group": "log1p_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.01586659375,
-      "iqr": 4.3015625000000085e-05,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "log1p_strided_read_f64_n1048576",
-      "group": "log1p_strided_read",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.0870286875,
-      "iqr": 0.0003617812499999984,
+      "median": 0.01298609375,
+      "iqr": 6.243749999999999e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -1133,8 +843,8 @@
       "case": "log_strided_read_f64_n1048576",
       "group": "log_strided_read",
       "backend": "jax-cuda",
-      "median": 0.0492396875,
-      "iqr": 0.0013835468750000024,
+      "median": 0.03411346875,
+      "iqr": 0.0015451406250000105,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -1143,18 +853,8 @@
       "case": "log_strided_read_f64_n1048576",
       "group": "log_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.015226,
-      "iqr": 6.1031249999999454e-05,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "log_strided_read_f64_n1048576",
-      "group": "log_strided_read",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.08722184375,
-      "iqr": 0.00024468750000000705,
+      "median": 0.0124840625,
+      "iqr": 4.178125000000102e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -1172,8 +872,8 @@
       "case": "maximum_strided_read_f64_n1048576",
       "group": "maximum_strided_read",
       "backend": "jax-cuda",
-      "median": 0.05656478125,
-      "iqr": 0.0011767812499999947,
+      "median": 0.04107925,
+      "iqr": 0.003150984374999999,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -1182,21 +882,11 @@
       "case": "maximum_strided_read_f64_n1048576",
       "group": "maximum_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.01218271875,
-      "iqr": 7.762499999999957e-05,
+      "median": 0.0125250625,
+      "iqr": 0.00013660937500000088,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
-    },
-    {
-      "case": "maximum_strided_read_f64_n1048576",
-      "group": "maximum_strided_read",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.1542611875,
-      "iqr": 0.0028181562499999813,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 16
     },
     {
       "case": "maximum_strided_read_f64_n1048576",
@@ -1211,8 +901,8 @@
       "case": "minimum_strided_read_f64_n1048576",
       "group": "minimum_strided_read",
       "backend": "jax-cuda",
-      "median": 0.0583506875,
-      "iqr": 0.0020865937499999973,
+      "median": 0.0417136875,
+      "iqr": 0.0024868906250000017,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -1221,21 +911,11 @@
       "case": "minimum_strided_read_f64_n1048576",
       "group": "minimum_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.01210103125,
-      "iqr": 8.154687499999959e-05,
+      "median": 0.0122696875,
+      "iqr": 0.00013596875000000154,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
-    },
-    {
-      "case": "minimum_strided_read_f64_n1048576",
-      "group": "minimum_strided_read",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.1531935,
-      "iqr": 0.0011336874999999802,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 16
     },
     {
       "case": "minimum_strided_read_f64_n1048576",
@@ -1259,18 +939,8 @@
       "case": "mul_into_f64_n1048576",
       "group": "mul_into",
       "backend": "pytorch-cuda",
-      "median": 0.01201615625,
-      "iqr": 6.182812499999982e-05,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "mul_into_f64_n1048576",
-      "group": "mul_into",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.02612253125,
-      "iqr": 0.00016156250000000372,
+      "median": 0.01208571875,
+      "iqr": 0.0002029687500000009,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -1297,18 +967,8 @@
       "case": "mul_read_into_f64_n1048576",
       "group": "mul_read_into",
       "backend": "pytorch-cuda",
-      "median": 0.01201178125,
-      "iqr": 2.7421874999999235e-05,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "mul_read_into_f64_n1048576",
-      "group": "mul_read_into",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.0261096875,
-      "iqr": 0.00011756250000000135,
+      "median": 0.0127635625,
+      "iqr": 0.00018414062499999898,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -1326,8 +986,8 @@
       "case": "mul_strided_read_f64_n1048576",
       "group": "mul_strided_read",
       "backend": "jax-cuda",
-      "median": 0.0579680625,
-      "iqr": 0.0029335000000000055,
+      "median": 0.04244728125,
+      "iqr": 0.0016359218750000015,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -1336,21 +996,11 @@
       "case": "mul_strided_read_f64_n1048576",
       "group": "mul_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.0122203125,
-      "iqr": 5.651562499999971e-05,
+      "median": 0.0120653125,
+      "iqr": 0.00023942187499999962,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
-    },
-    {
-      "case": "mul_strided_read_f64_n1048576",
-      "group": "mul_strided_read",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.134746125,
-      "iqr": 0.0005504062499999962,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 16
     },
     {
       "case": "mul_strided_read_f64_n1048576",
@@ -1374,18 +1024,8 @@
       "case": "neg_into_f64_n1048576",
       "group": "neg_into",
       "backend": "pytorch-cuda",
-      "median": 0.00950171875,
-      "iqr": 6.760937500000126e-05,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "neg_into_f64_n1048576",
-      "group": "neg_into",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.02365034375,
-      "iqr": 0.00017595312499999946,
+      "median": 0.007654,
+      "iqr": 0.00015976562499999975,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -1412,18 +1052,8 @@
       "case": "neg_read_into_f64_n1048576",
       "group": "neg_read_into",
       "backend": "pytorch-cuda",
-      "median": 0.0096275625,
-      "iqr": 5.98124999999991e-05,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "neg_read_into_f64_n1048576",
-      "group": "neg_read_into",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.02368009375,
-      "iqr": 8.782812499999806e-05,
+      "median": 0.00781834375,
+      "iqr": 0.00014459374999999976,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -1441,8 +1071,8 @@
       "case": "neg_strided_read_f64_n1048576",
       "group": "neg_strided_read",
       "backend": "jax-cuda",
-      "median": 0.05562959375,
-      "iqr": 0.0014475937500000036,
+      "median": 0.035699,
+      "iqr": 0.0022966093750000013,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -1451,18 +1081,8 @@
       "case": "neg_strided_read_f64_n1048576",
       "group": "neg_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.00964603125,
-      "iqr": 0.00016154687500000153,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "neg_strided_read_f64_n1048576",
-      "group": "neg_strided_read",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.081254,
-      "iqr": 0.0004729218749999903,
+      "median": 0.0076884375,
+      "iqr": 8.540625000000041e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -1480,31 +1100,21 @@
       "case": "norm_squared_read_f64_n262144",
       "group": "norm_squared_read",
       "backend": "jax-cuda",
-      "median": 0.086177375,
-      "iqr": 0.027943640624999988,
+      "median": 0.03982834375,
+      "iqr": 0.0012470312500000025,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 32
+      "operations_per_sample": 64
     },
     {
       "case": "norm_squared_read_f64_n262144",
       "group": "norm_squared_read",
       "backend": "pytorch-cuda",
-      "median": 0.0124872109375,
-      "iqr": 8.590429687500151e-05,
+      "median": 0.0090215390625,
+      "iqr": 1.721484374999846e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 256
-    },
-    {
-      "case": "norm_squared_read_f64_n262144",
-      "group": "norm_squared_read",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.0295350078125,
-      "iqr": 0.00012746484375000117,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 128
     },
     {
       "case": "norm_squared_read_f64_n262144",
@@ -1519,8 +1129,8 @@
       "case": "pow_strided_read_f64_n1048576",
       "group": "pow_strided_read",
       "backend": "jax-cuda",
-      "median": 0.0597464375,
-      "iqr": 0.001845515625000002,
+      "median": 0.0365659375,
+      "iqr": 0.0019515625000000036,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -1529,21 +1139,11 @@
       "case": "pow_strided_read_f64_n1048576",
       "group": "pow_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.0351561875,
-      "iqr": 8.639062500000183e-05,
+      "median": 0.02925490625,
+      "iqr": 0.00011390625000000376,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
-    },
-    {
-      "case": "pow_strided_read_f64_n1048576",
-      "group": "pow_strided_read",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.170702875,
-      "iqr": 0.0014179999999999748,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 16
     },
     {
       "case": "pow_strided_read_f64_n1048576",
@@ -1558,615 +1158,455 @@
       "case": "reduce_max_strided_read_f64_n1048576",
       "group": "reduce_max_strided_read",
       "backend": "jax-cuda",
-      "median": 0.1065405625,
-      "iqr": 0.001229703125000009,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "reduce_max_strided_read_f64_n1048576",
-      "group": "reduce_max_strided_read",
-      "backend": "pytorch-cuda",
-      "median": 0.017057890625,
-      "iqr": 1.8832031249998993e-05,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 128
-    },
-    {
-      "case": "reduce_max_strided_read_f64_n1048576",
-      "group": "reduce_max_strided_read",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.100982875,
-      "iqr": 0.0004857968749999997,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "reduce_max_strided_read_f64_n1048576",
-      "group": "reduce_max_strided_read",
-      "backend": "tenferro-cuda-eager",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
-    },
-    {
-      "case": "reduce_min_strided_read_f64_n1048576",
-      "group": "reduce_min_strided_read",
-      "backend": "jax-cuda",
-      "median": 0.1078618125,
-      "iqr": 0.0025282499999999958,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "reduce_min_strided_read_f64_n1048576",
-      "group": "reduce_min_strided_read",
-      "backend": "pytorch-cuda",
-      "median": 0.0171059453125,
-      "iqr": 2.5121093750003765e-05,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 128
-    },
-    {
-      "case": "reduce_min_strided_read_f64_n1048576",
-      "group": "reduce_min_strided_read",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.093390375,
-      "iqr": 0.0013037031249999997,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "reduce_min_strided_read_f64_n1048576",
-      "group": "reduce_min_strided_read",
-      "backend": "tenferro-cuda-eager",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
-    },
-    {
-      "case": "reduce_prod_strided_read_f64_n1048576",
-      "group": "reduce_prod_strided_read",
-      "backend": "jax-cuda",
-      "median": 0.054493546875,
-      "iqr": 0.0005684140625000084,
+      "median": 0.0695183125,
+      "iqr": 0.001271054687499995,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 64
     },
     {
-      "case": "reduce_prod_strided_read_f64_n1048576",
-      "group": "reduce_prod_strided_read",
+      "case": "reduce_max_strided_read_f64_n1048576",
+      "group": "reduce_max_strided_read",
       "backend": "pytorch-cuda",
-      "median": 0.0169530078125,
-      "iqr": 2.711718749999828e-05,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 128
-    },
-    {
-      "case": "reduce_prod_strided_read_f64_n1048576",
-      "group": "reduce_prod_strided_read",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.1003805,
-      "iqr": 0.0005425937499999867,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "reduce_prod_strided_read_f64_n1048576",
-      "group": "reduce_prod_strided_read",
-      "backend": "tenferro-cuda-eager",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
-    },
-    {
-      "case": "reduce_sum_squares_strided_read_f64_n1048576",
-      "group": "reduce_sum_squares_strided_read",
-      "backend": "jax-cuda",
-      "median": 1.8142965,
-      "iqr": 0.0278624999999999,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 2
-    },
-    {
-      "case": "reduce_sum_squares_strided_read_f64_n1048576",
-      "group": "reduce_sum_squares_strided_read",
-      "backend": "pytorch-cuda",
-      "median": 0.023197625,
-      "iqr": 0.00016578125000000013,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 128
-    },
-    {
-      "case": "reduce_sum_squares_strided_read_f64_n1048576",
-      "group": "reduce_sum_squares_strided_read",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.09271596875,
-      "iqr": 0.0002888437500000035,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "reduce_sum_squares_strided_read_f64_n1048576",
-      "group": "reduce_sum_squares_strided_read",
-      "backend": "tenferro-cuda-eager",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
-    },
-    {
-      "case": "reduce_sum_strided_read_f64_n1048576",
-      "group": "reduce_sum_strided_read",
-      "backend": "jax-cuda",
-      "median": 0.05301871875,
-      "iqr": 0.0006532578125000021,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 64
-    },
-    {
-      "case": "reduce_sum_strided_read_f64_n1048576",
-      "group": "reduce_sum_strided_read",
-      "backend": "pytorch-cuda",
-      "median": 0.0169472109375,
-      "iqr": 1.4558593749998405e-05,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 128
-    },
-    {
-      "case": "reduce_sum_strided_read_f64_n1048576",
-      "group": "reduce_sum_strided_read",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.10092903125,
-      "iqr": 0.001281343749999983,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "reduce_sum_strided_read_f64_n1048576",
-      "group": "reduce_sum_strided_read",
-      "backend": "tenferro-cuda-eager",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
-    },
-    {
-      "case": "rem_strided_read_f64_n1048576",
-      "group": "rem_strided_read",
-      "backend": "jax-cuda",
-      "median": 0.05059290625,
-      "iqr": 0.0028198749999999995,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "rem_strided_read_f64_n1048576",
-      "group": "rem_strided_read",
-      "backend": "pytorch-cuda",
-      "median": 0.01217115625,
-      "iqr": 0.00015574999999999964,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "rem_strided_read_f64_n1048576",
-      "group": "rem_strided_read",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.171158125,
-      "iqr": 0.000818437499999991,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 16
-    },
-    {
-      "case": "rem_strided_read_f64_n1048576",
-      "group": "rem_strided_read",
-      "backend": "tenferro-cuda-eager",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
-    },
-    {
-      "case": "rsqrt_strided_read_f64_n1048576",
-      "group": "rsqrt_strided_read",
-      "backend": "jax-cuda",
-      "median": 0.069963875,
-      "iqr": 0.0031171249999999984,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "rsqrt_strided_read_f64_n1048576",
-      "group": "rsqrt_strided_read",
-      "backend": "pytorch-cuda",
-      "median": 0.0095105,
-      "iqr": 3.834375000000105e-05,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "rsqrt_strided_read_f64_n1048576",
-      "group": "rsqrt_strided_read",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.0818610625,
-      "iqr": 0.00047278125000001225,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "rsqrt_strided_read_f64_n1048576",
-      "group": "rsqrt_strided_read",
-      "backend": "tenferro-cuda-eager",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
-    },
-    {
-      "case": "sign_strided_read_f64_n1048576",
-      "group": "sign_strided_read",
-      "backend": "jax-cuda",
-      "median": 0.0493755625,
-      "iqr": 0.0010483906249999994,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "sign_strided_read_f64_n1048576",
-      "group": "sign_strided_read",
-      "backend": "pytorch-cuda",
-      "median": 0.00956528125,
-      "iqr": 5.259374999999969e-05,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "sign_strided_read_f64_n1048576",
-      "group": "sign_strided_read",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.08167071875,
-      "iqr": 0.00031245312500000066,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "sign_strided_read_f64_n1048576",
-      "group": "sign_strided_read",
-      "backend": "tenferro-cuda-eager",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
-    },
-    {
-      "case": "sin_strided_read_f64_n1048576",
-      "group": "sin_strided_read",
-      "backend": "jax-cuda",
-      "median": 0.05027353125,
-      "iqr": 0.0007772343750000049,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "sin_strided_read_f64_n1048576",
-      "group": "sin_strided_read",
-      "backend": "pytorch-cuda",
-      "median": 0.01352559375,
-      "iqr": 5.903124999999919e-05,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "sin_strided_read_f64_n1048576",
-      "group": "sin_strided_read",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.0851701875,
-      "iqr": 0.00040028124999999526,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "sin_strided_read_f64_n1048576",
-      "group": "sin_strided_read",
-      "backend": "tenferro-cuda-eager",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
-    },
-    {
-      "case": "sqrt_strided_read_f64_n1048576",
-      "group": "sqrt_strided_read",
-      "backend": "jax-cuda",
-      "median": 0.050164875,
-      "iqr": 0.003209500000000004,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "sqrt_strided_read_f64_n1048576",
-      "group": "sqrt_strided_read",
-      "backend": "pytorch-cuda",
-      "median": 0.0096495,
-      "iqr": 0.0001052031249999981,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "sqrt_strided_read_f64_n1048576",
-      "group": "sqrt_strided_read",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.0819065,
-      "iqr": 0.00028803125000000096,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "sqrt_strided_read_f64_n1048576",
-      "group": "sqrt_strided_read",
-      "backend": "tenferro-cuda-eager",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
-    },
-    {
-      "case": "sub_into_f64_n1048576",
-      "group": "sub_into",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
-    },
-    {
-      "case": "sub_into_f64_n1048576",
-      "group": "sub_into",
-      "backend": "pytorch-cuda",
-      "median": 0.01195228125,
-      "iqr": 6.043750000000146e-05,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "sub_into_f64_n1048576",
-      "group": "sub_into",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.0261939375,
-      "iqr": 0.0001622031249999996,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "sub_into_f64_n1048576",
-      "group": "sub_into",
-      "backend": "tenferro-cuda-eager",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
-    },
-    {
-      "case": "sub_read_into_f64_n1048576",
-      "group": "sub_read_into",
-      "backend": "jax-cuda",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
-    },
-    {
-      "case": "sub_read_into_f64_n1048576",
-      "group": "sub_read_into",
-      "backend": "pytorch-cuda",
-      "median": 0.0118846875,
-      "iqr": 6.495312499999947e-05,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "sub_read_into_f64_n1048576",
-      "group": "sub_read_into",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.026124125,
-      "iqr": 0.0001742500000000008,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "sub_read_into_f64_n1048576",
-      "group": "sub_read_into",
-      "backend": "tenferro-cuda-eager",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
-    },
-    {
-      "case": "sub_strided_read_f64_n1048576",
-      "group": "sub_strided_read",
-      "backend": "jax-cuda",
-      "median": 0.0578535,
-      "iqr": 0.0022935624999999987,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "sub_strided_read_f64_n1048576",
-      "group": "sub_strided_read",
-      "backend": "pytorch-cuda",
-      "median": 0.01224440625,
-      "iqr": 9.424999999999885e-05,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "sub_strided_read_f64_n1048576",
-      "group": "sub_strided_read",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.134489375,
-      "iqr": 0.003417718749999993,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 16
-    },
-    {
-      "case": "sub_strided_read_f64_n1048576",
-      "group": "sub_strided_read",
-      "backend": "tenferro-cuda-eager",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
-    },
-    {
-      "case": "tanh_strided_read_f64_n1048576",
-      "group": "tanh_strided_read",
-      "backend": "jax-cuda",
-      "median": 0.04958125,
-      "iqr": 0.0017461406250000033,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "tanh_strided_read_f64_n1048576",
-      "group": "tanh_strided_read",
-      "backend": "pytorch-cuda",
-      "median": 0.01000675,
-      "iqr": 6.87187500000002e-05,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "tanh_strided_read_f64_n1048576",
-      "group": "tanh_strided_read",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.08233446875,
-      "iqr": 0.00025456250000001346,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "tanh_strided_read_f64_n1048576",
-      "group": "tanh_strided_read",
-      "backend": "tenferro-cuda-eager",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
-    },
-    {
-      "case": "tensordot_f64_n262144",
-      "group": "tensordot",
-      "backend": "jax-cuda",
-      "median": 0.129555,
-      "iqr": 0.00381999999999999,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 16
-    },
-    {
-      "case": "tensordot_f64_n262144",
-      "group": "tensordot",
-      "backend": "pytorch-cuda",
-      "median": 0.0306563359375,
-      "iqr": 4.5835937500002255e-05,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 128
-    },
-    {
-      "case": "tensordot_f64_n262144",
-      "group": "tensordot",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.04590071875,
-      "iqr": 0.0001909062499999975,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 64
-    },
-    {
-      "case": "tensordot_f64_n262144",
-      "group": "tensordot",
-      "backend": "tenferro-cuda-eager",
-      "median": 0.0490330625,
-      "iqr": 0.002878718749999995,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "vdot_read_f64_n262144",
-      "group": "vdot_read",
-      "backend": "jax-cuda",
-      "median": 0.1091383125,
-      "iqr": 0.001249374999999997,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "vdot_read_f64_n262144",
-      "group": "vdot_read",
-      "backend": "pytorch-cuda",
-      "median": 0.01236788671875,
-      "iqr": 7.774609375000088e-05,
+      "median": 0.01362130859375,
+      "iqr": 1.8562499999999482e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 256
     },
     {
-      "case": "vdot_read_f64_n262144",
-      "group": "vdot_read",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.0806606875,
-      "iqr": 0.0032370624999999986,
+      "case": "reduce_max_strided_read_f64_n1048576",
+      "group": "reduce_max_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+    },
+    {
+      "case": "reduce_min_strided_read_f64_n1048576",
+      "group": "reduce_min_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.06773434375,
+      "iqr": 0.010004265625000008,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
+    },
+    {
+      "case": "reduce_min_strided_read_f64_n1048576",
+      "group": "reduce_min_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.01364184375,
+      "iqr": 1.1328125000001354e-05,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 256
+    },
+    {
+      "case": "reduce_min_strided_read_f64_n1048576",
+      "group": "reduce_min_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+    },
+    {
+      "case": "reduce_prod_strided_read_f64_n1048576",
+      "group": "reduce_prod_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.037451484375,
+      "iqr": 0.001454382812500002,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 64
+    },
+    {
+      "case": "reduce_prod_strided_read_f64_n1048576",
+      "group": "reduce_prod_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.01350222265625,
+      "iqr": 1.6527343749999507e-05,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 256
+    },
+    {
+      "case": "reduce_prod_strided_read_f64_n1048576",
+      "group": "reduce_prod_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+    },
+    {
+      "case": "reduce_sum_squares_strided_read_f64_n1048576",
+      "group": "reduce_sum_squares_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.82857625,
+      "iqr": 0.007459875000000116,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 4
+    },
+    {
+      "case": "reduce_sum_squares_strided_read_f64_n1048576",
+      "group": "reduce_sum_squares_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.021163953125,
+      "iqr": 4.322656250000528e-05,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 128
+    },
+    {
+      "case": "reduce_sum_squares_strided_read_f64_n1048576",
+      "group": "reduce_sum_squares_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+    },
+    {
+      "case": "reduce_sum_strided_read_f64_n1048576",
+      "group": "reduce_sum_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.049141265625,
+      "iqr": 0.0018904218750000062,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 64
+    },
+    {
+      "case": "reduce_sum_strided_read_f64_n1048576",
+      "group": "reduce_sum_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.013530859375,
+      "iqr": 1.539453125000076e-05,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 256
+    },
+    {
+      "case": "reduce_sum_strided_read_f64_n1048576",
+      "group": "reduce_sum_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+    },
+    {
+      "case": "rem_strided_read_f64_n1048576",
+      "group": "rem_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.0348155,
+      "iqr": 0.0020189843749999978,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "rem_strided_read_f64_n1048576",
+      "group": "rem_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.01245528125,
+      "iqr": 0.0001730624999999996,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "rem_strided_read_f64_n1048576",
+      "group": "rem_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+    },
+    {
+      "case": "rsqrt_strided_read_f64_n1048576",
+      "group": "rsqrt_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.04953046875,
+      "iqr": 0.0012429531250000014,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "rsqrt_strided_read_f64_n1048576",
+      "group": "rsqrt_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.007748875,
+      "iqr": 0.0001591250000000004,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "rsqrt_strided_read_f64_n1048576",
+      "group": "rsqrt_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+    },
+    {
+      "case": "sign_strided_read_f64_n1048576",
+      "group": "sign_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.03338771875,
+      "iqr": 0.001669171875,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "sign_strided_read_f64_n1048576",
+      "group": "sign_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.0075645,
+      "iqr": 7.603125000000058e-05,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "sign_strided_read_f64_n1048576",
+      "group": "sign_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+    },
+    {
+      "case": "sin_strided_read_f64_n1048576",
+      "group": "sin_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.0329780625,
+      "iqr": 0.0015482968749999937,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "sin_strided_read_f64_n1048576",
+      "group": "sin_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.01092896875,
+      "iqr": 5.768750000000045e-05,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "sin_strided_read_f64_n1048576",
+      "group": "sin_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+    },
+    {
+      "case": "sqrt_strided_read_f64_n1048576",
+      "group": "sqrt_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.033648125,
+      "iqr": 0.0026464531250000034,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "sqrt_strided_read_f64_n1048576",
+      "group": "sqrt_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.00775634375,
+      "iqr": 0.00012398437499999866,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "sqrt_strided_read_f64_n1048576",
+      "group": "sqrt_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+    },
+    {
+      "case": "sub_into_f64_n1048576",
+      "group": "sub_into",
+      "backend": "jax-cuda",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+    },
+    {
+      "case": "sub_into_f64_n1048576",
+      "group": "sub_into",
+      "backend": "pytorch-cuda",
+      "median": 0.01194671875,
+      "iqr": 0.0002763437500000014,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "sub_into_f64_n1048576",
+      "group": "sub_into",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+    },
+    {
+      "case": "sub_read_into_f64_n1048576",
+      "group": "sub_read_into",
+      "backend": "jax-cuda",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+    },
+    {
+      "case": "sub_read_into_f64_n1048576",
+      "group": "sub_read_into",
+      "backend": "pytorch-cuda",
+      "median": 0.01205590625,
+      "iqr": 0.00013360937499999961,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "sub_read_into_f64_n1048576",
+      "group": "sub_read_into",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+    },
+    {
+      "case": "sub_strided_read_f64_n1048576",
+      "group": "sub_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.072725,
+      "iqr": 0.0025320937500000057,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "sub_strided_read_f64_n1048576",
+      "group": "sub_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.01243309375,
+      "iqr": 0.00017964062499999794,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "sub_strided_read_f64_n1048576",
+      "group": "sub_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+    },
+    {
+      "case": "tanh_strided_read_f64_n1048576",
+      "group": "tanh_strided_read",
+      "backend": "jax-cuda",
+      "median": 0.04766796875,
+      "iqr": 0.0019133593749999997,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "tanh_strided_read_f64_n1048576",
+      "group": "tanh_strided_read",
+      "backend": "pytorch-cuda",
+      "median": 0.0081269375,
+      "iqr": 3.600000000000131e-05,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "tanh_strided_read_f64_n1048576",
+      "group": "tanh_strided_read",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+    },
+    {
+      "case": "tensordot_f64_n262144",
+      "group": "tensordot",
+      "backend": "jax-cuda",
+      "median": 0.09515628125,
+      "iqr": 0.0023386562500000013,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "tensordot_f64_n262144",
+      "group": "tensordot",
+      "backend": "pytorch-cuda",
+      "median": 0.0252978125,
+      "iqr": 0.0006980859375000023,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 128
+    },
+    {
+      "case": "tensordot_f64_n262144",
+      "group": "tensordot",
+      "backend": "tenferro-cuda-eager",
+      "median": 0.046792875,
+      "iqr": 0.0038839999999999986,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 8
+    },
+    {
+      "case": "vdot_read_f64_n262144",
+      "group": "vdot_read",
+      "backend": "jax-cuda",
+      "median": 0.039747609375,
+      "iqr": 0.002091421874999999,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 64
+    },
+    {
+      "case": "vdot_read_f64_n262144",
+      "group": "vdot_read",
+      "backend": "pytorch-cuda",
+      "median": 0.009296640625,
+      "iqr": 3.6203124999998476e-05,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 256
     },
     {
       "case": "vdot_read_f64_n262144",

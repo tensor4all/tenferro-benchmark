@@ -2,17 +2,17 @@
 
 - Target profile: `nvidia-gpu`
 - Suite: `gpu/einsum`
-- Suite file: `/tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261107_201728/gpu_einsum.yaml`
-- Timestamp: `2026-11-07T20:17:28+00:00`
-- tenferro-rs commit: `ffd352bdb9f98537be747101bc278db8a50a1595`
+- Suite file: `/tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261108_090627/gpu_einsum.yaml`
+- Timestamp: `2026-11-08T09:06:27+00:00`
+- tenferro-rs commit: `9a850b06155405acc99ecd0648829e9e6d3866ba`
 - Effort: `standard`; manifest version: `2`
-- Selection and case accounting: `/tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261107_201728/selection.json` (see adjacent `case_status.json` and `report.md`; unselected rows are not covered)
+- Selection and case accounting: `/tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261108_090627/selection.json` (see adjacent `case_status.json` and `report.md`; unselected rows are not covered)
 
 ## GPU Information
 
 - Device: `cuda:0`
-- Name: `NVIDIA A100-SXM4-80GB`
-- UUID: `GPU-3f509591-db26-6474-253e-fcb29d2b374b`
+- Name: `NVIDIA A100 80GB PCIe`
+- UUID: `GPU-12b45076-79d5-7b84-cb5c-7c6300074c8a`
 - Memory: `80 GiB`
 - Driver version: `595.91.07`
 - CUDA version: `13.2`
@@ -26,18 +26,17 @@
 
 ## CPU Information
 
-- Model: `AMD EPYC 7742 64-Core Processor`
+- Model: `AMD EPYC 9554 64-Core Processor`
 - Vendor: `AuthenticAMD`
-- Logical CPUs: `256`
+- Logical CPUs: `252`
 - Sockets: `2`
-- Cores per socket: `64`
-- Threads per core: `2`
-- NUMA nodes: `8`
+- Cores per socket: `126`
+- Threads per core: `1`
+- NUMA nodes: `2`
 - Transparent huge pages: `madvise (always [madvise] never)`
 - Transparent huge page defrag: `madvise (always defer defer+madvise [madvise] never)`
-- Python platform: `Linux-6.8.0-138-generic-x86_64-with-glibc2.39`
-- L3 domains (shared CPUs): `0-3,128-131; 4-7,132-135; 8-11,136-139; 12-15,140-143; 16-19,144-147; 20-23,148-151; 24-27,152-155; 28-31,156-159; 32-35,160-163; 36-39,164-167; 40-43,168-171; 44-47,172-175; 48-51,176-179; 52-55,180-183; 56-59,184-187; 60-63,188-191; 64-67,192-195; 68-71,196-199; 72-75,200-203; 76-79,204-207; 80-83,208-211; 84-87,212-215; 88-91,216-219; 92-95,220-223; 96-99,224-227; 100-103,228-231; 104-107,232-235; 108-111,236-239; 112-115,240-243; 116-119,244-247; 120-123,248-251; 124-127,252-255`
-- CPU boost: `enabled`
+- Python platform: `Linux-6.8.0-147-generic-x86_64-with-glibc2.39`
+- L3 domains (shared CPUs): `0-125; 126-251`
 - Container: `devcontainer`
 
 Median time is reported in milliseconds for `ok` records.
@@ -52,7 +51,7 @@ Non-`ok` cells show the structured backend status.
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | JAX CUDA JIT |
 |---|---:|---:|---:|---:|
-| einsum_bin_matmul_3072_f64 | 3.203 | 3.165 | 3.877 | 3.953 |
+| einsum_bin_matmul_3072_f64 | 3.174 | 3.168 | 3.168 | 3.338 |
 
 ## Sampling
 
@@ -60,7 +59,7 @@ JAX uses compiled JIT execution; compilation, planning and numerical checks are 
 
 | Problem | Backend | Ops/sample | Raw batch ms | Setup and precision |
 | --- | --- | ---: | --- | --- |
-| einsum_bin_matmul_3072_f64 | tenferro-cuda-trace | 1 | 3.17005, 3.16987, 3.19607, 3.2032, 3.2039, 3.20335, 3.20607 | one caller-held CUDA engine for every sample; each Runtime::run call pays its own device-completion barrier inside the batch interval; inputs, plans and compilation outside clocks; native declared dtype; no AD recording |
-| einsum_bin_matmul_3072_f64 | tenferro-cuda-eager | 1 | 3.16541, 3.16665, 3.16527, 3.16425, 3.16429, 3.16494, 3.17142 | one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks; native declared dtype; no AD recording |
-| einsum_bin_matmul_3072_f64 | pytorch-cuda | 1 | 3.88544, 3.96649, 3.88046, 3.86752, 3.85822, 3.87655, 3.87735 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| einsum_bin_matmul_3072_f64 | jax-cuda | 1 | 3.9665, 3.94449, 3.93896, 3.9529, 3.95298, 3.96738, 3.96912 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| einsum_bin_matmul_3072_f64 | tenferro-cuda-trace | 1 | 3.1774, 3.17215, 3.17367, 3.17485, 3.17026, 3.17386, 3.17247 | one caller-held CUDA engine for every sample; each Runtime::run call pays its own device-completion barrier inside the batch interval; inputs, plans and compilation outside clocks; native declared dtype; no AD recording |
+| einsum_bin_matmul_3072_f64 | tenferro-cuda-eager | 1 | 3.16637, 3.16751, 3.16865, 3.17026, 3.16663, 3.16847, 3.16779 | one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks; native declared dtype; no AD recording |
+| einsum_bin_matmul_3072_f64 | pytorch-cuda | 1 | 3.16834, 3.16515, 3.17768, 3.1626, 3.17203, 3.17942, 3.16484 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| einsum_bin_matmul_3072_f64 | jax-cuda | 1 | 3.28369, 3.33825, 3.33788, 3.34257, 3.33644, 3.3402, 3.33337 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
