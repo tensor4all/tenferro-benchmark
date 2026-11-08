@@ -165,10 +165,11 @@ runs there: Actions → "Create the JAX compile-cache network volume", with
 Before anything is created the script checks the data center catalog — the data
 center must exist, support network volumes and offer the configured `a100` tier
 — because the binding cannot be changed afterwards. The run is idempotent by
-name, refuses a same-named volume whose data center or size differ, refuses to
-proceed when the name appears twice (a name is not a unique key in the RunPod
-schema, and a retried `POST` whose response was lost could otherwise create a
-second billable volume), and lists the resulting id.
+name, refuses a same-named volume whose data center or size differ, and refuses
+to proceed when the name appears twice: a name is not a unique key in the RunPod
+schema. A POST whose response was lost is never re-sent — it is reconciled by
+reading the listing back, and the run stops if the volume is not visible yet —
+because re-sending it can pay for a second volume.
 
 The volume is mounted at `network_volume_mount_path`
 (`scripts/ci/runpod_config.json`, default `/opt/bench-cache`). REST v2 accepts at

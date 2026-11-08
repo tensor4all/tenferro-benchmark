@@ -254,33 +254,84 @@ class NetworkVolumeValidationTests(unittest.TestCase):
 class NetworkVolumeCreationTests(unittest.TestCase):
     """A lost POST response must not become a second billable volume."""
 
-    def test_an_ambiguous_failure_reuses_the_volume_it_created(self):
+    def test_an_ambiguous_failure_adopts_the_volume_once_it_is_visible(self):
         clock, calls = Clock(), []
         result = volume.create_network_volume(
             "https://example.test/v2", "secret", name="jax-compile-cache", size_gb=10,
             data_center="US-KS-2",
             transport=transport_replies(
-                [Response(503, {}, b""), listing(VOLUME)], calls
+                [Response(503, {}, b""), listing(), listing(VOLUME)], calls
             ),
             monotonic=clock.monotonic, sleep=clock.sleep,
         )
         self.assertEqual(result["id"], "vol-1")
-        self.assertEqual([c.get_method() for c in calls], ["POST", "GET"])
+        # The POST is never repeated: only reads follow it.
+        self.assertEqual([c.get_method() for c in calls], ["POST", "GET", "GET"])
 
-    def test_a_failure_that_created_nothing_is_retried_once_after_listing(self):
+    def test_an_ambiguous_failure_with_no_visible_volume_stops(self):
+        clock, calls = Clock(), []
+        with self.assertRaisesRegex(ValueError, "re-run `list`"):
+            volume.create_network_volume(
+                "https://example.test/v2", "secret", name="jax-compile-cache", size_gb=10,
+                data_center="US-KS-2",
+                transport=transport_replies([Response(503, {}, b"")] + [listing()] * 3, calls),
+                monotonic=clock.monotonic, sleep=clock.sleep,
+            )
+        self.assertEqual([c.get_method() for c in calls], ["POST", "GET", "GET", "GET"])
+
+    def test_an_adopted_volume_must_have_the_requested_bindings(self):
+        clock, calls = Clock(), []
+        elsewhere = dict(VOLUME, dataCenter="EU-RO-1")
+        with self.assertRaisesRegex(ValueError, "data center"):
+            volume.create_network_volume(
+                "https://example.test/v2", "secret", name="jax-compile-cache", size_gb=10,
+                data_center="US-KS-2",
+                transport=transport_replies(
+                    [Response(503, {}, b""), listing(elsewhere)], calls
+                ),
+                monotonic=clock.monotonic, sleep=clock.sleep,
+            )
+
+    def test_two_adopted_volumes_with_the_same_name_are_refused(self):
+        clock, calls = Clock(), []
+        with self.assertRaisesRegex(ValueError, "vol-1, vol-2"):
+            volume.create_network_volume(
+                "https://example.test/v2", "secret", name="jax-compile-cache", size_gb=10,
+                data_center="US-KS-2",
+                transport=transport_replies(
+                    [Response(503, {}, b""), listing(VOLUME, dict(VOLUME, id="vol-2"))], calls
+                ),
+                monotonic=clock.monotonic, sleep=clock.sleep,
+            )
+
+    def test_a_rate_limited_post_created_nothing_so_it_is_retried(self):
         clock, calls = Clock(), []
         result = volume.create_network_volume(
             "https://example.test/v2", "secret", name="jax-compile-cache", size_gb=10,
             data_center="US-KS-2",
             transport=transport_replies(
-                [Response(503, {}, b""), listing(),
+                [Response(429, {"Retry-After": "5"}, b""),
                  Response(201, {}, json.dumps(VOLUME).encode())],
                 calls,
             ),
             monotonic=clock.monotonic, sleep=clock.sleep,
         )
         self.assertEqual(result["id"], "vol-1")
-        self.assertEqual([c.get_method() for c in calls], ["POST", "GET", "POST"])
+        self.assertEqual([c.get_method() for c in calls], ["POST", "POST"])
+
+    def test_the_error_body_cannot_leak_the_api_key(self):
+        clock, calls = Clock(), []
+        with self.assertRaises(ValueError) as error:
+            volume.create_network_volume(
+                "https://example.test/v2", "super-secret-key", name="x", size_gb=10,
+                data_center="US-KS-2",
+                transport=transport_replies(
+                    [Response(400, {}, b'{"error":"bad key super-secret-key"}')], calls
+                ),
+                monotonic=clock.monotonic, sleep=clock.sleep,
+            )
+        self.assertNotIn("super-secret-key", str(error.exception))
+        self.assertIn("***redacted***", str(error.exception))
 
 
 class NetworkVolumeReadTests(unittest.TestCase):

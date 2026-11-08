@@ -20,6 +20,7 @@ import time
 import urllib.parse
 import urllib.request
 
+from scripts.ci.runpod_client import redacted_error_message
 from scripts.ci.runpod_http import Cooldown, request_with_retry, retry_delay, retryable
 
 DEFAULT_API_BASE = "https://api.runpod.io/v2"
@@ -212,14 +213,15 @@ def check_data_center(api_base, api_key, data_center, *, required_gpu_type_ids=(
 
 
 def create_network_volume(api_base, api_key, *, name, size_gb, data_center,
-                          deadline_seconds=120.0, attempts=4, transport=None,
-                          monotonic=time.monotonic, sleep=time.sleep):
+                          deadline_seconds=120.0, attempts=4, reconciliation_reads=3,
+                          transport=None, monotonic=time.monotonic, sleep=time.sleep):
     """POST the volume and return the created record.
 
-    A lost response is ambiguous: the volume may already exist. Retrying the POST
-    blindly (which the shared retry loop would do) can therefore create a second,
-    billable volume, so each retry first re-reads the listing and adopts a volume
-    with the requested name when one appeared.
+    A lost response is ambiguous: the volume may exist already, or the provider may
+    still be creating it. Re-sending the POST would pay for a second volume, so an
+    ambiguous attempt is only ever reconciled by reading the listing back; when the
+    volume does not appear, the run stops and asks for a human re-check. Only a
+    rate-limited attempt, which by definition created nothing, is retried.
     """
     validate_create_request(name=name, size_gb=size_gb, data_center=data_center)
     body = json.dumps({"name": name, "size": size_gb, "dataCenter": data_center}).encode()
@@ -242,25 +244,39 @@ def create_network_volume(api_base, api_key, *, name, size_gb, data_center,
         if not retryable(response.status):
             raise ValueError(
                 f"network volume creation failed (HTTP {response.status}): "
-                f"{response.body[:400].decode('utf-8', 'replace')}"
+                f"{_diagnostic(response.body, api_key)}"
             )
-        if attempt == attempts:
-            break
-        adopted = [
-            volume for volume in list_network_volumes(
+        if response.status == 429:
+            if attempt == attempts:
+                raise ValueError(
+                    "network volume creation is rate limited (HTTP 429); try again later"
+                )
+            delay = retry_delay(response.headers, attempt)
+            cooldown.until = max(cooldown.until, monotonic() + delay)
+            continue
+        break  # the request may have reached the provider: do not re-POST
+    adopted = None
+    for index in range(reconciliation_reads):
+        adopted = _select_volume(
+            [volume for volume in list_network_volumes(
                 api_base, api_key, transport=transport, monotonic=monotonic, sleep=sleep
-            )
-            if volume.get("name") == name
-        ]
-        if adopted:
-            return adopted[0]
-        delay = retry_delay(response.headers, attempt)
-        cooldown.until = max(cooldown.until, monotonic() + delay)
+            ) if volume.get("name") == name],
+            name=name, size_gb=size_gb, data_center=data_center,
+        )
+        if adopted is not None:
+            return adopted
+        if index + 1 < reconciliation_reads:
+            sleep(retry_delay(response.headers, 1))
     raise ValueError(
-        f"network volume creation failed (HTTP {response.status if response else 0}) "
-        "and no volume with that name is visible; the request may still have succeeded, "
-        "so re-run `list` before creating again"
+        f"network volume creation failed (HTTP {response.status if response else 0}) and no "
+        "volume with that name is visible yet; the provider may still be creating it, so "
+        "re-run `list` before trying again"
     )
+
+
+def _diagnostic(body: bytes, api_key: str) -> str:
+    """A bounded error body with the request credential removed."""
+    return redacted_error_message(body, secrets=(api_key,))[:400]
 
 
 def _mismatches(volume, *, size_gb, data_center) -> list[str]:
@@ -274,29 +290,42 @@ def _mismatches(volume, *, size_gb, data_center) -> list[str]:
     return problems
 
 
-def ensure_network_volume(api_base, api_key, *, name, size_gb, data_center, dry_run=False,
-                          **kwargs):
-    """Idempotent by name, and strict about the bindings that cannot be changed later."""
-    validate_create_request(name=name, size_gb=size_gb, data_center=data_center)
-    matches = [
-        volume for volume in list_network_volumes(api_base, api_key, **kwargs)
-        if volume.get("name") == name
-    ]
+def _select_volume(matches, *, name, size_gb, data_center):
+    """The single volume that may be reused for this request, or None.
+
+    Every path that reuses a volume -- the idempotent lookup and the adoption of
+    a volume left behind by an ambiguous POST -- goes through this check, so a
+    reused volume always has the bindings the caller asked for.
+    """
     if len(matches) > 1:
         ids = ", ".join(str(volume["id"]) for volume in matches)
         raise ValueError(
             f"{len(matches)} network volumes are named {name!r} ({ids}); a name is not a "
             "unique key, so pick the intended id explicitly and delete the others"
         )
-    if matches:
-        problems = _mismatches(matches[0], size_gb=size_gb, data_center=data_center)
-        if problems:
-            raise ValueError(
-                f"network volume {matches[0]['id']} is named {name!r} but does not match the "
-                f"request ({'; '.join(problems)}); its bindings are immutable, so choose "
-                "another name or reuse it as it is"
-            )
-        return {"created": False, "volume": matches[0],
+    if not matches:
+        return None
+    problems = _mismatches(matches[0], size_gb=size_gb, data_center=data_center)
+    if problems:
+        raise ValueError(
+            f"network volume {matches[0]['id']} is named {name!r} but does not match the "
+            f"request ({'; '.join(problems)}); its bindings are immutable, so choose "
+            "another name or reuse it as it is"
+        )
+    return matches[0]
+
+
+def ensure_network_volume(api_base, api_key, *, name, size_gb, data_center, dry_run=False,
+                          **kwargs):
+    """Idempotent by name, and strict about the bindings that cannot be changed later."""
+    validate_create_request(name=name, size_gb=size_gb, data_center=data_center)
+    existing = _select_volume(
+        [volume for volume in list_network_volumes(api_base, api_key, **kwargs)
+         if volume.get("name") == name],
+        name=name, size_gb=size_gb, data_center=data_center,
+    )
+    if existing is not None:
+        return {"created": False, "volume": existing,
                 "note": "a volume with this name already exists; the id above is the one to use"}
     if dry_run:
         return {"created": False, "volume": None,
