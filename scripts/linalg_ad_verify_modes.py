@@ -53,6 +53,33 @@ _EPS = float(np.finfo(np.float64).eps)
 FD_STEP_EXPONENT = 1.0 / 3.0
 
 
+#: Fallbacks used only when neither the problem nor the suite states a value.
+DEFAULT_RTOL = 1.0e-5
+DEFAULT_ATOL = 1.0e-8
+
+
+def tolerances(problem: dict, defaults: dict | None = None) -> tuple[float, float]:
+    """``(rtol, atol)`` the manifest declares, problem first, then suite defaults.
+
+    The runner used to read tolerances from the problem alone and fall back to
+    these constants, so a suite that declared a stricter tolerance in
+    ``defaults.verify`` was silently checked against the looser fallback.  The
+    mode already resolves through the suite defaults; the tolerances have to
+    resolve the same way.
+    """
+    problem_block = problem.get("verify") or {}
+    suite_block = (defaults or {}).get("verify") or {}
+
+    def pick(key: str, fallback: float) -> float:
+        for block in (problem_block, suite_block):
+            value = block.get(key) if isinstance(block, dict) else None
+            if isinstance(value, (int, float)) and not isinstance(value, bool):
+                return float(value)
+        return fallback
+
+    return pick("rtol", DEFAULT_RTOL), pick("atol", DEFAULT_ATOL)
+
+
 def mode_for(problem: dict, defaults: dict | None = None) -> str:
     """The verification mode of one problem, with the suite defaults filled in.
 
@@ -262,7 +289,7 @@ def directional_of_actual(phase: str, derivative, tangent) -> float:
 # ---------------------------------------------------------------------------
 
 
-def _worst(actual, reference, rtol: float, atol: float):
+def elementwise_errors(actual, reference, rtol: float, atol: float):
     """``(max_abs, max_rel, worst_over_tolerance)`` for one pair of outputs."""
     actual = np.asarray(actual)
     reference = np.asarray(reference)
@@ -295,6 +322,10 @@ def _worst(actual, reference, rtol: float, atol: float):
     )
     max_rel = float(np.max(relative)) if error.size else 0.0
     return max_abs, max_rel, worst
+
+
+#: The first revision exported this comparison as `_worst`; keep the name.
+_worst = elementwise_errors
 
 
 def check(
@@ -350,9 +381,22 @@ def check(
         primal, directional, diagnostic = finite_difference_directional(
             loss, phase, matrix, tangent, rhs, device=device, step=step
         )
-        if len(actual) < 2:
-            raise ValueError("a finite_difference row needs a primal and a derivative")
-        measured = directional_of_actual(phase, actual[1], tangent)
+        if len(actual) != 2:
+            raise ValueError(
+                "a finite_difference row must report exactly a primal and a "
+                f"derivative, got {len(actual)} outputs"
+            )
+        derivative = np.asarray(actual[1])
+        if phase == "vjp" and derivative.shape != np.asarray(tangent).shape:
+            # A scalar or a broadcastable shape would be reduced through NumPy's
+            # broadcasting rules and compared as if it were the full derivative;
+            # the directional check would then say nothing about the row.
+            raise ValueError(
+                "finite_difference: derivative shape "
+                f"{derivative.shape} does not match the tangent "
+                f"{np.asarray(tangent).shape}"
+            )
+        measured = directional_of_actual(phase, derivative, tangent)
         pairs = [
             (actual[0], np.asarray(primal)),
             (np.asarray(measured), np.asarray(directional)),

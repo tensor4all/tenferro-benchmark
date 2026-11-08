@@ -59,6 +59,19 @@
           },
           "reason": { "type": "string" }
         },
+        "allOf": [
+          {
+            "description": "measure_only is the absence of a check, so the row is never verified and has to say why.",
+            "if": { "properties": { "verification": { "const": "measure_only" } }, "required": ["verification"] },
+            "then": {
+              "required": ["reason"],
+              "properties": {
+                "verified": { "const": false },
+                "reason": { "type": "string", "minLength": 1, "pattern": "\\S" }
+              }
+            }
+          }
+        ],
         "additionalProperties": true
       }
     },

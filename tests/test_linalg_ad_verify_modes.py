@@ -140,6 +140,73 @@ class CheckMustFailClosed(unittest.TestCase):
         self.assertEqual(max_abs, 1000.0)
 
 
+class TolerancesComeFromTheManifest(unittest.TestCase):
+    """A suite-level tolerance must not be replaced by the runner's fallback."""
+
+    def test_the_problem_wins(self):
+        problem = {"verify": {"rtol": 1e-7, "atol": 1e-9}}
+        self.assertEqual(
+            modes.tolerances(problem, {"verify": {"rtol": 1e-3, "atol": 1e-3}}),
+            (1e-7, 1e-9),
+        )
+
+    def test_the_suite_fills_in_what_the_problem_omits(self):
+        self.assertEqual(
+            modes.tolerances({"verify": {}}, {"verify": {"rtol": 1e-7, "atol": 1e-9}}),
+            (1e-7, 1e-9),
+        )
+
+    def test_the_fallback_is_only_for_a_manifest_that_states_nothing(self):
+        self.assertEqual(modes.tolerances({}), (modes.DEFAULT_RTOL, modes.DEFAULT_ATOL))
+
+
+class FiniteDifferenceShape(unittest.TestCase):
+    """A derivative that is not the row's shape cannot be reduced to one number."""
+
+    def test_a_scalar_derivative_is_refused_instead_of_broadcast(self):
+        matrix, tangent, rhs = case("grad_sum_qr", n=8)
+        primal, directional, _ = modes.finite_difference_directional(
+            "grad_sum_qr", "vjp", matrix, tangent, rhs, device="cpu"
+        )
+        with self.assertRaisesRegex(ValueError, "does not match the tangent"):
+            modes.check(
+                "finite_difference", "grad_sum_qr", "vjp",
+                [np.asarray(primal), np.asarray(float(directional))],
+                matrix, tangent, rhs, RTOL, ATOL, device="cpu",
+            )
+
+    def test_an_extra_output_is_refused(self):
+        matrix, tangent, rhs = case("grad_sum_qr", n=8)
+        primal, directional, _ = modes.finite_difference_directional(
+            "grad_sum_qr", "vjp", matrix, tangent, rhs, device="cpu"
+        )
+        gradient = np.asarray(tangent) * (directional / np.sum(np.asarray(tangent) ** 2))
+        with self.assertRaisesRegex(ValueError, "exactly a primal and a derivative"):
+            modes.check(
+                "finite_difference", "grad_sum_qr", "vjp",
+                [np.asarray(primal), gradient, gradient],
+                matrix, tangent, rhs, RTOL, ATOL, device="cpu",
+            )
+
+
+class CpuReferenceTolerance(unittest.TestCase):
+    """The Python cpu_reference path must not pass what the shared rule rejects."""
+
+    def test_a_wrong_row_with_atol_zero_is_rejected(self):
+        reference = np.eye(2)
+        wrong = 2.0 * np.eye(2)
+        with self.assertRaisesRegex(ValueError, "error/tolerance"):
+            verify_arrays([wrong], [reference], RTOL, 0.0)
+
+    def test_a_correct_row_with_atol_zero_passes(self):
+        reference = np.eye(2)
+        max_abs, max_rel, worst = verify_arrays(
+            [reference.copy()], [reference], RTOL, 0.0
+        )
+        self.assertEqual(max_abs, 0.0)
+        self.assertEqual(worst, 0.0)
+
+
 class AnalyticReference(unittest.TestCase):
     """The closed form must be the same answer as the CPU AD, element by element."""
 

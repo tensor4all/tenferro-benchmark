@@ -145,6 +145,18 @@ class ResultSchema(unittest.TestCase):
         with self.assertRaises(jsonschema.ValidationError):
             jsonschema.validate(row, RESULT_SCHEMA)
 
+    def test_measure_only_cannot_carry_a_verdict(self):
+        # The earlier constraint only ran when `status` was `not_run`, so a row
+        # could name measure_only and still claim `passed`.
+        row = self.record(status="passed")
+        with self.assertRaises(jsonschema.ValidationError):
+            jsonschema.validate(row, RESULT_SCHEMA)
+
+    def test_measure_only_cannot_carry_evidence(self):
+        row = self.record(residual=0.0)
+        with self.assertRaises(jsonschema.ValidationError):
+            jsonschema.validate(row, RESULT_SCHEMA)
+
 
 class RecordAndSummary(unittest.TestCase):
     def raw_row(self, **verification):
@@ -200,6 +212,41 @@ class RecordAndSummary(unittest.TestCase):
         self.assertFalse(row["verified"])
         self.assertEqual(row["verification"], "measure_only")
         self.assertEqual(row["reason"], "n=4096 has no affordable reference")
+
+
+class SummarySchema(unittest.TestCase):
+    """A measure_only row is never published as verified."""
+
+    SCHEMA = json.loads((ROOT / "schemas/report-summary.schema.json").read_text())
+
+    def document(self, **row):
+        base = {
+            "case": "case_a", "group": "jvp", "backend": "tenferro-cuda-trace",
+            "median": 1.5, "status": "ok", "verified": False,
+            "verification": "measure_only", "reason": "n=4096 has no affordable reference",
+        }
+        base.update(row)
+        return {
+            "schema_version": report_summary.SCHEMA_VERSION,
+            "target_profile": "nvidia-gpu",
+            "suite_id": "gpu/linalg_jvp_vjp",
+            "timestamp": "2026-11-08T00:00:00+00:00",
+            "tenferro_commit": "abc123",
+            "hardware": {"gpu": "NVIDIA A100 80GB PCIe"},
+            "unit": "ms",
+            "rows": [base],
+        }
+
+    def test_an_unchecked_row_is_valid(self):
+        jsonschema.validate(self.document(), self.SCHEMA)
+
+    def test_an_unchecked_row_cannot_be_verified(self):
+        with self.assertRaises(jsonschema.ValidationError):
+            jsonschema.validate(self.document(verified=True), self.SCHEMA)
+
+    def test_an_unchecked_row_states_why(self):
+        with self.assertRaises(jsonschema.ValidationError):
+            jsonschema.validate(self.document(reason=""), self.SCHEMA)
 
 
 class DashboardBadges(unittest.TestCase):

@@ -85,8 +85,7 @@ def validate(row, problem, defaults=None):
         return row
     loss = problem["linalg_ad"]["loss"]
     matrix, tangent, rhs = _inputs(problem)
-    rtol = problem.get("verify", {}).get("rtol", 1e-5)
-    atol = problem.get("verify", {}).get("atol", 1e-8)
+    rtol, atol = modes.tolerances(problem, defaults)
     verdict = None
     for phase in ("initial", "final"):
         candidate = modes.check(

@@ -170,7 +170,7 @@ def run_framework(suite_id, problem, backend, device_ordinal, *, ts, bc, tc, ver
     n, loss_name, seed = ad["n"], ad["loss"], ad["matrix_seed"]
     warmups = int(os.environ.get("BENCH_WARMUPS", problem.get("run", {}).get("warmups", 3)))
     runs = int(os.environ.get("BENCH_RUNS", problem.get("run", {}).get("runs", 7)))
-    rtol, atol = problem.get("verify", {}).get("rtol", 1e-5), problem.get("verify", {}).get("atol", 1e-8)
+    rtol, atol = verify_modes.tolerances(problem, verify_defaults)
     verify_only = os.environ.get("GPU_BENCH_VERIFY_ONLY") == "1"
     case_started = time.perf_counter()
     # Which check backs this row is the manifest's decision, not the runner's.

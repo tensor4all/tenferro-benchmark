@@ -373,7 +373,8 @@ def rows_from_gpu_records(
                 status=status,
                 iqr=iqr,
                 group=grp,
-                verified=verification.get("status") == "passed",
+                verified=(verification.get("status") == "passed"
+                          and verification.get("mode") != "measure_only"),
                 reason=reason,
                 operations_per_sample=gpu_operations_per_sample(record),
                 verification=verification.get("mode"),
