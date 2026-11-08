@@ -134,10 +134,8 @@ def materialize(manifest_path, requested, output, backend_override="", problem="
         # routine collection was refused when packaged). Leave such a suite out
         # of a filtered probe instead of narrowing it.
         unfiltered = (spec.get("driver") or DEFAULT_DRIVER) in UNFILTERED_DRIVERS
-        if unfiltered and (backend_override or problem):
-            skipped_unfiltered.append(suite_id)
-            continue
-        if backend_override:
+        filtered = bool(backend_override or problem)
+        if backend_override and not (unfiltered and filtered):
             backends = [b for b in backend_override.split(",") if b in source["backends"]]
 
         def arms_for(pid):
@@ -154,6 +152,14 @@ def materialize(manifest_path, requested, output, backend_override="", problem="
 
         expected.extend(f"{suite_id}:{pid}:{backend}" for pid in spec["problems"]
                         for backend in arms_for(pid))
+        if unfiltered and filtered:
+            # Only a suite the caller actually asked for can explain an empty
+            # selection; naming a suite the probe never requested would blame the
+            # wrong thing when the real cause is a problem filter that matched
+            # nothing in the requested suite.
+            if spec["file"] in requested:
+                skipped_unfiltered.append(suite_id)
+            continue
         if spec["file"] not in requested or not backends:
             continue
         ids = [pid for pid in spec["problems"] if not problem or pid == problem]

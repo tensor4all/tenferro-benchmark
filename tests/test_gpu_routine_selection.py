@@ -144,8 +144,10 @@ class RoutineSelectionTest(unittest.TestCase):
                     self.assertFalse([key for key in plan["selected"]
                                       if key.startswith("gpu/permutation:")])
                     self.assertEqual(plan["skipped_unfiltered_suites"], ["gpu/permutation"])
-                    self.assertFalse([key for key in plan["expected"]
-                                      if key.startswith("gpu/permutation:")])
+                    # A filter never narrows a fixed-arm suite's own arms, so its
+                    # 44 rows stay in `expected`; only the selection drops them.
+                    self.assertEqual(len([key for key in plan["expected"]
+                                          if key.startswith("gpu/permutation:")]), 44)
                     self.assertFalse([path for path in plan["suite_files"]
                                       if Path(path).name == "gpu_permutation.yaml"])
             # Asking only for the suite a filter cannot express says why, instead
@@ -153,6 +155,32 @@ class RoutineSelectionTest(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "gpu/permutation takes no arm or problem filter"):
                 selection.materialize(MANIFEST, ["benchmarks/gpu/permutation.yaml"],
                                       Path(tmp)/"only-perm", backend_override="pytorch-cuda")
+
+    def test_cli_announces_the_suite_a_filter_drops_on_stderr(self):
+        # The notice must not reach stdout: run_gpu_suite.sh reads stdout with
+        # `mapfile` as the `suite_path driver instances` row stream, so a stray
+        # line there is taken as a suite path and aborts before measuring.
+        with tempfile.TemporaryDirectory() as tmp:
+            process = subprocess.run(
+                [sys.executable, str(ROOT/"scripts/gpu_routine_selection.py"),
+                 "--output", tmp, "--backends", "pytorch-cuda", *manifest_suites()],
+                capture_output=True, text=True)
+            self.assertEqual(process.returncode, 0, process.stdout+process.stderr)
+            self.assertIn("skipped gpu/permutation", process.stderr)
+            rows = [line for line in process.stdout.splitlines() if line.strip()]
+            self.assertFalse([line for line in rows if line.startswith("skipped")], process.stdout)
+            self.assertEqual(len(rows), len(manifest_suites())-1)
+            for line in rows:
+                self.assertEqual(len(line.split()), 3, line)
+
+    def test_an_empty_selection_names_only_a_requested_suite(self):
+        # Asking dense for a case it does not contain must not blame the fixed-arm
+        # suite the probe never requested: that reports a cause the caller cannot
+        # act on and hides the real one (no case matched the filter).
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaisesRegex(ValueError, "^no GPU cases selected$"):
+                selection.materialize(MANIFEST, ["benchmarks/gpu/dense.yaml"], Path(tmp),
+                                      problem="not-a-case")
 
     def test_unknown_backend_and_stale_problem_are_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
