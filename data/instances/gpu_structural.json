@@ -491,7 +491,7 @@
     },
     {
       "id": "embed_diag_default_f32_n1024",
-      "regime": "latency",
+      "regime": "throughput",
       "op": "embed_diag",
       "dtype": "f32",
       "n": 1024,
@@ -500,11 +500,12 @@
       ],
       "variant": "default",
       "issue": 155,
-      "excluded": {}
+      "excluded": {},
+      "size_elements": 1048576
     },
     {
       "id": "embed_diag_default_f64_n1024",
-      "regime": "latency",
+      "regime": "throughput",
       "op": "embed_diag",
       "dtype": "f64",
       "n": 1024,
@@ -513,7 +514,8 @@
       ],
       "variant": "default",
       "issue": 155,
-      "excluded": {}
+      "excluded": {},
+      "size_elements": 1048576
     },
     {
       "id": "tril_default_f32_n1048576",
@@ -735,7 +737,7 @@
     },
     {
       "id": "broadcast_in_dim_f32_n1048576",
-      "regime": "latency",
+      "regime": "throughput",
       "op": "broadcast_in_dim",
       "dtype": "f32",
       "n": 1024,
@@ -754,11 +756,12 @@
       "issue": 155,
       "unavailable": {
         "tenferro-cuda-eager": "Eager broadcast returns a lazy broadcast view, not the materialized full output required by this case."
-      }
+      },
+      "size_elements": 1048576
     },
     {
       "id": "broadcast_in_dim_f64_n1048576",
-      "regime": "latency",
+      "regime": "throughput",
       "op": "broadcast_in_dim",
       "dtype": "f64",
       "n": 1024,
@@ -777,7 +780,8 @@
       "issue": 155,
       "unavailable": {
         "tenferro-cuda-eager": "Eager broadcast returns a lazy broadcast view, not the materialized full output required by this case."
-      }
+      },
+      "size_elements": 1048576
     },
     {
       "id": "convert_f32_f64_n1048576",
