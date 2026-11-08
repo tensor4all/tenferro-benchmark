@@ -2,21 +2,21 @@
   "schema_version": 1,
   "target_profile": "nvidia-gpu",
   "suite_id": "gpu/tensornetwork",
-  "timestamp": "2026-11-07T20:17:28+00:00",
-  "tenferro_commit": "ffd352bdb9f98537be747101bc278db8a50a1595",
+  "timestamp": "2026-11-08T09:06:27+00:00",
+  "tenferro_commit": "9a850b06155405acc99ecd0648829e9e6d3866ba",
   "hardware": {
-    "gpu": "NVIDIA A100-SXM4-80GB",
-    "cpu": "AMD EPYC 7742 64-Core Processor",
-    "host": "86889f3412c3"
+    "gpu": "NVIDIA A100 80GB PCIe",
+    "cpu": "AMD EPYC 9554 64-Core Processor",
+    "host": "053e3b59f698"
   },
   "unit": "ms",
   "rows": [
     {
       "case": "tensornetwork_permutation_optimized_f32",
       "group": "tensor_network_contract",
-      "backend": "jax-cuda-tree-jit",
-      "median": 131.363356,
-      "iqr": 2.0842529999999897,
+      "backend": "jax-cuda",
+      "median": 91.01850300000001,
+      "iqr": 0.06808200000000397,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 1
@@ -25,8 +25,8 @@
       "case": "tensornetwork_permutation_optimized_f32",
       "group": "tensor_network_contract",
       "backend": "pytorch-cuda",
-      "median": 107.81046649999999,
-      "iqr": 0.4168170000000089,
+      "median": 102.666975,
+      "iqr": 0.5096380000000096,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 1
@@ -35,8 +35,8 @@
       "case": "tensornetwork_permutation_optimized_f32",
       "group": "tensor_network_contract",
       "backend": "tenferro-cuda-eager",
-      "median": 103.62810049999999,
-      "iqr": 55.637668000000005,
+      "median": 86.271123,
+      "iqr": 5.473483000000002,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 1
@@ -45,8 +45,8 @@
       "case": "tensornetwork_permutation_optimized_f32",
       "group": "tensor_network_contract",
       "backend": "tenferro-cuda-trace",
-      "median": 78.020649,
-      "iqr": 25.614209000000002,
+      "median": 65.4210905,
+      "iqr": 4.479587999999993,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 1
