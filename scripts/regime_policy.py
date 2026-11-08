@@ -110,10 +110,12 @@ FAMILY_FLOORS: dict[str, Floor] = {
     "linalg_ad": Floor(
         "linalg_ad",
         1_048_576,
-        "solve/QR JVP at n=256 (65,536 elements) takes 1.43 ms while the 256² "
-        "factorisation it wraps is tens of µs, and n=4 already costs 0.37 ms (64x "
-        "the size buys 4x the time).  No AD case is measured above 512², so the "
-        "floor is the conservative 2^20 and no AD case currently clears it.",
+        "QR JVP at n=256 (65,536 elements) takes 1.43 ms in deferred-batch mode "
+        "while the 256² factorisation it wraps is tens of µs, and n=4 already "
+        "costs 0.68 ms per call (tenferro, same backend): 64x the size buys 2.1x "
+        "the time, so fixed per-call cost still dominates at 65,536 elements.  No "
+        "AD case is measured above 512², so the floor is the conservative 2^20 and "
+        "no AD case currently clears it.",
     ),
     "permutation": Floor(
         "permutation",
@@ -510,8 +512,11 @@ def floor_table() -> list[dict[str, Any]]:
 
 def describe_sizes(sizes: Iterable[int | None]) -> str:
     """Human summary of a page's declared working sets."""
-    known = sorted(size for size in sizes if isinstance(size, int))
-    missing = sum(1 for size in sizes if not isinstance(size, int))
+    # `sizes` is routinely a generator (`case.elements for case in cases`), so it
+    # has to be materialised before both passes read it.
+    values = list(sizes)
+    known = sorted(size for size in values if isinstance(size, int))
+    missing = sum(1 for size in values if not isinstance(size, int))
     if not known:
         return "none of them declares a working set"
     if known[0] == known[-1]:

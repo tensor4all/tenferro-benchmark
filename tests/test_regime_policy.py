@@ -289,15 +289,15 @@ class RegimePagesTests(unittest.TestCase):
         self.assertNotIn("qr_jvp_f64_256", (output / "gpu/index.html").read_text())
         self.assertIn("qr_jvp_f64_256", (output / "gpu/latency/index.html").read_text())
 
-    def test_measured_case_with_no_manifest_entry_goes_to_latency(self):
-        # #383 item 1.  A case id the manifest does not contain cannot inherit the
-        # suite's throughput default: a throughput claim needs a basis and a floor,
-        # and an undeclared case has neither.  It is published as the weaker claim
-        # (a per-call measurement) and the page names it.
+    def test_measured_case_with_no_manifest_entry_keeps_its_placement_and_is_named(self):
+        # #383 item 1.  A case id the manifest does not contain is not silently
+        # published as throughput *with a floor*: it keeps its suite's placement
+        # (moving the CPU catalogues' drifted names is a separate decision), is
+        # named on the suite page, and is counted as a row with no floor.
         suite = suite_yaml(
             "cpu/cpu_ops",
             "  regime: throughput\n  run: {runs: 7}\n",
-            "  - {id: declared_one, size_elements: 1048576}\n",
+            "  - {id: declared_one, family: einsum, size_elements: 1048576}\n",
         )
         (self.root / "benchmarks/cpu").mkdir(parents=True)
         (self.root / "benchmarks/cpu/cpu_ops.yaml").write_text(suite)
@@ -308,15 +308,66 @@ class RegimePagesTests(unittest.TestCase):
             json.dumps(summary("zen5-cpu", "cpu/cpu_ops", [("declared_one", 1.0), ("stray_case", 2.0)]))
         )
         output = self.generate()
-        latency = (output / "cpu/latency/index.html").read_text()
-        self.assertIn("stray_case", latency)
-        self.assertNotIn("declared_one", latency)
         throughput = (output / "cpu/index.html").read_text()
-        self.assertIn("declared_one", throughput)
-        self.assertNotIn("stray_case", throughput)
+        self.assertIn("stray_case", throughput)
+        notice = re.search(r'<p class="notice"><strong>Throughput.*?</p>', throughput, re.S)
+        self.assertIsNotNone(notice, throughput)
+        text = re.sub(r"\s+", " ", notice.group(0))
+        self.assertIn("1 carries no family floor", text)
+        self.assertNotIn("each at or above its family floor", text)
         suite_page = (output / "zen5-cpu/cpu/cpu_ops.html").read_text()
         self.assertIn("no entry in the suite manifest", suite_page)
         self.assertIn("<code>stray_case</code>", suite_page)
+        # Declared cases are not named in that sentence.
+        self.assertNotIn("<code>declared_one</code>), so no family floor", suite_page)
+
+    def test_undeclared_case_fails_a_policed_suite_with_a_default_regime(self):
+        # A GPU suite that defaults to throughput must not publish a measured case
+        # it does not declare: the default is not a declaration of that case, and
+        # the row would carry no basis and no floor.
+        self.add_suite(
+            "dense",
+            suite_yaml(
+                "gpu/dense",
+                "  regime: throughput\n  run: {runs: 7}\n",
+                "  - {id: declared_case, size_elements: 1048576}\n",
+            ),
+            [("declared_case", 1.0), ("stray_case", 2.0)],
+        )
+        with self.assertRaises(SystemExit) as raised:
+            self.generate()
+        self.assertIn("has no entry for it", str(raised.exception))
+
+    def test_a_declaration_is_not_borrowed_across_suites_when_the_suite_has_a_manifest(self):
+        # The cross-suite lookup is for a report whose suite id has no manifest at
+        # all.  With a manifest present, borrowing a CPU declaration would clear a
+        # GPU floor it was never checked against.
+        self.add_suite(
+            "dense",
+            suite_yaml(
+                "gpu/dense",
+                "  regime: throughput\n  run: {runs: 7}\n",
+                "  - {id: declared_case, size_elements: 4194304}\n",
+            ),
+            [("declared_case", 1.0), ("cpu_only_case", 2.0)],
+        )
+        (self.benchmarks / "cpuops.yaml").write_text(
+            suite_yaml(
+                "cpu/cpu_ops",
+                "  regime: throughput\n",
+                "  - {id: cpu_only_case, family: einsum, size_elements: 4096}\n",
+            )
+        )
+        with self.assertRaises(SystemExit) as raised:
+            self.generate()
+        self.assertIn("cpu_only_case", str(raised.exception))
+
+    def test_describe_sizes_counts_missing_sizes_in_a_generator(self):
+        # The caller passes a generator (`case.elements for case in cases`); a
+        # second pass over an exhausted iterator silently dropped the count.
+        text = regime_policy.describe_sizes(iter([65536, None]))
+        self.assertIn("65,536", text)
+        self.assertIn("1 declare no size", text)
 
     def test_throughput_banner_counts_rows_that_have_no_floor(self):
         # #383 item 3.  "each at or above its family floor" is a claim about the
@@ -373,6 +424,27 @@ class RegimePagesTests(unittest.TestCase):
         notice = re.search(r'<p class="notice"><strong>No throughput.*?</p>', page, re.S)
         self.assertIsNotNone(notice, page)
         self.assertIn("No throughput-regime GPU case", notice.group(0))
+
+
+class TrendPlacementTests(unittest.TestCase):
+    """A trend chart belongs on the page of the case it plots, not its suite."""
+
+    def test_trend_follows_the_case_the_title_names(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            trend = Path(tmp)
+            (trend / "trend-one.svg").write_text("<svg/>")
+            (trend / "trend-one.md").write_text(
+                "# gpu/linalg_ad_throughput: qr_jvp_f64_256 - plotted data\n"
+            )
+            (trend / "points.json").write_text("{}")
+            metadata = {
+                "gpu/linalg_ad_throughput": {
+                    "regime": "throughput",
+                    "problems": {"qr_jvp_f64_256": {"regime": "latency"}},
+                }
+            }
+            items = dashboard.load_trend(trend, metadata)
+        self.assertEqual([item["regime"] for item in items], ["latency"])
 
 
 class PublishedNumbersTests(unittest.TestCase):

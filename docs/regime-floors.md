@@ -69,7 +69,7 @@ is marked **provisional** — conservative, not measured.
 | `elementwise` | 262,144 | yes | the two `elementwise_chain` points fit `t = 69.6 µs + 27.9 ps·n` (1k = 69.6 µs, 1M = 99.6 µs in deferred-batch mode): 1000× the elements buys 1.43× the time, and the 10% doubling criterion is met only above `n ≈ 2.8e5`. 2^18 sits just under it (the gain there is ~9.8%) and is kept because it is the size the published `reuse_contraction` cases are measured at — moving those is a separate decision, hence *provisional*. At 1M the fixed share is still ~70%: the floor is a minimum, not a promise of purity. |
 | `fft` | 1,048,576 | yes | only the 1M point is published (0.063–0.135 ms); the 1k point was never measured. |
 | `linalg` | 65,536 | yes | cholesky 32² (1,024 elements, 61 µs) and 512² (262,144 elements, 371 µs) put the crossing near 5.7e3 elements; 2^16 keeps every 512² case and excludes the 32²/64×32 catalogue entries. The public API's fixed cost is ~60 µs, so a 512² call is still mostly overhead — hence *provisional*. |
-| `linalg_ad` | 1,048,576 | no | QR JVP at n=256 (65,536 elements) takes 1.43 ms while the 256² factorisation it wraps costs tens of µs, and n=4 already costs 0.37 ms: 64× the size buys 4× the time. No AD case is measured above 512², so the floor is the conservative 2^20 and **no AD case currently clears it** — that is the finding, not a gap in the table. |
+| `linalg_ad` | 1,048,576 | no | QR JVP at n=256 (65,536 elements) takes 1.43 ms in deferred-batch mode while the 256² factorisation it wraps costs tens of µs, and n=4 already costs 0.68 ms per call (both `tenferro-cuda-trace`; the 0.37 ms quoted earlier in this table was the JAX arm, not this one): 64× the size buys 2.1× the time, so fixed per-call cost still dominates at 65,536 elements. No AD case is measured above 512², so the floor is the conservative 2^20 and **no AD case currently clears it** — that is the finding, not a gap in the table. |
 | `permutation` | 1,048,576 | no | every published pattern is 3.9e8–5.4e8 elements (5.0–8.4 ms). |
 | `sparse` | 1,048,576 (nnz) | yes | spmv at 6.7e7 nnz takes 2.26 ms and spmm at 4.2e6 nnz takes 16.3 ms; 2^20 is two orders below the smallest published case. |
 | `tensornetwork` | 1,048,576 | yes | the single case is a whole-network contraction at 78 ms. The fixture is an external submodule, so its element count is not derivable; the case declares `floor_exempt` with the reason instead of inventing a size. |
@@ -142,10 +142,24 @@ actually renders, so the sentence cannot claim more than the table shows.
 ## A measured case that no manifest declares
 
 A summary can contain a case the suite YAML does not declare — a stale report, a
-renamed case, or a suite id that drifted. That case cannot be published as
-`throughput`: a throughput claim says the case has an evidence basis and a floor,
-and an undeclared case has neither. It is published as `latency` (the weaker
-claim: a per-call measurement) and the suite page names the cases whose placement
-is that fallback. The suite-id mismatch fallback is unaffected: a case declared
-under a different suite id is still a declared case. A policed `gpu/` suite is
-stricter still: a measured case with no manifest entry is an error at load.
+renamed case, or a suite id that drifted. Three rules apply, and none of them is
+"assume it is throughput":
+
+- **It keeps the placement its suite declares**, because that placement is a
+  property of the report, not of the declaration we failed to find. The CPU
+  catalogues are where this matters: 2,151 of their 2,322 published throughput
+  cases have no matching manifest id (the report names drifted from the
+  catalogue), and moving them to the latency page would change what those pages
+  publish. That move is part of the CPU-catalogue decision, not of this rule.
+- **No family floor applies to it**, and the suite page names it. The
+  throughput banner counts those rows and claims "each at or above its family
+  floor" only when every row supports it.
+- **A policed (`gpu/`) suite is stricter**: a measured case with no manifest
+  entry is an error at load, because every measured case there is expected to be
+  declared.
+
+The suite-id mismatch fallback is narrower than it looks: it only applies to a
+report whose *suite id* has no manifest at all (`result/zen5-cpu/cpu/linalg_jvp_vjp`
+is a `cpu/einsum` run). When the suite has a manifest, a case missing from it is
+not an invitation to borrow another suite's declaration and floor — a CPU
+declaration checked against nothing would otherwise clear a GPU floor.
