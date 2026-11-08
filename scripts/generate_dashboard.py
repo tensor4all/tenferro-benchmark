@@ -249,7 +249,7 @@ def case_meta(metadata: dict[str, dict[str, Any]], suite_id: str, case: str) -> 
     suite = metadata.get(suite_id) or {}
     problem = (suite.get("problems") or {}).get(case)
     declared = problem is not None
-    if problem is None and suite_id not in metadata:
+    if problem is None and suite_id not in metadata and not regime_policy.is_policed(suite_id):
         # A report can be filed under a suite id that differs from the one its
         # sidecar names (`result/zen5-cpu/cpu/linalg_jvp_vjp.summary.json` is a
         # cpu/einsum run).  Case ids are unique across the manifests, so the
@@ -258,7 +258,8 @@ def case_meta(metadata: dict[str, dict[str, Any]], suite_id: str, case: str) -> 
         # one, a case missing from it is a manifest question, not an invitation
         # to borrow another suite's declaration (and its floor) -- a CPU
         # declaration would otherwise clear a GPU floor it was never checked
-        # against.
+        # against.  A policed suite never borrows, not even when its own manifest
+        # is missing: that combination is the same unchecked floor.
         for other_id, other in metadata.items():
             if other_id == suite_id:
                 continue

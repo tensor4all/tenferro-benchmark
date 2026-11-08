@@ -110,10 +110,12 @@ FAMILY_FLOORS: dict[str, Floor] = {
     "linalg_ad": Floor(
         "linalg_ad",
         1_048_576,
-        "QR JVP at n=256 (65,536 elements) takes 1.43 ms in deferred-batch mode "
-        "while the 256² factorisation it wraps is tens of µs, and n=4 already "
-        "costs 0.68 ms per call (tenferro, same backend): 64x the size buys 2.1x "
-        "the time, so fixed per-call cost still dominates at 65,536 elements.  No "
+        "QR JVP costs 0.68 ms per call at n=4 and 2.87 ms at n=256 (65,536 "
+        "elements), both single-call on tenferro-cuda-trace: 4,096x the elements "
+        "buys 4.2x the time, while the 256² factorisation it wraps costs tens of "
+        "us -- so fixed per-call cost still dominates at 65,536 elements.  The "
+        "deferred-batch suite reports 1.43 ms for the same case under a different "
+        "timing contract, which is why the pair above is the single-call one.  No "
         "AD case is measured above 512², so the floor is the conservative 2^20 and "
         "no AD case currently clears it.",
     ),
@@ -227,7 +229,13 @@ def _size_from_block(block: Any, rule: str) -> int | None:
             return nnz if isinstance(nnz, int) else None
         if rule == "einsum":
             shapes = block.get("shapes_rowmajor") or block.get("shapes")
-            return _prod(shapes[0]) if isinstance(shapes, list) and shapes else None
+            if not isinstance(shapes, list) or not shapes:
+                return None
+            # The working set is the largest operand, the same rule the catalogue
+            # `shapes` path below uses.  Reading only `shapes[0]` let the operand
+            # order decide whether a declaration cleared the floor.
+            sizes = [size for size in (_prod(shape) for shape in shapes) if size]
+            return max(sizes) if sizes else None
     except (KeyError, TypeError):
         return None
     return None

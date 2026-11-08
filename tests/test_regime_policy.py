@@ -109,6 +109,25 @@ class RegimePolicyUnitTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             self.assertEqual(regime_policy.check_suite(document, Path(tmp)), [])
 
+    def test_einsum_working_set_is_the_largest_operand(self):
+        document = {
+            "suite_id": "gpu/einsum",
+            "defaults": {"regime": "throughput"},
+            "problems": [
+                {
+                    "id": "ordered_small_first",
+                    "family": "einsum",
+                    "einsum": {"shapes": [[1, 1], [1, 1048576]]},
+                }
+            ],
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(regime_policy.check_suite(document, Path(tmp)), [])
+        document["problems"][0]["einsum"] = {"shapes": [[1, 1], [1, 1]]}
+        with tempfile.TemporaryDirectory() as tmp:
+            errors = regime_policy.check_suite(document, Path(tmp))
+        self.assertTrue(any("below the einsum floor" in error for error in errors), errors)
+
     def test_unknown_measure_is_rejected(self):
         document = {
             "suite_id": "gpu/dense",
@@ -337,6 +356,27 @@ class RegimePagesTests(unittest.TestCase):
         with self.assertRaises(SystemExit) as raised:
             self.generate()
         self.assertIn("has no entry for it", str(raised.exception))
+
+    def test_a_policed_suite_does_not_borrow_a_declaration_when_its_manifest_is_missing(self):
+        # A GPU report with no manifest is the same unchecked floor as a missing
+        # case: the CPU declaration would satisfy the floor check by not being
+        # subject to it.
+        (self.benchmarks / "cpuops.yaml").write_text(
+            suite_yaml(
+                "cpu/cpu_ops",
+                "  regime: throughput\n",
+                "  - {id: tiny, family: elementwise, elementwise_chain: {n: 1}}\n",
+            )
+        )
+        suite_dir = self.result / "nvidia-gpu" / "gpu"
+        suite_dir.mkdir(parents=True, exist_ok=True)
+        (suite_dir / "dense.md").write_text("# report\n")
+        (suite_dir / "dense.summary.json").write_text(
+            json.dumps(summary("nvidia-gpu", "gpu/dense", [("tiny", 1.0)]))
+        )
+        with self.assertRaises(SystemExit) as raised:
+            self.generate()
+        self.assertIn("tiny", str(raised.exception))
 
     def test_a_declaration_is_not_borrowed_across_suites_when_the_suite_has_a_manifest(self):
         # The cross-suite lookup is for a report whose suite id has no manifest at
