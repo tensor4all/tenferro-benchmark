@@ -233,12 +233,26 @@ def _size_from_block(block: Any, rule: str) -> int | None:
             return max(known) if known else None
         if rule == "linalg":
             if isinstance(block.get("m"), int):
-                return _prod([block["m"], block["n"]])
-            n = block.get("n")
-            return _prod([n, n]) if isinstance(n, int) else None
+                rows, cols = block["m"], block["n"]
+            else:
+                rows = cols = block.get("n")
+            sizes = [_prod([rows, cols])]
+            rhs = block.get("rhs_cols")
+            if isinstance(rhs, int):
+                # A solve constructs the right-hand side too, and it can hold more
+                # elements than the coefficient matrix.
+                sizes.append(_prod([rows, rhs]))
+                sizes.append(_prod([cols, rhs]))
+            known = [size for size in sizes if size]
+            return max(known) if known else None
         if rule == "linalg_ad":
             n = block.get("n")
-            return _prod([n, n]) if isinstance(n, int) else None
+            sizes = [_prod([n, n])]
+            rhs = block.get("rhs_cols")
+            if isinstance(rhs, int):
+                sizes.append(_prod([n, rhs]))
+            known = [size for size in sizes if size]
+            return max(known) if known else None
         if rule == "elementwise_chain":
             n = block.get("n")
             return n if isinstance(n, int) else None

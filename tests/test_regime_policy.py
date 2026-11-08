@@ -124,6 +124,20 @@ class RegimePolicyUnitTests(unittest.TestCase):
             errors = regime_policy.check_suite(document, Path(tmp))
         self.assertTrue(any("below the dense floor" in error for error in errors), errors)
 
+    def test_solve_working_set_includes_the_right_hand_side(self):
+        document = {
+            "suite_id": "gpu/dense",
+            "defaults": {"regime": "throughput"},
+            "problems": [
+                {"id": "wide_rhs", "family": "dense", "linalg": {"n": 128, "rhs_cols": 8192}}
+            ],
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(regime_policy.check_suite(document, Path(tmp)), [])
+        self.assertEqual(
+            regime_policy.case_elements(document["problems"][0]), 128 * 8192
+        )
+
     def test_einsum_working_set_is_the_largest_operand(self):
         document = {
             "suite_id": "gpu/einsum",
