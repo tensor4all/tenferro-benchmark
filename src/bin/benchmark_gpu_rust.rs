@@ -1805,8 +1805,8 @@ fn run_trace(
         };
 
         // Verify via download + CPU reference
-        let (ver_status, max_abs, max_rel) = if measure_only_reason.is_some() {
-            ("not_run".to_string(), None, None)
+        let (ver_status, max_abs, max_rel, fingerprints) = if measure_only_reason.is_some() {
+            ("not_run".to_string(), None, None, Vec::new())
         } else {
             let gpu_tensors: Vec<Tensor> = last_out
                 .iter()
