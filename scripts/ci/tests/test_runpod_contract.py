@@ -4,6 +4,7 @@ from pathlib import Path
 
 from jsonschema import Draft202012Validator
 
+from scripts.ci.runpod_client import build_pod_payload
 from scripts.ci.runpod_contract import (
     ContractError,
     configured_min_cuda_version,
@@ -12,6 +13,7 @@ from scripts.ci.runpod_contract import (
     resolve_local_ref,
     validate_min_cuda_version,
     validate_gpu_type_ids,
+    validate_network_volume,
 )
 
 
@@ -109,6 +111,72 @@ class RunPodContractTests(unittest.TestCase):
         Draft202012Validator(document).validate(payload)
         invalid = {**payload, "gpuTypeIds": ["NVIDIA A40"]}
         self.assertTrue(list(Draft202012Validator(document).iter_errors(invalid)))
+
+
+class NetworkVolumePayloadTests(unittest.TestCase):
+    """The JAX compilation cache lives on an optional network volume."""
+
+    def config(self):
+        return json.loads(
+            (Path(__file__).resolve().parents[1] / "runpod_config.json").read_text()
+        )
+
+    def test_committed_configuration_attaches_no_volume(self):
+        config = self.config()
+        self.assertEqual(config["network_volume_id"], "")
+        self.assertEqual(config["network_volume_mount_path"], "/opt/bench-cache")
+        payload = build_pod_payload(config, "image", "startup", "jit", ["NVIDIA A40"])
+        self.assertNotIn("network", payload["mounts"])
+        self.assertEqual(payload["mounts"]["persistent"]["path"], config["volume_mount_path"])
+
+    def test_configured_volume_replaces_the_persistent_mount(self):
+        config = {**self.config(), "network_volume_id": "vol12345"}
+        payload = build_pod_payload(config, "image", "startup", "jit", ["NVIDIA A40"])
+        # REST v2 accepts at most one mount kind per pod.
+        self.assertEqual(payload["mounts"],
+                         {"network": [{"volumeId": "vol12345", "path": "/opt/bench-cache"}]})
+        document = {**SCHEMA, "$ref": "#/components/schemas/CreatePodRequest"}
+        Draft202012Validator(document).validate(payload)
+
+    def test_explicit_mount_path_is_carried_through(self):
+        config = {**self.config(), "network_volume_id": "vol12345",
+                  "network_volume_mount_path": "/mnt/cache"}
+        payload = build_pod_payload(config, "image", "startup", "jit", ["NVIDIA A40"])
+        self.assertEqual(payload["mounts"]["network"][0]["path"], "/mnt/cache")
+
+
+class NetworkVolumeContractTests(unittest.TestCase):
+    def test_unset_volume_is_skipped(self):
+        self.assertIsNone(validate_network_volume({"network_volume_id": ""}))
+        self.assertIsNone(validate_network_volume({}))
+
+    def test_malformed_volume_id_is_rejected(self):
+        for value in ("not a volume", "vol/1234", "x" * 65):
+            with self.subTest(value=value[:12]):
+                with self.assertRaises(ContractError):
+                    validate_network_volume({"network_volume_id": value})
+
+    def test_volume_type_must_be_a_string(self):
+        with self.assertRaises(ContractError):
+            validate_network_volume({"network_volume_id": 7})
+
+    def test_valid_volume_returns_id_and_mount_path(self):
+        self.assertEqual(
+            validate_network_volume({"network_volume_id": "vol12345"}),
+            ("vol12345", "/opt/bench-cache"),
+        )
+        self.assertEqual(
+            validate_network_volume({"network_volume_id": "vol12345",
+                                     "network_volume_mount_path": "/mnt/cache"}),
+            ("vol12345", "/mnt/cache"),
+        )
+
+    def test_mount_path_must_be_absolute_and_below_root(self):
+        for path in ("cache", "/", ""):
+            with self.assertRaises(ContractError):
+                validate_network_volume({"network_volume_id": "vol12345",
+                                         "network_volume_mount_path": path})
+
 
 
 if __name__ == "__main__":

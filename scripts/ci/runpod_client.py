@@ -70,6 +70,8 @@ class AssignedGpuError(PermanentRunPodError):
 
 Transport = Callable[[bytes, float], tuple[int, Mapping[str, str], bytes]]
 
+DEFAULT_NETWORK_VOLUME_PATH = '/opt/bench-cache'
+
 _CAPACITY_MESSAGES = (
     "does not have the resources to deploy your pod",
     "no available machine",
@@ -107,6 +109,18 @@ def backoff_seconds(
     return min(cap, base * (2 ** (attempt - 1))) * jitter()
 
 
+def network_volume(config: Mapping[str, object]) -> tuple[str, str] | None:
+    """The configured network volume as ``(volume id, mount path)``, if any.
+
+    Empty means "no network volume": the pod then keeps the host-local
+    persistent mount and the JAX compilation cache stays disabled.
+    """
+    volume_id = str(config.get('network_volume_id') or '').strip()
+    if not volume_id:
+        return None
+    return volume_id, str(config.get('network_volume_mount_path') or DEFAULT_NETWORK_VOLUME_PATH)
+
+
 def build_pod_payload(
     config: Mapping[str, object],
     image_name: str,
@@ -120,10 +134,25 @@ def build_pod_payload(
     ``extra_env`` carries non-secret startup-script configuration (for
     example the CUDA smoke-proof parameters); credentials must never be
     passed through it.
+
+    A configured network volume replaces the host-local persistent mount:
+    REST v2 accepts at most one mount kind per pod, and only a network volume
+    is still present for next week's pod.
     """
 
     if len(gpu_type_ids) != 1:
         raise PermanentRunPodError("REST v2 requires exactly one GPU type per request")
+    volume = network_volume(config)
+    mounts: dict[str, object]
+    if volume is None:
+        mounts = {
+            "persistent": {
+                "size": config["volume_gb"],
+                "path": config["volume_mount_path"],
+            }
+        }
+    else:
+        mounts = {"network": [{"volumeId": volume[0], "path": volume[1]}]}
     return {
         "cloud": config["cloud_type"],
         "name": f"tenferro-benchmark-gpu-{os.environ.get('GITHUB_RUN_ID', 'local')}",
@@ -134,12 +163,7 @@ def build_pod_payload(
             "minCudaVersion": configured_min_cuda_version(config),
         },
         "disk": config["container_disk_gb"],
-        "mounts": {
-            "persistent": {
-                "size": config["volume_gb"],
-                "path": config["volume_mount_path"],
-            }
-        },
+        "mounts": mounts,
         "ports": [],
         "entrypoint": ["bash", "-lc"],
         "cmd": [startup_script],
