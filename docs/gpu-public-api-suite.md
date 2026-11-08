@@ -191,6 +191,18 @@ page states the class it holds rather than a bound it claims.
   values and double-precision reference. The initial failed verification run
   `20261013_124057` remains available in raw verification data.
 
+Every output is compared element by element, whatever the recorded invariants
+say. The fingerprint block (`sum_re`, `sum_im`, `sum_abs`, `sum_squares`,
+`max_abs`, and two seeded weighted dots) is a diagnostic that is never the
+verdict: an aggregate can agree with the reference and still be wrong at an
+element, and a sum alone is weaker still because cancellation hides sign errors.
+What it must not do is dominate the cost, and it did: the seeded weight vector
+was built one element at a time in Python, which is 340 ms per million elements
+against 3.6 ms for the elementwise comparison of the same array. `seeded_weights`
+is now one numpy `uint64` expression, bit-identical to the recurrence that
+defines it (pinned by `scripts/ci/tests/test_fingerprint_parity.py`, which also
+pins the Rust `src/fingerprint.rs` sequence).
+
 ## Explicit limitations
 
 `excluded` means the API can be called for numerical verification, but its

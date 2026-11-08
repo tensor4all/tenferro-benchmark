@@ -51,17 +51,27 @@ def seeded_weights(count):
     apart by the weighted dot product, and a sign vector gives half of all pairs the
     same weight. With `±1` signs the first four weights were [-1, +1, +1, -1], so
     [1, 2, 3, 4] and [1, 3, 2, 4] had the same dot product.
+
+    The state is `(index+1)*SEED mod 2**64`, so the whole vector is one numpy uint64
+    expression rather than a Python loop per element: an element-at-a-time loop cost
+    340 ms per million elements, which was almost the entire verification time of a
+    case while it changed nothing about what the invariants are. Wrapping is the
+    point (uint64 arithmetic is mod 2**64), not an accident to be suppressed.
     """
-    state = 0
-    out = np.empty(count, dtype=np.float64)
-    for index in range(count):
-        state = (state + FINGERPRINT_SEED) & _U64
-        z = state
-        z = ((z ^ (z >> 30)) * 0xBF58476D1CE4E5B9) & _U64
-        z = ((z ^ (z >> 27)) * 0x94D049BB133111EB) & _U64
-        z ^= z >> 31
+    if count <= 0:
+        return np.empty(0, dtype=np.float64)
+    with np.errstate(over="ignore"):
+        z = np.arange(1, count + 1, dtype=np.uint64)
+        z *= np.uint64(FINGERPRINT_SEED)
+        z ^= z >> np.uint64(30)
+        z *= np.uint64(0xBF58476D1CE4E5B9)
+        z ^= z >> np.uint64(27)
+        z *= np.uint64(0x94D049BB133111EB)
+        z ^= z >> np.uint64(31)
         # 53 bits scaled into [-1, 1): exact in f64, matching the Rust step for step.
-        out[index] = (z >> 11) / (1 << 52) - 1.0
+        out = (z >> np.uint64(11)).astype(np.float64)
+    out /= float(1 << 52)
+    out -= 1.0
     return out
 
 
