@@ -144,8 +144,8 @@ class RoutineSelectionTest(unittest.TestCase):
                     self.assertFalse([key for key in plan["selected"]
                                       if key.startswith("gpu/permutation:")])
                     self.assertEqual(plan["skipped_unfiltered_suites"], ["gpu/permutation"])
-                    # `expected` still describes the manifest's own set; only the
-                    # selection drops the suite, so `complete` stays meaningful.
+                    # A filter never narrows a fixed-arm suite's own arms, so its
+                    # 44 rows stay in `expected`; only the selection drops them.
                     self.assertEqual(len([key for key in plan["expected"]
                                           if key.startswith("gpu/permutation:")]), 44)
                     self.assertFalse([path for path in plan["suite_files"]
@@ -172,6 +172,15 @@ class RoutineSelectionTest(unittest.TestCase):
             self.assertEqual(len(rows), len(manifest_suites())-1)
             for line in rows:
                 self.assertEqual(len(line.split()), 3, line)
+
+    def test_an_empty_selection_names_only_a_requested_suite(self):
+        # Asking dense for a case it does not contain must not blame the fixed-arm
+        # suite the probe never requested: that reports a cause the caller cannot
+        # act on and hides the real one (no case matched the filter).
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaisesRegex(ValueError, "^no GPU cases selected$"):
+                selection.materialize(MANIFEST, ["benchmarks/gpu/dense.yaml"], Path(tmp),
+                                      problem="not-a-case")
 
     def test_unknown_backend_and_stale_problem_are_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
