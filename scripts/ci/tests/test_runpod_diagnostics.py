@@ -3,7 +3,9 @@ import unittest
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
-from scripts.ci.runpod_diagnostics import catalog_url, diagnose, inspect_catalog, summary
+from scripts.ci.runpod_diagnostics import (
+    catalog_url, data_centers_url, diagnose, inspect_catalog, inspect_data_centers, summary,
+)
 from scripts.ci.runpod_http import Response
 
 
@@ -39,9 +41,9 @@ class DiagnosticsTests(unittest.TestCase):
             return Response(403, {"Authorization": "private"}, b"private account details")
 
         report = diagnose(CONFIG, "test-key", fetch=fetch)
-        self.assertEqual(len(requests), 3)
+        self.assertEqual(len(requests), 4)
         self.assertTrue(all(request.get_method() == "GET" for request in requests))
-        self.assertEqual(len(report["errors"]), 3)
+        self.assertEqual(len(report["errors"]), 4)
         self.assertNotIn("private", json.dumps(report))
         self.assertNotIn("test-key", json.dumps(report))
         self.assertIn("HTTP 403", summary(report))
@@ -52,6 +54,11 @@ class DiagnosticsTests(unittest.TestCase):
         def fetch(request, **kwargs):
             if "openapi" in request.full_url:
                 return Response(200, {}, fixture)
+            if "datacenters" in request.full_url:
+                return Response(200, {}, json.dumps({"dataCenters": [
+                    {"id": "US-TX-3", "networkVolumeTypes": ["STANDARD"],
+                     "gpuAvailability": [{"id": TIERS[0][1][0], "availability": "HIGH"}]},
+                ]}).encode())
             entries = [{"id": gpu, "secure": True, "memory": 80,
                         "price": {"secure": 1.5}, "availability": "HIGH"}
                        for gpu in TIERS[0][1]]
@@ -67,8 +74,28 @@ class DiagnosticsTests(unittest.TestCase):
 
     def test_malformed_catalog_is_reported_and_next_check_still_runs(self):
         report = diagnose(CONFIG, "test-key", fetch=lambda *a, **kw: Response(200, {}, b"[]"))
-        self.assertEqual(len(report["checks"]), 3)
+        self.assertEqual(len(report["checks"]), 4)
         self.assertTrue(report["errors"])
+
+    def test_data_centers_list_a100_stock_best_first(self):
+        body = json.dumps({"dataCenters": [
+            {"id": "EU-RO-1", "networkVolumeTypes": ["STANDARD"],
+             "gpuAvailability": [{"id": GPU, "availability": "LOW"}]},
+            {"id": "US-TX-3", "networkVolumeTypes": ["STANDARD"],
+             "gpuAvailability": [{"id": GPU, "availability": "HIGH"}]},
+            {"id": "AP-JP-1", "networkVolumeTypes": ["STANDARD"],
+             "gpuAvailability": [{"id": "NVIDIA L40S", "availability": "HIGH"}]},
+        ]}).encode()
+        rows = inspect_data_centers(body, TIERS)["data_centers"]
+        self.assertEqual([row["id"] for row in rows], ["US-TX-3", "EU-RO-1"])
+        self.assertEqual(rows[0]["best_a100"], "HIGH")
+        self.assertEqual(rows[0]["a100"], {GPU: "HIGH"})
+        self.assertEqual(rows[1]["network_volume_types"], ["STANDARD"])
+
+    def test_the_per_data_center_query_asks_for_gpu_availability(self):
+        query = parse_qs(urlsplit(data_centers_url(CONFIG)).query)
+        self.assertEqual(query, {"include": ["GPU_AVAILABILITY"]})
+        self.assertTrue(data_centers_url(CONFIG).startswith("https://api.runpod.io/v2/catalog/datacenters"))
 
 
 if __name__ == "__main__":
