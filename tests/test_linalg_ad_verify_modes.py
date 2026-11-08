@@ -100,6 +100,46 @@ class ModeContract(unittest.TestCase):
             modes.mode_for(problem)
 
 
+class CheckMustFailClosed(unittest.TestCase):
+    """A check that cannot fail would publish a wrong number as verified.
+
+    Two blind spots the review found: `zip` silently dropped outputs the row did
+    not produce, and a reference element that is exactly 0 under `atol=0` gave a
+    0/0 term that the maximum over the array could swallow.
+    """
+
+    def test_a_missing_output_is_rejected(self):
+        expected, matrix, tangent, rhs = cpu_outputs("grad_sum_qr", "jvp")
+        with self.assertRaisesRegex(ValueError, "arity mismatch"):
+            modes.check(
+                "cpu_reference", "grad_sum_qr", "jvp", expected[:1],
+                matrix, tangent, rhs, RTOL, ATOL, device="cpu",
+            )
+        expected, matrix, tangent, rhs = cpu_outputs("grad_sum_eigh", "vjp")
+        with self.assertRaisesRegex(ValueError, "arity mismatch"):
+            modes.check(
+                "analytic", "grad_sum_eigh", "vjp", expected[:1],
+                matrix, tangent, rhs, RTOL, ATOL, device="cpu",
+            )
+
+    def test_an_extra_output_is_rejected(self):
+        expected, matrix, tangent, rhs = cpu_outputs("grad_sum_qr", "jvp")
+        with self.assertRaisesRegex(ValueError, "arity mismatch"):
+            modes.check(
+                "cpu_reference", "grad_sum_qr", "jvp", [*expected, expected[-1]],
+                matrix, tangent, rhs, RTOL, ATOL, device="cpu",
+            )
+
+    def test_a_zero_element_with_no_tolerance_cannot_hide_a_big_error(self):
+        correct = np.array([1.0, 0.0])
+        self.assertLessEqual(modes._worst(correct, correct, RTOL, 0.0)[2], 1.0)
+        wrong = np.array([1.0, 1000.0])
+        max_abs, max_rel, worst = modes._worst(wrong, correct, RTOL, 0.0)
+        self.assertGreater(worst, 1.0)
+        self.assertGreater(max_rel, 1.0)
+        self.assertEqual(max_abs, 1000.0)
+
+
 class AnalyticReference(unittest.TestCase):
     """The closed form must be the same answer as the CPU AD, element by element."""
 

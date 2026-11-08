@@ -137,6 +137,22 @@ def run_torch(suite_id, problem, backend, device_ordinal, *, ts, bc, tc, verify_
                          verify_defaults=verify_defaults)
 
 
+def _value_bytes(value) -> int:
+    """Bytes a torch, JAX or numpy value of one row holds.
+
+    torch spells this `numel() * element_size()`; JAX and numpy expose `shape`
+    and a numpy dtype.  The previous measure_only branch called the torch form
+    on a JAX array and raised `has no attribute numel`.
+    """
+    import numpy as np
+
+    numel, element = getattr(value, "numel", None), getattr(value, "element_size", None)
+    if callable(numel) and callable(element):
+        return int(numel()) * int(element())
+    shape = np.shape(value)
+    return int(np.prod(shape, dtype=np.int64)) * int(np.dtype(value.dtype).itemsize)
+
+
 def run_jax(suite_id, problem, backend, device_ordinal, *, ts, bc, tc, verify_defaults=None):
     return run_framework(suite_id, problem, backend, device_ordinal, ts=ts, bc=bc, tc=tc,
                          verify_defaults=verify_defaults)
@@ -260,10 +276,12 @@ def run_framework(suite_id, problem, backend, device_ordinal, *, ts, bc, tc, ver
         verify_started = time.perf_counter()
         verification = check(probe)
         verify_ms += (time.perf_counter() - verify_started) * 1000
-        if mode == "measure_only":
-            # No reference was built, so the transferred bytes come from the
-            # row's own outputs rather than from a reference-shaped list.
-            output_bytes = sum(v.numel() * v.element_size() for v in leaves(probe))
+        if expected is None:
+            # No reference list exists for analytic, finite_difference or
+            # measure_only; the transferred bytes come from the row's own
+            # outputs.  `numel()`/`element_size()` are torch-only, so a JAX row
+            # has to take the numpy-shape route instead.
+            output_bytes = sum(_value_bytes(v) for v in leaves(probe))
         else:
             output_bytes = sum(a.nbytes for a in expected)
         del probe

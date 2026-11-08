@@ -39,6 +39,7 @@ BASE_SUITE = {
         {
             "id": "linalg_ad_large_grad_sum_qr_jvp_f64_64",
             "family": "linalg_ad",
+            "regime": "latency",
             "op": "jvp",
             "dtype": {"a": "f64"},
             "data": {"generator": "well_conditioned", "seed": 34},
@@ -212,8 +213,9 @@ class DashboardBadges(unittest.TestCase):
         self.benchmarks = self.root / "benchmarks" / "gpu"
         self.benchmarks.mkdir(parents=True)
         (self.benchmarks / "jvp.yaml").write_text(
-            "schema_version: 1\nsuite_id: gpu/linalg_jvp_vjp\ndefaults:\n  regime: throughput\n"
-            "problems:\n  - {id: case_mixed}\n"
+            "schema_version: 1\nsuite_id: gpu/jvp\ndefaults:\n  regime: latency\n"
+            "problems:\n  - {id: case_mixed}\n  - {id: case_unchecked}\n"
+            "  - {id: case_plain}\n"
         )
 
     def generate(self, rows, name="site"):

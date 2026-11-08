@@ -276,8 +276,24 @@ def _worst(actual, reference, rtol: float, atol: float):
         raise ValueError("nonfinite reference")
     error = np.abs(actual - reference)
     max_abs = float(np.max(error)) if error.size else 0.0
-    max_rel = float(np.max(error / np.maximum(np.abs(reference), atol))) if error.size else 0.0
-    worst = float(np.max(error / (atol + rtol * np.abs(reference)))) if error.size else 0.0
+    # `atol` may be 0, and a correct element of the reference can be exactly 0.
+    # Dividing then gives 0/0, which either poisons the maximum with NaN or, if
+    # it is dropped, lets a large wrong element hide behind the element that had
+    # nothing to compare with.  Score each element against its own tolerance and
+    # keep an element that has no tolerance at all (error > 0) as a failure.
+    tolerance = atol + rtol * np.abs(reference)
+    within = error <= tolerance
+    guard = np.maximum(tolerance, np.finfo(np.float64).tiny)
+    ratio = np.where(within, error / guard, np.inf)
+    worst = float(np.max(ratio)) if ratio.size else 0.0
+    denominator = np.maximum(np.abs(reference), atol)
+    relative = np.divide(
+        error,
+        denominator,
+        out=np.where(error > 0, np.inf, 0.0),
+        where=denominator > 0,
+    )
+    max_rel = float(np.max(relative)) if error.size else 0.0
     return max_abs, max_rel, worst
 
 
@@ -306,20 +322,28 @@ def check(
     actual = [np.asarray(value) for value in actual]
     if not actual:
         raise ValueError("row has no outputs to check")
+    def pairs_of(reference):
+        if len(actual) != len(reference):
+            raise ValueError(
+                f"{mode}: output arity mismatch: {len(actual)} outputs, "
+                f"{len(reference)} reference values"
+            )
+        return list(zip(actual, reference))
+
     if mode == "cpu_reference":
         from gpu_linalg_ad_contracts import cpu_reference
 
         reference, diagnostic = cpu_reference(
             _loss_fn(loss), matrix, tangent, rhs, phase
         )
-        pairs = list(zip(actual, reference))
+        pairs = pairs_of(reference)
         backend = "cpu_fp64 AD re-execution"
         reason = None
     elif mode == "analytic":
         reference, diagnostic = analytic_reference(
             loss, phase, matrix, tangent, rhs, device=device
         )
-        pairs = list(zip(actual, reference))
+        pairs = pairs_of(reference)
         backend = f"{diagnostic['reference']} ({diagnostic['device']})"
         reason = None
     elif mode == "finite_difference":
