@@ -225,6 +225,19 @@ Every failure mode degrades to "collect cold": an unset variable, an unwritable
 or missing mount, or an unreadable volume prints one diagnostic line and the
 run continues. The cache is infrastructure, never a reason to lose a night.
 
+### Why no volume is configured today
+
+Measured on run 42464908517: across the 168 `jax-*` rows the recorded
+`compile_time_ms` totals 11.0 s, and **only two rows reach the 1 s floor** that
+`JAX_PERSISTENT_CACHE_MIN_COMPILE_TIME_SECS` enforces (a 1,989 ms tensor-network
+tree compile and a 1,284 ms QR JVP). Every other row is either an eager path with
+no XLA compile or a sub-second single-op compile, so the persistence window can
+save at most ~3.3 s of a ~1,400 s pod (about $0.002 per run). The volume cost
+$1.4/month and pinned every pod to one data center, which already cost two runs
+when A100 capacity left that region. The volume and the repository variable were
+therefore removed on 2026-11-08; the code path above stays, opt-in and cold by
+default, so re-enabling it is one variable away if the floor is ever lowered.
+
 ### What the recorded numbers mean
 
 `timing.first_call_ms` is the first warmup — the explicit compilation plus the
