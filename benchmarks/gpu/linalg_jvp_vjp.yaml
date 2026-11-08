@@ -7,6 +7,7 @@ description: Trace-mode linalg automatic differentiation on CUDA for tenferro-rs
   the linalg_ad floor, and even a 512x512 QR JVP is dominated by the trace runtime's
   per-call cost. The same cases measured with one retirement per K calls live in `gpu/linalg_ad_throughput`.
 defaults:
+  measure: per_call
   device:
     kind: cuda
     ordinal: 0

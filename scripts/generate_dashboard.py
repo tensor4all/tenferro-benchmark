@@ -2803,8 +2803,8 @@ def render_suite_page(
                 )
             body.append(
                 '<p class="notice"><strong>This suite has no throughput-regime case.</strong> '
-                "All of its measured cases are dominated by per-call launch, dispatch and "
-                "synchronization, so their results are published as latency and overhead "
+                "Every measured case is declared `latency`, so its results are published as "
+                "per-call latency and overhead "
                 f"{where}"
             )
         for regime in REGIMES:

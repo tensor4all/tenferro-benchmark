@@ -121,6 +121,13 @@ def suite_document(
         "title": title,
         "description": description,
         "defaults": {
+            # The case sizes move across the `linalg_ad` floor as the policy
+            # changes, and the regime follows the size.  The timing route must not
+            # follow it: these suites pay one device retirement per call, so
+            # `per_call` is declared here instead of being implied by the regime
+            # (`deferred_route` would otherwise switch a larger row to deferred
+            # batching and amortize it across K calls).
+            "measure": "per_call",
             "device": {"kind": "cuda", "ordinal": 0},
             "layout": {
                 "tenferro": "col_major",
