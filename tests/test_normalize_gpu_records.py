@@ -253,6 +253,26 @@ class NormalizeTest(unittest.TestCase):
     def test_a_family_that_does_not_compile_records_nothing(self):
         self.assertIsNone(compile_accounting([family_row()]))
 
+    def test_verification_time_comes_from_the_phase_block_when_timing_omits_it(self):
+        # The public API families measure it and publish it as `overhead.verify_ms`;
+        # the contract field must carry it so a reader does not need to know that.
+        folded = self.fold_and_validate(family_row(
+            overhead={"timed_ms": 12.0, "case_wall_ms": 1012.0, "untimed_ms": 1000.0,
+                      "fixture_ms": 15.0, "verify_ms": 940.0}))
+        self.assertEqual(folded["timing"]["verification_time_ms"], 940.0)
+        self.assertEqual(json.loads(folded["execution"]["notes"])["overhead"]["verify_ms"], 940.0)
+
+    def test_a_recorded_contract_value_wins_over_the_phase_block(self):
+        folded = self.fold_and_validate(family_row(
+            timing={"operations_per_sample": 1, "batch_ms": [0.4], "verification_time_ms": 3.5},
+            overhead={"case_wall_ms": 10.0, "verify_ms": 9.0}))
+        self.assertEqual(folded["timing"]["verification_time_ms"], 3.5)
+
+    def test_a_row_without_a_phase_block_records_no_phases(self):
+        folded = self.fold_and_validate(family_row())
+        self.assertIsNone(folded["timing"]["verification_time_ms"])
+        self.assertNotIn("overhead", json.loads(folded["execution"]["notes"]))
+
 
 if __name__ == "__main__":
     unittest.main()

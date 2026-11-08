@@ -23,6 +23,15 @@ raw results and per-run reports. Each suite run records:
 
 - `wall_backends.jsonl`: build time and process wall time per backend; the
   latter includes interpreter startup, preparation, validation and samples.
+  The suites that own their arm loop (`run_gpu_public_api.sh`,
+  `run_gpu_linalg_jvp_vjp.sh`) write the same rows from inside the collector
+  through `scripts/gpu_wall_phase.py`, so every routine suite has them.
+- `wall_phases.json` (delegated suites only): the stages those suites run
+  outside any arm process — fixture preparation, device copy calibration, the
+  Rust binary's build (or the prebuilt artifact's verification), the separate
+  Rust AD verification pass, the quiet-CPU choice before an arm, record folding
+  and report generation. They are kept out of `wall_backends.jsonl` so a stage
+  cannot be read as an arm's process time.
 - `wall_command.json`: cumulative script time through that suite, collection
   including the configured allocator-release delays, and report generation.
 - Run metadata `collection.suite_started_at`, `collection.suite_finished_at` and

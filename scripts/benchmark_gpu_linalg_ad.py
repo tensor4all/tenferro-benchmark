@@ -150,6 +150,7 @@ def run_framework(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
     runs = int(os.environ.get("BENCH_RUNS", problem.get("run", {}).get("runs", 7)))
     rtol, atol = problem.get("verify", {}).get("rtol", 1e-5), problem.get("verify", {}).get("atol", 1e-8)
     verify_only = os.environ.get("GPU_BENCH_VERIFY_ONLY") == "1"
+    case_started = time.perf_counter()
     try:
         if warmups < 0 or runs < 1:
             raise ValueError("invalid AD sampling counts")
@@ -157,6 +158,9 @@ def run_framework(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
         tangent = data((n, n), tangent_seed(seed))
         rhs = data((n, ad.get("rhs_cols", 1)), ad.get("rhs_seed", 0)) if loss_name == "grad_sum_solve" else None
         expected, difference = cpu_reference(LOSS_TORCH[loss_name], matrix, tangent, rhs, phase)
+        # Input generation plus the CPU AD reference: everything this case pays
+        # before its own clocks start.
+        fixture_ms = (time.perf_counter() - case_started) * 1000
         compile_ms = None
         cache_dir = os.environ.get("JAX_COMPILATION_CACHE_DIR") or None
         cache_before = jax_cache_stats.stats(cache_dir)
@@ -227,7 +231,13 @@ def run_framework(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
         # still starts after warmups, so the measured region is unchanged.
         first_call_ms = (compile_ms or 0.0) + (probe_ready - probe_started) * 1000
         cache_delta = jax_cache_stats.delta(cache_before, jax_cache_stats.stats(cache_dir))
+        # Proving the numbers is not a sampling parameter, and this collector used to
+        # record nothing about it. It is the CPU reference plus the elementwise
+        # comparison of both downloaded outputs, and it happens outside every clock.
+        verify_ms = 0.0
+        verify_started = time.perf_counter()
         verification = check(probe)
+        verify_ms += (time.perf_counter() - verify_started) * 1000
         output_bytes = sum(a.nbytes for a in expected)
         del probe
         sampling = None
@@ -236,7 +246,9 @@ def run_framework(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
                                synchronize_each_operation=True)
             final = runner()
             ready(final)
+            verify_started = time.perf_counter()
             after = check(final)
+            verify_ms += (time.perf_counter() - verify_started) * 1000
             verification = tuple(max(a, b) for a, b in zip(verification, after))
             del final
         stats = (None,)*5 if verify_only else _timing_stats([v/sampling["operations_per_sample"] for v in sampling["batch_ms"]])
@@ -247,7 +259,7 @@ def run_framework(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
         if verify_only:
             rec["status"] = "verification_only"
         rec["timing"].update(first_run_ms=first, min_ms=minimum, p95_ms=p95, compile_time_ms=compile_ms,
-                             first_call_ms=first_call_ms)
+                             first_call_ms=first_call_ms, verification_time_ms=round(verify_ms, 3))
         rec["verification"].update(reference_backend="pytorch-cpu-f64 AD plus central difference of primal loss",
                                    max_abs_error=verification[0], max_rel_error=verification[1], residual=verification[2])
         rec["execution"]["notes"] = json.dumps(dict(sampling=sampling, central_difference=difference,
@@ -259,7 +271,13 @@ def run_framework(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
                                         "zero is consistent with a hit but is not proof of one"),
             differentiated_argument="A only; RHS fixed", scope="primal scalar loss plus first-order JVP/VJP",
             device_uuid=os.environ.get("CUDA_VISIBLE_DEVICES"), physical_device_index=os.environ.get("GPU_BENCH_PHYSICAL_DEVICE"),
-            verification_only=verify_only))
+            verification_only=verify_only,
+            overhead={"case_wall_ms": (time.perf_counter() - case_started) * 1000,
+                      "fixture_ms": fixture_ms,
+                      "verify_ms": verify_ms,
+                      "timed_ms": sum(sampling["batch_ms"]) if sampling else None,
+                      "scope": "case wall clock outside the timed region: input generation, "
+                               "CPU AD reference, transfers, compilation, validation, output destruction"}))
         return rec
     except Exception as exc:
         return stub(suite_id, problem, backend, device_ordinal, status="runtime_failed", reason=str(exc), path=path, ts=ts, bc=bc, tc=tc)

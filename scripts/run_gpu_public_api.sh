@@ -8,6 +8,20 @@ cd "$(dirname "$0")/.."
 source scripts/gpu_preflight.sh
 # shellcheck source=scripts/gpu_arm_launch.sh
 source scripts/gpu_arm_launch.sh
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# This family owns its arm loop, so it writes the wall records the generic driver
+# would have written: one row per backend process, and the non-backend stages in
+# `wall_phases.json`. Without them the suite published an empty wall file and could
+# only be described as "collection time".
+wall_now() { python3 -c 'import time; print(time.monotonic_ns())'; }
+wall_arm() {
+    python3 "$SCRIPT_DIR/gpu_wall_phase.py" arm --output "$1/wall_backends.jsonl" \
+        --backend "$2" --start-ns "$3" --end-ns "$4" --build-seconds "$5"
+}
+wall_phase() {
+    python3 "$SCRIPT_DIR/gpu_wall_phase.py" phase --output "$1/wall_phases.json" \
+        --phase "$2" --start-ns "$3" --end-ns "$4"
+}
 family="${1:-fft}"
 # The public API collection reuses family identities and never overlaps runners.
 if [[ "$family" == all ]]; then
@@ -72,6 +86,7 @@ fi
 if [[ "$suite" != "$run_dir/instances.json" ]]; then
     cp "$suite" "$run_dir/instances.json"
 fi
+rust_build_started="$(wall_now)"
 if [[ "${GPU_BENCH_PREBUILT_RUST:-0}" == 1 ]]; then
     # The hosted build job ships this binary; the benchmark pod has no Rust toolchain.
     python3 scripts/ci/gpu_artifact.py "${CARGO_TARGET_DIR:-target}/release/benchmark_gpu_public_api"
@@ -79,6 +94,9 @@ else
     # Always rebuild: do not measure a stale GPU binary.
     cargo build --release --features cuda --bin benchmark_gpu_public_api -j "${CARGO_BUILD_JOBS:-4}"
 fi
+wall_phase "$run_dir" rust_build "$rust_build_started" "$(wall_now)"
+# The arms' rows carry it, so the report's build column stays a build, not a process.
+rust_build_seconds="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["phases_seconds"]["rust_build"])' "$run_dir/wall_phases.json")"
 uv run python scripts/collect_run_metadata.py \
     --suite-id "gpu/$family" --target-profile nvidia-gpu \
     --suite-file "$declaration" \
@@ -91,12 +109,17 @@ uv run python scripts/collect_run_metadata.py \
 # carries its logical bytes against that rate as a diagnostic. A failed or skipped
 # calibration costs the ratio, never the run.
 if [[ "$GPU_API_VERIFY_ONLY" != 1 ]]; then
+    # A timed probe of the device's own copy rate; a phase of the suite, never an arm.
+    calibration_started="$(wall_now)"
     uv run python scripts/gpu_copy_calibration.py --run-metadata "$run_dir/run.yaml" \
         --device "$GPU_BENCH_DEVICE" \
         || echo "device copy calibration failed; the records will carry no copy ratio" >&2
+    wall_phase "$run_dir" copy_calibration "$calibration_started" "$(wall_now)"
 fi
+fixtures_started="$(wall_now)"
 uv run python scripts/benchmark_gpu_public_api.py --suite "$suite" \
     --fixtures "$run_dir/fixtures" --backend prepare
+wall_phase "$run_dir" fixtures "$fixtures_started" "$(wall_now)"
 # The routine run names the arms; without a filter the family's own arms all run.
 mapfile -t api_backends < <(uv run python - "$suite" "${GPU_BENCH_BACKENDS:-}" <<'PY'
 import json, sys
@@ -122,16 +145,22 @@ outputs=()
 # earlier process of the same run stamp already wrote is skipped explicitly instead of
 # being started and recorded as a failure (#335).
 run_arm() {
-    local backend="$1" output="$2" rc=0
+    local backend="$1" output="$2" rc=0 build_seconds=0.0
     shift 2
+    case "$backend" in tenferro-cuda-*) build_seconds="$rust_build_seconds" ;; esac
+    local prepare_started; prepare_started="$(wall_now)"
     gpu_arm_prepare "$run_dir" "$backend" "$output" || rc=$?
+    wall_phase "$run_dir" arm_prepare "$prepare_started" "$(wall_now)"
     if [[ "$rc" == "$GPU_ARM_SKIPPED" ]]; then
         outputs+=("$output")
         return 0
     fi
     [[ "$rc" == 0 ]] || gpu_arm_fail_unless_runnable "$rc"
+    # The CPU choice above is not this backend's process time; it is a phase.
+    local arm_started; arm_started="$(wall_now)"
     "${GPU_ARM_PREFIX[@]+"${GPU_ARM_PREFIX[@]}"}" "$@" || rc=$?
     gpu_arm_finish "$run_dir" "$backend" "$rc"
+    wall_arm "$run_dir" "$backend" "$arm_started" "$(wall_now)" "$build_seconds"
     [[ "$rc" == 0 ]] || exit "$rc"
     outputs+=("$output")
 }
@@ -164,10 +193,14 @@ for output in "${outputs[@]}"; do
 done
 # The routine path reads one record contract: fold this family's rows and build
 # its summary from them, then publish the family page next to those artifacts.
+normalize_started="$(wall_now)"
 uv run python scripts/normalize_gpu_records.py --output "$run_dir/records.jsonl" \
     --summary "$run_dir/report.summary.json" --run-metadata "$run_dir/run.yaml" "${outputs[@]+"${outputs[@]}"}"
+wall_phase "$run_dir" normalize_and_summary "$normalize_started" "$(wall_now)"
+report_started="$(wall_now)"
 uv run python scripts/format_gpu_public_api_results.py --suite "$suite" \
     --run-metadata "$run_dir/run.yaml" --output "$run_dir/report.md" "${outputs[@]+"${outputs[@]}"}"
+wall_phase "$run_dir" report "$report_started" "$(wall_now)"
 if [[ "${GPU_BENCH_SKIP_LATEST:-0}" != 1 ]]; then
     mkdir -p result/nvidia-gpu/gpu
     cp "$run_dir/report.md" "result/nvidia-gpu/gpu/$family.md"
