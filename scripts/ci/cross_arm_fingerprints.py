@@ -114,12 +114,54 @@ def compare_records(records, *, rtol=DEFAULT_RTOL) -> dict:
     }
 
 
+DEFERRED = "cross_arm_fingerprint"
+
+
+def resolve(records, *, rtol=DEFAULT_RTOL) -> tuple[list[dict], dict]:
+    """Settle the rows that deferred their verdict to this comparison.
+
+    A row collected with `GPU_BENCH_VERIFY=cross-arm` carries
+    `reference_backend == "cross_arm_fingerprint"` and no inline verdict. It
+    passes only when every other arm that measured the same case agrees on the
+    invariants. A disagreement fails all of them, because the comparison cannot
+    say which arm is wrong.
+    """
+    report = compare_records(records, rtol=rtol)
+    disagreeing = {(item["suite_id"], item["problem_id"]) for item in report["disagreements"]}
+    recorded = {(r.get("suite_id"), r.get("problem_id")) for r in records if fingerprints_of(r)}
+    arms_per_case = defaultdict(set)
+    for record in records:
+        if fingerprints_of(record):
+            arms_per_case[(record.get("suite_id"), record.get("problem_id"))].add(
+                record.get("backend"))
+    resolved = 0
+    unresolved = []
+    for record in records:
+        if (record.get("verification") or {}).get("reference_backend") != DEFERRED:
+            continue
+        key = (record.get("suite_id"), record.get("problem_id"))
+        others = arms_per_case.get(key, set()) - {record.get("backend")}
+        if not others:
+            unresolved.append({"suite_id": key[0], "problem_id": key[1],
+                               "reason": "no other arm recorded invariants"})
+            continue
+        failed = key in disagreeing
+        record["verification"]["status"] = "failed" if failed else "passed"
+        if failed:
+            record["status"] = "verification_failed"
+        resolved += 1
+    report.update(resolved_rows=resolved, unresolved=unresolved)
+    return records, report
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("records", help="records.jsonl written by one suite")
     parser.add_argument("--rtol", type=float, default=DEFAULT_RTOL)
     parser.add_argument("--fail-on-disagreement", action="store_true",
                         help="exit 1 when two arms disagree (default: report only)")
+    parser.add_argument("--resolve-in-place", action="store_true",
+                        help="settle rows that deferred their verdict to this comparison")
     args = parser.parse_args(argv)
     records = []
     with open(args.records, encoding="utf-8") as handle:
@@ -127,7 +169,13 @@ def main(argv=None) -> int:
             line = line.strip()
             if line:
                 records.append(json.loads(line))
-    report = compare_records(records, rtol=args.rtol)
+    if args.resolve_in_place:
+        records, report = resolve(records, rtol=args.rtol)
+        with open(args.records, "w", encoding="utf-8") as handle:
+            for record in records:
+                handle.write(json.dumps(record) + "\n")
+    else:
+        report = compare_records(records, rtol=args.rtol)
     print(json.dumps(report, indent=1))
     if report["disagreements"]:
         print(

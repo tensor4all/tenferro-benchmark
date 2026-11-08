@@ -1,7 +1,7 @@
 import json
 import unittest
 
-from scripts.ci.cross_arm_fingerprints import compare_outputs, compare_records
+from scripts.ci.cross_arm_fingerprints import compare_outputs, compare_records, resolve
 
 
 def block(**overrides):
@@ -55,6 +55,32 @@ class CrossArmComparisonTests(unittest.TestCase):
         ])
         self.assertEqual(report["disagreements"], [])
         self.assertEqual(report["single_arm_cases"][0]["arms"], ["jax"])
+
+    def test_a_deferred_row_passes_when_the_other_arm_agrees(self):
+        deferred = record("jax", [block()])
+        deferred["verification"] = {"status": "skipped",
+                                    "reference_backend": "cross_arm_fingerprint"}
+        records, report = resolve([deferred, record("pytorch", [block()])])
+        self.assertEqual(records[0]["verification"]["status"], "passed")
+        self.assertEqual(report["resolved_rows"], 1)
+        self.assertEqual(report["unresolved"], [])
+
+    def test_a_deferred_row_fails_when_the_arms_disagree(self):
+        deferred = record("jax", [block(dot_seeded_re=1.5)])
+        deferred["verification"] = {"status": "skipped",
+                                    "reference_backend": "cross_arm_fingerprint"}
+        records, report = resolve([deferred, record("pytorch", [block()])])
+        self.assertEqual(records[0]["verification"]["status"], "failed")
+        self.assertEqual(records[0]["status"], "verification_failed")
+
+    def test_a_deferred_row_with_no_other_arm_stays_unresolved(self):
+        deferred = record("jax", [block()])
+        deferred["verification"] = {"status": "skipped",
+                                    "reference_backend": "cross_arm_fingerprint"}
+        records, report = resolve([deferred])
+        self.assertEqual(records[0]["verification"]["status"], "skipped")
+        self.assertEqual(report["resolved_rows"], 0)
+        self.assertEqual(len(report["unresolved"]), 1)
 
     def test_every_arm_pair_is_compared_once(self):
         report = compare_records([

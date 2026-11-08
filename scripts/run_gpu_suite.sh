@@ -460,7 +460,13 @@ for index in "${!SUITES[@]}"; do
     # Every arm records its output invariants; comparing them is the evidence
     # that a CPU reference per arm is not the only way to prove the numbers.
     # Diagnostic for now: this never changes a row's status or the exit code.
-    "${CROSS_ARM_CHECKER[@]}" "$RESULT_JSONL" \
+    cross_arm_args=()
+    if [[ "${GPU_BENCH_VERIFY:-reference}" == "cross-arm" ]]; then
+        # The arms deferred their verdict to this comparison, so it has to settle
+        # the rows before the report reads them.
+        cross_arm_args+=(--resolve-in-place)
+    fi
+    "${CROSS_ARM_CHECKER[@]}" "$RESULT_JSONL" "${cross_arm_args[@]}" \
         > "$RUN_DIR/cross_arm_fingerprints.json" 2> "$RUN_DIR/cross_arm_fingerprints.err" || true
 
     REPORT_START_NS="$(wall_now)"
