@@ -18,9 +18,11 @@ on:
         default: all
         type: string
       backends:
-        description: Comma-separated GPU backends
-        required: true
-        default: tenferro-cuda-trace,tenferro-cuda-eager,pytorch-cuda
+        description: >-
+          Comma-separated GPU backends; leave empty to collect the routine
+          manifest's own arm set (which includes the jax-cuda control)
+        required: false
+        default: ""
         type: string
       prepare_only:
         description: Prepare binaries and runtime only, without renting a GPU

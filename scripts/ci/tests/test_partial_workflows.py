@@ -52,6 +52,21 @@ class PartialWorkflowTest(unittest.TestCase):
         self.assertEqual(len(runtime),9)
         self.assertTrue(all(step['with']['retention-days']==7 for step in runtime))
 
+    def test_dispatching_with_defaults_does_not_narrow_the_routine_arms(self):
+        """A manual dispatch with defaults must collect the routine set, not a probe.
+
+        The input used to default to the three arms without `jax-cuda`, so pressing
+        "Run workflow" silently dropped the JAX control from all of a week's suites
+        while every suite still completed and the bundle still validated.
+        """
+        workflow = self.workflow('benchmark-runpod-gpu')
+        backends = workflow[True]['workflow_dispatch']['inputs']['backends']
+        self.assertEqual(backends['default'], '')
+        job = workflow['jobs']['run-gpu-benchmark']
+        self.assertIn('jax-cuda', job['env']['GPU_BENCH_RUNTIME_BACKENDS'])
+        # The routine manifest's own set is the fallback when the input is empty.
+        self.assertIn('gpu_routine_selection.py', (ROOT/'scripts/run_gpu_suite.sh').read_text())
+
     def test_scheduled_gpu_collection_is_not_a_backend_probe(self):
         workflow = self.workflow('benchmark-runpod-gpu')
         job = workflow['jobs']['run-gpu-benchmark']
