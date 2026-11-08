@@ -102,7 +102,10 @@ requested, separately named benchmarks; never mix them into operation tables.
 Before building or collecting benchmarks, inspect `extern/tenferro-rs`. If the
 checkout is on the `main` branch, run `git pull` there so the build and
 benchmark use the latest `main` revision. Preserve an explicitly detached or
-pinned checkout unless the user asks to move it.
+pinned checkout unless the user asks to move it. The RunPod GPU workflow is the
+exception: it builds `pins/tenferro-rs.rev` (synced by `campaign-sync-pins`)
+rather than `main`, so its build matches CI and a break cannot hide between the
+two revisions.
 
 When creating a PR that includes benchmark results, add a PR comment listing
 the exact commands used to collect those measurements, including relevant

@@ -91,13 +91,19 @@ jobs:
     outputs:
       tenferro_commit: ${{ steps.build.outputs.tenferro_commit }}
       rustc_version: ${{ steps.build.outputs.rustc_version }}
+    env:
+      # Build the pinned tenferro-rs revision, not a fresh main checkout: CI
+      # checks the same pin, so the two cannot drift apart without a failing
+      # build, and a source change that needs a new API lands in the PR that
+      # syncs the pin (campaign-sync-pins owns it).
+      TENFERRO_UPDATE: "1"
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
           persist-credentials: false
       - uses: dtolnay/rust-toolchain@stable
-      - name: Prepare CUDA build toolchain and current sources
+      - name: Prepare CUDA build toolchain and the pinned tenferro-rs sources
         run: |
           set -euo pipefail
           sudo apt-get update
@@ -108,10 +114,6 @@ jobs:
           sudo apt-get install -y --no-install-recommends cuda-toolkit-12-8
           export PATH="$CUDA_HOME/bin:$PATH"
           ./scripts/setup_extern_deps.sh
-          if [[ "$(git -C extern/tenferro-rs branch --show-current)" == main ]]; then
-            git -C extern/tenferro-rs pull --ff-only
-          fi
-          cargo generate-lockfile
       - name: Restore Cargo dependencies and compiled artifacts
         uses: Swatinem/rust-cache@v2
         with:
