@@ -288,7 +288,10 @@ class RegimePagesTests(unittest.TestCase):
         output = self.generate()
         page = (output / "nvidia-gpu/gpu/linalg_ad_throughput.html").read_text()
         self.assertIn("This suite has no throughput-regime case.", page)
-        self.assertIn("latency page", page)
+        # gpu/linalg_ad_throughput is a diagnostic suite: it is not on the family
+        # latency overview, so the notice must not promise that page (#383 review).
+        self.assertIn("latency section of this page", page)
+        self.assertIn("diagnostic suite", page)
         self.assertNotIn("Throughput-regime cases", page)
         self.assertIn("Latency and per-call overhead (1)", page)
         # The deferred batch is stated where the numbers are, not hidden.

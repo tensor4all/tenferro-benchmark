@@ -2780,12 +2780,26 @@ def render_suite_page(
             # Say it in words instead of an empty section: the suite id may still
             # say "throughput" because the id carries the trend, while every case
             # in it measures per-call overhead.
+            # A diagnostic suite (one outside MAINTAINED) is never listed on the
+            # family overview, so the notice must not send its readers there: the
+            # results are on this page, and only a maintained suite is also on the
+            # family latency page.
+            if (view.profile, suite_id) in MAINTAINED:
+                where = (
+                    "here and on "
+                    f'the <a href="../../{family}/latency/index.html">{esc(FAMILY_LABEL[family])} '
+                    "latency page</a></p>"
+                )
+            else:
+                where = (
+                    "in the latency section of this page. No family overview lists them: this "
+                    "is a diagnostic suite.</p>"
+                )
             body.append(
                 '<p class="notice"><strong>This suite has no throughput-regime case.</strong> '
                 "All of its measured cases are dominated by per-call launch, dispatch and "
-                "synchronization, so their results are published as latency and overhead on "
-                f'the <a href="../../{family}/latency/index.html">{esc(FAMILY_LABEL[family])} '
-                "latency page</a> and are never read as device throughput.</p>"
+                "synchronization, so their results are published as latency and overhead "
+                f"{where}"
             )
         for regime in REGIMES:
             cases = view.regime_cases(regime)
