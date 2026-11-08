@@ -85,6 +85,7 @@ export GINKGO_DIR="${GINKGO_DIR:-/opt/ginkgo}"
 
 VALIDATOR=(python3 "$SCRIPT_DIR/validate_benchmark_suite.py")
 FORMATTER=(python3 "$SCRIPT_DIR/format_gpu_results.py")
+CROSS_ARM_CHECKER=(python3 "$SCRIPT_DIR/ci/cross_arm_fingerprints.py")
 METADATA=(python3 "$SCRIPT_DIR/collect_run_metadata.py")
 PYTHON=(python3)
 if command -v uv >/dev/null 2>&1; then
@@ -455,6 +456,12 @@ for index in "${!SUITES[@]}"; do
         VALIDATION_FAILED=1
         continue
     fi
+
+    # Every arm records its output invariants; comparing them is the evidence
+    # that a CPU reference per arm is not the only way to prove the numbers.
+    # Diagnostic for now: this never changes a row's status or the exit code.
+    "${CROSS_ARM_CHECKER[@]}" "$RESULT_JSONL" \
+        > "$RUN_DIR/cross_arm_fingerprints.json" 2> "$RUN_DIR/cross_arm_fingerprints.err" || true
 
     REPORT_START_NS="$(wall_now)"
     "${FORMATTER[@]}" "$RESULT_JSONL" --run-metadata "$RUN_YAML" --output "$MARKDOWN_OUT"
