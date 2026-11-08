@@ -177,6 +177,29 @@ class PackagePartialGPUTest(unittest.TestCase):
         self.assertEqual(receipt['case_outcomes']['failed'], {'count':2,'cases':['failed_case','matmul']})
         self.assertTrue(all(row['median'] is None for row in json.loads(payload['result/nvidia-gpu/gpu/dense.summary.json'])['rows']))
 
+    def test_derived_fixtures_and_caches_are_inventoried_not_shipped(self):
+        self.add_failure()
+        fixture = self.fixture
+        assets = {
+            'fixtures/matmul_in0.bin': b'x' * 4096,
+            'cache/sparse_synthetic.npz': b'y' * 8192,
+        }
+        for name, payload in assets.items():
+            path = fixture.run/name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(payload)
+        self.package()
+        bundle = fixture.root/'partial-bundle'
+        for name in assets:
+            self.assertFalse((bundle/'data/results/nvidia-gpu/gpu/dense'/fixture.run.name/name).exists())
+        manifest = json.loads((bundle/'publication.json').read_text())
+        record = next(s for s in manifest['suites'] if s['suite_id'] == 'gpu/dense')['excluded_derived']
+        self.assertEqual(record['files'], 2)
+        self.assertEqual(record['bytes'], 4096 + 8192)
+        self.assertEqual(len(record['sha256']), 64)
+        # The declared inventory still validates: exclusion must not break ingestion.
+        validate_bundle(bundle, 'nvidia-gpu', self.source)
+
     def test_failed_gpu_raw_timing_cannot_be_hidden_by_summary_normalization(self):
         for metric in ('first_run_ms', 'median_ms', 'min_ms', 'p95_ms', 'iqr_ms'):
             shutil.rmtree(self.fixture.root/'partial-bundle', ignore_errors=True)

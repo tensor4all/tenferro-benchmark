@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 from datetime import datetime, timezone
+import hashlib
 import json
 from pathlib import Path
 import shutil
@@ -27,6 +28,22 @@ else:
 
 ROOT = Path(__file__).resolve().parents[2]
 GPU_BACKENDS = 'tenferro-cuda-trace,tenferro-cuda-eager,pytorch-cuda'
+#: Directories inside a run that hold regenerable inputs and caches. A weekly run
+#: produces about 4.4 GB of them and about 20 MB of actual results, so shipping
+#: them pays twice: the pod uploads them inside its billed lifetime and GitHub
+#: stores them for the artifact's retention. Their inventory (names and sizes) is
+#: recorded instead, which is what a reproduction needs.
+DERIVED_DIRECTORIES = frozenset({'fixtures', 'cache'})
+
+
+def derived_asset(relative: str) -> bool:
+    return any(part in DERIVED_DIRECTORIES for part in Path(relative).parts)
+
+
+def _inventory(entries) -> tuple[int, int, str]:
+    ordered = sorted(entries)
+    payload = '\n'.join(f'{name}\t{size}' for name, size in ordered)
+    return len(ordered), sum(size for _, size in ordered), hashlib.sha256(payload.encode()).hexdigest()
 
 
 def current_runs(root, profile, suite, source):
@@ -90,10 +107,14 @@ def prepare_bundle(root: Path, profile: str, source: dict, output: Path,
                 raise ValueError('GPU suites have inconsistent collection timestamps')
             run_relative = str(run.relative_to(root))
             target = output / run_relative
+            excluded = []
             for path in sorted(run.rglob('*')):
                 if path.is_file() or path.is_symlink():
                     relative = str(path.relative_to(root))
                     safe_file(root, relative)
+                    if derived_asset(relative):
+                        excluded.append((str(path.relative_to(run)), path.stat().st_size))
+                        continue
                     destination = output / relative
                     destination.parent.mkdir(parents=True, exist_ok=True)
                     shutil.copyfile(path, destination)
@@ -112,8 +133,11 @@ def prepare_bundle(root: Path, profile: str, source: dict, output: Path,
             expected = sorted(expected)
             files = [output / f'result/{profile}/{suite}{suffix}' for suffix in ('.md', '.summary.json')]
             files += sorted(path for path in target.rglob('*') if path.is_file())
+            count, total_bytes, inventory_digest = _inventory(excluded)
             entries.append({'suite_id': suite, 'expected_rows': expected,
-                            'files': {str(path.relative_to(output)): digest(path) for path in files}})
+                            'files': {str(path.relative_to(output)): digest(path) for path in files},
+                            'excluded_derived': {'files': count, 'bytes': total_bytes,
+                                                 'sha256': inventory_digest}})
         if not entries:
             raise ValueError('No GPU collection outputs in the selected run attempt')
         manifest = {'schema_version': 2, 'timestamp': timestamp, 'suites': entries, 'missing_suites': missing}

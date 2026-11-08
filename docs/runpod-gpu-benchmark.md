@@ -464,7 +464,15 @@ AD latency are not included in `all`.
 
 Download the `runpod-gpu-benchmark-<run_id>-attempt<attempt>` artifact
 (legacy bundles use the run-ID-only name) for raw measurements under
-`data/results/nvidia-gpu/` and reports under `result/nvidia-gpu/`. The workflow
+`data/results/nvidia-gpu/` and reports under `result/nvidia-gpu/`.
+
+The bundle leaves out `fixtures/` and `cache/`: they are inputs and caches
+regenerated from the declared seeds, and a weekly run produces about 4.4 GB of
+them against about 20 MB of results. The pod would otherwise spend roughly
+150 seconds of its billed lifetime uploading them and GitHub would store 1.76 GB
+per run. Each suite's `excluded_derived` entry in `publication.json` records how
+many files were left out, their total size and a digest of their names and
+sizes, so a reproduction can tell whether the assets changed. The workflow
 does not commit generated reports. The hosted build produces a fresh Rust binary
 for every invocation; local benchmark entry points rebuild before measurement.
 
