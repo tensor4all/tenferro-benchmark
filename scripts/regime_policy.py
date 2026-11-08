@@ -367,6 +367,22 @@ def resolve(
     return regime, (measure.strip() if measure else None)
 
 
+def regime_for_case(suite_id: str, problem: dict[str, Any]) -> str:
+    """The regime a generated case has to declare to pass `check_case`.
+
+    Suite generators call this instead of hard-coding a regime, so a case whose
+    size changes crosses its family floor as the measurement it actually is.  A
+    case below the floor, or one whose size cannot be derived, is `latency`:
+    that is the conservative declaration, and `check_case` accepts it without a
+    size.
+    """
+    floor = FAMILY_FLOORS.get(family_for(suite_id, problem) or "")
+    elements = case_elements(problem)
+    if floor is not None and elements is not None and elements >= floor.elements:
+        return THROUGHPUT
+    return LATENCY
+
+
 def _fmt(value: int | None) -> str:
     return "unknown" if value is None else f"{value:,}"
 

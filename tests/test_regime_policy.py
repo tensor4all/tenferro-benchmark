@@ -156,6 +156,35 @@ class RegimePolicyUnitTests(unittest.TestCase):
             self.assertEqual(regime_policy.check_suite(document, ROOT), [], path.name)
 
 
+class GeneratedSuiteTests(unittest.TestCase):
+    """The suites the collector regenerates must carry the same declarations.
+
+    `run_gpu_linalg_jvp_vjp.sh` rewrites both suites from their seeds before every
+    collection, so a policy that only holds for the committed file would stop the
+    run at load time on the next collection.
+    """
+
+    def test_generated_linalg_suites_match_the_committed_manifests(self):
+        import yaml
+
+        import generate_gpu_linalg_jvp_vjp_yaml as generator
+
+        for name, suite in generator.SUITES.items():
+            path = ROOT / "benchmarks" / "gpu" / f"{name}.yaml"
+            self.assertEqual(yaml.safe_load(path.read_text()), suite, path.name)
+            self.assertEqual(regime_policy.check_suite(suite, ROOT), [], path.name)
+
+    def test_regime_follows_the_size_across_the_floor(self):
+        def regime(n: int) -> str:
+            case = {"family": "linalg_ad", "linalg_ad": {"n": n}}
+            return regime_policy.regime_for_case("gpu/linalg_jvp_vjp", case)
+
+        self.assertEqual(regime(256), "latency")
+        self.assertEqual(regime(512), "latency")
+        self.assertEqual(regime(1024), "throughput")
+        self.assertEqual(regime(4096), "throughput")
+
+
 class RegimePagesTests(unittest.TestCase):
     """Each page is generated from the cases it holds, not from a fixed banner."""
 

@@ -2,13 +2,11 @@ schema_version: 1
 suite_id: gpu/linalg_jvp_vjp
 title: GPU Linalg JVP/VJP Benchmarks
 description: Trace-mode linalg automatic differentiation on CUDA for tenferro-rs and
-  PyTorch at GPU-sized matrices (n=256, 512). Every case here pays one device
-  retirement per call, so each row is a per-call latency row. n=256 is 65,536
-  elements, below the linalg_ad floor, and even a 512x512 QR JVP is dominated by
-  the trace runtime's per-call cost. The same cases measured with one retirement
-  per K calls live in `gpu/linalg_ad_throughput`.
+  PyTorch at GPU-sized matrices (n=256, 512). Every case here pays one device retirement
+  per call, so each row is a per-call latency row. n=256 is 65,536 elements, below
+  the linalg_ad floor, and even a 512x512 QR JVP is dominated by the trace runtime's
+  per-call cost. The same cases measured with one retirement per K calls live in `gpu/linalg_ad_throughput`.
 defaults:
-  regime: latency
   device:
     kind: cuda
     ordinal: 0
@@ -30,6 +28,7 @@ backends:
 problems:
 - id: linalg_ad_large_grad_sum_svd_s_jvp_f64_256
   family: linalg_ad
+  regime: latency
   op: jvp
   dtype:
     a: f64
@@ -55,6 +54,7 @@ problems:
   notes: shape=256x256
 - id: linalg_ad_large_grad_sum_svd_s_vjp_f64_256
   family: linalg_ad
+  regime: latency
   op: vjp
   dtype:
     a: f64
@@ -76,6 +76,7 @@ problems:
   notes: shape=256x256
 - id: linalg_ad_large_grad_sum_qr_jvp_f64_256
   family: linalg_ad
+  regime: latency
   op: jvp
   dtype:
     a: f64
@@ -101,6 +102,7 @@ problems:
   notes: shape=256x256
 - id: linalg_ad_large_grad_sum_qr_vjp_f64_256
   family: linalg_ad
+  regime: latency
   op: vjp
   dtype:
     a: f64
@@ -122,6 +124,7 @@ problems:
   notes: shape=256x256
 - id: linalg_ad_large_grad_sum_eigh_jvp_f64_256
   family: linalg_ad
+  regime: latency
   op: jvp
   dtype:
     a: f64
@@ -147,6 +150,7 @@ problems:
   notes: shape=256x256
 - id: linalg_ad_large_grad_sum_eigh_vjp_f64_256
   family: linalg_ad
+  regime: latency
   op: vjp
   dtype:
     a: f64
@@ -168,6 +172,7 @@ problems:
   notes: shape=256x256
 - id: linalg_ad_large_grad_sum_lu_jvp_f64_256
   family: linalg_ad
+  regime: latency
   op: jvp
   dtype:
     a: f64
@@ -193,6 +198,7 @@ problems:
   notes: shape=256x256
 - id: linalg_ad_large_grad_sum_lu_vjp_f64_256
   family: linalg_ad
+  regime: latency
   op: vjp
   dtype:
     a: f64
@@ -214,6 +220,7 @@ problems:
   notes: shape=256x256
 - id: linalg_ad_large_grad_sum_solve_jvp_f64_256
   family: linalg_ad
+  regime: latency
   op: jvp
   dtype:
     a: f64
@@ -241,6 +248,7 @@ problems:
   notes: shape=256x256,rhs=1
 - id: linalg_ad_large_grad_sum_solve_vjp_f64_256
   family: linalg_ad
+  regime: latency
   op: vjp
   dtype:
     a: f64
@@ -262,6 +270,7 @@ problems:
   notes: shape=256x256,rhs=1
 - id: linalg_ad_large_grad_sum_svd_s_jvp_f64_512
   family: linalg_ad
+  regime: latency
   op: jvp
   dtype:
     a: f64
@@ -287,6 +296,7 @@ problems:
   notes: shape=512x512
 - id: linalg_ad_large_grad_sum_svd_s_vjp_f64_512
   family: linalg_ad
+  regime: latency
   op: vjp
   dtype:
     a: f64
@@ -308,6 +318,7 @@ problems:
   notes: shape=512x512
 - id: linalg_ad_large_grad_sum_qr_jvp_f64_512
   family: linalg_ad
+  regime: latency
   op: jvp
   dtype:
     a: f64
@@ -333,6 +344,7 @@ problems:
   notes: shape=512x512
 - id: linalg_ad_large_grad_sum_qr_vjp_f64_512
   family: linalg_ad
+  regime: latency
   op: vjp
   dtype:
     a: f64
@@ -354,6 +366,7 @@ problems:
   notes: shape=512x512
 - id: linalg_ad_large_grad_sum_eigh_jvp_f64_512
   family: linalg_ad
+  regime: latency
   op: jvp
   dtype:
     a: f64
@@ -379,6 +392,7 @@ problems:
   notes: shape=512x512
 - id: linalg_ad_large_grad_sum_eigh_vjp_f64_512
   family: linalg_ad
+  regime: latency
   op: vjp
   dtype:
     a: f64
@@ -400,6 +414,7 @@ problems:
   notes: shape=512x512
 - id: linalg_ad_large_grad_sum_lu_jvp_f64_512
   family: linalg_ad
+  regime: latency
   op: jvp
   dtype:
     a: f64
@@ -425,6 +440,7 @@ problems:
   notes: shape=512x512
 - id: linalg_ad_large_grad_sum_lu_vjp_f64_512
   family: linalg_ad
+  regime: latency
   op: vjp
   dtype:
     a: f64
@@ -446,6 +462,7 @@ problems:
   notes: shape=512x512
 - id: linalg_ad_large_grad_sum_solve_jvp_f64_512
   family: linalg_ad
+  regime: latency
   op: jvp
   dtype:
     a: f64
@@ -473,6 +490,7 @@ problems:
   notes: shape=512x512,rhs=1
 - id: linalg_ad_large_grad_sum_solve_vjp_f64_512
   family: linalg_ad
+  regime: latency
   op: vjp
   dtype:
     a: f64

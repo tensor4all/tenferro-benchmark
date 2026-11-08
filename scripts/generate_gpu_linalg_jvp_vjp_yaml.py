@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
-"""Generate benchmarks/gpu/linalg_jvp_vjp.yaml from CPU publication-gate seeds."""
+"""Generate the GPU linalg AD suites from the CPU publication-gate seeds."""
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 import yaml
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import regime_policy  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -50,16 +55,23 @@ def generator_for(loss: str) -> str:
     return "well_conditioned"
 
 
-def build_problems(regime: str) -> list[dict]:
+def build_problems(suite_id: str, size_class: str) -> list[dict]:
     problems: list[dict] = []
-    sizes = SMALL_SIZES if regime == "small" else LARGE_SIZES
+    sizes = SMALL_SIZES if size_class == "small" else LARGE_SIZES
     for n in sizes:
+        # The regime is derived, not written by hand: `linalg_ad` has a floor of
+        # 1,048,576 elements, so n=256 and n=512 are per-call latency rows and a
+        # 4096-square row is throughput.  A hard-coded value would silently stop
+        # matching the policy when a size changes.
+        regime = regime_policy.regime_for_case(
+            suite_id, {"family": "linalg_ad", "linalg_ad": {"n": n}}
+        )
         for loss in LOSSES:
-            seeds = SEEDS[regime][loss]
+            seeds = SEEDS[size_class][loss]
             rhs_cols = seeds.get("rhs_cols")
             shape = shape_label(loss, n, rhs_cols)
             linalg_ad = {
-                "suite": regime,
+                "suite": size_class,
                 "loss": loss,
                 "n": n,
                 "matrix_seed": seeds["matrix_seed"],
@@ -70,8 +82,9 @@ def build_problems(regime: str) -> list[dict]:
             for phase in ("jvp", "vjp"):
                 problems.append(
                     {
-                        "id": f"linalg_ad_{regime}_{loss}_{phase}_f64_{n}",
+                        "id": f"linalg_ad_{size_class}_{loss}_{phase}_f64_{n}",
                         "family": "linalg_ad",
+                        "regime": regime,
                         "op": phase,
                         "dtype": {"a": "f64"},
                         "layout": {
@@ -99,7 +112,9 @@ def build_problems(regime: str) -> list[dict]:
     return problems
 
 
-def suite_document(suite_id: str, title: str, description: str, regime: str) -> dict:
+def suite_document(
+    suite_id: str, title: str, description: str, size_class: str
+) -> dict:
     return {
         "schema_version": 1,
         "suite_id": suite_id,
@@ -123,7 +138,7 @@ def suite_document(suite_id: str, title: str, description: str, regime: str) -> 
             "pytorch-cuda",
             "jax-cuda",
         ],
-        "problems": build_problems(regime),
+        "problems": build_problems(suite_id, size_class),
     }
 
 
@@ -137,7 +152,12 @@ SUITES = {
         "GPU Linalg JVP/VJP Benchmarks",
         (
             "Trace-mode linalg automatic differentiation on CUDA for tenferro-rs "
-            "and PyTorch at GPU-sized matrices (n=256, 512)."
+            "and PyTorch at GPU-sized matrices (n=256, 512). Every case here pays "
+            "one device retirement per call, so each row is a per-call latency row. "
+            "n=256 is 65,536 elements, below the linalg_ad floor, and even a 512x512 "
+            "QR JVP is dominated by the trace runtime's per-call cost. The same "
+            "cases measured with one retirement per K calls live in "
+            "`gpu/linalg_ad_throughput`."
         ),
         "large",
     ),

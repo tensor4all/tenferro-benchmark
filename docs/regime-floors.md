@@ -118,6 +118,14 @@ in the latency section.
    the floor *with* evidence in the same pull request.
 3. `uv run python scripts/validate_benchmark_suite.py benchmarks/gpu/<suite>.yaml`
    fails on both mistakes.
+4. If the suite is generated (`benchmarks/gpu/linalg_jvp_vjp.yaml`,
+   `benchmarks/gpu/linalg_ad_latency.yaml`), change its generator, not the YAML:
+   `run_gpu_linalg_jvp_vjp.sh` rewrites both from their seeds before every
+   collection, so a hand edit is lost and a generator that declares nothing stops
+   the run at load time. Those generators declare each case through
+   `regime_policy.regime_for_case()`, which derives the regime from the case's
+   size and its family floor; a size change then moves the case across the floor
+   without a second edit.
 
 ## Out of scope: the CPU catalogues
 
