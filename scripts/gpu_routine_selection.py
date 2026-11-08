@@ -80,14 +80,19 @@ def instances_for(declaration, output):
     instances = yaml.safe_load(Path(problems["source"]).read_text())
     key = "cases" if "cases" in instances else "patterns"
     entries = {entry["id"]: entry for entry in instances[key]}
-    missing = [problem for problem in problems["include"] if problem not in entries]
+    # `exclude` is part of the selection, not a dashboard detail: the policy drops
+    # those ids, so the collector must hand over the same set or the resulting
+    # report contains a case its own manifest does not declare.
+    exclude = set(problems.get("exclude") or [])
+    include = [problem for problem in problems["include"] if problem not in exclude]
+    missing = [problem for problem in include if problem not in entries]
     if missing:
         raise ValueError(f"{declaration}: cases absent from {problems['source']}: {missing}")
     payload = suite_payload(
         instances,
         source,
         key,
-        [entries[problem] for problem in problems["include"]],
+        [entries[problem] for problem in include],
         source["backends"],
     )
     Path(output).write_text(json.dumps(payload, indent=2) + "\n")

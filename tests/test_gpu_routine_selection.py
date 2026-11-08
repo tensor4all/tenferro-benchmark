@@ -105,6 +105,30 @@ class RoutineSelectionTest(unittest.TestCase):
                              instances[(Path(tmp)/"gpu_lstsq.yaml").as_posix()])
             self.assertEqual(declaration["problems"]["include"], ["lstsq_tall_f64_s256_rhs8"])
 
+    def test_excluded_ids_are_not_handed_to_the_collector(self):
+        # The policy drops `exclude`d ids; the collector must hand over the same
+        # set, or the report contains a case its own manifest does not declare.
+        with tempfile.TemporaryDirectory() as tmp:
+            instances = Path(tmp) / "instances.json"
+            instances.write_text(json.dumps({"cases": [{"id": "keep", "n": 1048576},
+                                                      {"id": "drop", "n": 1024}]}))
+            declaration = Path(tmp) / "gpu_fft.yaml"
+            declaration.write_text(yaml.safe_dump({
+                "schema_version": 1,
+                "suite_id": "gpu/fft",
+                "title": "t",
+                "description": "d",
+                "backends": ["tenferro-cuda-trace"],
+                "problems": {
+                    "source": str(instances),
+                    "include": ["keep", "drop"],
+                    "exclude": ["drop"],
+                    "regime": "throughput",
+                },
+            }))
+            payload = selection.instances_for(declaration, Path(tmp) / "out.json")
+        self.assertEqual([case["id"] for case in payload["cases"]], ["keep"])
+
     def test_effort_does_not_change_case_selection(self):
         with tempfile.TemporaryDirectory() as tmp:
             standard=self.plan(Path(tmp)/"standard")
