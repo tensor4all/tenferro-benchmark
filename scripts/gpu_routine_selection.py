@@ -135,11 +135,16 @@ def materialize(manifest_path, requested, output, backend_override="", problem="
             participants = (problems[pid] or {}).get("participants_gpu")
             return [b for b in backends if b in participants] if participants else backends
 
-        expected.extend(f"{suite_id}:{pid}:{backend}" for pid in spec["problems"]
+        # A suite's own `exclude` is part of the selection (the policy drops those
+        # ids), so a routine manifest that still lists one must not collect it.
+        declaration = source.get("problems")
+        excluded = set(declaration.get("exclude") or []) if isinstance(declaration, dict) else set()
+        routine_ids = [pid for pid in spec["problems"] if pid not in excluded]
+        expected.extend(f"{suite_id}:{pid}:{backend}" for pid in routine_ids
                         for backend in arms_for(pid))
         if spec["file"] not in requested or not backends:
             continue
-        ids = [pid for pid in spec["problems"] if not problem or pid == problem]
+        ids = [pid for pid in routine_ids if not problem or pid == problem]
         if not ids:
             continue
         selected.extend(f"{suite_id}:{pid}:{backend}" for pid in ids for backend in arms_for(pid))
