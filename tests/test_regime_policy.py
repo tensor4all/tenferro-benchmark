@@ -511,6 +511,25 @@ class TrendPlacementTests(unittest.TestCase):
             items = dashboard.load_trend(trend, metadata)
         self.assertEqual([item["regime"] for item in items], ["latency"])
 
+    def test_trend_title_with_group_axes_still_resolves_the_case(self):
+        # `scripts/trend_points.py` writes `<suite>: <case> (<group>) - plotted data`;
+        # the manifest key is the bare case id.
+        with tempfile.TemporaryDirectory() as tmp:
+            trend = Path(tmp)
+            (trend / "trend-one.svg").write_text("<svg/>")
+            (trend / "trend-one.md").write_text(
+                "# gpu/linalg_ad_throughput: qr_jvp_f64_256 (qr) - plotted data\n"
+            )
+            (trend / "points.json").write_text("{}")
+            metadata = {
+                "gpu/linalg_ad_throughput": {
+                    "regime": "throughput",
+                    "problems": {"qr_jvp_f64_256": {"regime": "latency"}},
+                }
+            }
+            items = dashboard.load_trend(trend, metadata)
+        self.assertEqual([item["regime"] for item in items], ["latency"])
+
 
 class PublishedNumbersTests(unittest.TestCase):
     """The fix is a classification change: no number, median or bar may move.

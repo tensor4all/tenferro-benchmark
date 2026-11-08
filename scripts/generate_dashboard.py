@@ -2445,11 +2445,17 @@ def load_trend(
                 title = heading[0][2:].removesuffix(" - plotted data")
         suite, _sep, named = title.partition(":")
         suite, named = suite.strip(), named.strip()
+        # The rendered title carries the display axes after the case id
+        # (`...: case (group) - plotted data`, scripts/trend_points.py), while the
+        # manifest keys are the bare case id.
+        case_id = re.sub(r"\s+\([^()]*\)$", "", named).strip()
         # A trend chart is one case over revisions, so its regime is that case's
         # declaration; the suite's default is only the fallback (an undeclared
         # case, or a suite no manifest covers).  Placing it by the suite default
         # alone put a latency case's trend on the throughput page.
-        regime = case_regime(metadata or {}, suite, named) if named else None
+        regime = case_regime(metadata or {}, suite, case_id) if named else None
+        if regime is None and named:
+            regime = case_regime(metadata or {}, suite, named)
         if regime is None:
             regime = case_regime(metadata or {}, suite, "")
         if regime is None:

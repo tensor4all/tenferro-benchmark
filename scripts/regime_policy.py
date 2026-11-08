@@ -101,10 +101,11 @@ FAMILY_FLOORS: dict[str, Floor] = {
     "linalg": Floor(
         "linalg",
         65_536,
-        "the public-API pair cholesky 32² (1,024 elements, 61 µs) and 512² "
-        "(262,144 elements, 371 µs) puts the doubling-test crossing near 5.7e3 "
-        "elements; 2^16 is the conservative value that keeps every 512² case and "
-        "excludes the 32²/64x32 catalogue entries.",
+        "the same backend and dtype (tenferro-cuda-direct f64) at cholesky 32² "
+        "(1,024 elements, 77.7 us) and 512² (262,144 elements, 419.4 us) fits "
+        "1.31 ns/element plus a ~76 us fixed term, so 18% of the 512² call is still "
+        "fixed; 2^16 keeps every 512² case and excludes the 32²/64x32 catalogue "
+        "entries, and stays provisional because two sizes are all the evidence.",
         provisional=True,
     ),
     "linalg_ad": Floor(
