@@ -2,12 +2,12 @@
   "schema_version": 1,
   "target_profile": "nvidia-gpu",
   "suite_id": "gpu/linalg_ad_latency",
-  "timestamp": "2026-11-08T09:06:27+00:00",
+  "timestamp": "2026-11-08T11:52:37+00:00",
   "tenferro_commit": "9a850b06155405acc99ecd0648829e9e6d3866ba",
   "hardware": {
     "gpu": "NVIDIA A100 80GB PCIe",
-    "cpu": "AMD EPYC 9554 64-Core Processor",
-    "host": "053e3b59f698"
+    "cpu": "AMD EPYC 7763 64-Core Processor",
+    "host": "941a9a84f64c"
   },
   "unit": "ms",
   "rows": [
@@ -15,8 +15,8 @@
       "case": "linalg_ad_small_grad_sum_eigh_jvp_f64_4",
       "group": "grad_sum_eigh_jvp",
       "backend": "jax-cuda",
-      "median": 0.345253125,
-      "iqr": 0.01071612500000002,
+      "median": 0.43048725,
+      "iqr": 0.007351374999999993,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 8
@@ -25,28 +25,28 @@
       "case": "linalg_ad_small_grad_sum_eigh_jvp_f64_4",
       "group": "grad_sum_eigh_jvp",
       "backend": "pytorch-cuda",
-      "median": 0.327568875,
-      "iqr": 0.012102000000000002,
+      "median": 0.540712,
+      "iqr": 0.02562350000000002,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 8
+      "operations_per_sample": 4
     },
     {
       "case": "linalg_ad_small_grad_sum_eigh_jvp_f64_4",
       "group": "grad_sum_eigh_jvp",
       "backend": "tenferro-cuda-trace",
-      "median": 0.34857550000000004,
-      "iqr": 0.0034328750000000574,
+      "median": 0.48859149999999996,
+      "iqr": 0.047431999999999974,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 8
+      "operations_per_sample": 4
     },
     {
       "case": "linalg_ad_small_grad_sum_eigh_vjp_f64_4",
       "group": "grad_sum_eigh_vjp",
       "backend": "jax-cuda",
-      "median": 0.336247,
-      "iqr": 0.005378249999999973,
+      "median": 0.436956875,
+      "iqr": 0.007421375000000008,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 8
@@ -55,18 +55,18 @@
       "case": "linalg_ad_small_grad_sum_eigh_vjp_f64_4",
       "group": "grad_sum_eigh_vjp",
       "backend": "pytorch-cuda",
-      "median": 0.35137475,
-      "iqr": 0.01632824999999999,
+      "median": 0.5908615,
+      "iqr": 0.03970699999999994,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 8
+      "operations_per_sample": 4
     },
     {
       "case": "linalg_ad_small_grad_sum_eigh_vjp_f64_4",
       "group": "grad_sum_eigh_vjp",
       "backend": "tenferro-cuda-trace",
-      "median": 0.349597125,
-      "iqr": 0.007652749999999986,
+      "median": 0.487193875,
+      "iqr": 0.00729362499999997,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 8
@@ -75,18 +75,8 @@
       "case": "linalg_ad_small_grad_sum_lu_jvp_f64_4",
       "group": "grad_sum_lu_jvp",
       "backend": "jax-cuda",
-      "median": 0.1898725,
-      "iqr": 0.006863500000000022,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 16
-    },
-    {
-      "case": "linalg_ad_small_grad_sum_lu_jvp_f64_4",
-      "group": "grad_sum_lu_jvp",
-      "backend": "pytorch-cuda",
-      "median": 0.450097125,
-      "iqr": 0.011943999999999955,
+      "median": 0.335079125,
+      "iqr": 0.025227500000000014,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 8
@@ -94,9 +84,29 @@
     {
       "case": "linalg_ad_small_grad_sum_lu_jvp_f64_4",
       "group": "grad_sum_lu_jvp",
+      "backend": "pytorch-cuda",
+      "median": 0.806527,
+      "iqr": 0.03194750000000002,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 4
+    },
+    {
+      "case": "linalg_ad_small_grad_sum_lu_jvp_f64_4",
+      "group": "grad_sum_lu_jvp",
       "backend": "tenferro-cuda-trace",
-      "median": 0.33864325,
-      "iqr": 0.003322374999999933,
+      "median": 0.556176,
+      "iqr": 0.017262249999999923,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 4
+    },
+    {
+      "case": "linalg_ad_small_grad_sum_lu_vjp_f64_4",
+      "group": "grad_sum_lu_vjp",
+      "backend": "jax-cuda",
+      "median": 0.31534075,
+      "iqr": 0.01481650000000001,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 8
@@ -104,19 +114,9 @@
     {
       "case": "linalg_ad_small_grad_sum_lu_vjp_f64_4",
       "group": "grad_sum_lu_vjp",
-      "backend": "jax-cuda",
-      "median": 0.1843054375,
-      "iqr": 0.004705249999999994,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 16
-    },
-    {
-      "case": "linalg_ad_small_grad_sum_lu_vjp_f64_4",
-      "group": "grad_sum_lu_vjp",
       "backend": "pytorch-cuda",
-      "median": 0.48976425,
-      "iqr": 0.012837249999999967,
+      "median": 0.859647,
+      "iqr": 0.043802499999999966,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 4
@@ -125,8 +125,18 @@
       "case": "linalg_ad_small_grad_sum_lu_vjp_f64_4",
       "group": "grad_sum_lu_vjp",
       "backend": "tenferro-cuda-trace",
-      "median": 0.326055375,
-      "iqr": 0.0046558750000000315,
+      "median": 0.52033125,
+      "iqr": 0.028070249999999963,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 4
+    },
+    {
+      "case": "linalg_ad_small_grad_sum_qr_jvp_f64_4",
+      "group": "grad_sum_qr_jvp",
+      "backend": "jax-cuda",
+      "median": 0.343568875,
+      "iqr": 0.010746374999999975,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 8
@@ -134,29 +144,29 @@
     {
       "case": "linalg_ad_small_grad_sum_qr_jvp_f64_4",
       "group": "grad_sum_qr_jvp",
-      "backend": "jax-cuda",
-      "median": 0.209120125,
-      "iqr": 0.004437312499999985,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 16
-    },
-    {
-      "case": "linalg_ad_small_grad_sum_qr_jvp_f64_4",
-      "group": "grad_sum_qr_jvp",
       "backend": "pytorch-cuda",
-      "median": 0.3486645,
-      "iqr": 0.009601875000000037,
+      "median": 0.613637,
+      "iqr": 0.01395124999999997,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 8
+      "operations_per_sample": 4
     },
     {
       "case": "linalg_ad_small_grad_sum_qr_jvp_f64_4",
       "group": "grad_sum_qr_jvp",
       "backend": "tenferro-cuda-trace",
-      "median": 0.449534875,
-      "iqr": 0.005782500000000079,
+      "median": 0.70042225,
+      "iqr": 0.03231324999999996,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 4
+    },
+    {
+      "case": "linalg_ad_small_grad_sum_qr_vjp_f64_4",
+      "group": "grad_sum_qr_vjp",
+      "backend": "jax-cuda",
+      "median": 0.310233625,
+      "iqr": 0.008802625000000008,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 8
@@ -164,109 +174,99 @@
     {
       "case": "linalg_ad_small_grad_sum_qr_vjp_f64_4",
       "group": "grad_sum_qr_vjp",
-      "backend": "jax-cuda",
-      "median": 0.201525625,
-      "iqr": 0.004468,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 16
-    },
-    {
-      "case": "linalg_ad_small_grad_sum_qr_vjp_f64_4",
-      "group": "grad_sum_qr_vjp",
       "backend": "pytorch-cuda",
-      "median": 0.474168125,
-      "iqr": 0.017453750000000046,
+      "median": 0.84149025,
+      "iqr": 0.031109000000000053,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 8
+      "operations_per_sample": 4
     },
     {
       "case": "linalg_ad_small_grad_sum_qr_vjp_f64_4",
       "group": "grad_sum_qr_vjp",
       "backend": "tenferro-cuda-trace",
-      "median": 0.445874375,
-      "iqr": 0.009251500000000024,
+      "median": 0.7011635,
+      "iqr": 0.03723525000000005,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 8
+      "operations_per_sample": 4
     },
     {
       "case": "linalg_ad_small_grad_sum_solve_jvp_f64_4",
       "group": "grad_sum_solve_jvp",
       "backend": "jax-cuda",
-      "median": 0.1961838125,
-      "iqr": 0.0126403125,
+      "median": 0.284784375,
+      "iqr": 0.051830125000000005,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 16
+      "operations_per_sample": 8
     },
     {
       "case": "linalg_ad_small_grad_sum_solve_jvp_f64_4",
       "group": "grad_sum_solve_jvp",
       "backend": "pytorch-cuda",
-      "median": 0.463452,
-      "iqr": 0.009938874999999958,
+      "median": 0.76369675,
+      "iqr": 0.01659625000000009,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 8
+      "operations_per_sample": 4
     },
     {
       "case": "linalg_ad_small_grad_sum_solve_jvp_f64_4",
       "group": "grad_sum_solve_jvp",
       "backend": "tenferro-cuda-trace",
-      "median": 0.363413,
-      "iqr": 0.004750875000000043,
+      "median": 0.58826925,
+      "iqr": 0.008658500000000013,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 8
+      "operations_per_sample": 4
     },
     {
       "case": "linalg_ad_small_grad_sum_solve_vjp_f64_4",
       "group": "grad_sum_solve_vjp",
       "backend": "jax-cuda",
-      "median": 0.1996353125,
-      "iqr": 0.0023842500000000044,
+      "median": 0.316023125,
+      "iqr": 0.01744274999999995,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 16
+      "operations_per_sample": 8
     },
     {
       "case": "linalg_ad_small_grad_sum_solve_vjp_f64_4",
       "group": "grad_sum_solve_vjp",
       "backend": "pytorch-cuda",
-      "median": 0.503344625,
-      "iqr": 0.027886999999999995,
+      "median": 0.82129225,
+      "iqr": 0.027484000000000064,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 8
+      "operations_per_sample": 4
     },
     {
       "case": "linalg_ad_small_grad_sum_solve_vjp_f64_4",
       "group": "grad_sum_solve_vjp",
       "backend": "tenferro-cuda-trace",
-      "median": 0.361938375,
-      "iqr": 0.006815249999999995,
+      "median": 0.5378864999999999,
+      "iqr": 0.008183000000000051,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 8
+      "operations_per_sample": 4
     },
     {
       "case": "linalg_ad_small_grad_sum_svd_s_jvp_f64_4",
       "group": "grad_sum_svd_s_jvp",
       "backend": "jax-cuda",
-      "median": 0.447355375,
-      "iqr": 0.0065749999999999975,
+      "median": 0.519382,
+      "iqr": 0.02471650000000003,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 8
+      "operations_per_sample": 4
     },
     {
       "case": "linalg_ad_small_grad_sum_svd_s_jvp_f64_4",
       "group": "grad_sum_svd_s_jvp",
       "backend": "pytorch-cuda",
-      "median": 0.476564,
-      "iqr": 0.012714000000000003,
+      "median": 0.75528325,
+      "iqr": 0.03156700000000001,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 4
@@ -275,8 +275,8 @@
       "case": "linalg_ad_small_grad_sum_svd_s_jvp_f64_4",
       "group": "grad_sum_svd_s_jvp",
       "backend": "tenferro-cuda-trace",
-      "median": 0.7643872500000001,
-      "iqr": 0.010396000000000183,
+      "median": 0.8602107499999999,
+      "iqr": 0.015085499999999863,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 4
@@ -285,28 +285,28 @@
       "case": "linalg_ad_small_grad_sum_svd_s_vjp_f64_4",
       "group": "grad_sum_svd_s_vjp",
       "backend": "jax-cuda",
-      "median": 0.446050875,
-      "iqr": 0.006075374999999994,
+      "median": 0.54967375,
+      "iqr": 0.014805249999999992,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 8
+      "operations_per_sample": 4
     },
     {
       "case": "linalg_ad_small_grad_sum_svd_s_vjp_f64_4",
       "group": "grad_sum_svd_s_vjp",
       "backend": "pytorch-cuda",
-      "median": 0.4166105,
-      "iqr": 0.017599124999999993,
+      "median": 0.64771075,
+      "iqr": 0.02715875000000001,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 8
+      "operations_per_sample": 4
     },
     {
       "case": "linalg_ad_small_grad_sum_svd_s_vjp_f64_4",
       "group": "grad_sum_svd_s_vjp",
       "backend": "tenferro-cuda-trace",
-      "median": 0.7641545000000001,
-      "iqr": 0.007065750000000093,
+      "median": 0.9064025,
+      "iqr": 0.0193040000000001,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 4

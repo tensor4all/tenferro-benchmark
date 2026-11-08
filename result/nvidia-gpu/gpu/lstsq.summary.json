@@ -2,12 +2,12 @@
   "schema_version": 1,
   "target_profile": "nvidia-gpu",
   "suite_id": "gpu/lstsq",
-  "timestamp": "2026-11-08T09:06:27+00:00",
+  "timestamp": "2026-11-08T11:52:37+00:00",
   "tenferro_commit": "9a850b06155405acc99ecd0648829e9e6d3866ba",
   "hardware": {
     "gpu": "NVIDIA A100 80GB PCIe",
-    "cpu": "AMD EPYC 9554 64-Core Processor",
-    "host": "053e3b59f698"
+    "cpu": "AMD EPYC 7763 64-Core Processor",
+    "host": "941a9a84f64c"
   },
   "unit": "ms",
   "rows": [
@@ -28,6 +28,15 @@
       "status": "unsupported",
       "verified": false,
       "reason": "No verified single public solution-only least-squares API with the same requested outputs; native candidate APIs also return residual/rank/singular-value outputs."
+    },
+    {
+      "case": "lstsq_tall_f64_s256_rhs8",
+      "group": "lstsq",
+      "backend": "tenferro-cuda-direct",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "Current TensorLinalgExt has no direct lstsq operation; only the public eager composite is available."
     },
     {
       "case": "lstsq_tall_f64_s256_rhs8",
