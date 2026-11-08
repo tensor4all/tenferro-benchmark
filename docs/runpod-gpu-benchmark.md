@@ -240,6 +240,13 @@ not a claim of one. The only unambiguous hit signal is JAX's own
 `Persistent compilation cache hit` log line, which is not part of the result
 bundle.
 
+`timing.verification_time_ms` is the untimed work that proves the numbers:
+building the CPU reference and comparing the output against it, summed over the
+case's checks. It is recorded because it dominates the pod's wall clock: on
+`gpu/dense` with `jax-cuda`, 7 cases spent 8.8 s building references, 5.7 s
+comparing, 2.1 s compiling and 0.6 s measuring — so the measurement was 3% of
+the work the pod paid for. The field never moves the operation clocks.
+
 ### Measured behavior (CPU JAX)
 
 The mechanism was verified end to end on CPU JAX 0.10.1 with separate processes

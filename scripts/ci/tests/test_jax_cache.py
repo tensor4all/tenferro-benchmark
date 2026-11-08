@@ -228,6 +228,15 @@ class FirstCallRecordTests(unittest.TestCase):
         self.assertEqual(timing['timed_runs'], 1)
         self.assertEqual(timing['timing_scope'], 'steady_state_host_api_plus_device_sync')
 
+    def test_the_row_records_the_untimed_verification_work(self):
+        record = self.run_case(cached=True)
+        timing = record['timing']
+        self.assertIn('verification_time_ms', timing)
+        self.assertGreaterEqual(timing['verification_time_ms'], 0.0)
+        # Proving the numbers must not leak into the timed region.
+        self.assertEqual(timing['timed_runs'], 1)
+        self.assertEqual(timing['timing_scope'], 'steady_state_host_api_plus_device_sync')
+
     def test_first_call_is_reported_once_and_consistently(self):
         record = self.run_case(cached=False)
         timing = record['timing']
@@ -248,6 +257,7 @@ class FirstCallRecordTests(unittest.TestCase):
         # path keep emitting valid rows.
         without = json.loads(json.dumps(record))
         without['timing'].pop('first_call_ms')
+        without['timing'].pop('verification_time_ms')
         jsonschema.validate(without, schema)
 
     def test_cache_growth_is_recorded_as_a_delta_not_a_hit_claim(self):
