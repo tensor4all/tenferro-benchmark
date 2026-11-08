@@ -458,6 +458,12 @@ gh workflow run benchmark-runpod-gpu.yml --repo tensor4all/tenferro-benchmark \
   -f keep_failed_pod=false
 ```
 
+Leave `backends` empty to collect the routine manifest's own arm set, which
+includes the `jax-cuda` control. Naming backends is a probe: it narrows the
+arms, and a run that drops the JAX control is not the weekly matrix even when
+every suite completes (#42473121688 dispatched the old three-arm default and
+lost `jax-cuda` on all fourteen suites).
+
 For hosted preparation/cache diagnostics without renting a GPU, dispatch with
 `-f prepare_only=true`. This still prepares and verifies both artifacts, but
 skips provisioning and measurements. It produces no new benchmark receipt.
