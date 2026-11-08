@@ -101,6 +101,15 @@ class V2FixtureTests(unittest.TestCase):
                 {**SCHEMA, '$ref': '#/components/schemas/CreatePodRequest'}
             ).validate(build_pod_payload(CONFIG, 'image', 'startup', 'jit', ids))
 
+    def test_a_pinned_data_center_validates_against_the_published_schema(self):
+        payload = build_pod_payload(
+            CONFIG, 'image', 'startup', 'jit', ['NVIDIA A40'], data_center='US-KS-2'
+        )
+        Draft202012Validator(
+            {**SCHEMA, '$ref': '#/components/schemas/CreatePodRequest'}
+        ).validate(payload)
+        self.assertEqual(payload['dataCenterIds'], ['US-KS-2'])
+
     def test_multi_gpu_type_payload_is_rejected(self):
         with self.assertRaisesRegex(PermanentRunPodError, 'exactly one GPU type'):
             build_pod_payload(CONFIG, 'image', 'startup', 'jit', ['GPU-A', 'GPU-B'])

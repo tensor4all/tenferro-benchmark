@@ -1,0 +1,177 @@
+name: Create the JAX compile-cache network volume
+
+# One-time infrastructure step, run by hand.  The weekly GPU job mounts this volume so XLA's
+# compilation cache survives between ephemeral pods; without the volume the job still runs, with
+# the cache disabled.  A network volume is pinned to one data center and cannot move afterwards,
+# so the data center is an explicit input rather than a guess, and it is checked against the
+# data center catalog before anything is created.
+
+on:
+  workflow_dispatch:
+    inputs:
+      name:
+        description: Volume name
+        required: false
+        default: jax-compile-cache
+      size_gb:
+        description: Size in GB (provider minimum is 10)
+        required: false
+        default: "10"
+      data_center:
+        description: Data center to create the volume in (immutable afterwards, e.g. US-KS-2)
+        required: true
+      dry_run:
+        description: Describe the request without creating anything
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: runpod-jax-cache-volume
+  cancel-in-progress: false
+
+jobs:
+  create-volume:
+    name: Create or reuse the network volume
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout trusted tooling
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: List existing network volumes
+        env:
+          RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+        run: |
+          set -euo pipefail
+          python3 -m scripts.ci.runpod_network_volume list | tee "$RUNNER_TEMP/volumes.json"
+
+      # The script validates the name, the size and the data center, refuses a
+      # same-named volume whose immutable bindings differ, and keeps a retried POST
+      # from creating a second billable volume.
+      - name: Create the volume when the name is free
+        id: create
+        env:
+          RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+          VOLUME_NAME: ${{ inputs.name }}
+          SIZE_GB: ${{ inputs.size_gb }}
+          DATA_CENTER: ${{ inputs.data_center }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          args=(--name "$VOLUME_NAME" --size-gb "$SIZE_GB" --data-center "$DATA_CENTER")
+          if [ "$DRY_RUN" = "true" ]; then args+=(--dry-run); fi
+          python3 -m scripts.ci.runpod_network_volume create "${args[@]}" \
+            | tee "$RUNNER_TEMP/create.json"
+          python3 - "$RUNNER_TEMP/create.json" >> "$GITHUB_OUTPUT" <<'PY'
+          import json
+          import sys
+
+          payload = json.load(open(sys.argv[1], encoding="utf-8"))
+          volume = payload.get("volume") or {}
+          print(f"created={'true' if payload.get('created') else 'false'}")
+          print(f"volume_id={volume.get('id', '')}")
+          print(f"data_center={volume.get('dataCenter', '')}")
+          print(f"size={volume.get('size', '')}")
+          PY
+
+      # A name is not a unique key in the RunPod schema, and a lost POST response can
+      # produce a second volume. Both are billable, so fail loudly instead of leaving a
+      # duplicate for the next weekly run to trip over.
+      - name: Verify the volume is unique
+        if: ${{ success() }}
+        env:
+          RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+          VOLUME_NAME: ${{ inputs.name }}
+          VOLUME_ID: ${{ steps.create.outputs.volume_id }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "dry run: nothing was created, so there is nothing to verify"
+            exit 0
+          fi
+          python3 -m scripts.ci.runpod_network_volume list > "$RUNNER_TEMP/volumes_after.json"
+          python3 - "$RUNNER_TEMP/volumes_after.json" <<'PY'
+          import json
+          import os
+          import sys
+
+          volumes = json.load(open(sys.argv[1], encoding="utf-8"))
+          name = os.environ["VOLUME_NAME"]
+          expected = os.environ.get("VOLUME_ID", "")
+          matches = [volume for volume in volumes if volume.get("name") == name]
+          if len(matches) != 1:
+              print(
+                  f"ERROR: {len(matches)} network volumes are named {name!r}; a duplicate is "
+                  "billable, so delete the extras in the RunPod console before using this name",
+                  file=sys.stderr,
+              )
+              raise SystemExit(1)
+          volume = matches[0]
+          if expected and volume["id"] != expected:
+              print(
+                  f"ERROR: the volume named {name!r} is {volume['id']}, not the expected {expected}",
+                  file=sys.stderr,
+              )
+              raise SystemExit(1)
+          print(
+              f"volume {volume['id']} is unique in {volume.get('dataCenter')} "
+              f"({volume.get('size')} GB)"
+          )
+          PY
+
+      - name: Summarise
+        if: ${{ always() }}
+        env:
+          VOLUME_NAME: ${{ inputs.name }}
+          DATA_CENTER: ${{ inputs.data_center }}
+          SIZE_GB: ${{ inputs.size_gb }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          CREATED: ${{ steps.create.outputs.created }}
+          VOLUME_ID: ${{ steps.create.outputs.volume_id }}
+          VOLUME_DATA_CENTER: ${{ steps.create.outputs.data_center }}
+        run: |
+          set -euo pipefail
+          {
+            echo "### RunPod network volume"
+            echo
+            echo "- name: \`$VOLUME_NAME\`"
+            echo "- size: ${SIZE_GB} GB"
+            echo "- requested data center: \`$DATA_CENTER\`"
+            echo "- actor: @${GITHUB_ACTOR}, revision: \`${GITHUB_SHA}\`"
+            echo
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$DRY_RUN" = "true" ]; then
+            {
+              echo "Dry run: nothing was created."
+              echo
+              echo '```json'
+              cat "$RUNNER_TEMP/create.json" 2>/dev/null || echo "{}"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          elif [ -n "$VOLUME_ID" ]; then
+            {
+              echo "Volume \`$VOLUME_ID\` in \`$VOLUME_DATA_CENTER\` (created=$CREATED)."
+              echo
+              echo '```json'
+              cat "$RUNNER_TEMP/create.json" 2>/dev/null || echo "{}"
+              echo '```'
+              echo
+              echo "Set the repository variable \`RUNPOD_JAX_CACHE_VOLUME_ID\` to \`$VOLUME_ID\`."
+              echo "Nothing else is needed: the pod request pins \`dataCenterIds\` to"
+              echo "\`$VOLUME_DATA_CENTER\`, read from the volume, so the mount cannot land"
+              echo "in another data center."
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            {
+              echo "**The volume was not created.** Read the failing step above; a request"
+              echo "that may have reached the API is reported as a failure on purpose, so"
+              echo "re-run \`list\` before creating again."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi

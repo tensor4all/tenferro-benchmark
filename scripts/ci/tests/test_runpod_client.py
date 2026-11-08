@@ -215,6 +215,31 @@ class RunPodClientTests(unittest.TestCase):
         self.assertEqual(payload["env"]["RUNNER_JIT_CONFIG"], "jit")
         self.assertEqual(payload["cmd"], ["startup"])
 
+    def test_a_data_center_pins_pod_placement(self) -> None:
+        gpu_type_ids = [CONFIG["gpu_tiers"][0]["gpu_type_ids"][0]]
+        payload = build_pod_payload(
+            CONFIG, "image", "startup", "jit", gpu_type_ids, data_center=" US-KS-2 ",
+        )
+        self.assertEqual(payload["dataCenterIds"], ["US-KS-2"])
+
+    def test_without_a_data_center_the_scheduler_chooses(self) -> None:
+        gpu_type_ids = [CONFIG["gpu_tiers"][0]["gpu_type_ids"][0]]
+        payload = build_pod_payload(CONFIG, "image", "startup", "jit", gpu_type_ids)
+        self.assertNotIn("dataCenterIds", payload)
+
+    def test_a_malformed_data_center_is_refused_before_the_request(self) -> None:
+        gpu_type_ids = [CONFIG["gpu_tiers"][0]["gpu_type_ids"][0]]
+        for value in ("", "  ", "US KS", "US-KS-2\nevil"):
+            with self.subTest(value=value):
+                if not value.strip():
+                    # An empty value means "no pinning", not an invalid data center.
+                    continue
+                with self.assertRaisesRegex(PermanentRunPodError, "data center"):
+                    build_pod_payload(
+                        CONFIG, "image", "startup", "jit", gpu_type_ids,
+                        data_center=value,
+                    )
+
     def test_success_without_pod_id_is_protocol_error(self) -> None:
         with self.assertRaisesRegex(PermanentRunPodError, "missing pod id"):
             parse_create_response(201, b"{}")

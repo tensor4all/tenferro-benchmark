@@ -159,20 +159,30 @@ variable nothing changes: no volume is attached and the run collects with an
 empty cache, logging `jax compile cache: disabled (no network volume
 configured)`.
 
-```bash
-curl -sS -X POST https://rest.runpod.io/v1/networkvolumes \
-  -H "Authorization: Bearer $RUNPOD_API_KEY" -H 'Content-Type: application/json' \
-  -d '{"name": "tenferro-jax-cache", "size": 50, "dataCenterId": "US-TX-3"}'
-# → {"id": "...", ...}; store that id as the RUNPOD_JAX_CACHE_VOLUME_ID variable
-```
+Creating the volume needs `RUNPOD_API_KEY`, which only the workflows hold, so it
+runs there: Actions → "Create the JAX compile-cache network volume", with
+`data_center` set to a data center that has the A100 and `dry_run=true` first.
+Before anything is created the script checks the data center catalog — the data
+center must exist, support network volumes and offer the configured `a100` tier
+— because the binding cannot be changed afterwards. The run is idempotent by
+name, refuses a same-named volume whose data center or size differ, and refuses
+to proceed when the name appears twice: a name is not a unique key in the RunPod
+schema. A POST whose response was lost is never re-sent — it is reconciled by
+reading the listing back, and the run stops if the volume is not visible yet —
+because re-sending it can pay for a second volume.
 
 The volume is mounted at `network_volume_mount_path`
 (`scripts/ci/runpod_config.json`, default `/opt/bench-cache`). REST v2 accepts at
 most one mount kind per pod, so a configured volume replaces the host-local
 `mounts.persistent` entry; `runpod_provision.py` reads the ID from
 `RUNPOD_NETWORK_VOLUME_ID`, and `runpod_contract.py` validates its shape before
-a paid request is made. A pod can only attach a volume in its own data center,
-so create the volume where the benchmark tier runs.
+a paid request is made.
+
+A pod can only attach a volume in the pod's own data center, and the scheduler
+otherwise picks one freely. `runpod_provision.py` therefore reads the binding
+back from `GET /v2/network-volumes/{id}` and sends `dataCenterIds: [<that data
+center>]`, so there is no second variable to keep in sync and no way to point
+the pod at the wrong one.
 
 ### Pod-side behavior
 

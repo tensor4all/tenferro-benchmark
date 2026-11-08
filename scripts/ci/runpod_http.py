@@ -109,8 +109,10 @@ def request_with_retry(
             break
         if delay >= deadline - monotonic():
             break
+        # Diagnostics on stderr: callers print machine-readable JSON on stdout.
         print(
-            f'RunPod HTTP {response.status}; retry {attempt}/{attempts} after {delay:.1f}s'
+            f'RunPod HTTP {response.status}; retry {attempt}/{attempts} after {delay:.1f}s',
+            file=sys.stderr,
         )
         sleep(delay)
     return response
