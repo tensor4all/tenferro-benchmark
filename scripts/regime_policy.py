@@ -120,6 +120,7 @@ FAMILY_FLOORS: dict[str, Floor] = {
         "is why the pair above is the single-call one.)  No AD case above 512² is "
         "measured, so 2^20 is a conservative bound extrapolated from two smaller "
         "sizes, not a measured crossing; no AD case currently clears it.",
+        provisional=True,
     ),
     "permutation": Floor(
         "permutation",
@@ -212,9 +213,24 @@ def _size_from_block(block: Any, rule: str) -> int | None:
         return None
     try:
         if rule == "matmul":
-            return _prod([block["m"], block["n"]])
+            # The working set is the largest tensor in the call, not the output:
+            # an `m x k` by `k x n` matmul touches inputs that can dwarf `m x n`.
+            sizes = [
+                _prod([block["m"], block["n"]]),
+                _prod([block["m"], block["k"]]),
+                _prod([block["k"], block["n"]]),
+            ]
+            known = [size for size in sizes if size]
+            return max(known) if known else None
         if rule == "batched_matmul":
-            return _prod([block["batch"], block["m"], block["n"]])
+            batch = block["batch"]
+            sizes = [
+                _prod([batch, block["m"], block["n"]]),
+                _prod([batch, block["m"], block["k"]]),
+                _prod([batch, block["k"], block["n"]]),
+            ]
+            known = [size for size in sizes if size]
+            return max(known) if known else None
         if rule == "linalg":
             if isinstance(block.get("m"), int):
                 return _prod([block["m"], block["n"]])

@@ -109,6 +109,21 @@ class RegimePolicyUnitTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             self.assertEqual(regime_policy.check_suite(document, Path(tmp)), [])
 
+    def test_matmul_working_set_is_the_largest_tensor(self):
+        document = {
+            "suite_id": "gpu/dense",
+            "defaults": {"regime": "throughput"},
+            "problems": [
+                {"id": "wide_k", "family": "dense", "matmul": {"m": 1, "n": 1, "k": 1048576}}
+            ],
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(regime_policy.check_suite(document, Path(tmp)), [])
+        document["problems"][0]["matmul"] = {"m": 1, "n": 1, "k": 1}
+        with tempfile.TemporaryDirectory() as tmp:
+            errors = regime_policy.check_suite(document, Path(tmp))
+        self.assertTrue(any("below the dense floor" in error for error in errors), errors)
+
     def test_einsum_working_set_is_the_largest_operand(self):
         document = {
             "suite_id": "gpu/einsum",

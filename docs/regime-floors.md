@@ -69,13 +69,17 @@ is marked **provisional** — conservative, not measured.
 | `elementwise` | 262,144 | yes | the two `elementwise_chain` points fit `t = 69.6 µs + 27.9 ps·n` (1k = 69.6 µs, 1M = 99.6 µs in deferred-batch mode): 1000× the elements buys 1.43× the time, and the 10% doubling criterion is met only above `n ≈ 2.8e5`. 2^18 sits just under it (the gain there is ~9.8%) and is kept because it is the size the published `reuse_contraction` cases are measured at — moving those is a separate decision, hence *provisional*. At 1M the fixed share is still ~70%: the floor is a minimum, not a promise of purity. |
 | `fft` | 1,048,576 | yes | only the 1M point is published (0.063–0.135 ms); the 1k point was never measured. |
 | `linalg` | 65,536 | yes | the same backend and dtype — `tenferro-cuda-direct` f64 cholesky at 32² (1,024 elements, 77.7 µs) and 512² (262,144 elements, 419.4 µs) — fits ≈1.31 ns/element plus a **≈76 µs fixed term**, i.e. 18% of the 512² call is still fixed (an earlier version of this row compared a PyTorch f32 32² point with a JAX f64 512² one, which is not a cost curve). 2^16 keeps every 512² case and excludes the 32²/64×32 catalogue entries; the floor is *provisional* because two sizes are all the evidence there is. |
-| `linalg_ad` | 1,048,576 | no | QR JVP costs 0.68 ms per call at n=4 (16 elements) and 2.87 ms at n=256 (65,536), both single-call `tenferro-cuda-trace`: 4,096× the elements buys 4.2× the time, and a two-point fit puts ≈24% of the 65,536-element call in a fixed term — the AD wrapper, not the 256² factorisation it wraps (tens of µs). (The `linalg_ad_throughput` suite reports 1.43 ms for the same n=256 case in deferred-batch mode; that is a different timing contract. The 0.37 ms quoted earlier here was the JAX arm.) No AD case above 512² is measured, so 2^20 is a **conservative bound extrapolated from two smaller sizes, not a measured crossing**; no AD case currently clears it — that is the finding, not a gap in the table. |
+| `linalg_ad` | 1,048,576 | yes | QR JVP costs 0.68 ms per call at n=4 (16 elements) and 2.87 ms at n=256 (65,536), both single-call `tenferro-cuda-trace`: 4,096× the elements buys 4.2× the time, and a two-point fit puts ≈24% of the 65,536-element call in a fixed term — the AD wrapper, not the 256² factorisation it wraps (tens of µs). (The `linalg_ad_throughput` suite reports 1.43 ms for the same n=256 case in deferred-batch mode; that is a different timing contract. The 0.37 ms quoted earlier here was the JAX arm.) No AD case above 512² is measured, so 2^20 is a **conservative bound extrapolated from two smaller sizes, not a measured crossing**; no AD case currently clears it — that is the finding, not a gap in the table. |
 | `permutation` | 1,048,576 | no | every published pattern is 3.9e8–5.4e8 elements (5.0–8.4 ms). |
 | `sparse` | 1,048,576 (nnz) | yes | spmv at 6.7e7 nnz takes 2.26 ms and spmm at 4.2e6 nnz takes 16.3 ms; the floor is a factor of 4 below the smallest published case, which is why it is marked *provisional*. |
 | `tensornetwork` | 1,048,576 | yes | the single case is a whole-network contraction at 78 ms. The fixture is an external submodule, so its element count is not derivable; the case declares `floor_exempt` with the reason instead of inventing a size. |
 
-`perf_issues` is a diagnostic catalogue with `defaults.regime: latency`; it has
-no throughput case and therefore no floor.
+`perf_issues` is a diagnostic catalogue with `defaults.regime: latency`, and the
+latest published summary contains no throughput case. Its *catalogue* is not
+that clean: `data/instances/gpu_perf_issues.json` declares six cholesky controls
+as `throughput` at 262,144 elements (family `linalg`), so any of them that is
+collected is judged by the `linalg` floor, not by the suite default. The suite's
+no-throughput-case notice describes the published summary, not the catalogue.
 
 ### What the floors moved
 
