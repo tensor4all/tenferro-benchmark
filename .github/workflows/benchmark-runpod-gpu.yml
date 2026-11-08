@@ -60,9 +60,16 @@ env:
   # (suite=all, default backends, A100).
   BENCH_GPU_TYPE: ${{ inputs.gpu_type || 'a100' }}
   # Hard cap on one pod's lifetime, enforced by the pod itself (see startup).
-  # Budget: <=10 min startup (startup_timeout_seconds) + 42 min benchmark job
-  # timeout + cleanup stays below it.
-  POD_MAX_LIFETIME_SECONDS: "3300"
+  # Budget: <=10 min startup (startup_timeout_seconds) + the collection, which is
+  # not bounded yet (the packaging step must keep running for one interrupted suite
+  # to stop taking the completed ones down with it: see the follow-up issue). The
+  # hosted-side timeouts below are the backstop, not the safety mechanism.
+  # Extension cost: 55 -> 120 min at the A100 PCIe rate ($1.79/h) is
+  # (120-55)/60 * 1.79 = $1.94, and two hours of compute is $3.58. That is the
+  # calculation, not a hard billing ceiling: watchdog deletion retries can add up to
+  # 180 s (~$0.09), and time before watchdog startup is billed too. The cap still
+  # stops a wedged pod on its own.
+  POD_MAX_LIFETIME_SECONDS: "7200"
 
 jobs:
   weekly-gate:
@@ -295,7 +302,10 @@ jobs:
     if: ${{ !inputs.prepare_only }}
     needs: [prepare-benchmark, prepare-environment]
     runs-on: ubuntu-latest
-    timeout-minutes: 70
+    # Must outlive the pod: the pod's own watchdog deletes it after POD_MAX_LIFETIME_SECONDS, so the
+    # runner's timeout is the backstop and has to be the *larger* of the two. A runner timeout below
+    # the watchdog kills the job while the pod is still alive and still billing.
+    timeout-minutes: 125
     outputs:
       pod_id: ${{ steps.create_pod.outputs.pod_id }}
       runner_label: ${{ steps.create_pod.outputs.runner_label }}
@@ -383,8 +393,9 @@ jobs:
     runs-on:
       - self-hosted
       - ${{ needs.start-runpod.outputs.runner_label }}
-    # Part of the one-hour rental budget; see POD_MAX_LIFETIME_SECONDS.
-    timeout-minutes: 42
+    # Same rule here: above POD_MAX_LIFETIME_SECONDS (7200 s = 120 min) so the watchdog deletes the
+    # pod first and this job is still running to run its own delete step if the watchdog misfires.
+    timeout-minutes: 130
     env:
       # Arms the prepared runtime covers; not a selection filter.
       GPU_BENCH_RUNTIME_BACKENDS: ${{ inputs.backends || 'tenferro-cuda-trace,tenferro-cuda-eager,pytorch-cuda,jax-cuda' }}

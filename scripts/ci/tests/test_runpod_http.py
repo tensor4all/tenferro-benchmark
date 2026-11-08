@@ -282,5 +282,18 @@ class WatchdogTests(unittest.TestCase):
         self.assertIn('actions/checkout@v4', cleanup)
 
 
+    def test_timeouts_stay_on_the_right_side_of_the_watchdog(self):
+        import yaml
+
+        root = Path(__file__).resolve().parents[3]
+        workflow = yaml.safe_load(
+            (root / ".github/workflows/benchmark-runpod-gpu.yml").read_text()
+        )
+        minutes = int(workflow["env"]["POD_MAX_LIFETIME_SECONDS"]) // 60
+        # The pod deletes itself; a hosted timeout below it kills the job and leaves
+        # the pod alive and billing, which is the ordering bug this test exists for.
+        for job in ("start-runpod", "run-gpu-benchmark"):
+            self.assertGreater(workflow["jobs"][job]["timeout-minutes"], minutes, job)
+
 if __name__ == '__main__':
     unittest.main()
