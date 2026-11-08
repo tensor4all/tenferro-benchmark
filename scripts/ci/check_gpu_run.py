@@ -47,6 +47,33 @@ def planned_rows(run_dir: Path, suite_id: str) -> set[tuple[str, str]] | None:
     return rows or None
 
 
+def routine_arms(manifest_path: Path = ROUTINE_MANIFEST) -> dict[str, list[str]]:
+    """The routine arm set the manifest declares for each suite."""
+    manifest = yaml.safe_load(Path(manifest_path).read_text())
+    return {suite: list(spec.get('backends') or []) for suite, spec in manifest['suites'].items()}
+
+
+def routine_arm_gaps(run_dir: Path, suite_id: str,
+                     manifest_path: Path = ROUTINE_MANIFEST) -> list[str]:
+    """The routine arms this suite's own plan left out.
+
+    A narrowed dispatch drops arms before the plan is written, so the plan agrees
+    with the run and every row it promised is present: only the manifest knows
+    what a routine page is supposed to contain. Run 42473121688 dispatched the
+    old three-arm default and lost `jax-cuda` on all fourteen suites while the
+    bundle validated. An empty list also covers a run that records no plan at
+    all; this never turns a missing plan into a gap it cannot prove.
+    """
+    declared = routine_arms(manifest_path).get(suite_id)
+    if not declared:
+        return []
+    planned = planned_rows(run_dir, suite_id)
+    if planned is None:
+        return []
+    present = {backend for _, backend in planned}
+    return sorted(arm for arm in declared if arm not in present)
+
+
 def digest(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 

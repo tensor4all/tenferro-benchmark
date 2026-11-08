@@ -18,12 +18,12 @@ import yaml
 if __package__:
     from .bundle_cpu_results import package_cpu
     from .cpu_ingestion_adapter import CPU_SUITES
-    from .check_gpu_run import DEFAULT_SUITES, planned_rows
+    from .check_gpu_run import DEFAULT_SUITES, planned_rows, routine_arm_gaps
     from .result_ingestion import digest, instant, safe_file, validate_bundle
 else:
     from bundle_cpu_results import package_cpu
     from cpu_ingestion_adapter import CPU_SUITES
-    from check_gpu_run import DEFAULT_SUITES, planned_rows
+    from check_gpu_run import DEFAULT_SUITES, planned_rows, routine_arm_gaps
     from result_ingestion import digest, instant, safe_file, validate_bundle
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -84,7 +84,7 @@ def prepare_bundle(root: Path, profile: str, source: dict, output: Path,
         if suites == 'perf-issues-readback':
             raise ValueError('Manual readback is not a publication collection')
         suite_files = DEFAULT_SUITES if suites == 'all' else suites
-        entries, missing = [], []
+        entries, missing, narrowed = [], [], {}
         output.mkdir(parents=True, exist_ok=False)
         for suite_file in suite_files.split(','):
             declaration = yaml.safe_load(safe_file(ROOT, suite_file.strip()).read_text())
@@ -131,6 +131,11 @@ def prepare_bundle(root: Path, profile: str, source: dict, output: Path,
                 expected = {(problem['id'], backend) for problem in declaration['problems']
                             for backend in backends.split(',') if backend in declared}
             expected = sorted(expected)
+            # Recorded, and refused at ingestion: a run that dropped a routine arm
+            # is not the weekly matrix, however complete its own rows look.
+            gaps = routine_arm_gaps(run, suite)
+            if gaps:
+                narrowed[suite] = gaps
             files = [output / f'result/{profile}/{suite}{suffix}' for suffix in ('.md', '.summary.json')]
             files += sorted(path for path in target.rglob('*') if path.is_file())
             count, total_bytes, inventory_digest = _inventory(excluded)
@@ -141,6 +146,8 @@ def prepare_bundle(root: Path, profile: str, source: dict, output: Path,
         if not entries:
             raise ValueError('No GPU collection outputs in the selected run attempt')
         manifest = {'schema_version': 2, 'timestamp': timestamp, 'suites': entries, 'missing_suites': missing}
+        if narrowed:
+            manifest['narrowed_routine_arms'] = narrowed
         (output / 'publication.json').write_text(json.dumps(manifest, indent=2) + '\n')
     # No manifest from a failed validation may authorize a results upload.
     try:
