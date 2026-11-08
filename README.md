@@ -43,12 +43,12 @@ first:
 | `zen5-cpu` | `cpu/cpu_ops` | [result/zen5-cpu/cpu/cpu_ops.md](result/zen5-cpu/cpu/cpu_ops.md) |
 | `zen5-cpu` | `cpu/einsum` | [result/zen5-cpu/cpu/einsum.md](result/zen5-cpu/cpu/einsum.md) |
 | `zen5-cpu` | `cpu/fft` | [result/zen5-cpu/cpu/fft.md](result/zen5-cpu/cpu/fft.md) |
+| `zen5-cpu` | `cpu/linalg_jvp_vjp` | [result/zen5-cpu/cpu/linalg_jvp_vjp.md](result/zen5-cpu/cpu/linalg_jvp_vjp.md) |
 | `zen5-cpu` | `cpu/permutation` | [result/zen5-cpu/cpu/permutation.md](result/zen5-cpu/cpu/permutation.md) |
 | `zen5-cpu` | `cpu/public_api` | [result/zen5-cpu/cpu/public_api.md](result/zen5-cpu/cpu/public_api.md) |
 | `zen5-cpu` | `cpu/overhead_smoke` | [result/zen5-cpu/cpu/overhead_smoke.md](result/zen5-cpu/cpu/overhead_smoke.md) |
 | `zen5-cpu` | `cpu/session_matrix` | [result/zen5-cpu/cpu/session_matrix.md](result/zen5-cpu/cpu/session_matrix.md) |
 | `zen5-cpu` | `cpu/small_work` | [result/zen5-cpu/cpu/small_work.md](result/zen5-cpu/cpu/small_work.md) |
-| `zen5-cpu` | `cpu/linalg_jvp_vjp` | [result/zen5-cpu/cpu/linalg_jvp_vjp.md](result/zen5-cpu/cpu/linalg_jvp_vjp.md) |
 | `nvidia-gpu` | `gpu/dense` | [result/nvidia-gpu/gpu/dense.md](result/nvidia-gpu/gpu/dense.md) |
 | `nvidia-gpu` | `gpu/dense_throughput` | [result/nvidia-gpu/gpu/dense_throughput.md](result/nvidia-gpu/gpu/dense_throughput.md) |
 | `nvidia-gpu` | `gpu/einsum` | [result/nvidia-gpu/gpu/einsum.md](result/nvidia-gpu/gpu/einsum.md) |
