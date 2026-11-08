@@ -10,7 +10,7 @@ import os
 import time
 
 import jax_cache_stats
-from benchmark_gpu_public_api import measure
+from benchmark_gpu_public_api import fingerprint, measure
 
 
 def leaves(value):
@@ -99,6 +99,9 @@ def run(legacy, suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
         # operation clock, but it dominates the pod's wall clock, so it is
         # measured per case and recorded next to the timings it does not affect.
         verification_ns = 0
+        # The outputs the last check downloaded, so the cross-arm invariants can
+        # be recorded from them instead of transferring everything a second time.
+        captured = {}
 
         def verifying(work):
             nonlocal verification_ns
@@ -140,6 +143,7 @@ def run(legacy, suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
 
             def check(result):
                 actual = download(result)
+                captured['arrays'] = [actual]
                 if actual.dtype != np.float32 or actual.shape != reference.shape or not np.all(np.isfinite(actual)):
                     raise ValueError("verification tensor-network shape/nonfinite output")
                 error = np.abs(actual.astype(np.float64) - reference)
@@ -183,6 +187,7 @@ def run(legacy, suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
         numerical_check = check
         def check(result):
             arrays = [download(value) for value in leaves(result)]
+            captured['arrays'] = arrays
             dtype = np.dtype(np.float32 if op == "tensor_network_contract" else np.float64)
             if any(value.dtype != dtype or not np.all(np.isfinite(value)) for value in arrays):
                 raise ValueError("verification output dtype/nonfinite value")
@@ -256,6 +261,11 @@ def run(legacy, suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
             rtol=rtol, atol=atol, env=legacy._base_env(device_ordinal, ts, bc, tc))
         record["execution"]["notes"] = json.dumps({
             "sampling": sampling, "setup": "inputs/transfers, plans, compilation, lazy initialization and validation outside clocks",
+            # Cross-arm invariants of the outputs this case produced. The whole
+            # point is to compare arms against each other, so the row carries
+            # them: a later step can then check agreement without downloading
+            # anything again.
+            "fingerprints": [fingerprint(value) for value in captured.get("arrays", [])],
             "first_call": "compilation plus the first executed call, measured outside every timed sample",
             "first_call_ms": first_call_ms, "compile_time_ms": compile_ms,
             "jax_compilation_cache_dir": cache_dir, **cache_delta,

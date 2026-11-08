@@ -228,6 +228,17 @@ class FirstCallRecordTests(unittest.TestCase):
         self.assertEqual(timing['timed_runs'], 1)
         self.assertEqual(timing['timing_scope'], 'steady_state_host_api_plus_device_sync')
 
+    def test_the_row_records_cross_arm_invariants_of_its_output(self):
+        record = self.run_case(cached=True)
+        notes = json.loads(record['execution']['notes'])
+        self.assertEqual(len(notes['fingerprints']), 1)
+        block = notes['fingerprints'][0]
+        # The fake case returns a 2x2 array of ones, so the invariants are exact.
+        self.assertEqual(block['elements'], 4)
+        self.assertAlmostEqual(block['sum_re'], 4.0)
+        self.assertAlmostEqual(block['sum_squares'], 4.0)
+        self.assertAlmostEqual(block['max_abs'], 1.0)
+
     def test_the_row_records_the_untimed_verification_work(self):
         record = self.run_case(cached=True)
         timing = record['timing']
