@@ -128,6 +128,28 @@ class RegimePolicyUnitTests(unittest.TestCase):
             errors = regime_policy.check_suite(document, Path(tmp))
         self.assertTrue(any("below the einsum floor" in error for error in errors), errors)
 
+    def test_a_schema_invalid_suite_is_reported_not_raised(self):
+        # Semantic checks read a document the schema accepted.  A malformed
+        # `defaults` is a schema error; it must not abort validation of the file
+        # with an AttributeError (which also skipped every later file).
+        import yaml
+
+        import validate_benchmark_suite as validator
+
+        document = {
+            "schema_version": 1,
+            "suite_id": "gpu/dense",
+            "title": "fixture",
+            "description": "fixture",
+            "defaults": ["not-an-object"],
+            "backends": ["tenferro-cuda-trace"],
+            "problems": [{"id": "case_a"}],
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "dense.yaml"
+            path.write_text(yaml.safe_dump(document))
+            self.assertFalse(validator.validate_suite(path))
+
     def test_unknown_measure_is_rejected(self):
         document = {
             "suite_id": "gpu/dense",

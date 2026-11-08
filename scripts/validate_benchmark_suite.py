@@ -110,10 +110,13 @@ def validate_suite(path: Path) -> bool:
     ok = validate_object(path, suite, validator) and validate_unique_problem_ids(path, suite)
     # The regime rule is a load-time check, not a publishing-time one: a GPU case
     # with no declared regime, or a throughput case below its family floor, is a
-    # suite error here as well as in the dashboard.
-    for message in regime_policy.check_suite(suite, PROJECT_DIR):
-        print(f"{path}: {message}", file=sys.stderr)
-        ok = False
+    # suite error here as well as in the dashboard.  It only reads a document the
+    # schema accepted: a malformed `defaults` (a list, say) is a schema error, not
+    # an exception thrown out of the checker.
+    if ok:
+        for message in regime_policy.check_suite(suite, PROJECT_DIR):
+            print(f"{path}: {message}", file=sys.stderr)
+            ok = False
     return ok
 
 

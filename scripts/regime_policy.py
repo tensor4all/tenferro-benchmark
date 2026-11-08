@@ -110,14 +110,15 @@ FAMILY_FLOORS: dict[str, Floor] = {
     "linalg_ad": Floor(
         "linalg_ad",
         1_048_576,
-        "QR JVP costs 0.68 ms per call at n=4 and 2.87 ms at n=256 (65,536 "
-        "elements), both single-call on tenferro-cuda-trace: 4,096x the elements "
-        "buys 4.2x the time, while the 256² factorisation it wraps costs tens of "
-        "us -- so fixed per-call cost still dominates at 65,536 elements.  The "
-        "deferred-batch suite reports 1.43 ms for the same case under a different "
-        "timing contract, which is why the pair above is the single-call one.  No "
-        "AD case is measured above 512², so the floor is the conservative 2^20 and "
-        "no AD case currently clears it.",
+        "QR JVP costs 0.68 ms per call at n=4 (16 elements) and 2.87 ms at n=256 "
+        "(65,536), both single-call on tenferro-cuda-trace: 4,096x the elements "
+        "buys 4.2x the time; a two-point fit puts about 24% of the 65,536-element "
+        "call in a fixed term, and that term is the AD wrapper rather than the "
+        "256² factorisation it wraps (tens of us).  (The deferred-batch suite "
+        "reports 1.43 ms for the same case under a different timing contract, which "
+        "is why the pair above is the single-call one.)  No AD case above 512² is "
+        "measured, so 2^20 is a conservative bound extrapolated from two smaller "
+        "sizes, not a measured crossing; no AD case currently clears it.",
     ),
     "permutation": Floor(
         "permutation",
@@ -316,7 +317,9 @@ def declared_cases(
     resolved against its instance document, so every included case keeps the
     record's own `regime`, `n`/`shape` and family-facing fields.
     """
-    defaults = suite.get("defaults") or {}
+    defaults = suite.get("defaults")
+    if not isinstance(defaults, dict):
+        defaults = {}
     problems = suite.get("problems")
     if isinstance(problems, list):
         return defaults, [row for row in problems if isinstance(row, dict)]
