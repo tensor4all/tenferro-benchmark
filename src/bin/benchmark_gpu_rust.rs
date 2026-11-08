@@ -14,6 +14,7 @@ use serde_json::{json, Value};
 use tenferro_ad::{EagerRuntime, EagerSession, EagerTensor};
 use tenferro_cpu::CpuEngine;
 use tenferro_einsum::{EagerSessionEinsumExt, TraceContextEinsumExt};
+use tenferro_einsum_benchmark::fingerprint::Fingerprint;
 use tenferro_einsum_benchmark::tensornetwork::{
     build_cpu_eager_inputs as build_tensor_network_cpu_inputs, contract_tree_eager,
     contract_tree_trace, load_tensor_network, scalar_f32, scalar_f32_tensor, tensor_f32_col_major,
@@ -279,8 +280,10 @@ fn verification_only() -> bool {
     std::env::var("GPU_BENCH_VERIFY_ONLY").as_deref() == Ok("1")
 }
 
-fn apply_sampling_record(record: &mut Value, sampling: &Value) {
-    record["execution"]["notes"] = json!(sampling.to_string());
+fn apply_sampling_record(record: &mut Value, sampling: &Value, fingerprints: &[Fingerprint]) {
+    let mut notes = sampling.clone();
+    notes["fingerprints"] = serde_json::to_value(fingerprints).unwrap_or(Value::Null);
+    record["execution"]["notes"] = json!(notes.to_string());
     if verification_only() {
         record["status"] = json!("verification_only");
         record["timing"]["timed_runs"] = json!(0);
@@ -464,17 +467,19 @@ fn run_eager_tensor_network(
         let gpu_scalar = scalar_f32_from_eager_gpu(&mut compute_bk, &outputs[0], &transfer_rt)?;
         let (ver_status, max_abs, max_rel) =
             verify_tensor_network_scalar(gpu_scalar, cpu_scalar, rtol, atol);
+        // A scalar network result has no output vector to fingerprint.
+        let fingerprints: Vec<Fingerprint> = Vec::new();
 
         sampling["case_wall_phases_ns"] = json!({"network_loading":network_end,
             "backend_initialization":backend_end-network_end,
             "input_generation_transfer_and_preparation":setup_end-backend_end,
             "validation":case_start.elapsed().as_nanos()-validation_start,
             "case_body_before_record_construction":case_start.elapsed().as_nanos()});
-        Ok((times_ms, ver_status, max_abs, max_rel, sampling))
+        Ok((times_ms, ver_status, max_abs, max_rel, sampling, fingerprints))
     }));
 
     match result {
-        Ok(Ok((times_ms, ver_status, max_abs, max_rel, sampling))) => {
+        Ok(Ok((times_ms, ver_status, max_abs, max_rel, sampling, fingerprints))) => {
             if ver_status != "passed" {
                 return stub(
                     suite_id,
@@ -512,7 +517,7 @@ fn run_eager_tensor_network(
                 bc,
                 tc,
             );
-            apply_sampling_record(&mut record, &sampling);
+            apply_sampling_record(&mut record, &sampling, &fingerprints);
             record["verification"]["reference_backend"] =
                 json!("analytic_constant_tree_fp64_from_exact_f32_inputs");
             record
@@ -1067,12 +1072,14 @@ fn run_trace_tensor_network(
         let gpu_scalar = gpu_scalar.ok_or("missing timed tensor network result")?;
         let (ver_status, max_abs, max_rel) =
             verify_tensor_network_scalar(gpu_scalar, cpu_scalar, rtol, atol);
+        // A scalar network result has no output vector to fingerprint.
+        let fingerprints: Vec<Fingerprint> = Vec::new();
 
-        Ok((times_ms, ver_status, max_abs, max_rel, sampling))
+        Ok((times_ms, ver_status, max_abs, max_rel, sampling, fingerprints))
     }));
 
     match result {
-        Ok(Ok((times_ms, ver_status, max_abs, max_rel, sampling))) => {
+        Ok(Ok((times_ms, ver_status, max_abs, max_rel, sampling, fingerprints))) => {
             if ver_status == "failed" {
                 return stub(
                     suite_id,
@@ -1110,7 +1117,7 @@ fn run_trace_tensor_network(
                 bc,
                 tc,
             );
-            apply_sampling_record(&mut record, &sampling);
+            apply_sampling_record(&mut record, &sampling, &fingerprints);
             record
         }
         Ok(Err(msg)) => trace_failure(
@@ -1278,7 +1285,7 @@ fn run_eager(
         let validation_start = case_start.elapsed().as_nanos();
 
         // Verify last result against CPU reference
-        let (ver_status, max_abs, max_rel) = if let Some(ref g) = last_out {
+        let (ver_status, max_abs, max_rel, fingerprints) = if let Some(ref g) = last_out {
             // The CPU reference runs on a CPU engine; the GPU outputs are
             // materialized through the caller-held CUDA engine below.
             let cpu_out = if matches!(op, "qr" | "solve" | "svd" | "eigh") {
@@ -1305,18 +1312,18 @@ fn run_eager(
                 atol,
             )
         } else {
-            ("skipped".to_string(), None, None)
+            ("skipped".to_string(), None, None, Vec::new())
         };
 
         sampling["case_wall_phases_ns"] = json!({"backend_initialization":backend_end,
             "input_generation_transfer_reference_and_preparation":setup_end-backend_end,
             "validation":case_start.elapsed().as_nanos()-validation_start,
             "case_body_before_record_construction":case_start.elapsed().as_nanos()});
-        Ok((times_ms, ver_status, max_abs, max_rel, sampling))
+        Ok((times_ms, ver_status, max_abs, max_rel, sampling, fingerprints))
     }));
 
     match result {
-        Ok(Ok((times_ms, ver_status, max_abs, max_rel, sampling))) => {
+        Ok(Ok((times_ms, ver_status, max_abs, max_rel, sampling, fingerprints))) => {
             if ver_status != "passed" {
                 return stub(
                     suite_id,
@@ -1354,7 +1361,7 @@ fn run_eager(
                 bc,
                 tc,
             );
-            apply_sampling_record(&mut record, &sampling);
+            apply_sampling_record(&mut record, &sampling, &fingerprints);
             record
         }
         Ok(Err(msg)) => stub(
@@ -1494,7 +1501,7 @@ fn run_semantic_trace_einsum(
         let cpu_outputs =
             run_cpu_reference(&cpu_runtime, &mut cpu_engine, &program, &cpu_input_refs)
                 .map_err(|e| format!("CPU reference: {e}"))?;
-        let (ver_status, max_abs, max_rel) = verify_tensors(
+        let (ver_status, max_abs, max_rel, fingerprints) = verify_tensors(
             "einsum",
             &gpu_outputs,
             &cpu_outputs,
@@ -1503,11 +1510,11 @@ fn run_semantic_trace_einsum(
             atol,
         );
 
-        Ok((times_ms, ver_status, max_abs, max_rel, sampling))
+        Ok((times_ms, ver_status, max_abs, max_rel, sampling, fingerprints))
     }));
 
     match result {
-        Ok(Ok((times_ms, ver_status, max_abs, max_rel, sampling))) => {
+        Ok(Ok((times_ms, ver_status, max_abs, max_rel, sampling, fingerprints))) => {
             if ver_status == "failed" {
                 return stub(
                     suite_id,
@@ -1545,7 +1552,7 @@ fn run_semantic_trace_einsum(
                 bc,
                 tc,
             );
-            apply_sampling_record(&mut record, &sampling);
+            apply_sampling_record(&mut record, &sampling, &fingerprints);
             record
         }
         Ok(Err(msg)) => trace_failure(
@@ -1727,14 +1734,14 @@ fn run_trace(
             .map(|(_, t)| t.duplicate())
             .collect::<Result<_, _>>()
             .map_err(|e| e.to_string())?;
-        let (ver_status, max_abs, max_rel) =
+        let (ver_status, max_abs, max_rel, fingerprints) =
             verify_tensors(op, &gpu_tensors, &cpu_out, &cpu_inputs, rtol, atol);
 
-        Ok((times_ms, ver_status, max_abs, max_rel, sampling))
+        Ok((times_ms, ver_status, max_abs, max_rel, sampling, fingerprints))
     }));
 
     match result {
-        Ok(Ok((times_ms, ver_status, max_abs, max_rel, sampling))) => {
+        Ok(Ok((times_ms, ver_status, max_abs, max_rel, sampling, fingerprints))) => {
             if ver_status == "failed" {
                 return stub(
                     suite_id,
@@ -1772,7 +1779,7 @@ fn run_trace(
                 bc,
                 tc,
             );
-            apply_sampling_record(&mut record, &sampling);
+            apply_sampling_record(&mut record, &sampling, &fingerprints);
             record
         }
         Ok(Err(msg)) => trace_failure(
@@ -2469,7 +2476,7 @@ fn verify_eager(
     rt: &CudaRuntime,
     rtol: f64,
     atol: f64,
-) -> (String, Option<f64>, Option<f64>) {
+) -> (String, Option<f64>, Option<f64>, Vec<Fingerprint>) {
     let gpu_tensors: Vec<Tensor> = gpu
         .iter()
         .filter_map(|t| {
@@ -2484,7 +2491,7 @@ fn verify_eager(
         .collect();
     let mut input_tensors = match cpu_inputs.a.data(engine) {
         Ok(a) => vec![a],
-        Err(_) => return ("skipped".to_string(), None, None),
+        Err(_) => return ("skipped".to_string(), None, None, Vec::new()),
     };
     if let Some(b) = &cpu_inputs.b {
         if let Ok(b_data) = b.data(engine) {
@@ -2502,7 +2509,7 @@ fn verify_tensors(
     cpu_inputs: &[Tensor],
     rtol: f64,
     atol: f64,
-) -> (String, Option<f64>, Option<f64>) {
+) -> (String, Option<f64>, Option<f64>, Vec<Fingerprint>) {
     let comparison = match op {
         "qr" => verify_qr(gpu, cpu_inputs),
         "solve" => verify_solve(gpu, cpu_inputs),
@@ -2519,8 +2526,16 @@ fn verify_tensors(
     };
 
     let Some((actual, expected)) = comparison else {
-        return ("skipped".to_string(), None, None);
+        return ("skipped".to_string(), None, None, Vec::new());
     };
+    // The invariants of what this arm produced. They are recorded so another arm
+    // can be compared against this one without a CPU reference or a second
+    // download; the elementwise comparison below still decides the status.
+    let fingerprints = gpu
+        .iter()
+        .filter_map(tensor_f64_parts)
+        .map(|(_, real)| Fingerprint::of(&real, &[]))
+        .collect::<Vec<_>>();
     let mut result = compare_vectors(&actual, &expected, rtol, atol);
     let checks = match op {
         "qr" => gpu
@@ -2542,7 +2557,7 @@ fn verify_tensors(
         _ => Some(Vec::new()),
     };
     let Some(checks) = checks else {
-        return ("failed".into(), None, None);
+        return ("failed".into(), None, None, fingerprints);
     };
     for (actual, expected) in checks {
         let check = compare_vectors(&actual, &expected, rtol, atol);
@@ -2554,7 +2569,7 @@ fn verify_tensors(
     }
     if op == "qr" {
         let Some((shape, r)) = gpu.get(1).and_then(tensor_f64_parts) else {
-            return ("failed".into(), None, None);
+            return ("failed".into(), None, None, fingerprints);
         };
         let (m, n) = (shape[0], shape[1]);
         let lower = (0..n)
@@ -2571,7 +2586,7 @@ fn verify_tensors(
     if matches!(op, "svd" | "eigh") {
         let index = if op == "svd" { 1 } else { 0 };
         let Some((_, values)) = gpu.get(index).and_then(tensor_f64_parts) else {
-            return ("failed".into(), None, None);
+            return ("failed".into(), None, None, fingerprints);
         };
         if values
             .iter()
@@ -2587,7 +2602,7 @@ fn verify_tensors(
             result.0 = "failed".into();
         }
     }
-    result
+    (result.0, result.1, result.2, fingerprints)
 }
 
 fn orthogonality(tensor: &Tensor, rows_are_vectors: bool) -> Option<(Vec<f64>, Vec<f64>)> {
@@ -2807,6 +2822,20 @@ mod verification_tests {
     fn nan_cannot_disappear_in_max_error_fold() {
         assert_eq!(compare_vectors(&[f64::NAN], &[0.], 1e-8, 1e-10).0, "failed");
     }
+    #[test]
+    fn the_verified_tensor_path_returns_its_invariants() {
+        // The Rust arm records these so another arm can be compared against it
+        // without a CPU reference; a permutation changes the seeded dot alone.
+        let values = vec![1.0, 2.0, 3.0, 4.0];
+        let fingerprint = Fingerprint::of(&values, &[]);
+        assert_eq!(fingerprint.elements, 4);
+        assert_eq!(fingerprint.sum_re, 10.0);
+        assert_eq!(fingerprint.sum_squares, 30.0);
+        let permuted = Fingerprint::of(&[4.0, 3.0, 2.0, 1.0], &[]);
+        assert_eq!(permuted.sum_re, fingerprint.sum_re);
+        assert_ne!(permuted.dot_seeded_re, fingerprint.dot_seeded_re);
+    }
+
     #[test]
     fn qr_checks_orthogonality_and_triangularity() {
         let r = matrix(vec![2., 0., 1., 3.]);
