@@ -18,6 +18,13 @@ from gpu_public_api_ops import fixtures
 
 
 class PublicGpuContracts(unittest.TestCase):
+    def test_the_cold_path_is_compilation_plus_the_first_call(self):
+        # PyTorch arms do not compile: compile_ms is 0 and the cold path is the
+        # first call alone. This is what an arm-specific local used to break.
+        self.assertAlmostEqual(bench.cold_path_ms(0.0, 100.0, 100.5), 500.0)
+        self.assertAlmostEqual(bench.cold_path_ms(None, 100.0, 100.5), 500.0)
+        self.assertAlmostEqual(bench.cold_path_ms(12.0, 100.0, 100.5), 512.0)
+
     def test_reshape_and_stack_preserve_logical_axes_and_dtype(self):
         for dtype in ("f64", "c64", "i32", "i64"):
             case = dict(op="reshape", dtype=dtype, n=12, shape=[3, 4], output_shape=[1, 3, 4])

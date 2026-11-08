@@ -341,6 +341,17 @@ def measure(op, sync, ready, nbytes, warmups, runs, reuse=False, *, synchronize_
             "wall_phase_scope": "end-to-end phase wall time, including untimed batch preparation/cleanup; outside operation clocks"}
 
 
+def cold_path_ms(compile_ms, started, now):
+    """Compilation (JIT arms only) plus the first executed call.
+
+    ``compile_ms`` is 0 for arms that do not compile, so the cold path is the
+    first call alone. It has to be passed in: an arm-specific local made this
+    expression raise ``UnboundLocalError`` on the PyTorch arms, which failed the
+    whole suite after the sampling had already succeeded.
+    """
+    return (compile_ms or 0.0) + (now - started) * 1e3
+
+
 def verify_device(outputs, backend, device):
     """Check every output leaf before any verification download."""
     from gpu_multi_output_verification import leaves
@@ -478,7 +489,6 @@ def run_python(backend, root, output):
                             compile_started = time.monotonic()
                             fn = jax.jit(fn).lower(*inputs).compile()
                             compile_ms = (time.monotonic() - compile_started) * 1e3
-                            first_call_compile_ms = compile_ms
                         op = lambda: fn(*inputs)
                     jax.block_until_ready(inputs)
                     sync = lambda: None  # previous batch waits on every output
@@ -501,7 +511,8 @@ def run_python(backend, root, output):
                 (jax.block_until_ready if backend != "pytorch-cuda" and hasattr(op, "inspect") else ready)([probe])
                 # Compilation (JIT arms only) plus the first executed call; every
                 # timed sample below still happens after the warmups.
-                first_call_ms = first_call_compile_ms + (time.monotonic() - first_call_started) * 1e3
+                first_call_ms = cold_path_ms(
+                    compile_ms, first_call_started, time.monotonic())
                 cache_delta = jax_cache_stats.delta(
                     cache_before,
                     jax_cache_stats.stats(os.environ.get("JAX_COMPILATION_CACHE_DIR") or None))
