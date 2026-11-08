@@ -74,6 +74,23 @@ class AdVerification(unittest.TestCase):
         with self.assertRaises(jsonschema.ValidationError):
             jsonschema.validate(row, schema)
 
+    def test_a_measure_only_stub_is_the_not_run_pair(self):
+        # A runtime failure on a measure_only problem used to write `skipped`
+        # without a mode: neither the Rust builder nor the schema contract
+        # (#417 review).
+        import json
+        import jsonschema
+        from benchmark_gpu_linalg_ad import stub
+        problem = dict(id="control", op="jvp")
+        row = stub("gpu/linalg_jvp_vjp", problem, "tenferro-cuda-trace", 0,
+                   status="runtime_failed", reason="no GPU", path="control",
+                   ts=None, bc=None, tc=None, mode="measure_only")
+        self.assertEqual(row["verification"]["status"], "not_run")
+        self.assertEqual(row["verification"]["mode"], "measure_only")
+        schema = json.loads((Path(__file__).resolve().parents[1] / "schemas/benchmark-result.schema.json").read_text())
+        jsonschema.validate(row, schema)
+
+
     def test_rust_unsupported_prose_does_not_count_as_verified_outputs(self):
         from verify_gpu_linalg_ad_rust import validate
         row = dict(status="unsupported", execution=dict(notes="unsupported scalar broadcast"),

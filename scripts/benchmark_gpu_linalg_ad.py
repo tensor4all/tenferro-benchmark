@@ -359,7 +359,7 @@ def run_framework(suite_id, problem, backend, device_ordinal, *, ts, bc, tc, ver
                                "CPU AD reference, transfers, compilation, validation, output destruction"}))
         return rec
     except Exception as exc:
-        return stub(suite_id, problem, backend, device_ordinal, status="runtime_failed", reason=str(exc), path=path, ts=ts, bc=bc, tc=tc)
+        return stub(suite_id, problem, backend, device_ordinal, status="runtime_failed", reason=str(exc), path=path, ts=ts, bc=bc, tc=tc, mode=mode)
 
 
 def _layout_str(problem) -> str:
@@ -382,6 +382,7 @@ def stub(
     ts,
     bc,
     tc,
+    mode=None,
 ):
     return {
         "schema_version": 1,
@@ -407,7 +408,8 @@ def stub(
             "peak_memory_bytes": None,
         },
         "verification": {
-            "status": "skipped",
+            **({"mode": mode} if mode else {}),
+            "status": "not_run" if mode == "measure_only" else "skipped",
             "reference_backend": None,
             "max_abs_error": None,
             "max_rel_error": None,
