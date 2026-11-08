@@ -1,7 +1,7 @@
 # CPU Small-Work Benchmark Results
 
 - Suite: `cpu/small_work`
-- Raw run: `data/results/mac-cpu/cpu/small_work/20261107_183240`
+- Raw run: `data/results/mac-cpu/cpu/small_work/20261108_183555`
 
 ## CPU Information
 
@@ -19,10 +19,10 @@
 
 ## run_t1
 
-Full metadata: `data/results/mac-cpu/cpu/small_work/20261107_183240/run_t1.yaml`
+Full metadata: `data/results/mac-cpu/cpu/small_work/20261108_183555/run_t1.yaml`
 
 ```yaml
-timestamp: '2026-11-07T18:32:40Z'
+timestamp: '2026-11-08T18:35:55Z'
 tenferro_rs:
   path: /Users/runner/work/tenferro-benchmark/tenferro-benchmark/extern/tenferro-rs
   commit: 9a850b06155405acc99ecd0648829e9e6d3866ba
@@ -36,7 +36,7 @@ blas:
   library: /System/Library/Frameworks/Accelerate.framework
 environment:
   container: none
-  hostname: sjc22-bm213-6f7e243e-d935-4cb5-98ec-e1cc5a37fa73-12839649360E.local
+  hostname: sjc20-cw712-869818c0-9e4f-45fe-b4bc-06115da38720-62D33A3D8299.local
   os: macOS-26.7.2-arm64-arm-64bit-Mach-O
   arch: arm64
   cpu: arm
@@ -57,7 +57,7 @@ environment:
     OMP_DYNAMIC: 'FALSE'
     RAYON_NUM_THREADS: '1'
     BENCHMARK_TARGET_PROFILE: mac-cpu
-    BENCHMARK_COMMIT: d6655b567e09aa29c3201655e1de418716934876
+    BENCHMARK_COMMIT: ec30d812749ef2bd6dc72245a56150aa77cb2f9c
     BENCH_COMMAND_BUDGET_SECONDS: '120'
     OPENBLAS_NUM_THREADS: '1'
     GOTO_NUM_THREADS: '1'
@@ -79,10 +79,10 @@ environment:
 
 ## run_t4
 
-Full metadata: `data/results/mac-cpu/cpu/small_work/20261107_183240/run_t4.yaml`
+Full metadata: `data/results/mac-cpu/cpu/small_work/20261108_183555/run_t4.yaml`
 
 ```yaml
-timestamp: '2026-11-07T18:32:51Z'
+timestamp: '2026-11-08T18:36:05Z'
 tenferro_rs:
   path: /Users/runner/work/tenferro-benchmark/tenferro-benchmark/extern/tenferro-rs
   commit: 9a850b06155405acc99ecd0648829e9e6d3866ba
@@ -96,7 +96,7 @@ blas:
   library: /System/Library/Frameworks/Accelerate.framework
 environment:
   container: none
-  hostname: sjc22-bm213-6f7e243e-d935-4cb5-98ec-e1cc5a37fa73-12839649360E.local
+  hostname: sjc20-cw712-869818c0-9e4f-45fe-b4bc-06115da38720-62D33A3D8299.local
   os: macOS-26.7.2-arm64-arm-64bit-Mach-O
   arch: arm64
   cpu: arm
@@ -117,7 +117,7 @@ environment:
     OMP_DYNAMIC: 'FALSE'
     RAYON_NUM_THREADS: '4'
     BENCHMARK_TARGET_PROFILE: mac-cpu
-    BENCHMARK_COMMIT: d6655b567e09aa29c3201655e1de418716934876
+    BENCHMARK_COMMIT: ec30d812749ef2bd6dc72245a56150aa77cb2f9c
     BENCH_COMMAND_BUDGET_SECONDS: '120'
     OPENBLAS_NUM_THREADS: '4'
     GOTO_NUM_THREADS: '4'
@@ -140,14 +140,14 @@ environment:
 ## Case status
 
 - Manifest: `cpu/small_work` version 3, coverage `quick`, effort `standard`
-- Expected 144, selected 144, executed 144, unsupported 0, failed 0, skipped 0, missing 0, noisy 120.
+- Expected 144, selected 144, executed 144, unsupported 0, failed 0, skipped 0, missing 0, noisy 47.
 - Complete: **yes** — only executed cases count as covered; unsupported, skipped, failed, missing and unselected cases never do.
 
 | expected | selected | executed | unsupported | failed | skipped | missing | noisy |
 |---:|---:|---:|---:|---:|---:|---:|---:|
-| 144 | 144 | 144 | 0 | 0 | 0 | 0 | 120 |
+| 144 | 144 | 144 | 0 | 0 | 0 | 0 | 47 |
 
-- Noisy: `add_f64_concrete-shared_size4_single@t1`, `add_f64_concrete-shared_size4_dependent10@t1`, `add_f64_concrete_shared@t1`, `add_f64_concrete-shared_size16_dependent10@t1`, `add_f64_concrete-shared_size256_single@t1`, `einsum_f64_prepared-repeat_n2_single@t1`, `einsum_f64_prepared-repeat_n4_single@t1`, `einsum_c64_prepared-repeat_n2_single@t1`, `einsum_c64_prepared-repeat_n4_single@t1`, `solve_f64_concrete-shared_n4_single@t1`, `einsum_c64_prepared-repeat_n8_single@t1`, `einsum_c64_prepared-repeat_n32_single@t1`, `gather_f64_concrete_shared@t1`, `gather_f64_concrete-shared_size256_single@t1`, `reduce_sum_f64_concrete-shared_size16_single@t1`, `reduce_sum_f64_concrete-shared_size256_single@t1`, `einsum_f64_prepared-into-repeat_abcd-dbef-acef_d4_single@t1`, `einsum_f64_dot-general-into-shared_abcd-dbef-acef_d4_single@t1`, `einsum_f64_prepared-repeat_ax-asb-xsb_d4s2_single@t1`, `einsum_f64_prepared-into-repeat_ax-asb-xsb_d4s2_single@t1`, `einsum_f64_dot-general-into-shared_ax-asb-xsb_d4s2_single@t1`, `einsum_f64_dot-general-into-shared_ij-jk-ik_m95k95n1_single@t1`, `nonad_einsum_n2_col_major_contiguous_concrete-fresh@t1`, `nonad_einsum_n2_col_major_contiguous_eager-no-ad@t1`, `nonad_einsum_n2_col_major_contiguous_concrete-shared@t1`, `nonad_einsum_n2_col_major_contiguous_eager-shared@t1`, `nonad_einsum3_n2_col_major_contiguous_concrete-fresh@t1`, `nonad_einsum3_n2_col_major_contiguous_eager-no-ad@t1`, `nonad_einsum3_n2_col_major_contiguous_concrete-shared@t1`, `nonad_einsum3_n2_col_major_contiguous_eager-shared@t1`, `nonad_qr_n2_col_major_contiguous_concrete-fresh@t1`, `nonad_qr_n2_col_major_contiguous_eager-no-ad@t1`, `nonad_qr_n2_col_major_contiguous_concrete-shared@t1`, `nonad_qr_n2_col_major_contiguous_eager-shared@t1`, `nonad_svd_n2_col_major_contiguous_concrete-fresh@t1`, `nonad_svd_n2_col_major_contiguous_eager-no-ad@t1`, `nonad_svd_n2_col_major_contiguous_concrete-shared@t1`, `nonad_svd_n2_col_major_contiguous_eager-shared@t1`, `nonad_solve_n2_col_major_contiguous_concrete-fresh@t1`, `nonad_solve_n2_col_major_contiguous_eager-no-ad@t1` (+80 more)
+- Noisy: `einsum_c64_prepared-repeat_n4_single@t1`, `einsum_c64_prepared-repeat_n16_single@t1`, `einsum_f64_prepared-repeat_n32_single@t1`, `gather_f64_concrete-shared_size4_single@t1`, `gather_f64_concrete_shared@t1`, `gather_f64_concrete-shared_size256_single@t1`, `einsum_f64_prepared-repeat_ij-jk-ik_m95k95n1_single@t1`, `einsum_f64_prepared-into-repeat_ij-jk-ik_m95k95n1_single@t1`, `einsum_f64_dot-general-into-shared_ij-jk-ik_m95k95n1_single@t1`, `nonad_svd_n2_col_major_contiguous_eager-no-ad@t1`, `nonad_svd_n2_col_major_contiguous_concrete-shared@t1`, `nonad_svd_n2_col_major_contiguous_eager-shared@t1`, `nonad_solve_n2_col_major_contiguous_concrete-fresh@t1`, `nonad_solve_n2_col_major_contiguous_eager-no-ad@t1`, `nonad_solve_n2_col_major_contiguous_concrete-shared@t1`, `nonad_solve_n2_col_major_contiguous_eager-shared@t1`, `nonad_einsum_n16_col_major_contiguous_eager-shared@t1`, `nonad_einsum_n16_col_major_contiguous_concrete-shared@t1`, `nonad_einsum_n16_col_major_contiguous_eager-no-ad@t1`, `nonad_qr_n16_col_major_contiguous_eager-shared@t1`, `nonad_qr_n16_col_major_contiguous_concrete-shared@t1`, `nonad_qr_n16_col_major_contiguous_eager-no-ad@t1`, `nonad_qr_n16_col_major_contiguous_concrete-fresh@t1`, `nonad_solve_n16_col_major_contiguous_eager-shared@t1`, `nonad_solve_n16_col_major_contiguous_concrete-shared@t1`, `nonad_solve_n16_col_major_contiguous_eager-no-ad@t1`, `nonad_solve_n16_col_major_contiguous_concrete-fresh@t1`, `nonad_einsum_n2_col_major_contiguous_concrete-scoped@t1`, `nonad_qr_n2_col_major_contiguous_concrete-scoped@t1`, `nonad_solve_n2_col_major_contiguous_concrete-scoped@t1`, `nonad_einsum_n16_col_major_contiguous_concrete-scoped@t1`, `nonad_qr_n16_col_major_contiguous_concrete-scoped@t1`, `nonad_solve_n16_col_major_contiguous_concrete-scoped@t1`, `gather_f64_concrete-shared_size4_single@t4`, `gather_f64_concrete-shared_size256_single@t4`, `reduce_sum_f64_concrete-shared_size4_single@t4`, `einsum_f64_prepared-repeat_ax-asb-xsb_d4s2_single@t4`, `einsum_f64_prepared-into-repeat_ij-jk-ik_m95k95n1_single@t4`, `einsum_f64_dot-general-into-shared_ij-jk-ik_m95k95n1_single@t4`, `nonad_einsum_n2_col_major_contiguous_concrete-fresh@t4` (+7 more)
 
 Numerical checks: **144/144 recorded rows passed** (case × thread count).
 
@@ -161,150 +161,150 @@ Inputs and backend construction, independent numerical checks and AD backward ch
 
 | Case ID | Operation | API route | Route (path / output / repr / session) | Dtype | Shape | Layout | Workflow | Threads | Provider | Operations/batch | Median batch ms | Median workflow ns | IQR ns | CoV | ns/op (chain only) | Status |
 |---|---|---|---|---|---|---|---|---:|---|---:|---:|---:|---:|---:|---:|---|
-| add_f64_concrete-shared_size4_single | add | concrete-shared | concrete / allocating / owned / shared-session | f64 | 4 | col_major_contiguous | single | 1 | blas | 4096 | 2.374500 | 579.71 | 33.63 | 22.8% | — | NOISY |
-| add_f64_concrete-shared_size4_dependent10 | add | concrete-shared | concrete / allocating / owned / shared-session | f64 | 4 | col_major_contiguous | dependent10 | 1 | blas | 5120 | 2.952542 | 5766.68 | 241.70 | 17.5% | 576.67 | NOISY |
-| add_f64_concrete_shared | add | concrete-shared | concrete / allocating / owned / shared-session | f64 | 16 | col_major_contiguous | single | 1 | blas | 4096 | 2.448375 | 597.75 | 26.88 | 11.5% | — | NOISY |
-| add_f64_concrete-shared_size16_dependent10 | add | concrete-shared | concrete / allocating / owned / shared-session | f64 | 16 | col_major_contiguous | dependent10 | 1 | blas | 5120 | 2.921292 | 5705.65 | 559.16 | 14.7% | 570.56 | NOISY |
-| add_f64_concrete-shared_size256_single | add | concrete-shared | concrete / allocating / owned / shared-session | f64 | 256 | col_major_contiguous | single | 1 | blas | 2048 | 1.399250 | 683.23 | 88.80 | 23.1% | — | NOISY |
-| add_f64_concrete-shared_size256_dependent10 | add | concrete-shared | concrete / allocating / owned / shared-session | f64 | 256 | col_major_contiguous | dependent10 | 1 | blas | 1280 | 0.820458 | 6409.83 | 640.46 | 6.0% | 640.98 | ok |
-| einsum_f64_prepared-repeat_n2_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 2048 | 1.895709 | 925.64 | 36.09 | 31.3% | — | NOISY |
-| einsum_f64_prepared-repeat_n4_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | f64 | 4×4 | col_major_contiguous | single | 1 | blas | 2048 | 1.886667 | 921.22 | 41.86 | 23.1% | — | NOISY |
-| einsum_f64_prepared-repeat_n16_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | f64 | 16×16 | col_major_contiguous | single | 1 | blas | 1024 | 1.379875 | 1347.53 | 62.19 | 8.8% | — | ok |
-| einsum_c64_prepared-repeat_n2_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | c64 | 2×2 | col_major_contiguous | single | 1 | blas | 1024 | 1.112083 | 1086.02 | 101.52 | 29.2% | — | NOISY |
-| einsum_c64_prepared-repeat_n4_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | c64 | 4×4 | col_major_contiguous | single | 1 | blas | 2048 | 2.415084 | 1179.24 | 75.40 | 15.6% | — | NOISY |
-| einsum_c64_prepared-repeat_n16_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | c64 | 16×16 | col_major_contiguous | single | 1 | blas | 1024 | 2.871000 | 2803.71 | 160.20 | 6.8% | — | ok |
-| solve_f64_concrete-shared_n2_single | solve | concrete-shared | concrete / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 2048 | 1.890791 | 923.24 | 45.52 | 4.8% | — | ok |
-| solve_f64_concrete-shared_n4_single | solve | concrete-shared | concrete / allocating / owned / shared-session | f64 | 4×4 | col_major_contiguous | single | 1 | blas | 2048 | 1.990250 | 971.80 | 103.95 | 31.3% | — | NOISY |
-| solve_f64_concrete-shared_n16_single | solve | concrete-shared | concrete / allocating / owned / shared-session | f64 | 16×16 | col_major_contiguous | single | 1 | blas | 1024 | 2.335958 | 2281.21 | 134.83 | 4.4% | — | ok |
-| einsum_f64_prepared-repeat_n8_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | f64 | 8×8 | col_major_contiguous | single | 1 | blas | 2048 | 1.971667 | 962.73 | 40.43 | 4.1% | — | ok |
-| einsum_f64_prepared-repeat_n32_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | f64 | 32×32 | col_major_contiguous | single | 1 | blas | 1024 | 1.656875 | 1618.04 | 22.81 | 1.8% | — | ok |
-| einsum_c64_prepared-repeat_n8_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | c64 | 8×8 | col_major_contiguous | single | 1 | blas | 1024 | 1.481667 | 1446.94 | 80.61 | 11.6% | — | NOISY |
-| einsum_c64_prepared-repeat_n32_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | c64 | 32×32 | col_major_contiguous | single | 1 | blas | 1024 | 7.811417 | 7628.34 | 2255.11 | 41.9% | — | NOISY |
-| gather_f64_concrete-shared_size4_single | gather | concrete-shared | concrete / allocating / owned / shared-session | f64 | 4 | col_major_contiguous | single | 1 | blas | 1024 | 0.812250 | 793.21 | 78.43 | 6.7% | — | ok |
-| gather_f64_concrete_shared | gather | concrete-shared | concrete / allocating / owned / shared-session | f64 | 16 | col_major_contiguous | single | 1 | blas | 4096 | 3.011541 | 735.24 | 23.25 | 13.6% | — | NOISY |
-| gather_f64_concrete-shared_size256_single | gather | concrete-shared | concrete / allocating / owned / shared-session | f64 | 256 | col_major_contiguous | single | 1 | blas | 1024 | 1.037667 | 1013.35 | 602.78 | 54.6% | — | NOISY |
-| reduce_sum_f64_concrete-shared_size4_single | reduce_sum | concrete-shared | concrete / allocating / owned / shared-session | f64 | 4 | col_major_contiguous | single | 1 | blas | 4096 | 3.001167 | 732.71 | 20.80 | 9.1% | — | ok |
-| reduce_sum_f64_concrete-shared_size16_single | reduce_sum | concrete-shared | concrete / allocating / owned / shared-session | f64 | 16 | col_major_contiguous | single | 1 | blas | 4096 | 3.017125 | 736.60 | 20.06 | 20.4% | — | NOISY |
-| reduce_sum_f64_concrete-shared_size256_single | reduce_sum | concrete-shared | concrete / allocating / owned / shared-session | f64 | 256 | col_major_contiguous | single | 1 | blas | 2048 | 1.591792 | 777.24 | 59.25 | 16.3% | — | NOISY |
-| einsum_f64_prepared-repeat_abcd-dbef-acef_d4_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | f64 | `abcd,dbef->acef` 4×4×4×4, 4×4×4×4 → 4×4×4×4 | col_major_contiguous | single | 1 | blas | 1024 | 2.706750 | 2643.31 | 97.19 | 4.4% | — | ok |
-| einsum_f64_prepared-into-repeat_abcd-dbef-acef_d4_single | einsum | prepared-into-repeat | concrete-prepared / reused / owned / shared-session | f64 | `abcd,dbef->acef` 4×4×4×4, 4×4×4×4 → 4×4×4×4 | col_major_contiguous | single | 1 | blas | 1024 | 2.993792 | 2923.62 | 320.66 | 21.1% | — | NOISY |
-| einsum_f64_dot-general-into-shared_abcd-dbef-acef_d4_single | einsum | dot-general-into-shared | concrete / reused / owned / shared-session | f64 | `abcd,dbef->acef` 4×4×4×4, 4×4×4×4 → 4×4×4×4 | col_major_contiguous | single | 1 | blas | 1024 | 3.034292 | 2963.18 | 579.28 | 12.3% | — | NOISY |
-| einsum_f64_prepared-repeat_ax-asb-xsb_d4s2_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | f64 | `ax,asb->xsb` 4×4, 4×2×4 → 4×2×4 | col_major_contiguous | single | 1 | blas | 2048 | 2.467292 | 1204.73 | 240.09 | 26.4% | — | NOISY |
-| einsum_f64_prepared-into-repeat_ax-asb-xsb_d4s2_single | einsum | prepared-into-repeat | concrete-prepared / reused / owned / shared-session | f64 | `ax,asb->xsb` 4×4, 4×2×4 → 4×2×4 | col_major_contiguous | single | 1 | blas | 2048 | 2.421542 | 1182.39 | 115.88 | 25.7% | — | NOISY |
-| einsum_f64_dot-general-into-shared_ax-asb-xsb_d4s2_single | einsum | dot-general-into-shared | concrete / reused / owned / shared-session | f64 | `ax,asb->xsb` 4×4, 4×2×4 → 4×2×4 | col_major_contiguous | single | 1 | blas | 2048 | 2.125625 | 1037.90 | 263.77 | 19.3% | — | NOISY |
-| einsum_f64_prepared-repeat_ij-jk-ik_m95k95n1_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | f64 | `ij,jk->ik` 95×95, 95×1 → 95×1 | col_major_contiguous | single | 1 | blas | 1024 | 3.277375 | 3200.56 | 203.88 | 7.2% | — | ok |
-| einsum_f64_prepared-into-repeat_ij-jk-ik_m95k95n1_single | einsum | prepared-into-repeat | concrete-prepared / reused / owned / shared-session | f64 | `ij,jk->ik` 95×95, 95×1 → 95×1 | col_major_contiguous | single | 1 | blas | 1024 | 3.321709 | 3243.86 | 342.26 | 7.6% | — | ok |
-| einsum_f64_dot-general-into-shared_ij-jk-ik_m95k95n1_single | einsum | dot-general-into-shared | concrete / reused / owned / shared-session | f64 | `ij,jk->ik` 95×95, 95×1 → 95×1 | col_major_contiguous | single | 1 | blas | 1024 | 3.303125 | 3225.71 | 597.17 | 15.6% | — | NOISY |
-| nonad_einsum_n2_col_major_contiguous_concrete-fresh | einsum | concrete-fresh | concrete / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 1024 | 1.488792 | 1453.90 | 322.47 | 17.7% | — | NOISY |
-| nonad_einsum_n2_col_major_contiguous_eager-no-ad | einsum | eager-no-ad | eager / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 1024 | 2.652625 | 2590.45 | 333.33 | 16.2% | — | NOISY |
-| nonad_einsum_n2_col_major_contiguous_concrete-shared | einsum | concrete-shared | concrete / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 1024 | 2.167334 | 2116.54 | 1795.19 | 39.2% | — | NOISY |
-| nonad_einsum_n2_col_major_contiguous_eager-shared | einsum | eager-shared | eager / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 1024 | 3.164125 | 3089.97 | 2113.83 | 37.8% | — | NOISY |
-| nonad_einsum3_n2_col_major_contiguous_concrete-fresh | einsum3 | concrete-fresh | concrete / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 64 | 1.547625 | 24181.64 | 29301.44 | 68.7% | — | NOISY |
-| nonad_einsum3_n2_col_major_contiguous_eager-no-ad | einsum3 | eager-no-ad | eager / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 256 | 2.147958 | 8390.46 | 3679.36 | 35.0% | — | NOISY |
-| nonad_einsum3_n2_col_major_contiguous_concrete-shared | einsum3 | concrete-shared | concrete / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 128 | 3.095167 | 24180.99 | 11763.83 | 33.4% | — | NOISY |
-| nonad_einsum3_n2_col_major_contiguous_eager-shared | einsum3 | eager-shared | eager / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 128 | 0.968333 | 7565.10 | 2012.04 | 54.9% | — | INCONCLUSIVE (<1 ms batch) |
-| nonad_qr_n2_col_major_contiguous_concrete-fresh | qr | concrete-fresh | concrete / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 2048 | 4.370833 | 2134.20 | 1317.54 | 40.2% | — | NOISY |
-| nonad_qr_n2_col_major_contiguous_eager-no-ad | qr | eager-no-ad | eager / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 256 | 0.865000 | 3378.91 | 202.07 | 53.6% | — | INCONCLUSIVE (<1 ms batch) |
-| nonad_qr_n2_col_major_contiguous_concrete-shared | qr | concrete-shared | concrete / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 2048 | 3.802584 | 1856.73 | 1453.07 | 47.7% | — | NOISY |
-| nonad_qr_n2_col_major_contiguous_eager-shared | qr | eager-shared | eager / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 512 | 1.848875 | 3611.08 | 2702.03 | 56.3% | — | NOISY |
-| nonad_svd_n2_col_major_contiguous_concrete-fresh | svd | concrete-fresh | concrete / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 1024 | 1.820417 | 1777.75 | 795.31 | 55.9% | — | NOISY |
-| nonad_svd_n2_col_major_contiguous_eager-no-ad | svd | eager-no-ad | eager / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 128 | 0.560500 | 4378.91 | 993.97 | 57.8% | — | INCONCLUSIVE (<1 ms batch) |
-| nonad_svd_n2_col_major_contiguous_concrete-shared | svd | concrete-shared | concrete / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 1024 | 1.906083 | 1861.41 | 464.40 | 35.5% | — | NOISY |
-| nonad_svd_n2_col_major_contiguous_eager-shared | svd | eager-shared | eager / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 512 | 2.693500 | 5260.74 | 4937.70 | 51.2% | — | NOISY |
-| nonad_solve_n2_col_major_contiguous_concrete-fresh | solve | concrete-fresh | concrete / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 2048 | 2.305584 | 1125.77 | 443.80 | 47.8% | — | NOISY |
-| nonad_solve_n2_col_major_contiguous_eager-no-ad | solve | eager-no-ad | eager / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 512 | 2.192333 | 4281.90 | 2979.41 | 45.8% | — | NOISY |
-| nonad_solve_n2_col_major_contiguous_concrete-shared | solve | concrete-shared | concrete / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 1024 | 1.013000 | 989.26 | 365.68 | 32.6% | — | INCONCLUSIVE (<1 ms batch) |
-| nonad_solve_n2_col_major_contiguous_eager-shared | solve | eager-shared | eager / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 512 | 1.959666 | 3827.47 | 3362.96 | 41.8% | — | NOISY |
-| nonad_einsum_n16_col_major_contiguous_eager-shared | einsum | eager-shared | eager / allocating / owned / shared-session | f64 | 16×16 | col_major_contiguous | single | 1 | blas | 256 | 0.759625 | 2967.29 | 152.92 | 12.2% | — | INCONCLUSIVE (<1 ms batch) |
-| nonad_einsum_n16_col_major_contiguous_concrete-shared | einsum | concrete-shared | concrete / allocating / owned / shared-session | f64 | 16×16 | col_major_contiguous | single | 1 | blas | 1024 | 1.812834 | 1770.35 | 229.63 | 28.5% | — | NOISY |
-| nonad_einsum_n16_col_major_contiguous_eager-no-ad | einsum | eager-no-ad | eager / allocating / owned / session-per-call | f64 | 16×16 | col_major_contiguous | single | 1 | blas | 512 | 1.729875 | 3378.66 | 632.94 | 33.7% | — | NOISY |
-| nonad_einsum_n16_col_major_contiguous_concrete-fresh | einsum | concrete-fresh | concrete / allocating / owned / session-per-call | f64 | 16×16 | col_major_contiguous | single | 1 | blas | 512 | 1.327583 | 2592.94 | 1901.29 | 40.8% | — | INCONCLUSIVE (<1 ms batch) |
-| nonad_qr_n16_col_major_contiguous_eager-shared | qr | eager-shared | eager / allocating / owned / shared-session | f64 | 16×16 | col_major_contiguous | single | 1 | blas | 256 | 2.158250 | 8430.66 | 4712.65 | 33.1% | — | NOISY |
-| nonad_qr_n16_col_major_contiguous_concrete-shared | qr | concrete-shared | concrete / allocating / owned / shared-session | f64 | 16×16 | col_major_contiguous | single | 1 | blas | 512 | 3.980958 | 7775.31 | 5220.66 | 42.3% | — | NOISY |
-| nonad_qr_n16_col_major_contiguous_eager-no-ad | qr | eager-no-ad | eager / allocating / owned / session-per-call | f64 | 16×16 | col_major_contiguous | single | 1 | blas | 128 | 1.202167 | 9391.93 | 3947.43 | 39.8% | — | INCONCLUSIVE (<1 ms batch) |
-| nonad_qr_n16_col_major_contiguous_concrete-fresh | qr | concrete-fresh | concrete / allocating / owned / session-per-call | f64 | 16×16 | col_major_contiguous | single | 1 | blas | 512 | 3.829041 | 7478.60 | 3553.79 | 29.1% | — | NOISY |
-| nonad_solve_n16_col_major_contiguous_eager-shared | solve | eager-shared | eager / allocating / owned / shared-session | f64 | 16×16 | col_major_contiguous | single | 1 | blas | 256 | 1.378459 | 5384.61 | 1445.80 | 43.0% | — | NOISY |
-| nonad_solve_n16_col_major_contiguous_concrete-shared | solve | concrete-shared | concrete / allocating / owned / shared-session | f64 | 16×16 | col_major_contiguous | single | 1 | blas | 512 | 1.200042 | 2343.83 | 462.73 | 40.6% | — | NOISY |
-| nonad_solve_n16_col_major_contiguous_eager-no-ad | solve | eager-no-ad | eager / allocating / owned / session-per-call | f64 | 16×16 | col_major_contiguous | single | 1 | blas | 512 | 3.005458 | 5870.04 | 3457.40 | 38.0% | — | NOISY |
-| nonad_solve_n16_col_major_contiguous_concrete-fresh | solve | concrete-fresh | concrete / allocating / owned / session-per-call | f64 | 16×16 | col_major_contiguous | single | 1 | blas | 512 | 1.198083 | 2340.01 | 127.65 | 3.6% | — | ok |
-| nonad_einsum_n2_col_major_contiguous_concrete-scoped | einsum | concrete-scoped | concrete / allocating / owned / execution-scope+session-per-call | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 1024 | 1.293459 | 1263.14 | 539.59 | 23.8% | — | NOISY |
-| nonad_qr_n2_col_major_contiguous_concrete-scoped | qr | concrete-scoped | concrete / allocating / owned / execution-scope+session-per-call | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 512 | 0.574875 | 1122.80 | 76.54 | 12.2% | — | INCONCLUSIVE (<1 ms batch) |
-| nonad_solve_n2_col_major_contiguous_concrete-scoped | solve | concrete-scoped | concrete / allocating / owned / execution-scope+session-per-call | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 1024 | 1.600417 | 1562.91 | 1209.61 | 41.1% | — | INCONCLUSIVE (<1 ms batch) |
-| nonad_einsum_n16_col_major_contiguous_concrete-scoped | einsum | concrete-scoped | concrete / allocating / owned / execution-scope+session-per-call | f64 | 16×16 | col_major_contiguous | single | 1 | blas | 1024 | 1.908625 | 1863.89 | 540.97 | 20.2% | — | NOISY |
-| nonad_qr_n16_col_major_contiguous_concrete-scoped | qr | concrete-scoped | concrete / allocating / owned / execution-scope+session-per-call | f64 | 16×16 | col_major_contiguous | single | 1 | blas | 256 | 1.272167 | 4969.40 | 2849.29 | 35.3% | — | NOISY |
-| nonad_solve_n16_col_major_contiguous_concrete-scoped | solve | concrete-scoped | concrete / allocating / owned / execution-scope+session-per-call | f64 | 16×16 | col_major_contiguous | single | 1 | blas | 512 | 1.274334 | 2488.93 | 551.39 | 30.3% | — | NOISY |
-| add_f64_concrete-shared_size4_single | add | concrete-shared | concrete / allocating / owned / shared-session | f64 | 4 | col_major_contiguous | single | 4 | blas | 2048 | 2.216917 | 1082.48 | 194.73 | 24.9% | — | NOISY |
-| add_f64_concrete-shared_size4_dependent10 | add | concrete-shared | concrete / allocating / owned / shared-session | f64 | 4 | col_major_contiguous | dependent10 | 4 | blas | 2560 | 2.844541 | 11111.49 | 6346.11 | 38.0% | 1111.15 | NOISY |
-| add_f64_concrete_shared | add | concrete-shared | concrete / allocating / owned / shared-session | f64 | 16 | col_major_contiguous | single | 4 | blas | 2048 | 2.745334 | 1340.50 | 702.13 | 29.0% | — | NOISY |
-| add_f64_concrete-shared_size16_dependent10 | add | concrete-shared | concrete / allocating / owned / shared-session | f64 | 16 | col_major_contiguous | dependent10 | 4 | blas | 2560 | 2.762166 | 10789.71 | 237.47 | 17.9% | 1078.97 | NOISY |
-| add_f64_concrete-shared_size256_single | add | concrete-shared | concrete / allocating / owned / shared-session | f64 | 256 | col_major_contiguous | single | 4 | blas | 1024 | 1.160459 | 1133.26 | 35.95 | 3.5% | — | ok |
-| add_f64_concrete-shared_size256_dependent10 | add | concrete-shared | concrete / allocating / owned / shared-session | f64 | 256 | col_major_contiguous | dependent10 | 4 | blas | 1280 | 1.412917 | 11038.41 | 249.35 | 48.3% | 1103.84 | NOISY |
-| einsum_f64_prepared-repeat_n2_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 1024 | 1.397792 | 1365.03 | 95.79 | 35.7% | — | NOISY |
-| einsum_f64_prepared-repeat_n4_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | f64 | 4×4 | col_major_contiguous | single | 4 | blas | 2048 | 2.877291 | 1404.93 | 69.31 | 19.1% | — | NOISY |
-| einsum_f64_prepared-repeat_n16_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | f64 | 16×16 | col_major_contiguous | single | 4 | blas | 1024 | 1.980458 | 1934.04 | 31.09 | 13.8% | — | NOISY |
-| einsum_c64_prepared-repeat_n2_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | c64 | 2×2 | col_major_contiguous | single | 4 | blas | 1024 | 1.645834 | 1607.26 | 387.06 | 35.2% | — | NOISY |
-| einsum_c64_prepared-repeat_n4_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | c64 | 4×4 | col_major_contiguous | single | 4 | blas | 1024 | 1.703584 | 1663.66 | 78.82 | 17.3% | — | NOISY |
-| einsum_c64_prepared-repeat_n16_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | c64 | 16×16 | col_major_contiguous | single | 4 | blas | 1024 | 3.696166 | 3609.54 | 304.40 | 13.8% | — | NOISY |
-| solve_f64_concrete-shared_n2_single | solve | concrete-shared | concrete / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 1024 | 1.465458 | 1431.11 | 84.64 | 39.1% | — | NOISY |
-| solve_f64_concrete-shared_n4_single | solve | concrete-shared | concrete / allocating / owned / shared-session | f64 | 4×4 | col_major_contiguous | single | 4 | blas | 2048 | 3.782292 | 1846.82 | 577.53 | 17.5% | — | NOISY |
-| solve_f64_concrete-shared_n16_single | solve | concrete-shared | concrete / allocating / owned / shared-session | f64 | 16×16 | col_major_contiguous | single | 4 | blas | 1024 | 2.906625 | 2838.50 | 1176.03 | 22.3% | — | NOISY |
-| einsum_f64_prepared-repeat_n8_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | f64 | 8×8 | col_major_contiguous | single | 4 | blas | 1024 | 1.527625 | 1491.82 | 87.75 | 22.1% | — | NOISY |
-| einsum_f64_prepared-repeat_n32_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | f64 | 32×32 | col_major_contiguous | single | 4 | blas | 1024 | 2.592250 | 2531.49 | 805.81 | 20.2% | — | NOISY |
-| einsum_c64_prepared-repeat_n8_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | c64 | 8×8 | col_major_contiguous | single | 4 | blas | 1024 | 2.053375 | 2005.25 | 435.28 | 41.7% | — | NOISY |
-| einsum_c64_prepared-repeat_n32_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | c64 | 32×32 | col_major_contiguous | single | 4 | blas | 1024 | 8.790792 | 8584.76 | 1574.01 | 16.7% | — | NOISY |
-| gather_f64_concrete-shared_size4_single | gather | concrete-shared | concrete / allocating / owned / shared-session | f64 | 4 | col_major_contiguous | single | 4 | blas | 1024 | 1.447917 | 1413.98 | 82.30 | 7.9% | — | ok |
-| gather_f64_concrete_shared | gather | concrete-shared | concrete / allocating / owned / shared-session | f64 | 16 | col_major_contiguous | single | 4 | blas | 2048 | 2.800084 | 1367.23 | 291.31 | 16.5% | — | NOISY |
-| gather_f64_concrete-shared_size256_single | gather | concrete-shared | concrete / allocating / owned / shared-session | f64 | 256 | col_major_contiguous | single | 4 | blas | 1024 | 1.667042 | 1627.97 | 162.31 | 19.9% | — | NOISY |
-| reduce_sum_f64_concrete-shared_size4_single | reduce_sum | concrete-shared | concrete / allocating / owned / shared-session | f64 | 4 | col_major_contiguous | single | 4 | blas | 2048 | 2.797208 | 1365.82 | 81.32 | 12.6% | — | NOISY |
-| reduce_sum_f64_concrete-shared_size16_single | reduce_sum | concrete-shared | concrete / allocating / owned / shared-session | f64 | 16 | col_major_contiguous | single | 4 | blas | 2048 | 2.733166 | 1334.55 | 172.68 | 14.8% | — | NOISY |
-| reduce_sum_f64_concrete-shared_size256_single | reduce_sum | concrete-shared | concrete / allocating / owned / shared-session | f64 | 256 | col_major_contiguous | single | 4 | blas | 2048 | 3.013000 | 1471.19 | 433.51 | 24.7% | — | NOISY |
-| einsum_f64_prepared-repeat_abcd-dbef-acef_d4_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | f64 | `abcd,dbef->acef` 4×4×4×4, 4×4×4×4 → 4×4×4×4 | col_major_contiguous | single | 4 | blas | 1024 | 3.583666 | 3499.67 | 870.97 | 27.9% | — | NOISY |
-| einsum_f64_prepared-into-repeat_abcd-dbef-acef_d4_single | einsum | prepared-into-repeat | concrete-prepared / reused / owned / shared-session | f64 | `abcd,dbef->acef` 4×4×4×4, 4×4×4×4 → 4×4×4×4 | col_major_contiguous | single | 4 | blas | 1024 | 3.651459 | 3565.88 | 373.31 | 5.9% | — | ok |
-| einsum_f64_dot-general-into-shared_abcd-dbef-acef_d4_single | einsum | dot-general-into-shared | concrete / reused / owned / shared-session | f64 | `abcd,dbef->acef` 4×4×4×4, 4×4×4×4 → 4×4×4×4 | col_major_contiguous | single | 4 | blas | 1024 | 3.741292 | 3653.61 | 417.01 | 14.8% | — | NOISY |
-| einsum_f64_prepared-repeat_ax-asb-xsb_d4s2_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | f64 | `ax,asb->xsb` 4×4, 4×2×4 → 4×2×4 | col_major_contiguous | single | 4 | blas | 2048 | 3.426000 | 1672.85 | 459.77 | 19.2% | — | NOISY |
-| einsum_f64_prepared-into-repeat_ax-asb-xsb_d4s2_single | einsum | prepared-into-repeat | concrete-prepared / reused / owned / shared-session | f64 | `ax,asb->xsb` 4×4, 4×2×4 → 4×2×4 | col_major_contiguous | single | 4 | blas | 1024 | 1.562541 | 1525.92 | 48.87 | 12.0% | — | NOISY |
-| einsum_f64_dot-general-into-shared_ax-asb-xsb_d4s2_single | einsum | dot-general-into-shared | concrete / reused / owned / shared-session | f64 | `ax,asb->xsb` 4×4, 4×2×4 → 4×2×4 | col_major_contiguous | single | 4 | blas | 2048 | 3.142125 | 1534.24 | 430.64 | 25.3% | — | NOISY |
-| einsum_f64_prepared-repeat_ij-jk-ik_m95k95n1_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | f64 | `ij,jk->ik` 95×95, 95×1 → 95×1 | col_major_contiguous | single | 4 | blas | 1024 | 3.546458 | 3463.34 | 301.25 | 7.3% | — | ok |
-| einsum_f64_prepared-into-repeat_ij-jk-ik_m95k95n1_single | einsum | prepared-into-repeat | concrete-prepared / reused / owned / shared-session | f64 | `ij,jk->ik` 95×95, 95×1 → 95×1 | col_major_contiguous | single | 4 | blas | 1024 | 3.439708 | 3359.09 | 122.52 | 8.7% | — | ok |
-| einsum_f64_dot-general-into-shared_ij-jk-ik_m95k95n1_single | einsum | dot-general-into-shared | concrete / reused / owned / shared-session | f64 | `ij,jk->ik` 95×95, 95×1 → 95×1 | col_major_contiguous | single | 4 | blas | 1024 | 3.762458 | 3674.28 | 823.57 | 16.3% | — | NOISY |
-| nonad_einsum_n2_col_major_contiguous_concrete-fresh | einsum | concrete-fresh | concrete / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 1024 | 1.792125 | 1750.12 | 130.09 | 34.8% | — | NOISY |
-| nonad_einsum_n2_col_major_contiguous_eager-no-ad | einsum | eager-no-ad | eager / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 512 | 1.542208 | 3012.12 | 624.19 | 11.7% | — | NOISY |
-| nonad_einsum_n2_col_major_contiguous_concrete-shared | einsum | concrete-shared | concrete / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 1024 | 1.882917 | 1838.79 | 376.34 | 13.9% | — | NOISY |
-| nonad_einsum_n2_col_major_contiguous_eager-shared | einsum | eager-shared | eager / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 1024 | 3.105042 | 3032.27 | 587.81 | 17.1% | — | NOISY |
-| nonad_einsum3_n2_col_major_contiguous_concrete-fresh | einsum3 | concrete-fresh | concrete / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 128 | 2.632834 | 20569.02 | 3427.90 | 15.1% | — | NOISY |
-| nonad_einsum3_n2_col_major_contiguous_eager-no-ad | einsum3 | eager-no-ad | eager / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 256 | 2.324833 | 9081.38 | 1153.65 | 13.9% | — | NOISY |
-| nonad_einsum3_n2_col_major_contiguous_concrete-shared | einsum3 | concrete-shared | concrete / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 128 | 2.467417 | 19276.70 | 3178.71 | 16.1% | — | NOISY |
-| nonad_einsum3_n2_col_major_contiguous_eager-shared | einsum3 | eager-shared | eager / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 256 | 2.262167 | 8836.59 | 1028.73 | 22.1% | — | NOISY |
-| nonad_qr_n2_col_major_contiguous_concrete-fresh | qr | concrete-fresh | concrete / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 1024 | 1.703750 | 1663.82 | 107.52 | 8.4% | — | ok |
-| nonad_qr_n2_col_major_contiguous_eager-no-ad | qr | eager-no-ad | eager / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 512 | 2.201084 | 4298.99 | 531.45 | 22.8% | — | NOISY |
-| nonad_qr_n2_col_major_contiguous_concrete-shared | qr | concrete-shared | concrete / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 1024 | 1.652750 | 1614.01 | 88.48 | 6.4% | — | ok |
-| nonad_qr_n2_col_major_contiguous_eager-shared | qr | eager-shared | eager / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 512 | 2.391041 | 4670.00 | 2363.93 | 31.8% | — | NOISY |
-| nonad_svd_n2_col_major_contiguous_concrete-fresh | svd | concrete-fresh | concrete / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 1024 | 2.589333 | 2528.65 | 330.91 | 12.3% | — | NOISY |
-| nonad_svd_n2_col_major_contiguous_eager-no-ad | svd | eager-no-ad | eager / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 512 | 2.751459 | 5373.94 | 1317.83 | 26.5% | — | NOISY |
-| nonad_svd_n2_col_major_contiguous_concrete-shared | svd | concrete-shared | concrete / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 512 | 1.231541 | 2405.35 | 147.79 | 6.0% | — | ok |
-| nonad_svd_n2_col_major_contiguous_eager-shared | svd | eager-shared | eager / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 512 | 2.805459 | 5479.41 | 655.64 | 11.2% | — | NOISY |
-| nonad_solve_n2_col_major_contiguous_concrete-fresh | solve | concrete-fresh | concrete / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 512 | 0.783625 | 1530.52 | 131.35 | 14.5% | — | INCONCLUSIVE (<1 ms batch) |
-| nonad_solve_n2_col_major_contiguous_eager-no-ad | solve | eager-no-ad | eager / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 512 | 2.251583 | 4397.62 | 541.02 | 31.0% | — | NOISY |
-| nonad_solve_n2_col_major_contiguous_concrete-shared | solve | concrete-shared | concrete / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 1024 | 1.607375 | 1569.70 | 153.91 | 31.7% | — | NOISY |
-| nonad_solve_n2_col_major_contiguous_eager-shared | solve | eager-shared | eager / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 512 | 2.473625 | 4831.30 | 872.07 | 21.3% | — | NOISY |
-| nonad_einsum_n16_col_major_contiguous_eager-shared | einsum | eager-shared | eager / allocating / owned / shared-session | f64 | 16×16 | col_major_contiguous | single | 4 | blas | 512 | 1.949250 | 3807.13 | 398.56 | 12.8% | — | NOISY |
-| nonad_einsum_n16_col_major_contiguous_concrete-shared | einsum | concrete-shared | concrete / allocating / owned / shared-session | f64 | 16×16 | col_major_contiguous | single | 4 | blas | 1024 | 2.539417 | 2479.90 | 280.21 | 15.9% | — | NOISY |
-| nonad_einsum_n16_col_major_contiguous_eager-no-ad | einsum | eager-no-ad | eager / allocating / owned / session-per-call | f64 | 16×16 | col_major_contiguous | single | 4 | blas | 512 | 2.006459 | 3918.87 | 574.18 | 13.9% | — | NOISY |
-| nonad_einsum_n16_col_major_contiguous_concrete-fresh | einsum | concrete-fresh | concrete / allocating / owned / session-per-call | f64 | 16×16 | col_major_contiguous | single | 4 | blas | 1024 | 3.106333 | 3033.53 | 2312.26 | 35.4% | — | NOISY |
-| nonad_qr_n16_col_major_contiguous_eager-shared | qr | eager-shared | eager / allocating / owned / shared-session | f64 | 16×16 | col_major_contiguous | single | 4 | blas | 256 | 2.358917 | 9214.52 | 1944.91 | 19.4% | — | NOISY |
-| nonad_qr_n16_col_major_contiguous_concrete-shared | qr | concrete-shared | concrete / allocating / owned / shared-session | f64 | 16×16 | col_major_contiguous | single | 4 | blas | 256 | 1.716542 | 6705.24 | 5722.49 | 41.8% | — | NOISY |
-| nonad_qr_n16_col_major_contiguous_eager-no-ad | qr | eager-no-ad | eager / allocating / owned / session-per-call | f64 | 16×16 | col_major_contiguous | single | 4 | blas | 256 | 2.287083 | 8933.92 | 875.00 | 15.9% | — | NOISY |
-| nonad_qr_n16_col_major_contiguous_concrete-fresh | qr | concrete-fresh | concrete / allocating / owned / session-per-call | f64 | 16×16 | col_major_contiguous | single | 4 | blas | 128 | 0.705208 | 5509.44 | 1207.68 | 18.5% | — | INCONCLUSIVE (<1 ms batch) |
-| nonad_solve_n16_col_major_contiguous_eager-shared | solve | eager-shared | eager / allocating / owned / shared-session | f64 | 16×16 | col_major_contiguous | single | 4 | blas | 512 | 3.366459 | 6575.12 | 741.58 | 18.9% | — | NOISY |
-| nonad_solve_n16_col_major_contiguous_concrete-shared | solve | concrete-shared | concrete / allocating / owned / shared-session | f64 | 16×16 | col_major_contiguous | single | 4 | blas | 512 | 1.496916 | 2923.66 | 389.24 | 16.5% | — | NOISY |
-| nonad_solve_n16_col_major_contiguous_eager-no-ad | solve | eager-no-ad | eager / allocating / owned / session-per-call | f64 | 16×16 | col_major_contiguous | single | 4 | blas | 512 | 3.421625 | 6682.86 | 1057.90 | 14.0% | — | NOISY |
-| nonad_solve_n16_col_major_contiguous_concrete-fresh | solve | concrete-fresh | concrete / allocating / owned / session-per-call | f64 | 16×16 | col_major_contiguous | single | 4 | blas | 512 | 1.610208 | 3144.94 | 266.40 | 6.5% | — | ok |
-| nonad_einsum_n2_col_major_contiguous_concrete-scoped | einsum | concrete-scoped | concrete / allocating / owned / execution-scope+session-per-call | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 1024 | 1.929209 | 1883.99 | 355.37 | 34.2% | — | NOISY |
-| nonad_qr_n2_col_major_contiguous_concrete-scoped | qr | concrete-scoped | concrete / allocating / owned / execution-scope+session-per-call | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 1024 | 1.755000 | 1713.87 | 123.41 | 5.1% | — | ok |
-| nonad_solve_n2_col_major_contiguous_concrete-scoped | solve | concrete-scoped | concrete / allocating / owned / execution-scope+session-per-call | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 2048 | 3.328542 | 1625.26 | 85.39 | 5.3% | — | ok |
-| nonad_einsum_n16_col_major_contiguous_concrete-scoped | einsum | concrete-scoped | concrete / allocating / owned / execution-scope+session-per-call | f64 | 16×16 | col_major_contiguous | single | 4 | blas | 1024 | 2.438458 | 2381.31 | 93.91 | 13.7% | — | NOISY |
-| nonad_qr_n16_col_major_contiguous_concrete-scoped | qr | concrete-scoped | concrete / allocating / owned / execution-scope+session-per-call | f64 | 16×16 | col_major_contiguous | single | 4 | blas | 64 | 0.367042 | 5735.03 | 1908.20 | 19.4% | — | INCONCLUSIVE (<1 ms batch) |
-| nonad_solve_n16_col_major_contiguous_concrete-scoped | solve | concrete-scoped | concrete / allocating / owned / execution-scope+session-per-call | f64 | 16×16 | col_major_contiguous | single | 4 | blas | 512 | 1.455333 | 2842.45 | 166.18 | 23.0% | — | NOISY |
+| add_f64_concrete-shared_size4_single | add | concrete-shared | concrete / allocating / owned / shared-session | f64 | 4 | col_major_contiguous | single | 1 | blas | 4096 | 2.227875 | 543.91 | 5.82 | 1.1% | — | ok |
+| add_f64_concrete-shared_size4_dependent10 | add | concrete-shared | concrete / allocating / owned / shared-session | f64 | 4 | col_major_contiguous | dependent10 | 1 | blas | 5120 | 2.722792 | 5317.95 | 80.69 | 2.0% | 531.79 | ok |
+| add_f64_concrete_shared | add | concrete-shared | concrete / allocating / owned / shared-session | f64 | 16 | col_major_contiguous | single | 1 | blas | 4096 | 2.253334 | 550.13 | 8.84 | 1.2% | — | ok |
+| add_f64_concrete-shared_size16_dependent10 | add | concrete-shared | concrete / allocating / owned / shared-session | f64 | 16 | col_major_contiguous | dependent10 | 1 | blas | 5120 | 2.732500 | 5336.91 | 42.56 | 3.0% | 533.69 | ok |
+| add_f64_concrete-shared_size256_single | add | concrete-shared | concrete / allocating / owned / shared-session | f64 | 256 | col_major_contiguous | single | 1 | blas | 1024 | 0.619334 | 604.82 | 8.83 | 2.3% | — | ok |
+| add_f64_concrete-shared_size256_dependent10 | add | concrete-shared | concrete / allocating / owned / shared-session | f64 | 256 | col_major_contiguous | dependent10 | 1 | blas | 2560 | 1.501542 | 5865.40 | 57.13 | 6.2% | 586.54 | ok |
+| einsum_f64_prepared-repeat_n2_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 2048 | 1.700333 | 830.24 | 10.03 | 0.9% | — | ok |
+| einsum_f64_prepared-repeat_n4_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | f64 | 4×4 | col_major_contiguous | single | 1 | blas | 2048 | 1.722167 | 840.90 | 8.04 | 1.6% | — | ok |
+| einsum_f64_prepared-repeat_n16_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | f64 | 16×16 | col_major_contiguous | single | 1 | blas | 1024 | 1.223375 | 1194.70 | 15.69 | 0.8% | — | ok |
+| einsum_c64_prepared-repeat_n2_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | c64 | 2×2 | col_major_contiguous | single | 1 | blas | 2048 | 2.092709 | 1021.83 | 4.94 | 0.7% | — | ok |
+| einsum_c64_prepared-repeat_n4_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | c64 | 4×4 | col_major_contiguous | single | 1 | blas | 2048 | 2.180792 | 1064.84 | 144.67 | 15.3% | — | NOISY |
+| einsum_c64_prepared-repeat_n16_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | c64 | 16×16 | col_major_contiguous | single | 1 | blas | 1024 | 2.586375 | 2525.76 | 144.98 | 12.6% | — | NOISY |
+| solve_f64_concrete-shared_n2_single | solve | concrete-shared | concrete / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 4096 | 3.406667 | 831.71 | 25.70 | 3.2% | — | ok |
+| solve_f64_concrete-shared_n4_single | solve | concrete-shared | concrete / allocating / owned / shared-session | f64 | 4×4 | col_major_contiguous | single | 1 | blas | 2048 | 1.852333 | 904.46 | 32.33 | 2.1% | — | ok |
+| solve_f64_concrete-shared_n16_single | solve | concrete-shared | concrete / allocating / owned / shared-session | f64 | 16×16 | col_major_contiguous | single | 1 | blas | 1024 | 2.186208 | 2134.97 | 42.56 | 2.0% | — | ok |
+| einsum_f64_prepared-repeat_n8_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | f64 | 8×8 | col_major_contiguous | single | 1 | blas | 1024 | 0.926166 | 904.46 | 20.51 | 1.4% | — | ok |
+| einsum_f64_prepared-repeat_n32_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | f64 | 32×32 | col_major_contiguous | single | 1 | blas | 1024 | 1.617459 | 1579.55 | 224.10 | 25.3% | — | NOISY |
+| einsum_c64_prepared-repeat_n8_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | c64 | 8×8 | col_major_contiguous | single | 1 | blas | 1024 | 1.393916 | 1361.25 | 81.69 | 3.3% | — | ok |
+| einsum_c64_prepared-repeat_n32_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | c64 | 32×32 | col_major_contiguous | single | 1 | blas | 1024 | 6.081166 | 5938.64 | 291.81 | 6.0% | — | ok |
+| gather_f64_concrete-shared_size4_single | gather | concrete-shared | concrete / allocating / owned / shared-session | f64 | 4 | col_major_contiguous | single | 1 | blas | 4096 | 2.777959 | 678.21 | 71.54 | 27.8% | — | NOISY |
+| gather_f64_concrete_shared | gather | concrete-shared | concrete / allocating / owned / shared-session | f64 | 16 | col_major_contiguous | single | 1 | blas | 2048 | 1.459167 | 712.48 | 49.22 | 11.7% | — | NOISY |
+| gather_f64_concrete-shared_size256_single | gather | concrete-shared | concrete / allocating / owned / shared-session | f64 | 256 | col_major_contiguous | single | 1 | blas | 1024 | 1.106667 | 1080.73 | 165.49 | 25.6% | — | NOISY |
+| reduce_sum_f64_concrete-shared_size4_single | reduce_sum | concrete-shared | concrete / allocating / owned / shared-session | f64 | 4 | col_major_contiguous | single | 1 | blas | 4096 | 2.867750 | 700.13 | 26.78 | 7.1% | — | ok |
+| reduce_sum_f64_concrete-shared_size16_single | reduce_sum | concrete-shared | concrete / allocating / owned / shared-session | f64 | 16 | col_major_contiguous | single | 1 | blas | 4096 | 2.905500 | 709.35 | 17.18 | 2.6% | — | ok |
+| reduce_sum_f64_concrete-shared_size256_single | reduce_sum | concrete-shared | concrete / allocating / owned / shared-session | f64 | 256 | col_major_contiguous | single | 1 | blas | 4096 | 2.983250 | 728.33 | 19.28 | 1.7% | — | ok |
+| einsum_f64_prepared-repeat_abcd-dbef-acef_d4_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | f64 | `abcd,dbef->acef` 4×4×4×4, 4×4×4×4 → 4×4×4×4 | col_major_contiguous | single | 1 | blas | 1024 | 2.499750 | 2441.16 | 47.59 | 1.6% | — | ok |
+| einsum_f64_prepared-into-repeat_abcd-dbef-acef_d4_single | einsum | prepared-into-repeat | concrete-prepared / reused / owned / shared-session | f64 | `abcd,dbef->acef` 4×4×4×4, 4×4×4×4 → 4×4×4×4 | col_major_contiguous | single | 1 | blas | 1024 | 2.690166 | 2627.12 | 37.11 | 1.1% | — | ok |
+| einsum_f64_dot-general-into-shared_abcd-dbef-acef_d4_single | einsum | dot-general-into-shared | concrete / reused / owned / shared-session | f64 | `abcd,dbef->acef` 4×4×4×4, 4×4×4×4 → 4×4×4×4 | col_major_contiguous | single | 1 | blas | 1024 | 2.610125 | 2548.95 | 54.87 | 1.5% | — | ok |
+| einsum_f64_prepared-repeat_ax-asb-xsb_d4s2_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | f64 | `ax,asb->xsb` 4×4, 4×2×4 → 4×2×4 | col_major_contiguous | single | 1 | blas | 2048 | 1.945209 | 949.81 | 32.03 | 2.2% | — | ok |
+| einsum_f64_prepared-into-repeat_ax-asb-xsb_d4s2_single | einsum | prepared-into-repeat | concrete-prepared / reused / owned / shared-session | f64 | `ax,asb->xsb` 4×4, 4×2×4 → 4×2×4 | col_major_contiguous | single | 1 | blas | 2048 | 2.110750 | 1030.64 | 33.53 | 2.2% | — | ok |
+| einsum_f64_dot-general-into-shared_ax-asb-xsb_d4s2_single | einsum | dot-general-into-shared | concrete / reused / owned / shared-session | f64 | `ax,asb->xsb` 4×4, 4×2×4 → 4×2×4 | col_major_contiguous | single | 1 | blas | 2048 | 1.957667 | 955.89 | 31.66 | 3.3% | — | ok |
+| einsum_f64_prepared-repeat_ij-jk-ik_m95k95n1_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | f64 | `ij,jk->ik` 95×95, 95×1 → 95×1 | col_major_contiguous | single | 1 | blas | 1024 | 2.644125 | 2582.15 | 44.35 | 17.5% | — | NOISY |
+| einsum_f64_prepared-into-repeat_ij-jk-ik_m95k95n1_single | einsum | prepared-into-repeat | concrete-prepared / reused / owned / shared-session | f64 | `ij,jk->ik` 95×95, 95×1 → 95×1 | col_major_contiguous | single | 1 | blas | 1024 | 2.729875 | 2665.89 | 107.42 | 15.2% | — | NOISY |
+| einsum_f64_dot-general-into-shared_ij-jk-ik_m95k95n1_single | einsum | dot-general-into-shared | concrete / reused / owned / shared-session | f64 | `ij,jk->ik` 95×95, 95×1 → 95×1 | col_major_contiguous | single | 1 | blas | 1024 | 2.707375 | 2643.92 | 167.46 | 10.7% | — | NOISY |
+| nonad_einsum_n2_col_major_contiguous_concrete-fresh | einsum | concrete-fresh | concrete / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 2048 | 2.417750 | 1180.54 | 50.09 | 2.8% | — | ok |
+| nonad_einsum_n2_col_major_contiguous_eager-no-ad | einsum | eager-no-ad | eager / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 1024 | 2.160209 | 2109.58 | 44.72 | 2.2% | — | ok |
+| nonad_einsum_n2_col_major_contiguous_concrete-shared | einsum | concrete-shared | concrete / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 2048 | 2.334958 | 1140.12 | 55.81 | 3.8% | — | ok |
+| nonad_einsum_n2_col_major_contiguous_eager-shared | einsum | eager-shared | eager / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 1024 | 2.234875 | 2182.50 | 80.00 | 2.7% | — | ok |
+| nonad_einsum3_n2_col_major_contiguous_concrete-fresh | einsum3 | concrete-fresh | concrete / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 128 | 2.334333 | 18236.98 | 1385.09 | 4.3% | — | ok |
+| nonad_einsum3_n2_col_major_contiguous_eager-no-ad | einsum3 | eager-no-ad | eager / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 512 | 3.264958 | 6376.87 | 243.33 | 3.2% | — | ok |
+| nonad_einsum3_n2_col_major_contiguous_concrete-shared | einsum3 | concrete-shared | concrete / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 128 | 2.301125 | 17977.54 | 888.99 | 3.9% | — | ok |
+| nonad_einsum3_n2_col_major_contiguous_eager-shared | einsum3 | eager-shared | eager / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 512 | 3.287208 | 6420.33 | 180.71 | 2.3% | — | ok |
+| nonad_qr_n2_col_major_contiguous_concrete-fresh | qr | concrete-fresh | concrete / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 2048 | 2.139000 | 1044.43 | 41.77 | 2.9% | — | ok |
+| nonad_qr_n2_col_major_contiguous_eager-no-ad | qr | eager-no-ad | eager / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 1024 | 3.153042 | 3079.14 | 231.20 | 5.0% | — | ok |
+| nonad_qr_n2_col_major_contiguous_concrete-shared | qr | concrete-shared | concrete / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 2048 | 2.163166 | 1056.23 | 49.97 | 2.6% | — | ok |
+| nonad_qr_n2_col_major_contiguous_eager-shared | qr | eager-shared | eager / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 512 | 1.646333 | 3215.49 | 142.62 | 3.8% | — | ok |
+| nonad_svd_n2_col_major_contiguous_concrete-fresh | svd | concrete-fresh | concrete / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 1024 | 1.797958 | 1755.82 | 237.37 | 8.0% | — | ok |
+| nonad_svd_n2_col_major_contiguous_eager-no-ad | svd | eager-no-ad | eager / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 512 | 2.479042 | 4841.88 | 701.82 | 22.7% | — | NOISY |
+| nonad_svd_n2_col_major_contiguous_concrete-shared | svd | concrete-shared | concrete / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 1024 | 1.870083 | 1826.25 | 600.30 | 25.3% | — | NOISY |
+| nonad_svd_n2_col_major_contiguous_eager-shared | svd | eager-shared | eager / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 512 | 3.022500 | 5903.32 | 1802.12 | 18.8% | — | NOISY |
+| nonad_solve_n2_col_major_contiguous_concrete-fresh | solve | concrete-fresh | concrete / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 2048 | 2.187459 | 1068.10 | 177.36 | 27.4% | — | NOISY |
+| nonad_solve_n2_col_major_contiguous_eager-no-ad | solve | eager-no-ad | eager / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 256 | 1.068916 | 4175.45 | 767.74 | 29.3% | — | INCONCLUSIVE (<1 ms batch) |
+| nonad_solve_n2_col_major_contiguous_concrete-shared | solve | concrete-shared | concrete / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 2048 | 1.958917 | 956.50 | 64.21 | 16.9% | — | NOISY |
+| nonad_solve_n2_col_major_contiguous_eager-shared | solve | eager-shared | eager / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 512 | 1.966417 | 3840.66 | 1572.47 | 22.5% | — | NOISY |
+| nonad_einsum_n16_col_major_contiguous_eager-shared | einsum | eager-shared | eager / allocating / owned / shared-session | f64 | 16×16 | col_major_contiguous | single | 1 | blas | 1024 | 3.141541 | 3067.91 | 218.30 | 15.9% | — | NOISY |
+| nonad_einsum_n16_col_major_contiguous_concrete-shared | einsum | concrete-shared | concrete / allocating / owned / shared-session | f64 | 16×16 | col_major_contiguous | single | 1 | blas | 1024 | 2.234792 | 2182.41 | 622.84 | 21.8% | — | NOISY |
+| nonad_einsum_n16_col_major_contiguous_eager-no-ad | einsum | eager-no-ad | eager / allocating / owned / session-per-call | f64 | 16×16 | col_major_contiguous | single | 1 | blas | 512 | 1.576792 | 3079.67 | 281.90 | 23.5% | — | NOISY |
+| nonad_einsum_n16_col_major_contiguous_concrete-fresh | einsum | concrete-fresh | concrete / allocating / owned / session-per-call | f64 | 16×16 | col_major_contiguous | single | 1 | blas | 512 | 0.916292 | 1789.63 | 78.69 | 6.0% | — | INCONCLUSIVE (<1 ms batch) |
+| nonad_qr_n16_col_major_contiguous_eager-shared | qr | eager-shared | eager / allocating / owned / shared-session | f64 | 16×16 | col_major_contiguous | single | 1 | blas | 256 | 1.788500 | 6986.33 | 2091.14 | 25.7% | — | NOISY |
+| nonad_qr_n16_col_major_contiguous_concrete-shared | qr | concrete-shared | concrete / allocating / owned / shared-session | f64 | 16×16 | col_major_contiguous | single | 1 | blas | 256 | 1.252083 | 4890.95 | 1538.17 | 23.6% | — | NOISY |
+| nonad_qr_n16_col_major_contiguous_eager-no-ad | qr | eager-no-ad | eager / allocating / owned / session-per-call | f64 | 16×16 | col_major_contiguous | single | 1 | blas | 256 | 2.761875 | 10788.57 | 2608.48 | 22.8% | — | NOISY |
+| nonad_qr_n16_col_major_contiguous_concrete-fresh | qr | concrete-fresh | concrete / allocating / owned / session-per-call | f64 | 16×16 | col_major_contiguous | single | 1 | blas | 256 | 1.594625 | 6229.00 | 2759.44 | 26.2% | — | NOISY |
+| nonad_solve_n16_col_major_contiguous_eager-shared | solve | eager-shared | eager / allocating / owned / shared-session | f64 | 16×16 | col_major_contiguous | single | 1 | blas | 512 | 3.132209 | 6117.60 | 3634.20 | 31.0% | — | NOISY |
+| nonad_solve_n16_col_major_contiguous_concrete-shared | solve | concrete-shared | concrete / allocating / owned / shared-session | f64 | 16×16 | col_major_contiguous | single | 1 | blas | 512 | 1.218667 | 2380.21 | 523.19 | 15.4% | — | NOISY |
+| nonad_solve_n16_col_major_contiguous_eager-no-ad | solve | eager-no-ad | eager / allocating / owned / session-per-call | f64 | 16×16 | col_major_contiguous | single | 1 | blas | 512 | 2.650583 | 5176.92 | 1534.50 | 21.4% | — | NOISY |
+| nonad_solve_n16_col_major_contiguous_concrete-fresh | solve | concrete-fresh | concrete / allocating / owned / session-per-call | f64 | 16×16 | col_major_contiguous | single | 1 | blas | 1024 | 2.346333 | 2291.34 | 686.73 | 45.6% | — | NOISY |
+| nonad_einsum_n2_col_major_contiguous_concrete-scoped | einsum | concrete-scoped | concrete / allocating / owned / execution-scope+session-per-call | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 2048 | 2.462750 | 1202.51 | 116.05 | 16.5% | — | NOISY |
+| nonad_qr_n2_col_major_contiguous_concrete-scoped | qr | concrete-scoped | concrete / allocating / owned / execution-scope+session-per-call | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 2048 | 2.205208 | 1076.76 | 87.70 | 32.1% | — | NOISY |
+| nonad_solve_n2_col_major_contiguous_concrete-scoped | solve | concrete-scoped | concrete / allocating / owned / execution-scope+session-per-call | f64 | 2×2 | col_major_contiguous | single | 1 | blas | 2048 | 1.895375 | 925.48 | 78.51 | 12.6% | — | NOISY |
+| nonad_einsum_n16_col_major_contiguous_concrete-scoped | einsum | concrete-scoped | concrete / allocating / owned / execution-scope+session-per-call | f64 | 16×16 | col_major_contiguous | single | 1 | blas | 1024 | 1.831583 | 1788.66 | 100.83 | 19.1% | — | NOISY |
+| nonad_qr_n16_col_major_contiguous_concrete-scoped | qr | concrete-scoped | concrete / allocating / owned / execution-scope+session-per-call | f64 | 16×16 | col_major_contiguous | single | 1 | blas | 256 | 1.198291 | 4680.82 | 3967.37 | 50.0% | — | NOISY |
+| nonad_solve_n16_col_major_contiguous_concrete-scoped | solve | concrete-scoped | concrete / allocating / owned / execution-scope+session-per-call | f64 | 16×16 | col_major_contiguous | single | 1 | blas | 128 | 0.315792 | 2467.12 | 1131.83 | 27.6% | — | INCONCLUSIVE (<1 ms batch) |
+| add_f64_concrete-shared_size4_single | add | concrete-shared | concrete / allocating / owned / shared-session | f64 | 4 | col_major_contiguous | single | 4 | blas | 2048 | 2.118833 | 1034.59 | 12.53 | 1.0% | — | ok |
+| add_f64_concrete-shared_size4_dependent10 | add | concrete-shared | concrete / allocating / owned / shared-session | f64 | 4 | col_major_contiguous | dependent10 | 4 | blas | 2560 | 2.652459 | 10361.17 | 186.12 | 2.6% | 1036.12 | ok |
+| add_f64_concrete_shared | add | concrete-shared | concrete / allocating / owned / shared-session | f64 | 16 | col_major_contiguous | single | 4 | blas | 2048 | 2.096583 | 1023.72 | 14.80 | 1.0% | — | ok |
+| add_f64_concrete-shared_size16_dependent10 | add | concrete-shared | concrete / allocating / owned / shared-session | f64 | 16 | col_major_contiguous | dependent10 | 4 | blas | 2560 | 2.605708 | 10178.55 | 138.10 | 1.0% | 1017.85 | ok |
+| add_f64_concrete-shared_size256_single | add | concrete-shared | concrete / allocating / owned / shared-session | f64 | 256 | col_major_contiguous | single | 4 | blas | 1024 | 1.105959 | 1080.04 | 17.50 | 1.3% | — | ok |
+| add_f64_concrete-shared_size256_dependent10 | add | concrete-shared | concrete / allocating / owned / shared-session | f64 | 256 | col_major_contiguous | dependent10 | 4 | blas | 2560 | 2.731333 | 10669.27 | 122.15 | 1.0% | 1066.93 | ok |
+| einsum_f64_prepared-repeat_n2_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 2048 | 2.643500 | 1290.77 | 33.36 | 2.7% | — | ok |
+| einsum_f64_prepared-repeat_n4_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | f64 | 4×4 | col_major_contiguous | single | 4 | blas | 2048 | 2.813584 | 1373.82 | 25.02 | 1.8% | — | ok |
+| einsum_f64_prepared-repeat_n16_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | f64 | 16×16 | col_major_contiguous | single | 4 | blas | 1024 | 1.903916 | 1859.29 | 28.50 | 1.2% | — | ok |
+| einsum_c64_prepared-repeat_n2_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | c64 | 2×2 | col_major_contiguous | single | 4 | blas | 2048 | 3.115584 | 1521.28 | 21.02 | 1.5% | — | ok |
+| einsum_c64_prepared-repeat_n4_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | c64 | 4×4 | col_major_contiguous | single | 4 | blas | 2048 | 3.217291 | 1570.94 | 43.95 | 5.4% | — | ok |
+| einsum_c64_prepared-repeat_n16_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | c64 | 16×16 | col_major_contiguous | single | 4 | blas | 1024 | 3.372917 | 3293.86 | 117.21 | 2.1% | — | ok |
+| solve_f64_concrete-shared_n2_single | solve | concrete-shared | concrete / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 2048 | 2.795708 | 1365.09 | 41.44 | 2.5% | — | ok |
+| solve_f64_concrete-shared_n4_single | solve | concrete-shared | concrete / allocating / owned / shared-session | f64 | 4×4 | col_major_contiguous | single | 4 | blas | 2048 | 3.030959 | 1479.96 | 50.18 | 1.9% | — | ok |
+| solve_f64_concrete-shared_n16_single | solve | concrete-shared | concrete / allocating / owned / shared-session | f64 | 16×16 | col_major_contiguous | single | 4 | blas | 1024 | 2.837916 | 2771.40 | 78.23 | 2.3% | — | ok |
+| einsum_f64_prepared-repeat_n8_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | f64 | 8×8 | col_major_contiguous | single | 4 | blas | 2048 | 2.817959 | 1375.96 | 51.40 | 3.0% | — | ok |
+| einsum_f64_prepared-repeat_n32_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | f64 | 32×32 | col_major_contiguous | single | 4 | blas | 1024 | 2.218208 | 2166.22 | 33.87 | 1.5% | — | ok |
+| einsum_c64_prepared-repeat_n8_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | c64 | 8×8 | col_major_contiguous | single | 4 | blas | 1024 | 1.901708 | 1857.14 | 41.77 | 2.4% | — | ok |
+| einsum_c64_prepared-repeat_n32_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | c64 | 32×32 | col_major_contiguous | single | 4 | blas | 1024 | 7.193791 | 7025.19 | 107.75 | 1.6% | — | ok |
+| gather_f64_concrete-shared_size4_single | gather | concrete-shared | concrete / allocating / owned / shared-session | f64 | 4 | col_major_contiguous | single | 4 | blas | 1024 | 1.399250 | 1366.46 | 273.74 | 22.2% | — | NOISY |
+| gather_f64_concrete_shared | gather | concrete-shared | concrete / allocating / owned / shared-session | f64 | 16 | col_major_contiguous | single | 4 | blas | 2048 | 2.738000 | 1336.91 | 124.31 | 5.1% | — | ok |
+| gather_f64_concrete-shared_size256_single | gather | concrete-shared | concrete / allocating / owned / shared-session | f64 | 256 | col_major_contiguous | single | 4 | blas | 1024 | 1.834583 | 1791.58 | 308.47 | 16.4% | — | NOISY |
+| reduce_sum_f64_concrete-shared_size4_single | reduce_sum | concrete-shared | concrete / allocating / owned / shared-session | f64 | 4 | col_major_contiguous | single | 4 | blas | 2048 | 2.576917 | 1258.26 | 49.29 | 18.3% | — | NOISY |
+| reduce_sum_f64_concrete-shared_size16_single | reduce_sum | concrete-shared | concrete / allocating / owned / shared-session | f64 | 16 | col_major_contiguous | single | 4 | blas | 2048 | 2.664083 | 1300.82 | 113.70 | 5.8% | — | ok |
+| reduce_sum_f64_concrete-shared_size256_single | reduce_sum | concrete-shared | concrete / allocating / owned / shared-session | f64 | 256 | col_major_contiguous | single | 4 | blas | 2048 | 2.785583 | 1360.15 | 91.74 | 4.4% | — | ok |
+| einsum_f64_prepared-repeat_abcd-dbef-acef_d4_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | f64 | `abcd,dbef->acef` 4×4×4×4, 4×4×4×4 → 4×4×4×4 | col_major_contiguous | single | 4 | blas | 1024 | 3.155459 | 3081.50 | 90.45 | 8.7% | — | ok |
+| einsum_f64_prepared-into-repeat_abcd-dbef-acef_d4_single | einsum | prepared-into-repeat | concrete-prepared / reused / owned / shared-session | f64 | `abcd,dbef->acef` 4×4×4×4, 4×4×4×4 → 4×4×4×4 | col_major_contiguous | single | 4 | blas | 1024 | 3.342709 | 3264.36 | 124.43 | 3.5% | — | ok |
+| einsum_f64_dot-general-into-shared_abcd-dbef-acef_d4_single | einsum | dot-general-into-shared | concrete / reused / owned / shared-session | f64 | `abcd,dbef->acef` 4×4×4×4, 4×4×4×4 → 4×4×4×4 | col_major_contiguous | single | 4 | blas | 1024 | 3.188959 | 3114.22 | 73.67 | 3.6% | — | ok |
+| einsum_f64_prepared-repeat_ax-asb-xsb_d4s2_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | f64 | `ax,asb->xsb` 4×4, 4×2×4 → 4×2×4 | col_major_contiguous | single | 4 | blas | 2048 | 3.185834 | 1555.58 | 112.25 | 11.5% | — | NOISY |
+| einsum_f64_prepared-into-repeat_ax-asb-xsb_d4s2_single | einsum | prepared-into-repeat | concrete-prepared / reused / owned / shared-session | f64 | `ax,asb->xsb` 4×4, 4×2×4 → 4×2×4 | col_major_contiguous | single | 4 | blas | 2048 | 3.318667 | 1620.44 | 76.80 | 2.9% | — | ok |
+| einsum_f64_dot-general-into-shared_ax-asb-xsb_d4s2_single | einsum | dot-general-into-shared | concrete / reused / owned / shared-session | f64 | `ax,asb->xsb` 4×4, 4×2×4 → 4×2×4 | col_major_contiguous | single | 4 | blas | 2048 | 3.232250 | 1578.25 | 125.89 | 6.3% | — | ok |
+| einsum_f64_prepared-repeat_ij-jk-ik_m95k95n1_single | einsum | prepared-repeat | concrete-prepared / allocating / owned / shared-session | f64 | `ij,jk->ik` 95×95, 95×1 → 95×1 | col_major_contiguous | single | 4 | blas | 1024 | 3.618333 | 3533.53 | 243.57 | 5.3% | — | ok |
+| einsum_f64_prepared-into-repeat_ij-jk-ik_m95k95n1_single | einsum | prepared-into-repeat | concrete-prepared / reused / owned / shared-session | f64 | `ij,jk->ik` 95×95, 95×1 → 95×1 | col_major_contiguous | single | 4 | blas | 1024 | 3.670625 | 3584.59 | 410.36 | 14.9% | — | NOISY |
+| einsum_f64_dot-general-into-shared_ij-jk-ik_m95k95n1_single | einsum | dot-general-into-shared | concrete / reused / owned / shared-session | f64 | `ij,jk->ik` 95×95, 95×1 → 95×1 | col_major_contiguous | single | 4 | blas | 1024 | 3.872250 | 3781.49 | 446.19 | 13.5% | — | NOISY |
+| nonad_einsum_n2_col_major_contiguous_concrete-fresh | einsum | concrete-fresh | concrete / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 1024 | 2.096417 | 2047.28 | 190.61 | 18.5% | — | NOISY |
+| nonad_einsum_n2_col_major_contiguous_eager-no-ad | einsum | eager-no-ad | eager / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 512 | 1.653500 | 3229.49 | 403.32 | 30.5% | — | NOISY |
+| nonad_einsum_n2_col_major_contiguous_concrete-shared | einsum | concrete-shared | concrete / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 1024 | 1.947250 | 1901.61 | 115.84 | 4.4% | — | ok |
+| nonad_einsum_n2_col_major_contiguous_eager-shared | einsum | eager-shared | eager / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 1024 | 3.204917 | 3129.80 | 283.92 | 6.2% | — | ok |
+| nonad_einsum3_n2_col_major_contiguous_concrete-fresh | einsum3 | concrete-fresh | concrete / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 128 | 2.496167 | 19501.30 | 784.67 | 3.7% | — | ok |
+| nonad_einsum3_n2_col_major_contiguous_eager-no-ad | einsum3 | eager-no-ad | eager / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 256 | 2.301750 | 8991.21 | 443.68 | 4.5% | — | ok |
+| nonad_einsum3_n2_col_major_contiguous_concrete-shared | einsum3 | concrete-shared | concrete / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 128 | 2.444667 | 19098.96 | 884.61 | 3.3% | — | ok |
+| nonad_einsum3_n2_col_major_contiguous_eager-shared | einsum3 | eager-shared | eager / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 256 | 2.143750 | 8374.02 | 133.71 | 3.5% | — | ok |
+| nonad_qr_n2_col_major_contiguous_concrete-fresh | qr | concrete-fresh | concrete / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 1024 | 1.645667 | 1607.10 | 74.85 | 3.7% | — | ok |
+| nonad_qr_n2_col_major_contiguous_eager-no-ad | qr | eager-no-ad | eager / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 512 | 2.096708 | 4095.13 | 222.09 | 4.1% | — | ok |
+| nonad_qr_n2_col_major_contiguous_concrete-shared | qr | concrete-shared | concrete / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 2048 | 3.301000 | 1611.82 | 83.47 | 3.5% | — | ok |
+| nonad_qr_n2_col_major_contiguous_eager-shared | qr | eager-shared | eager / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 512 | 2.002625 | 3911.38 | 109.25 | 2.9% | — | ok |
+| nonad_svd_n2_col_major_contiguous_concrete-fresh | svd | concrete-fresh | concrete / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 1024 | 2.274959 | 2221.64 | 56.32 | 2.4% | — | ok |
+| nonad_svd_n2_col_major_contiguous_eager-no-ad | svd | eager-no-ad | eager / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 512 | 2.609833 | 5097.33 | 195.43 | 2.9% | — | ok |
+| nonad_svd_n2_col_major_contiguous_concrete-shared | svd | concrete-shared | concrete / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 1024 | 2.193375 | 2141.97 | 40.55 | 1.2% | — | ok |
+| nonad_svd_n2_col_major_contiguous_eager-shared | svd | eager-shared | eager / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 512 | 2.414042 | 4714.93 | 97.41 | 2.3% | — | ok |
+| nonad_solve_n2_col_major_contiguous_concrete-fresh | solve | concrete-fresh | concrete / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 2048 | 2.870875 | 1401.79 | 37.98 | 2.7% | — | ok |
+| nonad_solve_n2_col_major_contiguous_eager-no-ad | solve | eager-no-ad | eager / allocating / owned / session-per-call | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 512 | 2.085291 | 4072.83 | 179.85 | 2.3% | — | ok |
+| nonad_solve_n2_col_major_contiguous_concrete-shared | solve | concrete-shared | concrete / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 2048 | 2.863208 | 1398.05 | 56.43 | 16.1% | — | NOISY |
+| nonad_solve_n2_col_major_contiguous_eager-shared | solve | eager-shared | eager / allocating / owned / shared-session | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 512 | 2.035625 | 3975.83 | 70.31 | 1.7% | — | ok |
+| nonad_einsum_n16_col_major_contiguous_eager-shared | einsum | eager-shared | eager / allocating / owned / shared-session | f64 | 16×16 | col_major_contiguous | single | 4 | blas | 512 | 1.730167 | 3379.23 | 173.67 | 3.0% | — | ok |
+| nonad_einsum_n16_col_major_contiguous_concrete-shared | einsum | concrete-shared | concrete / allocating / owned / shared-session | f64 | 16×16 | col_major_contiguous | single | 4 | blas | 1024 | 2.201417 | 2149.82 | 88.34 | 2.7% | — | ok |
+| nonad_einsum_n16_col_major_contiguous_eager-no-ad | einsum | eager-no-ad | eager / allocating / owned / session-per-call | f64 | 16×16 | col_major_contiguous | single | 4 | blas | 512 | 1.783375 | 3483.15 | 192.95 | 3.7% | — | ok |
+| nonad_einsum_n16_col_major_contiguous_concrete-fresh | einsum | concrete-fresh | concrete / allocating / owned / session-per-call | f64 | 16×16 | col_major_contiguous | single | 4 | blas | 1024 | 2.212375 | 2160.52 | 40.24 | 1.7% | — | ok |
+| nonad_qr_n16_col_major_contiguous_eager-shared | qr | eager-shared | eager / allocating / owned / shared-session | f64 | 16×16 | col_major_contiguous | single | 4 | blas | 256 | 1.807833 | 7061.85 | 114.58 | 0.9% | — | ok |
+| nonad_qr_n16_col_major_contiguous_concrete-shared | qr | concrete-shared | concrete / allocating / owned / shared-session | f64 | 16×16 | col_major_contiguous | single | 4 | blas | 512 | 2.471167 | 4826.50 | 53.83 | 2.3% | — | ok |
+| nonad_qr_n16_col_major_contiguous_eager-no-ad | qr | eager-no-ad | eager / allocating / owned / session-per-call | f64 | 16×16 | col_major_contiguous | single | 4 | blas | 256 | 1.818916 | 7105.14 | 124.19 | 2.3% | — | ok |
+| nonad_qr_n16_col_major_contiguous_concrete-fresh | qr | concrete-fresh | concrete / allocating / owned / session-per-call | f64 | 16×16 | col_major_contiguous | single | 4 | blas | 512 | 2.487125 | 4857.67 | 23.64 | 2.5% | — | ok |
+| nonad_solve_n16_col_major_contiguous_eager-shared | solve | eager-shared | eager / allocating / owned / shared-session | f64 | 16×16 | col_major_contiguous | single | 4 | blas | 512 | 2.710500 | 5293.95 | 130.82 | 1.5% | — | ok |
+| nonad_solve_n16_col_major_contiguous_concrete-shared | solve | concrete-shared | concrete / allocating / owned / shared-session | f64 | 16×16 | col_major_contiguous | single | 4 | blas | 1024 | 2.709125 | 2645.63 | 30.68 | 1.4% | — | ok |
+| nonad_solve_n16_col_major_contiguous_eager-no-ad | solve | eager-no-ad | eager / allocating / owned / session-per-call | f64 | 16×16 | col_major_contiguous | single | 4 | blas | 128 | 0.671125 | 5243.16 | 93.43 | 2.5% | — | INCONCLUSIVE (<1 ms batch) |
+| nonad_solve_n16_col_major_contiguous_concrete-fresh | solve | concrete-fresh | concrete / allocating / owned / session-per-call | f64 | 16×16 | col_major_contiguous | single | 4 | blas | 1024 | 2.739875 | 2675.66 | 252.85 | 15.3% | — | NOISY |
+| nonad_einsum_n2_col_major_contiguous_concrete-scoped | einsum | concrete-scoped | concrete / allocating / owned / execution-scope+session-per-call | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 1024 | 1.786875 | 1745.00 | 108.54 | 10.8% | — | NOISY |
+| nonad_qr_n2_col_major_contiguous_concrete-scoped | qr | concrete-scoped | concrete / allocating / owned / execution-scope+session-per-call | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 2048 | 3.061000 | 1494.63 | 49.18 | 12.3% | — | NOISY |
+| nonad_solve_n2_col_major_contiguous_concrete-scoped | solve | concrete-scoped | concrete / allocating / owned / execution-scope+session-per-call | f64 | 2×2 | col_major_contiguous | single | 4 | blas | 2048 | 2.881584 | 1407.02 | 62.92 | 9.1% | — | ok |
+| nonad_einsum_n16_col_major_contiguous_concrete-scoped | einsum | concrete-scoped | concrete / allocating / owned / execution-scope+session-per-call | f64 | 16×16 | col_major_contiguous | single | 4 | blas | 1024 | 2.469750 | 2411.87 | 170.88 | 8.6% | — | ok |
+| nonad_qr_n16_col_major_contiguous_concrete-scoped | qr | concrete-scoped | concrete / allocating / owned / execution-scope+session-per-call | f64 | 16×16 | col_major_contiguous | single | 4 | blas | 512 | 2.619166 | 5115.56 | 177.00 | 14.2% | — | NOISY |
+| nonad_solve_n16_col_major_contiguous_concrete-scoped | solve | concrete-scoped | concrete / allocating / owned / execution-scope+session-per-call | f64 | 16×16 | col_major_contiguous | single | 4 | blas | 1024 | 2.802250 | 2736.57 | 67.20 | 17.3% | — | NOISY |
 
 ## Matched non-AD eager comparisons (#98)
 
@@ -312,38 +312,38 @@ All requested QR/SVD outputs are retained. Ordinary einsum uses the same parsed 
 
 | Operation | Shape | Layout | Session | Threads | Direct ns | Eager ns | Eager − direct ns | Eager/direct | Quality |
 |---|---|---|---|---:|---:|---:|---:|---:|---|
-| einsum | 2×2 | col_major_contiguous | per call diagnostic | 1 | 1453.90 | 2590.45 | 1136.55 | 1.782 | inconclusive |
-| einsum | 2×2 | col_major_contiguous | shared | 1 | 2116.54 | 3089.97 | 973.43 | 1.460 | inconclusive |
-| einsum | 2×2 | col_major_contiguous | per call diagnostic | 4 | 1750.12 | 3012.12 | 1262.00 | 1.721 | inconclusive |
-| einsum | 2×2 | col_major_contiguous | shared | 4 | 1838.79 | 3032.27 | 1193.48 | 1.649 | inconclusive |
-| einsum | 16×16 | col_major_contiguous | per call diagnostic | 1 | 2592.94 | 3378.66 | 785.72 | 1.303 | inconclusive |
-| einsum | 16×16 | col_major_contiguous | shared | 1 | 1770.35 | 2967.29 | 1196.94 | 1.676 | inconclusive |
-| einsum | 16×16 | col_major_contiguous | per call diagnostic | 4 | 3033.53 | 3918.87 | 885.34 | 1.292 | inconclusive |
-| einsum | 16×16 | col_major_contiguous | shared | 4 | 2479.90 | 3807.13 | 1327.23 | 1.535 | inconclusive |
-| einsum3 | 2×2 | col_major_contiguous | per call diagnostic | 1 | 24181.64 | 8390.46 | -15791.18 | 0.347 | inconclusive |
-| einsum3 | 2×2 | col_major_contiguous | shared | 1 | 24180.99 | 7565.10 | -16615.89 | 0.313 | inconclusive |
-| einsum3 | 2×2 | col_major_contiguous | per call diagnostic | 4 | 20569.02 | 9081.38 | -11487.64 | 0.442 | inconclusive |
-| einsum3 | 2×2 | col_major_contiguous | shared | 4 | 19276.70 | 8836.59 | -10440.11 | 0.458 | inconclusive |
-| qr | 2×2 | col_major_contiguous | per call diagnostic | 1 | 2134.20 | 3378.91 | 1244.71 | 1.583 | inconclusive |
-| qr | 2×2 | col_major_contiguous | shared | 1 | 1856.73 | 3611.08 | 1754.35 | 1.945 | inconclusive |
-| qr | 2×2 | col_major_contiguous | per call diagnostic | 4 | 1663.82 | 4298.99 | 2635.17 | 2.584 | inconclusive |
-| qr | 2×2 | col_major_contiguous | shared | 4 | 1614.01 | 4670.00 | 3055.99 | 2.893 | inconclusive |
-| qr | 16×16 | col_major_contiguous | per call diagnostic | 1 | 7478.60 | 9391.93 | 1913.33 | 1.256 | inconclusive |
-| qr | 16×16 | col_major_contiguous | shared | 1 | 7775.31 | 8430.66 | 655.35 | 1.084 | inconclusive |
-| qr | 16×16 | col_major_contiguous | per call diagnostic | 4 | 5509.44 | 8933.92 | 3424.48 | 1.622 | inconclusive |
-| qr | 16×16 | col_major_contiguous | shared | 4 | 6705.24 | 9214.52 | 2509.28 | 1.374 | inconclusive |
-| solve | 2×2 | col_major_contiguous | per call diagnostic | 1 | 1125.77 | 4281.90 | 3156.13 | 3.804 | inconclusive |
-| solve | 2×2 | col_major_contiguous | shared | 1 | 989.26 | 3827.47 | 2838.21 | 3.869 | inconclusive |
-| solve | 2×2 | col_major_contiguous | per call diagnostic | 4 | 1530.52 | 4397.62 | 2867.10 | 2.873 | inconclusive |
-| solve | 2×2 | col_major_contiguous | shared | 4 | 1569.70 | 4831.30 | 3261.60 | 3.078 | inconclusive |
-| solve | 16×16 | col_major_contiguous | per call diagnostic | 1 | 2340.01 | 5870.04 | 3530.03 | 2.509 | inconclusive |
-| solve | 16×16 | col_major_contiguous | shared | 1 | 2343.83 | 5384.61 | 3040.78 | 2.297 | inconclusive |
-| solve | 16×16 | col_major_contiguous | per call diagnostic | 4 | 3144.94 | 6682.86 | 3537.92 | 2.125 | inconclusive |
-| solve | 16×16 | col_major_contiguous | shared | 4 | 2923.66 | 6575.12 | 3651.46 | 2.249 | inconclusive |
-| svd | 2×2 | col_major_contiguous | per call diagnostic | 1 | 1777.75 | 4378.91 | 2601.16 | 2.463 | inconclusive |
-| svd | 2×2 | col_major_contiguous | shared | 1 | 1861.41 | 5260.74 | 3399.33 | 2.826 | inconclusive |
-| svd | 2×2 | col_major_contiguous | per call diagnostic | 4 | 2528.65 | 5373.94 | 2845.29 | 2.125 | inconclusive |
-| svd | 2×2 | col_major_contiguous | shared | 4 | 2405.35 | 5479.41 | 3074.06 | 2.278 | inconclusive |
+| einsum | 2×2 | col_major_contiguous | per call diagnostic | 1 | 1180.54 | 2109.58 | 929.04 | 1.787 | observed; no speedup claim |
+| einsum | 2×2 | col_major_contiguous | shared | 1 | 1140.12 | 2182.50 | 1042.38 | 1.914 | observed; no speedup claim |
+| einsum | 2×2 | col_major_contiguous | per call diagnostic | 4 | 2047.28 | 3229.49 | 1182.21 | 1.577 | inconclusive |
+| einsum | 2×2 | col_major_contiguous | shared | 4 | 1901.61 | 3129.80 | 1228.19 | 1.646 | observed; no speedup claim |
+| einsum | 16×16 | col_major_contiguous | per call diagnostic | 1 | 1789.63 | 3079.67 | 1290.04 | 1.721 | inconclusive |
+| einsum | 16×16 | col_major_contiguous | shared | 1 | 2182.41 | 3067.91 | 885.50 | 1.406 | inconclusive |
+| einsum | 16×16 | col_major_contiguous | per call diagnostic | 4 | 2160.52 | 3483.15 | 1322.63 | 1.612 | observed; no speedup claim |
+| einsum | 16×16 | col_major_contiguous | shared | 4 | 2149.82 | 3379.23 | 1229.41 | 1.572 | observed; no speedup claim |
+| einsum3 | 2×2 | col_major_contiguous | per call diagnostic | 1 | 18236.98 | 6376.87 | -11860.11 | 0.350 | observed; no speedup claim |
+| einsum3 | 2×2 | col_major_contiguous | shared | 1 | 17977.54 | 6420.33 | -11557.21 | 0.357 | observed; no speedup claim |
+| einsum3 | 2×2 | col_major_contiguous | per call diagnostic | 4 | 19501.30 | 8991.21 | -10510.09 | 0.461 | observed; no speedup claim |
+| einsum3 | 2×2 | col_major_contiguous | shared | 4 | 19098.96 | 8374.02 | -10724.94 | 0.438 | observed; no speedup claim |
+| qr | 2×2 | col_major_contiguous | per call diagnostic | 1 | 1044.43 | 3079.14 | 2034.71 | 2.948 | observed; no speedup claim |
+| qr | 2×2 | col_major_contiguous | shared | 1 | 1056.23 | 3215.49 | 2159.26 | 3.044 | observed; no speedup claim |
+| qr | 2×2 | col_major_contiguous | per call diagnostic | 4 | 1607.10 | 4095.13 | 2488.03 | 2.548 | observed; no speedup claim |
+| qr | 2×2 | col_major_contiguous | shared | 4 | 1611.82 | 3911.38 | 2299.56 | 2.427 | observed; no speedup claim |
+| qr | 16×16 | col_major_contiguous | per call diagnostic | 1 | 6229.00 | 10788.57 | 4559.57 | 1.732 | inconclusive |
+| qr | 16×16 | col_major_contiguous | shared | 1 | 4890.95 | 6986.33 | 2095.38 | 1.428 | inconclusive |
+| qr | 16×16 | col_major_contiguous | per call diagnostic | 4 | 4857.67 | 7105.14 | 2247.47 | 1.463 | observed; no speedup claim |
+| qr | 16×16 | col_major_contiguous | shared | 4 | 4826.50 | 7061.85 | 2235.35 | 1.463 | observed; no speedup claim |
+| solve | 2×2 | col_major_contiguous | per call diagnostic | 1 | 1068.10 | 4175.45 | 3107.35 | 3.909 | inconclusive |
+| solve | 2×2 | col_major_contiguous | shared | 1 | 956.50 | 3840.66 | 2884.16 | 4.015 | inconclusive |
+| solve | 2×2 | col_major_contiguous | per call diagnostic | 4 | 1401.79 | 4072.83 | 2671.04 | 2.905 | observed; no speedup claim |
+| solve | 2×2 | col_major_contiguous | shared | 4 | 1398.05 | 3975.83 | 2577.78 | 2.844 | inconclusive |
+| solve | 16×16 | col_major_contiguous | per call diagnostic | 1 | 2291.34 | 5176.92 | 2885.58 | 2.259 | inconclusive |
+| solve | 16×16 | col_major_contiguous | shared | 1 | 2380.21 | 6117.60 | 3737.39 | 2.570 | inconclusive |
+| solve | 16×16 | col_major_contiguous | per call diagnostic | 4 | 2675.66 | 5243.16 | 2567.50 | 1.960 | inconclusive |
+| solve | 16×16 | col_major_contiguous | shared | 4 | 2645.63 | 5293.95 | 2648.32 | 2.001 | observed; no speedup claim |
+| svd | 2×2 | col_major_contiguous | per call diagnostic | 1 | 1755.82 | 4841.88 | 3086.06 | 2.758 | inconclusive |
+| svd | 2×2 | col_major_contiguous | shared | 1 | 1826.25 | 5903.32 | 4077.07 | 3.232 | inconclusive |
+| svd | 2×2 | col_major_contiguous | per call diagnostic | 4 | 2221.64 | 5097.33 | 2875.69 | 2.294 | observed; no speedup claim |
+| svd | 2×2 | col_major_contiguous | shared | 4 | 2141.97 | 4714.93 | 2572.96 | 2.201 | observed; no speedup claim |
 
 ## Separate allocation diagnostics
 
@@ -465,23 +465,23 @@ Shared-session routes enter/exit the session once around warmup/calibration/all 
 Wall observations `wall_allocations_t1.json`:
 ```json
 {
-  "collection_total_seconds": 0.3504850830004216,
-  "case_process_seconds": 0.3189158380018853
+  "collection_total_seconds": 0.42222229199978756,
+  "case_process_seconds": 0.38802149999810354
 }
 ```
 
 Wall observations `wall_allocations_t4.json`:
 ```json
 {
-  "collection_total_seconds": 0.4034745409999232,
-  "case_process_seconds": 0.37043729100059863
+  "collection_total_seconds": 0.3732540000000881,
+  "case_process_seconds": 0.33993358200223156
 }
 ```
 
 Wall observations `wall_command.json`:
 ```json
 {
-  "command_seconds_through_collection": 538.995184667,
+  "command_seconds_through_collection": 505.04803825,
   "scope": "command startup through collection; excludes report rendering and publication",
   "budget_seconds": 120.0,
   "budget_status": "over_budget; diagnostic only"
@@ -491,26 +491,26 @@ Wall observations `wall_command.json`:
 Wall observations `wall_measure_t1.json`:
 ```json
 {
-  "collection_total_seconds": 4.1179898339996726,
-  "case_process_seconds": 4.052052539003853
+  "collection_total_seconds": 3.8486987500000396,
+  "case_process_seconds": 3.797482629004662
 }
 ```
 
 Wall observations `wall_measure_t4.json`:
 ```json
 {
-  "collection_total_seconds": 4.1736812500003,
-  "case_process_seconds": 4.111608164995232
+  "collection_total_seconds": 3.9254200420000416,
+  "case_process_seconds": 3.8759721740034365
 }
 ```
 
 Wall observations `wall_phases.json`:
 ```json
 {
-  "validation_and_latency_build_seconds": 10.803830833,
-  "metadata_and_latency_collection_seconds": 20.254483042,
-  "allocation_diagnostic_build_seconds": 506.793410208,
-  "allocation_collection_seconds": 1.011589834,
-  "command_before_report_seconds": 538.863313917
+  "validation_and_latency_build_seconds": 9.003147666,
+  "metadata_and_latency_collection_seconds": 18.167505459,
+  "allocation_diagnostic_build_seconds": 476.685543083,
+  "allocation_collection_seconds": 1.043873083,
+  "command_before_report_seconds": 504.900069291
 }
 ```
