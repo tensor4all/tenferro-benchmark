@@ -301,12 +301,14 @@ def elementwise_errors(actual, reference, rtol: float, atol: float):
         raise ValueError("nonfinite AD output")
     if not np.all(np.isfinite(reference)):
         raise ValueError("nonfinite reference")
-    # Subtraction can overflow to inf for two finite inputs of opposite sign,
-    # and `json.dumps` writes that as the token `Infinity`. Clamp here so every
-    # number this module reports is a JSON number.
+    # Subtraction can overflow to inf for two finite inputs of opposite sign.
+    # The overflowed value is the TRUE error and must stay in the comparison:
+    # clamping it before `error <= tolerance` turned a 2x miss into `passed`
+    # (#417 review). Only the reported metric is clamped.
     with np.errstate(over="ignore", invalid="ignore"):
-        error = np.minimum(np.abs(actual - reference), np.finfo(np.float64).max)
-    max_abs = float(np.max(error)) if error.size else 0.0
+        error = np.abs(actual - reference)
+        reported = np.minimum(error, np.finfo(np.float64).max)
+    max_abs = float(np.max(reported)) if error.size else 0.0
     # `atol` may be 0, and a correct element of the reference can be exactly 0.
     # Dividing then gives 0/0, which either poisons the maximum with NaN or, if
     # it is dropped, lets a large wrong element hide behind the element that had

@@ -164,6 +164,15 @@ class CheckMustFailClosed(unittest.TestCase):
         json.dumps({"max_abs_error": max_abs, "residual": worst}, allow_nan=False)
         self.assertGreater(worst, 1.0)
 
+    def test_an_overflowing_difference_is_not_clamped_into_a_pass(self):
+        # Clamping the error before the tolerance comparison turned a 2x miss
+        # (tolerance 1.0, true error 2x max) into `passed` (#417 review).
+        largest = np.finfo(np.float64).max
+        self.assertGreater(
+            modes._worst(np.asarray(-largest), np.asarray(largest), 1.0, 0.0)[2], 1.0
+        )
+
+
     def test_a_failed_check_keeps_its_residual_serializable(self):
         expected, matrix, tangent, rhs = cpu_outputs("grad_sum_qr", "jvp")
         with self.assertRaises(modes.VerificationFailure) as caught:
