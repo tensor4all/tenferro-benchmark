@@ -54,6 +54,32 @@ class FingerprintParityTests(unittest.TestCase):
         self.assertEqual(weights, REFERENCE_WEIGHTS)
         self.assertTrue(all(abs(weight) <= 1.0 for weight in weights))
 
+    def test_the_vector_equals_the_recurrence_that_defines_it(self):
+        """Pin the vectorized weights to the definition, not just to six of them.
+
+        The weights are `(index+1)*SEED mod 2**64` under the splitmix64 mixing steps.
+        Evaluating that one element at a time is what the Rust side documents and what
+        the Python side used to do, so re-deriving it here keeps a numpy rewrite from
+        drifting past the first few elements.
+        """
+        from scripts.benchmark_gpu_public_api import FINGERPRINT_SEED, _U64
+
+        def scalar(count):
+            state = 0
+            out = []
+            for _ in range(count):
+                state = (state + FINGERPRINT_SEED) & _U64
+                z = state
+                z = ((z ^ (z >> 30)) * 0xBF58476D1CE4E5B9) & _U64
+                z = ((z ^ (z >> 27)) * 0x94D049BB133111EB) & _U64
+                z ^= z >> 31
+                out.append((z >> 11) / (1 << 52) - 1.0)
+            return out
+
+        for count in (1, 2, 63, 1000):
+            self.assertEqual(list(seeded_weights(count)), scalar(count), msg=count)
+        self.assertEqual(list(seeded_weights(0)), [])
+
     def test_reference_invariants_match_the_rust_constants(self):
         values = np.array(REFERENCE_REAL) + 1j * np.array(REFERENCE_IMAGINARY)
         live = fingerprint(values)
