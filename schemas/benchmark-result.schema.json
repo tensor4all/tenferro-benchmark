@@ -85,6 +85,11 @@
           "minimum": 0,
           "description": "Compilation plus the first executed call (the first warmup), measured outside every timed sample. Optional: collectors that do not measure a cold path omit it."
         },
+        "verification_time_ms": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "description": "Wall time this case spent proving its numbers: building the reference and comparing outputs against it, which happens outside every operation clock. Optional: collectors that do not measure it omit it."
+        },
         "first_run_ms": { "type": ["number", "null"], "minimum": 0 },
         "median_ms": { "type": ["number", "null"], "minimum": 0 },
         "min_ms": { "type": ["number", "null"], "minimum": 0 },

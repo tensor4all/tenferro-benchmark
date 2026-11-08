@@ -161,6 +161,7 @@ def fold(row, suite_id=None):
             "compile_time_ms": recorded_compile_ms,
             "compile_time_scope": compile_time_scope(row, recorded_compile_ms),
             "first_call_ms": timing.get("first_call_ms"),
+            "verification_time_ms": timing.get("verification_time_ms"),
             "first_run_ms": None,
             "median_ms": median, "min_ms": min(values) if values else None,
             "p95_ms": None, "iqr_ms": iqr,

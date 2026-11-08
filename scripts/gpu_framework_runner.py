@@ -94,11 +94,26 @@ def run(legacy, suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
 
         backend_end = time.monotonic_ns()
 
+        # Everything that exists only to prove the numbers: building the CPU
+        # reference and comparing outputs against it. It runs outside every
+        # operation clock, but it dominates the pod's wall clock, so it is
+        # measured per case and recorded next to the timings it does not affect.
+        verification_ns = 0
+
+        def verifying(work):
+            nonlocal verification_ns
+            started = time.monotonic_ns()
+            try:
+                return work()
+            finally:
+                verification_ns += time.monotonic_ns() - started
+
         if op == "tensor_network_contract":
             source, bond_dim, fill = legacy._tensor_network_spec(problem)
             network = legacy.tnc.load_tensor_network(source)
             hosts = [np.full((bond_dim,) * len(ix), fill, dtype=np.float32) for ix in network["inputs"]]
-            reference = legacy.tnc.constant_tree_reference(network, bond_dim, fill)
+            reference = verifying(
+                lambda: legacy.tnc.constant_tree_reference(network, bond_dim, fill))
             print(backend, problem["id"], "constant-tree reference complete", flush=True)
             if is_jax:
                 inputs = [jax.device_put(value, device) for value in hosts]
@@ -148,14 +163,15 @@ def run(legacy, suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
                 if op not in {"qr", "svd", "eigh", "solve"}:
                     cpu_data = legacy._to_jax_cpu(data)
                     cpu_fn, cpu_args = legacy._jax_fn(op, cpu_data)
-                    reference = ready(cpu_fn(*cpu_args))
+                    reference = verifying(lambda: ready(cpu_fn(*cpu_args)))
                 check = lambda result: require_verification(legacy._verify_jax(op, result, reference, data, rtol, atol))
             else:
                 inputs = legacy._to_torch(data, device)
                 operation = legacy._torch_fn(op, inputs)
                 reference = None
                 if op not in {"qr", "svd", "eigh", "solve"}:
-                    reference = legacy._torch_fn(op, legacy._to_torch_cpu_f64(data))()
+                    reference = verifying(
+                        lambda: legacy._torch_fn(op, legacy._to_torch_cpu_f64(data))())
                 check = lambda result: require_verification(legacy._verify_torch(op, result, reference, data, rtol, atol))
 
         def assert_placement(result):
@@ -212,7 +228,7 @@ def run(legacy, suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
         # only after warmups, so this records cold-path cost without touching it.
         first_call_ms = (compile_ms or 0.0) + (probe_ready - probe_started) / 1e6
         cache_delta = jax_cache_stats.delta(cache_before, jax_cache_stats.stats(cache_dir))
-        verification = check(probe)
+        verification = verifying(lambda: check(probe))
         verified = time.monotonic_ns()
         print(backend, problem["id"], "initial verification passed", flush=True)
         output_bytes = sum(int(value.size * value.dtype.itemsize) if is_jax else value.numel() * value.element_size() for value in leaves(probe))
@@ -225,7 +241,7 @@ def run(legacy, suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
             final = operation()
             ready(final)
             assert_placement(final)
-            after = check(final)
+            after = verifying(lambda: check(final))
             verification = ("passed", max(verification[1], after[1]), max(verification[2], after[2]))
             del final
             final_wall_ns = time.monotonic_ns() - final_start
@@ -235,6 +251,7 @@ def run(legacy, suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
             warmup_runs=warmups, timed_runs=0 if verify_only else runs,
             first_run_ms=first, median_ms=median, min_ms=minimum, p95_ms=p95, iqr_ms=iqr,
             compile_time_ms=compile_ms, first_call_ms=first_call_ms,
+            verification_time_ms=verification_ns / 1e6,
             ver_status=verification[0], max_abs=verification[1], max_rel=verification[2],
             rtol=rtol, atol=atol, env=legacy._base_env(device_ordinal, ts, bc, tc))
         record["execution"]["notes"] = json.dumps({
