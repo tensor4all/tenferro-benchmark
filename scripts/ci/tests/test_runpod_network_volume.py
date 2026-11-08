@@ -166,5 +166,192 @@ class NetworkVolumeTests(unittest.TestCase):
                          volume.DEFAULT_API_BASE)
 
 
+CATALOG = json.dumps({
+    "dataCenters": [
+        {
+            "id": "US-KS-2",
+            "name": "US Kansas 2",
+            "networkVolumeTypes": ["STANDARD"],
+            "gpuAvailability": [
+                {"id": "NVIDIA A100-SXM4-80GB", "name": "A100 SXM4", "availability": "LOW"},
+            ],
+        },
+        {
+            "id": "EU-RO-1",
+            "name": "EU Romania 1",
+            "networkVolumeTypes": ["STANDARD"],
+            "gpuAvailability": [
+                {"id": "NVIDIA GeForce RTX 4090", "name": "RTX 4090", "availability": "HIGH"},
+            ],
+        },
+        {
+            "id": "AP-JP-1",
+            "name": "AP Japan 1",
+            "networkVolumeTypes": [],
+            "gpuAvailability": [
+                {"id": "NVIDIA A100-SXM4-80GB", "name": "A100 SXM4", "availability": "HIGH"},
+            ],
+        },
+    ]
+}).encode()
+
+
+class NetworkVolumeValidationTests(unittest.TestCase):
+    """Input the provider would refuse must never reach it, on any path."""
+
+    def test_dry_run_refuses_the_same_invalid_input_as_a_real_create(self):
+        for kwargs in (
+            {"name": "", "size_gb": 10, "data_center": "US-KS-2"},
+            {"name": "x", "size_gb": 4097, "data_center": "US-KS-2"},
+            {"name": "x", "size_gb": 10, "data_center": ""},
+        ):
+            calls = []
+            with self.subTest(kwargs=kwargs), self.assertRaises(ValueError):
+                volume.ensure_network_volume(
+                    "https://example.test/v2", "secret", dry_run=True,
+                    transport=transport_replies([listing()], calls), **kwargs,
+                )
+            self.assertEqual(calls, [])
+
+    def test_an_existing_volume_in_another_data_center_is_refused(self):
+        elsewhere = dict(VOLUME, dataCenter="EU-RO-1")
+        with self.assertRaisesRegex(ValueError, "data center"):
+            volume.ensure_network_volume(
+                "https://example.test/v2", "secret", name="jax-compile-cache",
+                size_gb=10, data_center="US-KS-2",
+                transport=transport_replies([listing(elsewhere)], []),
+            )
+
+    def test_an_existing_volume_with_another_size_is_refused(self):
+        with self.assertRaisesRegex(ValueError, "size"):
+            volume.ensure_network_volume(
+                "https://example.test/v2", "secret", name="jax-compile-cache",
+                size_gb=100, data_center="US-KS-2",
+                transport=transport_replies([listing(VOLUME)], []),
+            )
+
+    def test_two_volumes_with_the_same_name_are_ambiguous_and_refused(self):
+        duplicate = dict(VOLUME, id="vol-2")
+        with self.assertRaisesRegex(ValueError, "vol-1, vol-2"):
+            volume.ensure_network_volume(
+                "https://example.test/v2", "secret", name="jax-compile-cache",
+                size_gb=10, data_center="US-KS-2",
+                transport=transport_replies([listing(VOLUME, duplicate)], []),
+            )
+
+    def test_a_next_page_without_a_cursor_is_refused(self):
+        broken = Response(200, {}, json.dumps({
+            "networkVolumes": [],
+            "pagination": {"hasNextPage": True, "nextCursor": None},
+        }).encode())
+        with self.assertRaisesRegex(ValueError, "cursor"):
+            volume.list_network_volumes(
+                "https://example.test/v2", "secret",
+                transport=transport_replies([broken], []),
+            )
+
+
+class NetworkVolumeCreationTests(unittest.TestCase):
+    """A lost POST response must not become a second billable volume."""
+
+    def test_an_ambiguous_failure_reuses_the_volume_it_created(self):
+        clock, calls = Clock(), []
+        result = volume.create_network_volume(
+            "https://example.test/v2", "secret", name="jax-compile-cache", size_gb=10,
+            data_center="US-KS-2",
+            transport=transport_replies(
+                [Response(503, {}, b""), listing(VOLUME)], calls
+            ),
+            monotonic=clock.monotonic, sleep=clock.sleep,
+        )
+        self.assertEqual(result["id"], "vol-1")
+        self.assertEqual([c.get_method() for c in calls], ["POST", "GET"])
+
+    def test_a_failure_that_created_nothing_is_retried_once_after_listing(self):
+        clock, calls = Clock(), []
+        result = volume.create_network_volume(
+            "https://example.test/v2", "secret", name="jax-compile-cache", size_gb=10,
+            data_center="US-KS-2",
+            transport=transport_replies(
+                [Response(503, {}, b""), listing(),
+                 Response(201, {}, json.dumps(VOLUME).encode())],
+                calls,
+            ),
+            monotonic=clock.monotonic, sleep=clock.sleep,
+        )
+        self.assertEqual(result["id"], "vol-1")
+        self.assertEqual([c.get_method() for c in calls], ["POST", "GET", "POST"])
+
+
+class NetworkVolumeReadTests(unittest.TestCase):
+    def test_the_pod_url_yields_the_volume_api_base(self):
+        self.assertEqual(
+            volume.pod_api_base("https://api.runpod.io/v2/pods"), "https://api.runpod.io/v2"
+        )
+        self.assertEqual(volume.pod_api_base(""), volume.DEFAULT_API_BASE)
+
+    def test_the_data_center_is_read_back_from_the_volume(self):
+        clock, calls = Clock(), []
+        self.assertEqual(
+            volume.pod_data_center(
+                "https://example.test/v2", "secret", "vol-1",
+                transport=transport_replies(
+                    [Response(200, {}, json.dumps(VOLUME).encode())], calls
+                ),
+                monotonic=clock.monotonic, sleep=clock.sleep,
+            ),
+            "US-KS-2",
+        )
+        self.assertEqual(calls[0].full_url, "https://example.test/v2/network-volumes/vol-1")
+
+    def test_a_volume_without_a_data_center_is_an_error_not_a_guess(self):
+        clock, calls = Clock(), []
+        payload = dict(VOLUME)
+        payload.pop("dataCenter")
+        with self.assertRaisesRegex(ValueError, "data center"):
+            volume.pod_data_center(
+                "https://example.test/v2", "secret", "vol-1",
+                transport=transport_replies(
+                    [Response(200, {}, json.dumps(payload).encode())], calls
+                ),
+                monotonic=clock.monotonic, sleep=clock.sleep,
+            )
+
+
+class DataCenterCatalogTests(unittest.TestCase):
+    def check(self, data_center, gpu_ids=("NVIDIA A100-SXM4-80GB",)):
+        clock, calls = Clock(), []
+        result = volume.check_data_center(
+            "https://example.test/v2", "secret", data_center,
+            required_gpu_type_ids=gpu_ids,
+            transport=transport_replies([Response(200, {}, CATALOG)], calls),
+            monotonic=clock.monotonic, sleep=clock.sleep,
+        )
+        return result, calls
+
+    def test_the_canonical_spelling_is_returned(self):
+        self.assertEqual(self.check("us-ks-2")[0], "US-KS-2")
+
+    def test_an_unknown_data_center_is_refused(self):
+        with self.assertRaisesRegex(ValueError, "not an available data center"):
+            self.check("US-NOWHERE-9")
+
+    def test_a_data_center_without_network_volumes_is_refused(self):
+        with self.assertRaisesRegex(ValueError, "network volumes"):
+            self.check("AP-JP-1")
+
+    def test_a_data_center_without_the_benchmark_gpu_is_refused(self):
+        with self.assertRaisesRegex(ValueError, "offers none of NVIDIA A100-SXM4-80GB"):
+            self.check("EU-RO-1")
+        # Any configured A100 variant is enough: a real data center offers a subset.
+        self.assertEqual(
+            self.check("US-KS-2", gpu_ids=("NVIDIA A100 80GB PCIe",
+                                           "NVIDIA A100-SXM4-80GB"))[0],
+            "US-KS-2",
+        )
+        with self.assertRaisesRegex(ValueError, "offers none of NVIDIA A100 80GB PCIe"):
+            self.check("US-KS-2", gpu_ids=("NVIDIA A100 80GB PCIe",))
+
+
 if __name__ == "__main__":
     unittest.main()
