@@ -58,9 +58,10 @@ env:
   # (suite=all, default backends, A100).
   BENCH_GPU_TYPE: ${{ inputs.gpu_type || 'a100' }}
   # Hard cap on one pod's lifetime, enforced by the pod itself (see startup).
-  # Budget from pod creation: <=10 min setup + 95 min collection (the `collect` step
-  # timeout) + <=5 min packaging/upload, so the watchdog fires after the results are
-  # already on the runner. The hosted-side timeouts below outlive it by design.
+  # Budget from pod creation: <=10 min startup + 10 min runtime transfer + 10 min
+  # extract (the two bounded steps below) + 80 min collection (the `collect` step
+  # timeout) + <=5 min packaging = 115 < 120, so the watchdog fires after the
+  # results are on the runner. The hosted-side timeouts below outlive it by design.
   # Extension cost: 55 -> 120 min at the A100 PCIe rate ($1.79/h) is
   # (120-55)/60 * 1.79 = $1.94, and two hours of compute is $3.58. That is the
   # calculation, not a hard billing ceiling: watchdog deletion retries can add up to
@@ -473,9 +474,8 @@ jobs:
           PY
 
       - name: Run GPU benchmark suite
-        # Bounded so packaging and upload run before the watchdog deletes the pod:
-        # 10 min setup + 95 min collection + 5 min packaging stays inside 120 min.
-        timeout-minutes: 95
+        # 10 startup + 10 transfer + 10 extract + 80 collection + 5 packaging = 115.
+        timeout-minutes: 80
         id: collect
         env:
           # Only an explicit dispatch narrows the arms. An empty value keeps the
