@@ -200,11 +200,21 @@ def prepare_bundle(root: Path, profile: str, source: dict, output: Path,
                 dropped = next((entry['suite_id'] for entry in manifest['suites']
                                 if str(error).startswith(entry['suite_id'] + ':')), None)
                 if dropped is None:
+                    # No manifest from a failed validation may authorize an upload.
+                    (output / 'publication.json').unlink(missing_ok=True)
                     raise
                 print(f'{dropped}: not published: {error}', file=sys.stderr)
                 manifest['suites'] = [entry for entry in manifest['suites']
                                       if entry['suite_id'] != dropped]
                 manifest['missing_suites'] = sorted(set(manifest['missing_suites']) | {dropped})
+                # The bundle-wide veto for a narrowed routine arm belongs to the
+                # suite that lost the arm: leaving it behind rejects the suites that
+                # are still published.
+                narrowed = manifest.get('narrowed_routine_arms')
+                if narrowed:
+                    narrowed.pop(dropped, None)
+                    if not narrowed:
+                        del manifest['narrowed_routine_arms']
                 discard_gpu_suite(output, dropped)
                 (output / 'publication.json').write_text(json.dumps(manifest, indent=2) + '\n')
     # No manifest from a failed validation may authorize a results upload.

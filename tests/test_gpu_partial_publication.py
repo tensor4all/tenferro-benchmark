@@ -202,5 +202,22 @@ class PartialPublicationTest(unittest.TestCase):
         self.assertFalse((self.root / 'bundle/result/nvidia-gpu/gpu/einsum.summary.json').exists())
 
 
+    def test_an_unattributable_failure_leaves_no_upload_authorizing_manifest(self):
+        # The while loop can only drop a suite whose error names it. When no
+        # suite can be blamed, packaging gives up -- but the manifest already on
+        # disk would still authorize the workflow's results upload.
+        self.declaration('dense.yaml', SUITE, ['matmul'])
+        self.declaration('einsum.yaml', 'gpu/einsum', ['matmul'])
+        self.run_directory(problems=['matmul'], records=[record('matmul')])
+        broken = self.root / f'data/results/nvidia-gpu/gpu/einsum/{STAMP}'
+        shutil.copytree(self.root / f'data/results/nvidia-gpu/{SUITE}/{STAMP}', broken)
+        (broken / 'records.jsonl').unlink()
+        with self.assertRaises(ValueError):
+            packaging.prepare_bundle(self.root, 'nvidia-gpu', self.source,
+                                     self.root / 'bundle',
+                                     suites='dense.yaml,einsum.yaml', backends=BACKEND)
+        self.assertFalse((self.root / 'bundle/publication.json').exists())
+
+
 if __name__ == '__main__':
     unittest.main()
