@@ -202,21 +202,111 @@ class PartialPublicationTest(unittest.TestCase):
         self.assertFalse((self.root / 'bundle/result/nvidia-gpu/gpu/einsum.summary.json').exists())
 
 
-    def test_an_unattributable_failure_leaves_no_upload_authorizing_manifest(self):
-        # The while loop can only drop a suite whose error names it. When no
-        # suite can be blamed, packaging gives up -- but the manifest already on
-        # disk would still authorize the workflow's results upload.
+    def test_a_failure_that_does_not_name_its_suite_costs_only_that_suite(self):
+        # Attribution used to read the error text, so an error without a
+        # `suite_id:` prefix withheld every suite in the bundle. Each suite is
+        # now retried alone, which names the broken one without reading it.
         self.declaration('dense.yaml', SUITE, ['matmul'])
         self.declaration('einsum.yaml', 'gpu/einsum', ['matmul'])
         self.run_directory(problems=['matmul'], records=[record('matmul')])
         broken = self.root / f'data/results/nvidia-gpu/gpu/einsum/{STAMP}'
         shutil.copytree(self.root / f'data/results/nvidia-gpu/{SUITE}/{STAMP}', broken)
+        # `adapt_publication` reports this without a suite prefix.
         (broken / 'records.jsonl').unlink()
-        with self.assertRaises(ValueError):
-            packaging.prepare_bundle(self.root, 'nvidia-gpu', self.source,
-                                     self.root / 'bundle',
-                                     suites='dense.yaml,einsum.yaml', backends=BACKEND)
+
+        validated = packaging.prepare_bundle(self.root, 'nvidia-gpu', self.source,
+                                             self.root / 'bundle',
+                                             suites='dense.yaml,einsum.yaml', backends=BACKEND)
+        self.assertEqual([receipt['suite_id'] for receipt, _ in validated], [SUITE])
+        publication = json.loads((self.root / 'bundle/publication.json').read_text())
+        self.assertEqual([entry['suite_id'] for entry in publication['suites']], [SUITE])
+        self.assertIn('gpu/einsum', publication['missing_reasons'])
+
+    def test_an_unattributable_bundle_failure_still_leaves_no_manifest(self):
+        # When even the retried suite cannot be read, nothing publishes: the
+        # manifest that a failed packaging wrote must not authorize an upload.
+        self.declaration('dense.yaml', SUITE, ['matmul'])
+        self.declaration('einsum.yaml', 'gpu/einsum', ['matmul'])
+        self.run_directory(problems=['matmul'], records=[record('matmul')])
+        broken = self.root / f'data/results/nvidia-gpu/gpu/einsum/{STAMP}'
+        shutil.copytree(self.root / f'data/results/nvidia-gpu/{SUITE}/{STAMP}', broken)
+        meta = yaml.safe_load((broken / 'run.yaml').read_text())
+        meta['suite_id'] = 'gpu/einsum'
+        (broken / 'run.yaml').write_text(yaml.safe_dump(meta))
+
+        with patch.object(packaging, 'validate_bundle',
+                          side_effect=ValueError('row count mismatch')):
+            with self.assertRaises(ValueError):
+                packaging.prepare_bundle(self.root, 'nvidia-gpu', self.source,
+                                         self.root / 'bundle',
+                                         suites='dense.yaml,einsum.yaml', backends=BACKEND)
         self.assertFalse((self.root / 'bundle/publication.json').exists())
+
+    def test_a_median_without_a_usable_sample_does_not_publish(self):
+        # `timed_runs >= 1` is not enough: a record can carry a median whose
+        # sampling batch is non-positive. Publishing it would put a number on
+        # the page that no measurement supports.
+        self.declaration('dense.yaml', SUITE, ['matmul'])
+        self.declaration('einsum.yaml', 'gpu/einsum', ['matmul'])
+        row = record('matmul')
+        notes = json.loads(row['execution']['notes'])
+        notes['sampling']['batch_ms'] = [1.0, -1.0]
+        row['execution']['notes'] = json.dumps(notes)
+        run = self.run_directory(problems=['matmul'], records=[row])
+        broken = self.root / f'data/results/nvidia-gpu/gpu/einsum/{STAMP}'
+        shutil.copytree(run, broken)
+        meta = yaml.safe_load((broken / 'run.yaml').read_text())
+        meta['suite_id'] = 'gpu/einsum'
+        meta['collection']['selected_case_ids'] = [f'gpu/einsum:matmul:{BACKEND}']
+        meta['collection']['expected_case_ids'] = [f'gpu/einsum:matmul:{BACKEND}']
+        (broken / 'run.yaml').write_text(yaml.safe_dump(meta))
+        shutil.rmtree(run)
+        self.run_directory(problems=['matmul'], records=[record('matmul')])
+
+        validated = packaging.prepare_bundle(self.root, 'nvidia-gpu', self.source,
+                                             self.root / 'bundle',
+                                             suites='dense.yaml,einsum.yaml', backends=BACKEND)
+        self.assertEqual([receipt['suite_id'] for receipt, _ in validated], [SUITE])
+        publication = json.loads((self.root / 'bundle/publication.json').read_text())
+        self.assertIn('no usable sample backs matmul',
+                      publication['missing_reasons']['gpu/einsum'])
+
+    def test_a_malformed_sample_inventory_does_not_publish(self):
+        # `batch_ms` that is not a list is a broken record, not a collector that
+        # records only summary statistics.
+        self.declaration('dense.yaml', SUITE, ['matmul'])
+        self.declaration('einsum.yaml', 'gpu/einsum', ['matmul'])
+        row = record('matmul')
+        notes = json.loads(row['execution']['notes'])
+        notes['sampling']['batch_ms'] = 42
+        row['execution']['notes'] = json.dumps(notes)
+        run = self.run_directory(problems=['matmul'], records=[row])
+        broken = self.root / f'data/results/nvidia-gpu/gpu/einsum/{STAMP}'
+        shutil.copytree(run, broken)
+        meta = yaml.safe_load((broken / 'run.yaml').read_text())
+        meta['suite_id'] = 'gpu/einsum'
+        (broken / 'run.yaml').write_text(yaml.safe_dump(meta))
+        shutil.rmtree(run)
+        self.run_directory(problems=['matmul'], records=[record('matmul')])
+
+        validated = packaging.prepare_bundle(self.root, 'nvidia-gpu', self.source,
+                                             self.root / 'bundle',
+                                             suites='dense.yaml,einsum.yaml', backends=BACKEND)
+        self.assertEqual([receipt['suite_id'] for receipt, _ in validated], [SUITE])
+        publication = json.loads((self.root / 'bundle/publication.json').read_text())
+        self.assertIn('matmul', publication['missing_reasons']['gpu/einsum'])
+
+    def test_a_row_without_a_sampling_inventory_still_publishes(self):
+        # Several collectors record only the summary statistics; the accounting
+        # files that as `raw_samples_unavailable`, not as a wrong measurement.
+        self.declaration('dense.yaml', SUITE, ['matmul'])
+        row = record('matmul')
+        row['execution']['notes'] = None
+        self.run_directory(problems=['matmul'], records=[row])
+        validated = packaging.prepare_bundle(self.root, 'nvidia-gpu', self.source,
+                                             self.root / 'bundle', suites='dense.yaml',
+                                             backends=BACKEND)
+        self.assertEqual([receipt['suite_id'] for receipt, _ in validated], [SUITE])
 
 
 if __name__ == '__main__':

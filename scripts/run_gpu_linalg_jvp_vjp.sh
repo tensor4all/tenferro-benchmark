@@ -123,6 +123,10 @@ echo "Target:   $BENCHMARK_TARGET_PROFILE"
 echo "Timestamp: $TIMESTAMP"
 echo ""
 
+# An arm that dies must not cost this suite the rows the other arms measured:
+# everything that was written is still validated, formatted and published, and
+# the failure is reported by the exit status after the report is written.
+ARM_FAILED=0
 RUST_BIN="${CARGO_TARGET_DIR:-$PROJECT_DIR/target}/release/benchmark_gpu_linalg_ad"
 # The routine run hands in the backend arm set through GPU_BENCH_BACKENDS;
 # without a filter the suite's own declared arms all run.
@@ -160,31 +164,52 @@ if [[ "$RUN_RUST" == 1 ]]; then
     rust_arm_started="$(wall_now)"
     CUBECL_DEBUG_LOG=0 \
     RUST_MIN_STACK="$RUST_MIN_STACK" \
-        "$RUST_BIN" "$RUST_JSONL" "$DEVICE_ORDINAL" "" -- "$SUITE_FILE"
+    rust_rc=0
+    CUBECL_DEBUG_LOG=0 \
+    RUST_MIN_STACK="$RUST_MIN_STACK" \
+        "$RUST_BIN" "$RUST_JSONL" "$DEVICE_ORDINAL" "" -- "$SUITE_FILE" || rust_rc=$?
     wall_arm "$RUN_DIR" tenferro-cuda-trace "$rust_arm_started" "$(wall_now)" "$rust_build_seconds"
     mv "$RUST_JSONL" "$RUN_DIR/rust_records_unverified.jsonl"
-    # The Rust arm ships raw outputs and the CPU reference runs in a separate
-    # process; that pass is a stage of the suite, not part of any arm's clock.
-    rust_verify_started="$(wall_now)"
-    "${PYTHON[@]}" "$SCRIPT_DIR/verify_gpu_linalg_ad_rust.py" \
-        "$RUN_DIR/rust_records_unverified.jsonl" "$RUST_JSONL" "$SUITE_FILE"
-    wall_phase "$RUN_DIR" rust_verification "$rust_verify_started" "$(wall_now)"
-    cat "$RUST_JSONL" >> "$RESULT_JSONL"
+    if [[ "$rust_rc" != 0 ]]; then
+        echo "ARM FAILED: tenferro-cuda-trace exited $rust_rc; its rows stay in $RUN_DIR/rust_records_unverified.jsonl" >&2
+        ARM_FAILED=1
+    else
+        # The Rust arm ships raw outputs and the CPU reference runs in a separate
+        # process; that pass is a stage of the suite, not part of any arm's clock.
+        rust_verify_started="$(wall_now)"
+        if ! "${PYTHON[@]}" "$SCRIPT_DIR/verify_gpu_linalg_ad_rust.py" \
+                "$RUN_DIR/rust_records_unverified.jsonl" "$RUST_JSONL" "$SUITE_FILE"; then
+            echo "ARM FAILED: tenferro-cuda-trace verification failed; its rows stay unverified" >&2
+            ARM_FAILED=1
+        fi
+        wall_phase "$RUN_DIR" rust_verification "$rust_verify_started" "$(wall_now)"
+    fi
+    [[ ! -s "$RUST_JSONL" ]] || cat "$RUST_JSONL" >> "$RESULT_JSONL"
     sleep "$GPU_BENCH_BACKEND_SLEEP"
 fi
+
+# One Python arm. Its rows stay and are published even when the arm exits
+# non-zero: the failure is reported after the report exists, not instead of it.
+run_python_arm() {
+    local backend="$1" chunk="$2" rc=0 started
+    started="$(wall_now)"
+    "${PYTHON[@]}" "$SCRIPT_DIR/benchmark_gpu_linalg_ad.py" \
+        "$chunk" "$DEVICE_ORDINAL" "" "$backend" -- "$SUITE_FILE" || rc=$?
+    wall_arm "$RUN_DIR" "$backend" "$started" "$(wall_now)" 0.0
+    if [[ "$rc" != 0 ]]; then
+        echo "ARM FAILED: $backend exited $rc; its rows stay in $chunk" >&2
+        ARM_FAILED=1
+    fi
+    [[ -s "$chunk" ]] || return 0
+    cat "$chunk" >> "$RESULT_JSONL"
+}
 
 for backend in "${AD_BACKENDS[@]}"; do
     [[ "$backend" == "tenferro-cuda-trace" ]] && continue
     echo "Running $backend linalg AD benchmarks..."
     chunk="$RUN_DIR/chunk_${backend}.jsonl"
     : > "$chunk"
-    python_arm_started="$(wall_now)"
-    "${PYTHON[@]}" "$SCRIPT_DIR/benchmark_gpu_linalg_ad.py" \
-        "$chunk" "$DEVICE_ORDINAL" "" "$backend" -- "$SUITE_FILE"
-    wall_arm "$RUN_DIR" "$backend" "$python_arm_started" "$(wall_now)" 0.0
-    if [[ -s "$chunk" ]]; then
-        cat "$chunk" >> "$RESULT_JSONL"
-    fi
+    run_python_arm "$backend" "$chunk"
     sleep "$GPU_BENCH_BACKEND_SLEEP"
 done
 
@@ -202,6 +227,7 @@ assert all(r['verification']['status']=='passed' for r in rows if r['status']=='
 assert all(r['timing']['median_ms'] is None for r in rows)
 print('AD CUDA verification complete:',len(rows),'cells; no timing report updated')
 PYDEBUG
+    [[ "$ARM_FAILED" == 0 ]] || exit 1
     exit 0
 fi
 "${VALIDATOR[@]}" --kind run "$RUN_YAML"
@@ -221,3 +247,7 @@ echo "GPU linalg JVP/VJP benchmark suite complete: $suite_id"
 echo "Run YAML: $RUN_YAML"
 echo "JSONL:    $RESULT_JSONL"
 echo "Report:   $REPORT_OUT"
+if [[ "$ARM_FAILED" != 0 ]]; then
+    echo "SUITE INCOMPLETE: at least one AD arm failed; the rows that did run are published" >&2
+    exit 1
+fi

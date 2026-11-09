@@ -140,6 +140,10 @@ for backend in "${api_backends[@]}"; do
     esac
 done
 outputs=()
+# An arm that dies must not cost this suite the rows the other arms measured:
+# the rows it wrote stay, the suite still normalizes and formats them, and the
+# failure is reported by the exit status after the report is written.
+ARM_FAILED=0
 # Each arm gets a record under $run_dir/arms/: the CPU it ran on and that CPU's busy
 # fraction (GPU_BENCH_CPU_SELECT=1), or why it was skipped. An arm whose output an
 # earlier process of the same run stamp already wrote is skipped explicitly instead of
@@ -161,8 +165,11 @@ run_arm() {
     "${GPU_ARM_PREFIX[@]+"${GPU_ARM_PREFIX[@]}"}" "$@" || rc=$?
     gpu_arm_finish "$run_dir" "$backend" "$rc"
     wall_arm "$run_dir" "$backend" "$arm_started" "$(wall_now)" "$build_seconds"
-    [[ "$rc" == 0 ]] || exit "$rc"
-    outputs+=("$output")
+    if [[ "$rc" != 0 ]]; then
+        echo "ARM FAILED: $backend exited $rc; its rows stay in $output" >&2
+        ARM_FAILED=1
+    fi
+    [[ ! -s "$output" ]] || outputs+=("$output")
 }
 for backend in ${rust_arms[@]+"${rust_arms[@]}"}; do
     output="$run_dir/$backend.jsonl"
@@ -181,6 +188,7 @@ if [[ "$GPU_API_VERIFY_ONLY" == 1 ]]; then
     uv run python scripts/format_gpu_public_api_results.py --suite "$suite" \
         --run-metadata "$run_dir/run.yaml" --verify-only \
         --output "$run_dir/verification.json" "${outputs[@]+"${outputs[@]}"}"
+    [[ "$ARM_FAILED" == 0 ]] || exit 1
     exit 0
 fi
 # Record the diagnostic block on every record of the family: the logical bytes the
@@ -205,4 +213,8 @@ if [[ "${GPU_BENCH_SKIP_LATEST:-0}" != 1 ]]; then
     mkdir -p result/nvidia-gpu/gpu
     cp "$run_dir/report.md" "result/nvidia-gpu/gpu/$family.md"
     cp "$run_dir/report.summary.json" "result/nvidia-gpu/gpu/$family.summary.json"
+fi
+if [[ "$ARM_FAILED" != 0 ]]; then
+    echo "SUITE INCOMPLETE: at least one arm failed; the rows that did run are published" >&2
+    exit 1
 fi

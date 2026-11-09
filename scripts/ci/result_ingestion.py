@@ -160,13 +160,21 @@ def validate_summary(document: dict, profile: str, entry: dict) -> None:
         raise ValueError(f'Invalid summary schema: {error.message}') from error
 
 
-def validate_bundle(bundle: Path, profile: str, source: dict) -> list[tuple[dict, dict[str, bytes]]]:
+def validate_bundle(bundle: Path, profile: str, source: dict,
+                    only_suite: str | None = None) -> list[tuple[dict, dict[str, bytes]]]:
+    """Validate the bundle, or one suite of it when `only_suite` is given.
+
+    Validating a single suite lets the packager attribute a failure to the suite
+    that caused it without reading the message text: a suite is retried on its
+    own, and a bundle that cannot say which suite is broken is no reason to
+    withhold the suites that can be read.
+    """
     if profile == 'nvidia-gpu':
         if __package__:
             from .gpu_ingestion_adapter import adapt_publication
         else:
             from gpu_ingestion_adapter import adapt_publication
-        manifest = adapt_publication(bundle, source)
+        manifest = adapt_publication(bundle, source, only_suite=only_suite)
     else:
         manifest = json.loads(safe_file(bundle, 'ingestion.json').read_text())
     if manifest.get('target_profile') in RETIRED_PROFILES or profile in RETIRED_PROFILES:
@@ -176,6 +184,10 @@ def validate_bundle(bundle: Path, profile: str, source: dict) -> list[tuple[dict
     if manifest.get('harness_commit') != source['head_sha']:
         raise ValueError('Bundle harness commit does not match source run')
     entries = manifest['suites']
+    if only_suite is not None:
+        entries = [entry for entry in entries if entry.get('suite_id') == only_suite]
+        if not entries:
+            raise ValueError(f'{only_suite}: not in the bundle')
     if not entries:
         raise ValueError('Empty bundle')
     missing = manifest.get('missing_suites', [])

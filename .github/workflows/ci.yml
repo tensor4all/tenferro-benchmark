@@ -187,6 +187,7 @@ jobs:
           bash tests/test_gpu_preflight.sh
           bash -n scripts/gpu_arm_launch.sh
           bash tests/test_gpu_arm_launch.sh
+          bash tests/test_gpu_delegated_arm_continuation.sh
           uv run python -m unittest tests.test_gpu_measurement_cpu
           bash tests/test_tenferro_checkout_helpers.sh
           bash tests/test_cpu_followup_run_record.sh

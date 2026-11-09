@@ -10,6 +10,7 @@ import argparse
 from datetime import datetime, timezone
 import hashlib
 import json
+import math
 from pathlib import Path
 import shutil
 import sys
@@ -93,6 +94,9 @@ def package_gpu_suite(root: Path, profile: str, output: Path, suite_file: str, s
     stamp = run.name
     if timestamp and stamp != timestamp:
         raise ValueError('GPU suites have inconsistent collection timestamps')
+    unbacked = unbacked_medians(run)
+    if unbacked:
+        raise ValueError(f'{suite}: no usable sample backs {", ".join(unbacked)}')
     run_relative = str(run.relative_to(root))
     target = output / run_relative
     excluded = []
@@ -133,6 +137,47 @@ def package_gpu_suite(root: Path, profile: str, output: Path, suite_file: str, s
     return suite, entry, stamp, gaps
 
 
+def unbacked_medians(run: Path) -> list[str]:
+    """Cases whose recorded samples contradict the median they publish.
+
+    `timed_runs >= 1` says a row was measured; it does not say the samples were
+    usable. A row that lists samples but whose `sampling.batch_ms` holds a
+    non-finite, non-positive or malformed value still carries a median, and
+    publishing it would put a number on a page that no measurement supports.
+
+    A row with no sampling inventory (or an empty one) is not rejected here: the
+    accounting files that as `raw_samples_unavailable`, not as a failure, and
+    several collectors legitimately record only the summary statistics. What
+    matters is that no *stated* sample contradicts the number.
+    """
+    records = run / 'records.jsonl'
+    if not records.is_file():
+        return []
+    unbacked = []
+    for line in records.read_text().splitlines():
+        if not line.strip():
+            continue
+        row = json.loads(line)
+        if row.get('status') != 'ok':
+            continue
+        try:
+            notes = json.loads((row.get('execution') or {}).get('notes') or '{}')
+            samples = notes['sampling']['batch_ms']
+        except (KeyError, TypeError, ValueError):
+            continue
+        if samples is None:
+            continue
+        if not isinstance(samples, list):
+            unbacked.append(str(row.get('problem_id') or row.get('case') or '?'))
+            continue
+        if not samples:
+            continue
+        if any(not isinstance(value, (int, float)) or isinstance(value, bool)
+               or not math.isfinite(value) or value <= 0 for value in samples):
+            unbacked.append(str(row.get('problem_id') or row.get('case') or '?'))
+    return sorted(set(unbacked))
+
+
 def discard_gpu_suite(output: Path, suite: str, profile: str = 'nvidia-gpu') -> None:
     """Remove a suite's partial copies so the bundle declares only packaged suites."""
     shutil.rmtree(output / 'data/results' / profile / suite, ignore_errors=True)
@@ -160,7 +205,7 @@ def prepare_bundle(root: Path, profile: str, source: dict, output: Path,
         if suites == 'perf-issues-readback':
             raise ValueError('Manual readback is not a publication collection')
         suite_files = DEFAULT_SUITES if suites == 'all' else suites
-        entries, missing, narrowed = [], [], {}
+        entries, missing, narrowed, unpublished = [], [], {}, {}
         output.mkdir(parents=True, exist_ok=False)
         for suite_file in suite_files.split(','):
             # One suite that cannot be packaged (or whose own accounting is
@@ -173,10 +218,12 @@ def prepare_bundle(root: Path, profile: str, source: dict, output: Path,
                                                              timestamp, backends)
             except NoSuiteOutputs:
                 missing.append(suite)
+                unpublished[suite] = 'no collection output in the selected run attempt'
                 continue
             except (ValueError, OSError, KeyError) as error:
                 discard_gpu_suite(output, suite)
                 missing.append(suite)
+                unpublished[suite] = str(error)
                 print(f'{suite}: not published: {error}', file=sys.stderr)
                 continue
             timestamp = timestamp or stamp
@@ -188,35 +235,39 @@ def prepare_bundle(root: Path, profile: str, source: dict, output: Path,
         manifest = {'schema_version': 2, 'timestamp': timestamp, 'suites': entries, 'missing_suites': missing}
         if narrowed:
             manifest['narrowed_routine_arms'] = narrowed
+        if unpublished:
+            # The stderr line is not the record: the bundle names why a suite it
+            # left out was left out, beside the list of suites it left out.
+            manifest['missing_reasons'] = unpublished
         (output / 'publication.json').write_text(json.dumps(manifest, indent=2) + '\n')
         # One suite whose artifacts fail the publication contract must not cost
-        # the week the suites that pass it. The failing suite is named at the
-        # front of the message, so it can be removed while the rest publishes;
-        # a bundle that has nothing left still fails with the original error.
-        while len(manifest['suites']) > 1:
+        # the week the suites that pass it. A failure is attributed by retrying
+        # each suite alone, not by reading the error text: a message that does not
+        # name its suite would otherwise withhold every suite in the bundle.
+        for entry in list(manifest['suites']):
+            if len(manifest['suites']) == 1:
+                break
+            suite = entry['suite_id']
             try:
-                return validate_bundle(output, profile, source)
+                validate_bundle(output, profile, source, only_suite=suite)
+                continue
             except Exception as error:
-                dropped = next((entry['suite_id'] for entry in manifest['suites']
-                                if str(error).startswith(entry['suite_id'] + ':')), None)
-                if dropped is None:
-                    # No manifest from a failed validation may authorize an upload.
-                    (output / 'publication.json').unlink(missing_ok=True)
-                    raise
-                print(f'{dropped}: not published: {error}', file=sys.stderr)
-                manifest['suites'] = [entry for entry in manifest['suites']
-                                      if entry['suite_id'] != dropped]
-                manifest['missing_suites'] = sorted(set(manifest['missing_suites']) | {dropped})
-                # The bundle-wide veto for a narrowed routine arm belongs to the
-                # suite that lost the arm: leaving it behind rejects the suites that
-                # are still published.
-                narrowed = manifest.get('narrowed_routine_arms')
-                if narrowed:
-                    narrowed.pop(dropped, None)
-                    if not narrowed:
-                        del manifest['narrowed_routine_arms']
-                discard_gpu_suite(output, dropped)
-                (output / 'publication.json').write_text(json.dumps(manifest, indent=2) + '\n')
+                reason = str(error)
+                print(f'{suite}: not published: {reason}', file=sys.stderr)
+            manifest['suites'] = [item for item in manifest['suites']
+                                  if item['suite_id'] != suite]
+            manifest['missing_suites'] = sorted(set(manifest['missing_suites']) | {suite})
+            manifest.setdefault('missing_reasons', {})[suite] = reason
+            # The bundle-wide veto for a narrowed routine arm belongs to the
+            # suite that lost the arm: leaving it behind rejects the suites that
+            # are still published.
+            narrowed = manifest.get('narrowed_routine_arms')
+            if narrowed:
+                narrowed.pop(suite, None)
+                if not narrowed:
+                    del manifest['narrowed_routine_arms']
+            discard_gpu_suite(output, suite)
+            (output / 'publication.json').write_text(json.dumps(manifest, indent=2) + '\n')
     # No manifest from a failed validation may authorize a results upload.
     try:
         return validate_bundle(output, profile, source)

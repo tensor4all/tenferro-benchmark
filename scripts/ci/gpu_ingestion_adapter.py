@@ -13,7 +13,7 @@ else:
     from result_ingestion import FAILED_STATUSES, digest, instant, safe_file
 
 
-def adapt_publication(bundle: Path, source: dict) -> dict:
+def adapt_publication(bundle: Path, source: dict, only_suite: str | None = None) -> dict:
     """Return ingestion entries for an existing schema-2 GPU artifact.
 
     The source bundle is never rewritten; schema adaptation is in memory.
@@ -24,6 +24,8 @@ def adapt_publication(bundle: Path, source: dict) -> dict:
         raise ValueError('Only GPU publication schema 2 with summaries is supported')
     entries = []
     for original in publication['suites']:
+        if only_suite is not None and original.get('suite_id') != only_suite:
+            continue
         suite = original['suite_id']
         stamp = publication['timestamp']
         run = f'data/results/nvidia-gpu/{suite}/{stamp}'

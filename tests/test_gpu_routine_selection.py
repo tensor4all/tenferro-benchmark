@@ -237,6 +237,20 @@ class RoutineSelectionTest(unittest.TestCase):
             self.assertEqual(result["missing"],["s:d:b"])
             self.assertFalse(result["complete"])
 
+    def test_a_nonpositive_sample_fails_the_case_and_says_why(self):
+        plan=dict(manifest_version=2,effort="scan",expected=["s:a:b"],selected=["s:a:b"])
+        with tempfile.TemporaryDirectory() as tmp:
+            path=Path(tmp)/"records.jsonl"
+            path.write_text(json.dumps(dict(suite_id="s",problem_id="a",backend="b",status="ok",
+                                            verification=dict(status="passed"),
+                                            execution=dict(notes=json.dumps({"sampling": {"batch_ms": [1.0, -1.0]}}))))+"\n")
+            result=selection.account(plan,[path])
+            self.assertEqual(result["failed"],["s:a:b"])
+            # A failed case without a reason cannot be reported; the accounting
+            # used to append it and move on.
+            self.assertIn("s:a:b", result["reasons"])
+            self.assertTrue(result["reasons"]["s:a:b"].strip())
+
     def test_records_outside_the_set_are_unexpected(self):
         plan = dict(manifest_version=2, effort="standard", expected=["s:a:b"], selected=["s:a:b"])
         def row(problem):
