@@ -63,7 +63,8 @@ def _resolve_problems(
     except FileNotFoundError:
         if problems.get("missing_source") != "skip":
             raise ValueError(f"{source_path}: include source did not load: no such file or directory")
-        return [instance_id for instance_id in include if instance_id not in exclude]
+        # Set semantics: a repeated selector id expands once, as it did before.
+        return [i for i in dict.fromkeys(include) if i not in exclude]
     except OSError as error:
         raise ValueError(f"{source_path}: include source did not load: {error}") from error
 
@@ -77,7 +78,7 @@ def _resolve_problems(
             raise ValueError(
                 f"{source_path}: include id {missing[0]!r} is not in the source"
             )
-        ids = list(include)
+        ids = list(dict.fromkeys(include))
     elif source_path.suffix in {".yaml", ".yml"}:
         base_ids = resolve_suite_instance_ids(
             source_path, project_dir=project_dir, seen=seen
@@ -93,7 +94,7 @@ def _resolve_problems(
             raise ValueError(
                 f"{source_path}: include id {missing[0]!r} is not in the source"
             )
-        ids = [instance_id for instance_id in include if instance_id in known]
+        ids = [i for i in dict.fromkeys(include) if i in known]
     else:
         ids = list(include)
 

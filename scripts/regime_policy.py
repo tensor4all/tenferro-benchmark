@@ -393,10 +393,16 @@ def declared_cases(
     source = problems.get("source")
     include = problems.get("include") or []
     exclude = set(problems.get("exclude") or [])
-    if not isinstance(source, str) or not source or not isinstance(include, list):
-        # Callers unpack three values on every path; this one used to raise
-        # `ValueError: not enough values to unpack` instead of a diagnostic.
+    if not isinstance(source, str) or not source:
+        # A selector that names ids but no source cannot be resolved; the
+        # silence here made a wrapper validate with fewer cases than declared.
+        if include:
+            raise RegimeError(
+                f"{suite_id}: problems declares include ids without a source"
+            )
         return defaults, [], False
+    if not isinstance(include, list):
+        raise RegimeError(f"{suite_id}: problems include is not a list")
 
     path = Path(source)
     if not path.is_absolute():
@@ -486,7 +492,10 @@ def declared_cases(
             # nested selector itself declares.
             nested_include = nested_problems.get("include") if isinstance(nested_problems, dict) else None
             if isinstance(nested_include, list):
-                declared = set(nested_include)
+                # The nested selector exclusions bind the wrapper too: an id the
+                # nested suite excludes is not a declared id.
+                nested_exclude = set(nested_problems.get("exclude") or [])
+                declared = {entry for entry in nested_include if entry not in nested_exclude}
                 unknown = [entry for entry in include if isinstance(entry, str) and entry not in declared]
                 if unknown:
                     raise RegimeError(

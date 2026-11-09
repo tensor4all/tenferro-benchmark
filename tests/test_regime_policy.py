@@ -916,6 +916,46 @@ class RegimePolicyUnitTests(unittest.TestCase):
         self.assertEqual(len(errors), 1, errors)
         self.assertIn("duplicate problem id", errors[0])
 
+    def test_a_nested_skip_still_honours_the_source_exclusions(self):
+        import yaml
+
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "leaf.yaml").write_text(
+                yaml.safe_dump(
+                    self._nested_suite(
+                        {"source": "absent.json", "include": ["a", "b"],
+                         "exclude": ["b"], "missing_source": "skip"},
+                        suite_id="cpu/leaf",
+                    )
+                ),
+                encoding="utf-8",
+            )
+            document = {"suite_id": "gpu/structural",
+                        "problems": {"source": "leaf.yaml", "include": ["b"]}}
+            errors = regime_policy.check_suite(document, Path(tmp))
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("not in", errors[0])
+
+    def test_a_repeated_include_id_expands_once(self):
+        import suite_instances
+
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "base.yaml").write_text(
+                yaml.safe_dump(self._nested_suite([self._case("a")])),
+                encoding="utf-8",
+            )
+            middle = Path(tmp) / "middle.yaml"
+            middle.write_text(
+                yaml.safe_dump(
+                    self._nested_suite(
+                        {"source": "base.yaml", "include": ["a", "a"]}
+                    )
+                ),
+                encoding="utf-8",
+            )
+            ids = suite_instances.resolve_suite_instance_ids(middle, project_dir=Path(tmp))
+        self.assertEqual(ids, ["a"])
+
     def test_an_unknown_missing_source_declaration_is_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
             document = {"suite_id": "gpu/structural",
@@ -933,7 +973,9 @@ class RegimePolicyUnitTests(unittest.TestCase):
         import generate_dashboard
 
         document = {"suite_id": "gpu/structural", "problems": {"include": ["a"]}}
-        self.assertEqual(regime_policy.check_suite(document, Path(".")), [])
+        errors = regime_policy.check_suite(document, Path("."))
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("without a source", errors[0])
         with tempfile.TemporaryDirectory() as tmp:
             benchmarks = Path(tmp) / "benchmarks" / "gpu"
             benchmarks.mkdir(parents=True)
@@ -951,8 +993,8 @@ class RegimePolicyUnitTests(unittest.TestCase):
                 ),
                 encoding="utf-8",
             )
-            metadata = generate_dashboard.load_suite_metadata(benchmarks)
-        self.assertEqual(metadata["gpu/structural"]["problems"], {})
+            with self.assertRaises(SystemExit):
+                generate_dashboard.load_suite_metadata(benchmarks)
 
 
 class GeneratedSuiteTests(unittest.TestCase):
