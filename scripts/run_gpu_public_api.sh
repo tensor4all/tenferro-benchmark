@@ -181,12 +181,16 @@ for backend in ${python_arms[@]+"${python_arms[@]}"}; do
     run_arm "$backend" "$output" uv run python scripts/benchmark_gpu_public_api.py --suite "$suite" \
         --fixtures "$run_dir/fixtures" --backend "$backend" --output "$output"
 done
+# A run with a dead arm still renders the rows that ran; the exit status below
+# is what tells the caller the matrix is incomplete.
+PARTIAL_ARGS=()
+[[ "$ARM_FAILED" == 0 ]] || PARTIAL_ARGS+=(--allow-partial)
 # The arm records go into run.yaml, so the page's run metadata names the CPU each arm ran on.
 uv run python scripts/gpu_measurement_cpu.py record-run --run-metadata "$run_dir/run.yaml" \
     "$run_dir"/arms/*.json
 if [[ "$GPU_API_VERIFY_ONLY" == 1 ]]; then
     uv run python scripts/format_gpu_public_api_results.py --suite "$suite" \
-        --run-metadata "$run_dir/run.yaml" --verify-only \
+        --run-metadata "$run_dir/run.yaml" --verify-only "${PARTIAL_ARGS[@]+"${PARTIAL_ARGS[@]}"}" \
         --output "$run_dir/verification.json" "${outputs[@]+"${outputs[@]}"}"
     [[ "$ARM_FAILED" == 0 ]] || exit 1
     exit 0
@@ -207,7 +211,8 @@ uv run python scripts/normalize_gpu_records.py --output "$run_dir/records.jsonl"
 wall_phase "$run_dir" normalize_and_summary "$normalize_started" "$(wall_now)"
 report_started="$(wall_now)"
 uv run python scripts/format_gpu_public_api_results.py --suite "$suite" \
-    --run-metadata "$run_dir/run.yaml" --output "$run_dir/report.md" "${outputs[@]+"${outputs[@]}"}"
+    --run-metadata "$run_dir/run.yaml" "${PARTIAL_ARGS[@]+"${PARTIAL_ARGS[@]}"}" \
+    --output "$run_dir/report.md" "${outputs[@]+"${outputs[@]}"}"
 wall_phase "$run_dir" report "$report_started" "$(wall_now)"
 if [[ "${GPU_BENCH_SKIP_LATEST:-0}" != 1 ]]; then
     mkdir -p result/nvidia-gpu/gpu

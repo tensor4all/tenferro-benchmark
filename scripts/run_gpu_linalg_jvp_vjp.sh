@@ -145,6 +145,9 @@ for backend in "${AD_BACKENDS[@]}"; do
     [[ "$backend" == "tenferro-cuda-trace" ]] && RUN_RUST=1
 done
 rust_build_seconds=0.0
+# A run with a dead arm still renders the rows that ran; the exit status below
+# is what tells the caller the matrix is incomplete.
+PARTIAL_ARGS=()
 if [[ "$RUN_RUST" == 1 ]]; then
     rust_build_started="$(wall_now)"
     if [[ "${GPU_BENCH_PREBUILT_RUST:-0}" == "1" ]]; then
@@ -233,7 +236,9 @@ fi
 "${VALIDATOR[@]}" --kind run "$RUN_YAML"
 "${VALIDATOR[@]}" --kind result "$RESULT_JSONL"
 report_started="$(wall_now)"
-"${FORMATTER[@]}" "$RESULT_JSONL" --run-metadata "$RUN_YAML" --output "$MARKDOWN_OUT"
+[[ "$ARM_FAILED" == 0 ]] || PARTIAL_ARGS+=(--allow-partial)
+"${FORMATTER[@]}" "$RESULT_JSONL" --run-metadata "$RUN_YAML" \
+    "${PARTIAL_ARGS[@]+"${PARTIAL_ARGS[@]}"}" --output "$MARKDOWN_OUT"
 if [[ "${GPU_BENCH_SKIP_LATEST:-0}" != 1 ]]; then
     cp "$MARKDOWN_OUT" "$REPORT_OUT"
     if [[ -f "${MARKDOWN_OUT%.md}.summary.json" ]]; then

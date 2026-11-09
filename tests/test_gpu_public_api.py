@@ -369,6 +369,46 @@ class PublicGpuContracts(unittest.TestCase):
                 formatter.load_rows(suite, [path], verify_only=True)
 
 
+class PartialPageTest(unittest.TestCase):
+    """A dead arm must not cost the page the cells the other arms measured."""
+
+    SUITE = {
+        "suite_id": "gpu/public_api_test",
+        "description": "a fixture suite",
+        "backends": ["tenferro-cuda-trace", "pytorch-cuda"],
+        "cases": [{"id": "add_f64_1024", "op": "add"},
+                  {"id": "mul_f64_1024", "op": "mul"}],
+    }
+
+    def rows(self):
+        ok = {"case_id": "add_f64_1024", "backend": "tenferro-cuda-trace", "status": "ok",
+              "timing": {"operations_per_sample": 1, "batch_ms": [1.0, 1.1, 0.9]},
+              "verification": {"max_error_over_tolerance": 0.5}}
+        failed = {"case_id": "add_f64_1024", "backend": "pytorch-cuda",
+                  "status": "runtime_failed", "reason": "arm exited 3"}
+        temp = tempfile.TemporaryDirectory()
+        self.addCleanup(temp.cleanup)
+        path = Path(temp.name) / "rows.jsonl"
+        path.write_text("".join(json.dumps(row) + "\n" for row in (ok, failed)))
+        return path
+
+    def test_without_the_flag_a_failed_row_still_refuses_the_page(self):
+        with self.assertRaisesRegex(ValueError, "cannot publish failed measurement"):
+            formatter.load_rows(self.SUITE, [self.rows()])
+
+    def test_the_flag_publishes_the_measured_cells_and_names_the_rest(self):
+        path = self.rows()
+        rows = formatter.load_rows(self.SUITE, [path], allow_partial=True)
+        self.assertEqual(rows[("add_f64_1024", "pytorch-cuda")]["status"], "runtime_failed")
+        self.assertEqual(rows[("mul_f64_1024", "pytorch-cuda")]["status"], "missing")
+        page = formatter.render(self.SUITE, [path], {}, "20260101_000000", allow_partial=True)
+        self.assertIn("## Not measured", page)
+        self.assertIn("arm exited 3", page)
+        self.assertIn("missing: the arm recorded no row", page)
+        # The measured cell keeps its number.
+        self.assertIn("add_f64_1024", page)
+
+
 class OverheadBudgetDiagnostic(unittest.TestCase):
     """The budget labels the untimed split; it never decides anything."""
 

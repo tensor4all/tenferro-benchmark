@@ -101,6 +101,43 @@ class CollectorErrorBoundary(unittest.TestCase):
         self.assertEqual(row["verification"]["reason"], "MemoryError")
 
 
+class PartialPageTest(unittest.TestCase):
+    """A failed arm still leaves a page for the arms that ran."""
+
+    def rows(self):
+        ok = dict(suite_id="gpu/linalg_jvp_vjp",
+                  problem_id="linalg_ad_large_grad_sum_qr_jvp_f64_256",
+                  backend="pytorch-cuda", status="ok",
+                  verification=dict(status="passed", reference_backend="fixture",
+                                    max_abs_error=0., max_rel_error=0., residual=0.),
+                  timing=dict(timing_scope="steady_state_host_api_plus_device_sync",
+                              timed_runs=1, median_ms=1., iqr_ms=0.),
+                  execution=dict(notes=json.dumps(dict(sampling=dict(
+                      operations_per_sample=1, batch_ms=[1.])))))
+        failed = dict(suite_id="gpu/linalg_jvp_vjp",
+                      problem_id="linalg_ad_large_grad_sum_qr_jvp_f64_256",
+                      backend="tenferro-cuda-trace", status="runtime_failed",
+                      reason="arm exited 3",
+                      execution=dict(unsupported_reason=None))
+        return ok, failed
+
+    def test_without_the_flag_a_failed_row_still_refuses_the_page(self):
+        import json
+        from format_gpu_linalg_ad_results import format_markdown
+        ok, failed = self.rows()
+        with self.assertRaisesRegex(ValueError, "cannot publish AD status"):
+            format_markdown([ok, failed])
+
+    def test_the_flag_publishes_the_measured_cell_and_names_the_failure(self):
+        import json
+        from format_gpu_linalg_ad_results import format_markdown
+        ok, failed = self.rows()
+        page = format_markdown([ok, failed], allow_partial=True)
+        self.assertIn("Rows with a failure status", page)
+        self.assertIn("arm exited 3", page)
+        self.assertIn("linalg_ad_large_grad_sum_qr_jvp_f64_256", page)
+
+
 class AdVerification(unittest.TestCase):
     def test_latency_publication_requires_matching_scope_and_per_call_sync(self):
         import copy
