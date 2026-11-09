@@ -15,7 +15,12 @@ import re
 import sys
 import tempfile
 import unittest
+from contextlib import nullcontext
+from dataclasses import replace
+from html import unescape
 from pathlib import Path
+from typing import Iterable
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -62,6 +67,129 @@ def summary(profile: str, suite_id: str, cases: list[tuple[str, float]]) -> dict
             for backend in ("tenferro-cuda-trace", "pytorch-cuda")
         ],
     }
+
+
+FAMILY_PAGES = ("gpu/", "gpu/latency/", "cpu/", "cpu/latency/")
+
+Placement = tuple[str, str, str, str]  # (page, profile, suite, case)
+
+
+def tree_placements(result_dir: Path, benchmarks_dir: Path) -> dict[Placement, set[str]]:
+    """(page, profile, suite, case) → its `(case, group)` keys with an `ok` row.
+
+    Read from the same tree the dashboard reads (`result/*/*/*.summary.json`
+    plus the suite manifests), never from the render: the render is what the
+    tests below check.  The page comes from the regime the manifest declares, so
+    a case that left its declared page is a mismatch instead of a smaller
+    expectation.
+    """
+    reports = dashboard.discover_reports(result_dir)
+    summaries = dashboard.load_summaries(result_dir)
+    metadata = dashboard.load_suite_metadata(benchmarks_dir)
+    placements: dict[Placement, set[str]] = {}
+    for profile, suite_id, _report in reports:
+        if (profile, suite_id) not in dashboard.MAINTAINED:
+            continue  # the family pages publish the maintained suites only
+        document = summaries.get((profile, suite_id))
+        if not document:
+            continue  # report-only suite: it declares no workload to place
+        # Read the sidecar's own rows: `grouped_workloads` is what
+        # `build_suite_views` groups with, and an oracle that shares it would
+        # shrink with the render instead of catching it.
+        groups: dict[str, set[str]] = {}
+        ok_groups: dict[str, set[str]] = {}
+        for row in document.get("rows") or []:
+            case, group = str(row.get("case")), str(row.get("group", ""))
+            groups.setdefault(case, set()).add(group)
+            if row.get("status") == "ok" and row.get("median") is not None:
+                ok_groups.setdefault(case, set()).add(group)
+        for case in groups:
+            # `build_suite_views` keeps the pre-rule placement of an undeclared
+            # CPU case (docs/regime-floors.md); a policed suite cannot reach here
+            # with an undeclared case, because the dashboard refuses to publish it.
+            regime = dashboard.case_regime(metadata, suite_id, case) or regime_policy.THROUGHPUT
+            page = dashboard.family_of(profile) + (
+                "/latency/" if regime == regime_policy.LATENCY else "/"
+            )
+            placements[(page, profile, suite_id, case)] = ok_groups.get(case, set())
+    return placements
+
+
+def rendered_placements(site: Path, profiles: Iterable[str]) -> set[Placement]:
+    """Every case the family pages publish, with the page each one is on.
+
+    A case is published under its suite's block, as a bar label or - when it has
+    no comparable baseline - in that block's "cases without a comparable
+    baseline" list.  A page that was never written publishes nothing, so a whole
+    missing block shows up as missing keys rather than as a missing file.
+    """
+    labels: dict[str, str] = {}
+    for profile in profiles:
+        label = dashboard.profile_label(profile)
+        if label in labels:
+            raise AssertionError(
+                f"profiles {labels[label]!r} and {profile!r} share the page label {label!r}"
+            )
+        labels[label] = profile
+    placements: set[Placement] = set()
+    for page in FAMILY_PAGES:
+        path = site / page / "index.html"
+        if not path.exists():
+            continue
+        sections = path.read_text(encoding="utf-8").split('<section class="profile-card"')[1:]
+        for section in sections:
+            head = re.search(r"<h2>([^<]*)</h2>", section)
+            profile = labels.get(unescape(head.group(1))) if head else None
+            if profile is None:
+                continue  # the trend section is not a profile
+            for block in section.split('<details class="suite-block"')[1:]:
+                suite_id = unescape(re.search(r"<code>([^<]+)</code>", block).group(1))
+                cases = {
+                    unescape(case)
+                    for case in re.findall(r'class="chart-label">([^<]*)</text>', block)
+                }
+                for chunk in re.findall(r'<details class="no-baseline">.*?</details>', block, re.S):
+                    cases.update(
+                        unescape(case) for case in re.findall(r"<code>([^<]+)</code>", chunk)
+                    )
+                placements.update((page, profile, suite_id, case) for case in cases)
+    return placements
+
+
+def place_text(keys: Iterable[Placement], verdict: str) -> str:
+    """Failure text: which case, on which page."""
+    return "\n".join(
+        f"{page}index.html {verdict} {suite_id} {case!r} ({profile})"
+        for page, profile, suite_id, case in keys
+    )
+
+
+def placement_gaps(site: Path) -> tuple[list[Placement], list[Placement]]:
+    """(published nowhere, published without a workload) for one render."""
+    expected = tree_placements(ROOT / "result", ROOT / "benchmarks")
+    if not expected:
+        raise AssertionError("result/ declares no workload: nothing to check")
+    rendered = rendered_placements(site, {key[1] for key in expected})
+    missing = sorted(key for key, groups in expected.items() if groups and key not in rendered)
+    return missing, sorted(rendered - set(expected))
+
+
+def render_site(output: Path, build=None) -> int:
+    """Render the repository's own `result/` tree.
+
+    `build` replaces `build_suite_views` when a test has to render a tree that
+    lost or moved a block.
+    """
+    with mock.patch.object(dashboard, "build_suite_views", build) if build else nullcontext():
+        return dashboard.generate(
+            ROOT / "result",
+            output,
+            baseline_dir=None,
+            git_repo=None,
+            instances_dir=ROOT / "data" / "instances",
+            benchmarks_dir=ROOT / "benchmarks",
+            latest_profiles=None,
+        )
 
 
 class RegimePolicyUnitTests(unittest.TestCase):
@@ -1177,21 +1305,30 @@ class PublishedNumbersTests(unittest.TestCase):
     def setUpClass(cls):
         cls.tmp = tempfile.TemporaryDirectory()
         cls.output = Path(cls.tmp.name) / "site"
-        code = dashboard.generate(
-            ROOT / "result",
-            cls.output,
-            baseline_dir=None,
-            git_repo=None,
-            instances_dir=ROOT / "data" / "instances",
-            benchmarks_dir=ROOT / "benchmarks",
-            latest_profiles=None,
-        )
+        code = render_site(cls.output)
         if code != 0:
             raise AssertionError(f"dashboard generation failed with {code}")
 
     @classmethod
     def tearDownClass(cls):
         cls.tmp.cleanup()
+
+    def test_every_workload_in_the_result_tree_keeps_its_page(self):
+        """#413: the render must publish every workload the result tree declares.
+
+        The tests next to this one only check the numbers and labels of the
+        blocks that are still rendered, so a whole suite or case block can leave
+        its page and they stay green: the #383 review demonstrated it by
+        dropping every `gpu/` case (283 workload groups), and only the surviving
+        CPU blocks kept the global minimum satisfied.
+        """
+        missing, invented = placement_gaps(self.output)
+        self.assertEqual(missing, [], place_text(missing, "no longer publishes"))
+        self.assertEqual(
+            invented,
+            [],
+            place_text(invented, "publishes a case the result tree does not declare"),
+        )
 
     @staticmethod
     def case_blocks(html: str) -> dict[str, list[str]]:
@@ -1296,6 +1433,84 @@ class PublishedNumbersTests(unittest.TestCase):
             errors = regime_policy.check_suite(document, Path(tmp))
         self.assertEqual(len(errors), 1)
         self.assertIn("did not load", errors[0])
+
+
+class PublishedPlacementMutationTests(unittest.TestCase):
+    """The placement check has to fail when a block disappears or a case moves.
+
+    A guard that cannot see the failure it exists for is not a guard: each test
+    renders the repository's own tree with one known defect and requires the
+    check to name it.
+    """
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+
+    def gaps(self, build) -> tuple[list[Placement], list[Placement]]:
+        site = Path(self.tmp.name) / "site"
+        self.assertEqual(render_site(site, build), 0)
+        return placement_gaps(site)
+
+    def test_a_vanished_suite_block_is_reported_with_its_page(self):
+        real = dashboard.build_suite_views
+
+        def without_gpu(reports, summaries, metadata):
+            return [
+                view
+                for view in real(reports, summaries, metadata)
+                if not view.suite_id.startswith("gpu/")
+            ]
+
+        missing, invented = self.gaps(without_gpu)
+        expected_gpu = sorted(
+            key
+            for key, groups in tree_placements(ROOT / "result", ROOT / "benchmarks").items()
+            if groups and key[0].startswith("gpu/")
+        )
+        self.assertTrue(expected_gpu, "no GPU workload is published at all")
+        self.assertEqual(missing, expected_gpu, place_text(missing, "no longer publishes"))
+        self.assertEqual(
+            invented,
+            [],
+            place_text(invented, "publishes a case the result tree does not declare"),
+        )
+
+    def test_a_case_moved_between_pages_is_reported(self):
+        page, profile, suite_id, case = sorted(
+            key
+            for key, groups in tree_placements(ROOT / "result", ROOT / "benchmarks").items()
+            if groups and key[0] == "cpu/"
+        )[0]
+        real = dashboard.build_suite_views
+
+        def moved(reports, summaries, metadata):
+            moved_views = []
+            for view in real(reports, summaries, metadata):
+                if (view.profile, view.suite_id) != (profile, suite_id):
+                    moved_views.append(view)
+                    continue
+                moved_views.append(
+                    replace(
+                        view,
+                        cases=[
+                            replace(item, regime=regime_policy.LATENCY)
+                            if item.case == case
+                            else item
+                            for item in view.cases
+                        ],
+                    )
+                )
+            return moved_views
+
+        missing, invented = self.gaps(moved)
+        self.assertIn((page, profile, suite_id, case), missing)
+        self.assertIn(("cpu/latency/", profile, suite_id, case), invented)
+        self.assertIn(case, place_text(missing, "no longer publishes"))
+        self.assertIn(
+            "cpu/latency/index.html",
+            place_text(invented, "publishes a case the result tree does not declare"),
+        )
 
 
 if __name__ == "__main__":
