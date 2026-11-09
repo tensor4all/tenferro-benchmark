@@ -94,27 +94,37 @@ def _catalogue_ids(source_path: Path) -> list[str]:
     """Every record id a JSON catalogue file or directory declares."""
     ids: list[str] = []
     seen: set[str] = set()
-    files = sorted(source_path.glob("*.json")) if source_path.is_dir() else [source_path]
+    directory = source_path.is_dir()
+    files = sorted(source_path.glob("*.json")) if directory else [source_path]
     for entry in files:
         data = json.loads(entry.read_text(encoding="utf-8"))
-        default_id = entry.stem if source_path.is_dir() else None
-        if isinstance(data, list):
-            records, default_id = data, None
-        elif isinstance(data, dict) and ("cases" in data or "patterns" in data):
-            records = data.get("cases")
-            if records is None:
-                records = data.get("patterns", [])
+        if directory:
+            # Mirrors `declared_cases`: each file is one record, named by `id`,
+            # then `name`, then the file stem; a list root is several records.
+            if isinstance(data, list):
+                records, fallback = data, None
+            else:
+                records, fallback = [data], entry.stem
         else:
-            records = [data]
+            # Mirrors `declared_cases`: a standalone catalogue is a list or a
+            # {cases|patterns: [...]} mapping. A bare record declares no ids.
+            if isinstance(data, list):
+                records = data
+            elif isinstance(data, dict):
+                records = data.get("cases")
+                if records is None:
+                    records = data.get("patterns", [])
+            else:
+                records = []
+            fallback = None
         if not isinstance(records, list):
             raise ValueError(f"{entry}: `cases` must be a list of records")
         for index, record in enumerate(records):
             if not isinstance(record, dict):
                 raise ValueError(f"{entry}: record {index} is not a mapping")
-            if source_path.is_dir():
-                record_id = record.get("id") or record.get("name") or default_id
-            else:
-                record_id = record.get("id")
+            record_id = record.get("id")
+            if not record_id and fallback is not None:
+                record_id = record.get("name") or fallback
             if not isinstance(record_id, str) or not record_id:
                 raise ValueError(f"{entry}: record {index} has no non-empty id")
             if record_id in seen:

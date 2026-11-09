@@ -381,9 +381,9 @@ def declared_cases(
     suite_id = str(suite.get("suite_id") or "")
     problems = suite.get("problems")
     if isinstance(problems, list):
-        return defaults, [row for row in problems if isinstance(row, dict)]
+        return defaults, [row for row in problems if isinstance(row, dict)], False
     if not isinstance(problems, dict):
-        return defaults, []
+        return defaults, [], False
 
     missing = problems.get("missing_source")
     if missing is not None and missing != "skip":
@@ -429,7 +429,7 @@ def declared_cases(
             raise RegimeError(f"{suite_id}: include source {source!r} did not load: no such file or directory")
         if skips is not None:
             skips.append(f"{suite_id}: skipped include source {source!r} (missing_source: skip)")
-        return defaults, []
+        return defaults, [], True
     if not path.is_dir() and path.suffix in {".yaml", ".yml"}:
         # A nested suite: `scripts/suite_instances.py` supports a YAML source and
         # resolves its problems recursively, so the regime check has to follow the
@@ -472,28 +472,14 @@ def declared_cases(
                 f"{suite_id}: include source {source!r} is not a valid suite: "
                 + "; ".join(nested_errors[:3])
             )
-        nested_defaults, records = declared_cases(
+        nested_defaults, records, nested_skip = declared_cases(
             document, project_dir, skips, seen | {resolved}
         )
         # A nested suite whose own source is absent by explicit opt-in resolves
-        # to no cases. Reporting the wrapper include ids as unknown would turn
-        # that declared skip into an error.
-        nested_problems = document.get("problems")
-        if (
-            isinstance(nested_problems, dict)
-            and nested_problems.get("missing_source") == "skip"
-        ):
-            nested_source = nested_problems.get("source")
-            if isinstance(nested_source, str) and nested_source:
-                nested_path = Path(nested_source)
-                if not nested_path.is_absolute():
-                    nested_path = project_dir / nested_path
-                try:
-                    nested_path.stat()
-                except FileNotFoundError:
-                    return defaults, []
-                except OSError:
-                    pass
+        # to no cases; the state propagates through any number of wrappers, so
+        # the outer include ids are not reported as unknown.
+        if nested_skip:
+            return defaults, [], True
         # A wrapper must not accept what validating the nested suite rejects:
         # the nested suite's own defaults decide its cases, so the wrapper's
         # default cannot supply a regime or a floor the source never declared.
@@ -590,7 +576,7 @@ def declared_cases(
                 raise RegimeError(f"{suite_id}: include id {entry!r} is not in {source!r}")
             if entry not in exclude:
                 selected.append(record)
-    return defaults, selected
+    return defaults, selected, False
 
 
 def resolve(
@@ -683,7 +669,7 @@ def suite_cases(
     if not isinstance(suite, dict) or not suite.get("suite_id"):
         return []
     suite_id = str(suite["suite_id"])
-    defaults, cases = declared_cases(suite, project_dir)
+    defaults, cases, _skipped = declared_cases(suite, project_dir)
     rows = []
     for problem in cases:
         case_id = problem.get("id")
@@ -714,7 +700,7 @@ def check_suite(
         return errors
     suite_id = str(suite.get("suite_id") or "")
     try:
-        _defaults, cases = declared_cases(suite, Path(project_dir), skips)
+        _defaults, cases, _skipped = declared_cases(suite, Path(project_dir), skips)
     except RegimeError as exc:
         return [str(exc)]
     defaults = suite.get("defaults") or {}

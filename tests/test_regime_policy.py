@@ -614,6 +614,61 @@ class RegimePolicyUnitTests(unittest.TestCase):
                        "problems": {"source": "inner.yaml", "include": ["a"]}}
             self.assertEqual(regime_policy.check_suite(wrapper, Path(tmp)), [])
 
+    def test_a_skipped_source_stays_skipped_through_two_wrappers(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            leaf = self._nested_suite(
+                {"source": "generated", "include": ["a"],
+                 "missing_source": "skip"},
+                suite_id="cpu/base",
+            )
+            (Path(tmp) / "leaf.yaml").write_text(yaml.safe_dump(leaf), encoding="utf-8")
+            middle = self._nested_suite(
+                {"source": "leaf.yaml", "include": ["a"]}, suite_id="cpu/middle"
+            )
+            (Path(tmp) / "middle.yaml").write_text(yaml.safe_dump(middle), encoding="utf-8")
+            outer = {"suite_id": "cpu/outer",
+                     "problems": {"source": "middle.yaml", "include": ["a"]}}
+            self.assertEqual(regime_policy.check_suite(middle, Path(tmp)), [])
+            self.assertEqual(regime_policy.check_suite(outer, Path(tmp)), [])
+
+    def test_a_directory_member_with_cases_is_one_record_named_by_file(self):
+        # `declared_cases` treats a directory member as one record; the
+        # collector must use the same id, or run_all.sh collects what the
+        # validator rejects.
+        import suite_instances
+
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp) / "catalogue"
+            directory.mkdir()
+            (directory / "part.json").write_text(
+                json.dumps({"cases": [{"id": "a", "regime": "latency"}]}),
+                encoding="utf-8",
+            )
+            selector = {"source": "catalogue", "include": ["part"]}
+            self.assertEqual(
+                suite_instances._resolve_problems(selector, project_dir=Path(tmp)),
+                ["part"],
+            )
+            suite = {"suite_id": "cpu/catalogue", "problems": selector}
+            self.assertEqual(regime_policy.check_suite(suite, Path(tmp)), [])
+            suite["problems"] = {"source": "catalogue", "include": ["a"]}
+            self.assertTrue(regime_policy.check_suite(suite, Path(tmp)))
+
+    def test_the_collector_rejects_a_bare_record_catalogue(self):
+        # A standalone JSON file must be a list or a cases mapping; a bare
+        # record declares no id to the validator either.
+        import suite_instances
+
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "bare.json").write_text(
+                json.dumps({"id": "a", "regime": "latency"}), encoding="utf-8"
+            )
+            with self.assertRaises(ValueError):
+                suite_instances._resolve_problems(
+                    {"source": "bare.json", "include": ["a"]},
+                    project_dir=Path(tmp),
+                )
+
     def test_a_json_recursion_error_is_a_load_error(self):
         # The JSON parser raises RecursionError on a pathological nesting
         # depth; it must not escape the per-source boundary.
