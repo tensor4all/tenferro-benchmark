@@ -435,10 +435,21 @@ fn scored(case: &Case, miss: f64, reference: f64) -> Result<f64> {
     if miss.is_nan() {
         return Err("verification nonfinite output".into());
     }
-    let allowance = case.atol + case.rtol * reference.abs();
-    if !allowance.is_finite() || allowance < 0. {
+    // Each component has to be a finite non-negative allowance on its own. The
+    // sum alone is not enough: `(-1., 2.)` adds up to a positive budget and the
+    // positive component hides the negative one, so the Python side (`budget()`)
+    // and this one disagreed on the same case.
+    if !case.rtol.is_finite() || !case.atol.is_finite() || case.rtol < 0. || case.atol < 0. {
         return Err(format!(
-            "verification tolerance budget is not finite: rtol={} atol={}",
+            "verification tolerance is not a finite non-negative allowance: rtol={} atol={}",
+            case.rtol, case.atol
+        )
+        .into());
+    }
+    let allowance = case.atol + case.rtol * reference.abs();
+    if !allowance.is_finite() {
+        return Err(format!(
+            "verification tolerance budget overflows: rtol={} atol={}",
             case.rtol, case.atol
         )
         .into());
@@ -985,26 +996,42 @@ mod tests {
         case
     }
 
-    #[test]
-    fn an_allowance_that_overflows_from_finite_components_is_not_a_pass() {
-        // #417 review third pass: 998 / (1.7e308 + 1.7e308) == 0.0, so a miss of 998
-        // against a reference of 1 scored as exact and every public-API output
-        // comparison accepted a wrong tensor.
-        assert!(
-            scored(&case_with(1.7e308, 1.7e308), 998., 1.).is_err(),
-            "an overflowing allowance must be refused, not divide the miss to zero"
-        );
-    }
+    /// Filtered by name in CI (`tests::budget`), so the guard cannot be
+    /// satisfied by the unrelated overhead-warning tests in this module.
+    mod budget {
+        use super::*;
 
-    #[test]
-    fn an_exact_miss_over_a_zero_allowance_is_zero_and_not_nan() {
-        // atol = 0 on an off-diagonal Gram entry: 0 / 0 must be an exact 0, and a
-        // real miss over no allowance must stay infinite so `worst > 1` rejects it.
-        let case = case_with(0., 0.);
-        assert_eq!(scored(&case, 0., 0.).unwrap(), 0.);
-        assert_eq!(scored(&case, 1., 0.).unwrap(), f64::INFINITY);
-        assert!(scored(&case, f64::NAN, 1.).is_err());
-        assert!(scored(&case_with(f64::NAN, 0.), 0., 0.).is_err());
-        assert!(scored(&case_with(-1e-9, 0.), 1., 1.).is_err());
+        #[test]
+        fn an_allowance_that_overflows_from_finite_components_is_not_a_pass() {
+            // #417 review third pass: 998 / (1.7e308 + 1.7e308) == 0.0, so a miss of 998
+            // against a reference of 1 scored as exact and every public-API output
+            // comparison accepted a wrong tensor.
+            assert!(
+                scored(&case_with(1.7e308, 1.7e308), 998., 1.).is_err(),
+                "an overflowing allowance must be refused, not divide the miss to zero"
+            );
+        }
+
+        #[test]
+        fn an_exact_miss_over_a_zero_allowance_is_zero_and_not_nan() {
+            // atol = 0 on an off-diagonal Gram entry: 0 / 0 must be an exact 0, and a
+            // real miss over no allowance must stay infinite so `worst > 1` rejects it.
+            let case = case_with(0., 0.);
+            assert_eq!(scored(&case, 0., 0.).unwrap(), 0.);
+            assert_eq!(scored(&case, 1., 0.).unwrap(), f64::INFINITY);
+            assert!(scored(&case, f64::NAN, 1.).is_err());
+            assert!(scored(&case_with(f64::NAN, 0.), 0., 0.).is_err());
+            assert!(scored(&case_with(-1e-9, 0.), 1., 1.).is_err());
+        }
+
+        #[test]
+        fn a_negative_component_is_not_hidden_by_the_other() {
+            // rtol = -1 with atol = 2 sums to a positive budget, and swapping the two
+            // does the same for atol.  Both must be refused component-wise, or the
+            // Rust gate accepts a case the Python `budget()` rejects.
+            assert!(scored(&case_with(-1., 2.), 0.5, 1.).is_err());
+            assert!(scored(&case_with(2., -1.), 0.5, 1.).is_err());
+            assert!(scored(&case_with(1., 1.), 0.5, 1.).is_ok());
+        }
     }
 }
