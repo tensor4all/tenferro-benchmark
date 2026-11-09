@@ -21,6 +21,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 from gpu_case_traffic import case_traffic  # noqa: E402
+from gpu_multi_output_verification import budget  # noqa: E402
 
 DTYPES = {"bool": "|b1", "i32": "<i4", "i64": "<i8", "f32": "<f4", "f64": "<f8", "c32": "<c8", "c64": "<c16"}
 BACKENDS = ["tenferro-cuda-direct", "tenferro-cuda-eager", "pytorch-cuda", "jax-cuda", "jax-cuda-jit"]
@@ -240,11 +241,14 @@ def verify(actual, expected, case):
             raise ValueError("verification exact integer mismatch")
         return 0.0
     equal = actual == expected
-    with np.errstate(invalid="ignore"):
+    with np.errstate(over="ignore", invalid="ignore"):
         error = np.abs(actual.astype(np.complex128) - expected.astype(np.complex128))
     error = np.where(equal, 0, error)
-    scale = case["atol"] + case["rtol"] * np.abs(expected)
-    scale = np.where(equal, 1, scale)
+    # `budget` is the refusal rule the Rust `compare_vectors` also carries: a
+    # tolerance or an overflowed budget cannot score anything, so it must not
+    # certify a row either. The exact-equality mask keeps an exactly reproduced
+    # non-finite output at 0.
+    scale = budget(case, expected, equal)
     worst = float(np.max(error / scale))
     if not np.isfinite(worst) or worst > 1:
         raise ValueError(f"verification error / tolerance = {worst}")
