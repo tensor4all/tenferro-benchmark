@@ -342,7 +342,10 @@ def _instances(document: Any) -> list[dict[str, Any]]:
 
 
 def declared_cases(
-    suite: dict[str, Any], project_dir: Path, skips: list[str] | None = None
+    suite: dict[str, Any],
+    project_dir: Path,
+    skips: list[str] | None = None,
+    seen: frozenset[Path] = frozenset(),
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     """The suite's defaults and its cases, with the selector resolved.
 
@@ -410,9 +413,15 @@ def declared_cases(
         # resolves its problems recursively, so the regime check has to follow the
         # same rule instead of parsing it as JSON.  Its cases keep their own
         # declarations, which is what the checks below read.
+        resolved = path.resolve()
+        if resolved in seen:
+            chain = " -> ".join(str(entry) for entry in [*seen, resolved])
+            raise RegimeError(
+                f"{suite_id}: include source {source!r} is part of a selection cycle: {chain}"
+            )
         try:
             document = yaml.safe_load(path.read_text(encoding="utf-8"))
-        except (OSError, ValueError) as error:
+        except (OSError, yaml.YAMLError) as error:
             raise RegimeError(
                 f"{suite_id}: include source {source!r} did not load: {error}"
             ) from error
@@ -421,7 +430,9 @@ def declared_cases(
                 f"{suite_id}: include source {source!r} did not load: "
                 "the suite root must be a mapping"
             )
-        _nested_defaults, records = declared_cases(document, project_dir, skips)
+        _nested_defaults, records = declared_cases(
+            document, project_dir, skips, seen | {resolved}
+        )
     else:
         try:
             if path.is_dir():
@@ -441,7 +452,17 @@ def declared_cases(
                 f"{suite_id}: include source {source!r} did not load: {error}"
             ) from error
         records = [row for row in _instances(document) if row.get("id")]
-    by_id = {str(row["id"]): row for row in records}
+    by_id: dict[str, dict[str, Any]] = {}
+    for row in records:
+        record_id = str(row["id"])
+        if record_id in by_id:
+            # A selector used to reach a catalogue the validator had already
+            # rejected as duplicated, and silently kept the last record: the
+            # wrapper then validated with fewer cases than the source declares.
+            raise RegimeError(
+                f"{suite_id}: include source {source!r} declares duplicate problem id {record_id!r}"
+            )
+        by_id[record_id] = row
 
     selected: list[dict[str, Any]] = []
     for entry in include:

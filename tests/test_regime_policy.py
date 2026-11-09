@@ -368,6 +368,57 @@ class RegimePolicyUnitTests(unittest.TestCase):
         self.assertIn("renamed", errors[0])
         self.assertIn("is not in", errors[0])
 
+    def test_a_nested_yaml_that_does_not_parse_is_a_load_error(self):
+        # `yaml.YAMLError` is not a `ValueError`, so it used to escape
+        # `check_suite()` and abort the whole validator run instead of being
+        # reported against this one file.
+        with tempfile.TemporaryDirectory() as tmp:
+            broken = Path(tmp) / "broken.yaml"
+            broken.write_text("problems: [\n", encoding="utf-8")
+            document = {"suite_id": "gpu/structural",
+                        "problems": {"source": "broken.yaml", "include": ["a"]}}
+            errors = regime_policy.check_suite(document, Path(tmp))
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("did not load", errors[0])
+
+    def test_a_nested_yaml_cycle_is_reported_not_recurse(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            loop = Path(tmp) / "loop.yaml"
+            loop.write_text(
+                "suite_id: gpu/loop\nproblems:\n  source: loop.yaml\n  include: [a]\n",
+                encoding="utf-8",
+            )
+            document = {"suite_id": "gpu/structural",
+                        "problems": {"source": "loop.yaml", "include": ["a"]}}
+            errors = regime_policy.check_suite(document, Path(tmp))
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("cycle", errors[0])
+
+    def test_a_nested_yaml_with_duplicate_ids_is_rejected(self):
+        # Validating the source directly reports `duplicate problem id`; reaching
+        # it through a wrapper used to keep the last record and validate.
+        import yaml
+
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp) / "dupes.yaml"
+            base.write_text(
+                yaml.safe_dump(
+                    {
+                        "suite_id": "gpu/dupes",
+                        "problems": [
+                            {"id": "a", "regime": "latency"},
+                            {"id": "a", "regime": "latency"},
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            document = {"suite_id": "gpu/structural",
+                        "problems": {"source": "dupes.yaml", "include": ["a"]}}
+            errors = regime_policy.check_suite(document, Path(tmp))
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("duplicate problem id", errors[0])
+
     def test_an_unknown_missing_source_declaration_is_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
             document = {"suite_id": "gpu/structural",
