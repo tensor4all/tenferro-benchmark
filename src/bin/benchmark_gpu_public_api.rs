@@ -422,6 +422,21 @@ fn real_and_imaginary(t: &Tensor) -> Result<(Vec<f64>, Vec<f64>)> {
     })
 }
 
+/// Every component has to be a finite non-negative allowance on its own. The sum
+/// alone is not enough: `(-1., 2.)` adds up to a positive budget and the positive
+/// component hides the negative one, so the Python side (`budget()`) and this
+/// one disagreed on the same case.
+fn check_tolerances(case: &Case) -> Result<()> {
+    if !case.rtol.is_finite() || !case.atol.is_finite() || case.rtol < 0. || case.atol < 0. {
+        return Err(format!(
+            "verification tolerance is not a finite non-negative allowance: rtol={} atol={}",
+            case.rtol, case.atol
+        )
+        .into());
+    }
+    Ok(())
+}
+
 /// `|miss| / (atol + rtol * |reference|)`, refused when the allowance cannot
 /// score a miss at all.
 ///
@@ -435,17 +450,7 @@ fn scored(case: &Case, miss: f64, reference: f64) -> Result<f64> {
     if miss.is_nan() {
         return Err("verification nonfinite output".into());
     }
-    // Each component has to be a finite non-negative allowance on its own. The
-    // sum alone is not enough: `(-1., 2.)` adds up to a positive budget and the
-    // positive component hides the negative one, so the Python side (`budget()`)
-    // and this one disagreed on the same case.
-    if !case.rtol.is_finite() || !case.atol.is_finite() || case.rtol < 0. || case.atol < 0. {
-        return Err(format!(
-            "verification tolerance is not a finite non-negative allowance: rtol={} atol={}",
-            case.rtol, case.atol
-        )
-        .into());
-    }
+    check_tolerances(case)?;
     let allowance = case.atol + case.rtol * reference.abs();
     if !allowance.is_finite() {
         return Err(format!(
@@ -486,6 +491,9 @@ fn verify(rt: &CudaRuntime, actual: &Tensor, expected: &Tensor, case: &Case) -> 
         .into());
     }
     let host = download_tensor(rt, actual)?;
+    // Before the exact-integer path as well: it returns a score without ever
+    // reaching `scored`.
+    check_tolerances(case)?;
     if matches!(expected.dtype(), DType::I32 | DType::I64) {
         let equal = match expected.dtype() {
             DType::I32 => host.as_slice::<i32>()? == expected.as_slice::<i32>()?,
@@ -497,12 +505,23 @@ fn verify(rt: &CudaRuntime, actual: &Tensor, expected: &Tensor, case: &Case) -> 
         }
         return Ok(0.0);
     }
+    compare_numbers(case, &numbers(&host)?, &numbers(expected)?)
+}
+
+/// The elementwise comparison every public-API output goes through.
+///
+/// It is a separate function so the exact-equality shortcut can be tested
+/// without a GPU.  That shortcut skips `scored`, so the tolerance check cannot
+/// live inside `scored` alone: an exactly-equal output used to bypass it and
+/// reported `Ok(0.0)` for `rtol=-1, atol=2`, which Python's `budget()` rejects.
+fn compare_numbers(case: &Case, actual: &[Complex64], expected: &[Complex64]) -> Result<f64> {
+    check_tolerances(case)?;
     let mut worst = 0.0_f64;
-    for (x, y) in numbers(&host)?.iter().zip(numbers(expected)?) {
-        if *x == y {
+    for (x, y) in actual.iter().zip(expected.iter()) {
+        if x == y {
             continue;
         }
-        let error = scored(case, (*x - y).norm(), y.norm())?;
+        let error = scored(case, (*x - *y).norm(), y.norm())?;
         worst = worst.max(error);
     }
     if worst > 1. {
@@ -1032,6 +1051,20 @@ mod tests {
             assert!(scored(&case_with(-1., 2.), 0.5, 1.).is_err());
             assert!(scored(&case_with(2., -1.), 0.5, 1.).is_err());
             assert!(scored(&case_with(1., 1.), 0.5, 1.).is_ok());
+        }
+
+        #[test]
+        fn an_exact_output_does_not_exempt_a_bad_allowance() {
+            // The comparison path, not `scored`: identical values used to `continue`
+            // past the only check, so `Ok(0.0)` came back for tolerances the Python
+            // `budget()` refuses.
+            let values = [Complex64::new(1., 0.)];
+            assert!(compare_numbers(&case_with(-1., 2.), &values, &values).is_err());
+            assert!(compare_numbers(&case_with(2., -1.), &values, &values).is_err());
+            assert_eq!(
+                compare_numbers(&case_with(1e-12, 0.), &values, &values).unwrap(),
+                0.
+            );
         }
     }
 }
