@@ -311,10 +311,10 @@ class RegimePolicyUnitTests(unittest.TestCase):
                 self.assertIn("missing.json", printed, attempt)
 
     def test_an_unreadable_catalogue_is_not_treated_as_absent(self):
-        # `Path.exists()` suppresses every OSError since 3.13, so a permission
-        # error on the catalogue's directory looked exactly like a missing file
-        # and `missing_source: skip` swallowed it.  Only a real absence is
-        # skippable.
+        # In CPython 3.14 `Path.exists()` returns False for any OSError (3.12
+        # raises PermissionError), so a permission error on the catalogue's
+        # directory looked exactly like a missing file and `missing_source: skip`
+        # swallowed it.  Only a real absence is skippable.
         import os
 
         if os.geteuid() == 0:

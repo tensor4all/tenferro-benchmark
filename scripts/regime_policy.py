@@ -381,10 +381,11 @@ def declared_cases(
         path = project_dir / path
     # Absence of the declared source is the only thing the opt-in covers: a file
     # that disappears while its directory is read is a load failure, not a skip.
-    # `Path.exists()` is not the discriminator here: since Python 3.13 it
-    # suppresses every OSError, so an unreadable catalogue (a permission error on
-    # the file or on its directory) looked absent and the suite validated with
-    # zero cases.  `stat()` only swallows "not there".
+    # `Path.exists()` is not the discriminator here: in CPython 3.14 it returns
+    # False for *any* OSError (3.12 raises PermissionError for the same call), so
+    # an unreadable catalogue -- a permission error on the file or on its
+    # directory -- looked absent and the suite validated with zero cases.
+    # `stat()` only swallows "not there".
     try:
         path.stat()
     except FileNotFoundError:
