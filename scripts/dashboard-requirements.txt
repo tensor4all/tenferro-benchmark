@@ -2,3 +2,4 @@
 Markdown==3.11
 PyYAML==6.0.3
 campaign-toolkit @ git+https://github.com/tensor4all/campaign-toolkit@ee37121a05de93d09adafa3f616b489a0b5564ff
+jsonschema==4.26.0

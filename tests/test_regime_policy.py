@@ -384,6 +384,25 @@ class RegimePolicyUnitTests(unittest.TestCase):
         self.assertIn("renamed", errors[0])
         self.assertIn("is not in", errors[0])
 
+    def test_a_nested_suite_keeps_its_own_defaults(self):
+        # The nested suite's `defaults.regime` is the case's effective
+        # declaration; the wrapper's defaults must not silently replace it.
+        import yaml
+
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp) / "defaults.yaml"
+            suite = self._nested_suite([self._case("a")])
+            del suite["problems"][0]["regime"]
+            base.write_text(yaml.safe_dump(suite), encoding="utf-8")
+            wrapper = {
+                "suite_id": "gpu/structural",
+                "defaults": {"regime": "throughput"},
+                "problems": {"source": "defaults.yaml", "include": ["a"]},
+            }
+            self.assertEqual(regime_policy.check_suite(wrapper, Path(tmp)), [])
+            rows = regime_policy.suite_cases(wrapper, Path(tmp))
+        self.assertEqual([row[1] for row in rows], ["latency"])
+
     def test_a_nested_yaml_that_does_not_parse_is_a_load_error(self):
         # `yaml.YAMLError` is not a `ValueError`, so it used to escape
         # `check_suite()` and abort the whole validator run instead of being

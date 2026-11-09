@@ -453,9 +453,17 @@ def declared_cases(
                 f"{suite_id}: include source {source!r} is not a valid suite: "
                 + "; ".join(nested_errors[:3])
             )
-        _nested_defaults, records = declared_cases(
+        nested_defaults, records = declared_cases(
             document, project_dir, skips, seen | {resolved}
         )
+        # The nested suite's own `defaults` are the case's effective declaration:
+        # dropping them let the same case validate as `latency` directly and as
+        # the wrapper's regime through a selector.
+        records = [
+            {**{key: nested_defaults[key] for key in ("regime", "measure") if key in nested_defaults and key not in row},
+             **row}
+            for row in records
+        ]
     else:
         try:
             if path.is_dir():
