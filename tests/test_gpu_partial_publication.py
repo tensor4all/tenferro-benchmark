@@ -242,6 +242,16 @@ class PartialPublicationTest(unittest.TestCase):
                                          suites='dense.yaml,einsum.yaml', backends=BACKEND)
         self.assertFalse((self.root / 'bundle/publication.json').exists())
 
+    def test_a_failed_row_is_never_verified_however_its_block_reads(self):
+        # An arm that died can leave `verification.status` at an earlier
+        # `passed`; the row has no median and cannot be a verification result.
+        failed = record('matmul', status='runtime_failed', median=None,
+                        verification='passed', reason='arm exited 3')
+        row = report_summary.rows_from_gpu_records([failed])[0]
+        self.assertEqual(row["status"], "runtime_failed")
+        self.assertFalse(row["verified"])
+        self.assertEqual(row["reason"], "arm exited 3")
+
     def test_a_median_without_a_usable_sample_does_not_publish(self):
         # `timed_runs >= 1` is not enough: a record can carry a median whose
         # sampling batch is non-positive. Publishing it would put a number on

@@ -383,7 +383,11 @@ def rows_from_gpu_records(
                 status=status,
                 iqr=iqr,
                 group=grp,
-                verified=(verification.get("status") == "passed"
+                # A row that did not run cannot be verified, whatever the
+                # verification block inherited: a failed arm whose record kept a
+                # stale `passed` used to produce `verified: true` with no median.
+                verified=(status == "ok"
+                          and verification.get("status") == "passed"
                           and verification.get("mode") != "measure_only"),
                 reason=reason,
                 operations_per_sample=gpu_operations_per_sample(record),
