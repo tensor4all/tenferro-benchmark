@@ -443,7 +443,7 @@ def declared_cases(
             )
         try:
             document = yaml.safe_load(path.read_text(encoding="utf-8"))
-        except (OSError, ValueError, yaml.YAMLError) as error:
+        except (OSError, ValueError, yaml.YAMLError, RecursionError) as error:
             # `ValueError` covers `UnicodeDecodeError` from `read_text()`; without
             # it one unreadable byte aborted validation of every later file.
             raise RegimeError(
@@ -475,6 +475,21 @@ def declared_cases(
         nested_defaults, records = declared_cases(
             document, project_dir, skips, seen | {resolved}
         )
+        # A wrapper must not accept what validating the nested suite rejects:
+        # the nested suite's own defaults decide its cases, so the wrapper's
+        # default cannot supply a regime or a floor the source never declared.
+        if is_policed(nested_suite_id):
+            for row in records:
+                regime, _measure = resolve(nested_suite_id, nested_defaults, row)
+                exempt = row.get("floor_exempt")
+                check_case(
+                    nested_suite_id,
+                    str(row.get("id")),
+                    regime,
+                    case_elements(row),
+                    family_for(nested_suite_id, row),
+                    exempt if isinstance(exempt, str) and exempt.strip() else None,
+                )
         # The nested suite's own `defaults` are the case's effective declaration:
         # dropping them let the same case validate as `latency` directly and as
         # the wrapper's regime through a selector.

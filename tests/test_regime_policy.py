@@ -521,6 +521,51 @@ class RegimePolicyUnitTests(unittest.TestCase):
             errors = regime_policy.check_suite(document, Path(tmp))
         self.assertEqual(errors, [])
 
+    def test_a_wrapper_cannot_supply_a_missing_nested_regime(self):
+        # The wrapper default must not stand in for a declaration the
+        # source suite does not make: direct validation rejects it.
+        import yaml
+
+        with tempfile.TemporaryDirectory() as tmp:
+            case = self._case("a")
+            del case["regime"]
+            inner = self._nested_suite([case], suite_id="gpu/elementwise")
+            inner["defaults"] = {}
+            (Path(tmp) / "inner.yaml").write_text(yaml.safe_dump(inner), encoding="utf-8")
+            assert regime_policy.check_suite(inner, Path(tmp))
+            wrapper = {"suite_id": "gpu/structural", "defaults": {"regime": "latency"},
+                       "problems": {"source": "inner.yaml", "include": ["a"]}}
+            errors = regime_policy.check_suite(wrapper, Path(tmp))
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("declares no regime", errors[0])
+
+    def test_a_directory_catalogue_resolves_in_the_instance_collector(self):
+        # The validator accepts a directory named *.yaml; the collector must
+        # agree, or the suite validates and then cannot be run.
+        import suite_instances
+
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp) / "catalogue.yaml"
+            directory.mkdir()
+            (directory / "a.json").write_text(
+                json.dumps({"id": "a", "regime": "latency"}), encoding="utf-8"
+            )
+            ids = suite_instances._resolve_problems(
+                {"source": str(directory), "include": ["a"]}, project_dir=Path(tmp)
+            )
+        self.assertEqual(ids, ["a"])
+
+    def test_a_deeply_nested_yaml_source_is_a_load_error(self):
+        # PyYAML raises RecursionError on a pathological nesting depth; it
+        # must be reported against this source, not abort later inputs.
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "deep.yaml").write_text("[" * 600 + "0" + "]" * 600, encoding="utf-8")
+            document = {"suite_id": "gpu/structural",
+                        "problems": {"source": "deep.yaml", "include": ["a"]}}
+            errors = regime_policy.check_suite(document, Path(tmp))
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("did not load", errors[0])
+
     def test_a_nested_yaml_that_fails_the_suite_schema_is_rejected(self):
         # The wrapper must not accept a nested suite that direct validation
         # rejects: the dashboard reads those fields and used to crash on them.

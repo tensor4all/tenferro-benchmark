@@ -48,7 +48,11 @@ def _resolve_problems(problems: Any, *, project_dir: Path) -> list[str]:
     if not source_path.is_absolute():
         source_path = project_dir / source_path
 
-    if source_path.suffix in {".yaml", ".yml"}:
+    if source_path.is_dir():
+        # A directory catalogue is resolved through its `include` ids, the same
+        # way the regime check reads it; the suffix must not decide first.
+        ids = list(include)
+    elif source_path.suffix in {".yaml", ".yml"}:
         base_ids = resolve_suite_instance_ids(source_path, project_dir=project_dir)
         allowed = set(include)
         ids = [instance_id for instance_id in base_ids if instance_id in allowed]

@@ -44,6 +44,8 @@ def load_yaml(path: Path) -> Any:
         raise ValidationLoadError(f"{path}: failed to read YAML: {exc}") from exc
     except yaml.YAMLError as exc:
         raise ValidationLoadError(f"{path}: invalid YAML: {exc}") from exc
+    except RecursionError as exc:
+        raise ValidationLoadError(f"{path}: invalid YAML: {exc}") from exc
     except ValueError as exc:
         # `open()`/`read()` raise `UnicodeDecodeError` (a `ValueError`) for bytes
         # that are not UTF-8; it used to escape this handler and abort the rest.
