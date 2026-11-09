@@ -315,8 +315,12 @@ class HistoryTests(unittest.TestCase):
         self.assertEqual([item['timestamp'] for item in records], [WEEK_45_EARLY, WEEK_44])
 
     def test_a_receipt_free_suite_accepts_only_its_published_report_revisions(self):
-        # A suite the driver never ingested: the run's report is published with
-        # the sidecar, so a sidecar-only revision is an edit, not a run.
+        # A suite the driver never ingested, in a repository that does record
+        # receipts: the run's report is published with the sidecar, so a
+        # sidecar-only revision is an edit, not a run.
+        ingested = record(WEEK_43, COMMIT_A)
+        ingested['suite_id'] = 'gpu/ingested'
+        self.accept(ingested)
         for document in (record(WEEK_44, COMMIT_A), record(WEEK_45_EARLY, COMMIT_B)):
             relative = self.write(self.sidecar(document), json.dumps(document).encode())
             self.write(relative.replace('.summary.json', '.md'),

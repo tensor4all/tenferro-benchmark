@@ -81,11 +81,6 @@ def require_full_history(repo: Path) -> None:
                        'fetch the full history first (git fetch --unshallow)')
 
 
-def records_receipts(repo: Path) -> bool:
-    """Whether the checked-out history records any acceptance receipt at all."""
-    return bool(git(repo, 'log', '-1', '--format=%H', '--', RECEIPTS).strip())
-
-
 def receipt_history(repo: Path, sha: str) -> bool:
     """Whether an acceptance receipt exists at or before ``sha`` in its own history.
 
@@ -93,21 +88,22 @@ def receipt_history(repo: Path, sha: str) -> bool:
     later merge can reclassify a revision that was already read.  A single
     boundary commit picked from the history does move: merging an unrelated
     branch that carries an earlier-dated receipt makes it the boundary and drops
-    the published runs that are not its ancestors.
+    the published runs that are not its ancestors.  ``--full-history`` because
+    the default path simplification can hide a receipt a merge did not keep.
     """
-    return bool(git(repo, 'log', '-1', '--format=%H', sha, '--', RECEIPTS).strip())
+    return bool(git(repo, 'log', '-1', '--full-history', '--format=%H', sha, '--',
+                    RECEIPTS).strip())
 
 
-def accepted(repo: Path, sha: str, relative: str, receipt_path: str, content: bytes,
-             receipts_exist: bool) -> bool:
+def accepted(repo: Path, sha: str, relative: str, receipt_path: str, content: bytes) -> bool:
     """Whether this sidecar revision is a published run rather than an edit."""
     receipt = git_file(repo, sha, receipt_path)
     if receipt is not None:
         return json.loads(receipt).get('files', {}).get(relative) == hashlib.sha256(content).hexdigest()
-    # No receipt in that commit: the driver had not recorded one for this revision.
-    # A revision from before the driver recorded receipts at all is the published
-    # history; afterwards only a commit that publishes the report with the sidecar.
-    if receipts_exist and not receipt_history(repo, sha):
+    # No receipt in that commit.  A revision whose own history records no receipt
+    # at all predates the driver's bookkeeping and is the published history;
+    # afterwards only a commit that publishes the report with the sidecar.
+    if not receipt_history(repo, sha):
         return True
     # shortcut: a commit that rewrites the report as well is still taken as a
     # publish, so an edit of both files passes; the fix is for every publisher of
@@ -143,7 +139,6 @@ def accepted_runs(repo: Path, profile: str, suite: str) -> list[dict]:
     relative = f'result/{profile}/{suite}.summary.json'
     receipt_path = f'result/{profile}/{suite}.provenance.json'
     require_full_history(repo)
-    receipts_exist = records_receipts(repo)
     records, seen = [], set()
     # --full-history: Git's default path simplification drops a commit whose
     # sidecar a merge did not keep, which would hide a real run and report
@@ -152,7 +147,7 @@ def accepted_runs(repo: Path, profile: str, suite: str) -> list[dict]:
     for sha in git(repo, 'log', '--full-history', '--format=%H', '--',
                    relative, receipt_path).split():
         content = git_file(repo, sha, relative)
-        if content is None or not accepted(repo, sha, relative, receipt_path, content, receipts_exist):
+        if content is None or not accepted(repo, sha, relative, receipt_path, content):
             continue
         document = json.loads(content)
         if not (document.get('tenferro_commit') and host(document) and document.get('timestamp')):

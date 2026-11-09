@@ -186,9 +186,11 @@ receipt is an edit, not a measurement: a receipt-free revision is the published
 history when no receipt exists at or before it — a property of its own ancestry,
 so merging another branch cannot reclassify it — and otherwise only a commit that
 publishes the run's report together with the sidecar (a receipt-free edit of both
-files is still taken as a publish; #431 removes that second acceptance path). A
-shallow clone, an unreadable repository, and a `--threshold` outside 1 to
-1000000 are errors (exit 2) and never read as "no baseline".
+files is still taken as a publish; #431 removes that second acceptance path). In
+a repository that records no receipt at all, a sidecar revision is the published
+history by definition, because there is no acceptance signal to check. A shallow
+clone, an unreadable repository, and a `--threshold` outside 1 to 1000000 are
+errors (exit 2) and never read as "no baseline".
 
 It reads committed results and measures nothing, so it needs no GPU and no
 scheduler change.
