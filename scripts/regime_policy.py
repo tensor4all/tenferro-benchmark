@@ -500,16 +500,23 @@ def declared_cases(
     selected: list[dict[str, Any]] = []
     for entry in include:
         # `include` stays a list of ids: the GPU selection tooling reads it as a
-        # set of strings, so an id-to-regime mapping is not an option here.
-        if isinstance(entry, str):
-            record = by_id.get(entry)
-            if record is None:
-                raise RegimeError(
-                    f"{suite_id}: "
-                    + suite_instances.include_missing_error(path, entry, unreadable)
-                )
-            if entry not in exclude:
-                selected.append(record)
+        # set of strings, so an id-to-regime mapping is not an option here. A nested
+        # selector is not schema-checked, so a non-string entry has to be rejected
+        # here: the resolver checks it against the source and raises, and dropping it
+        # made the wrapper validate on the remaining ids.
+        if not isinstance(entry, str):
+            raise RegimeError(
+                f"{suite_id}: "
+                + suite_instances.include_missing_error(path, entry, unreadable)
+            )
+        record = by_id.get(entry)
+        if record is None:
+            raise RegimeError(
+                f"{suite_id}: "
+                + suite_instances.include_missing_error(path, entry, unreadable)
+            )
+        if entry not in exclude:
+            selected.append(record)
     return defaults, selected, False
 
 

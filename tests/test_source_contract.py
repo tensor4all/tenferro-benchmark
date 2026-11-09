@@ -624,6 +624,25 @@ class SourceContractTests(unittest.TestCase):
                 suite_instances.resolve_suite_instance_ids(wrapper_file), ["a"]
             )
 
+    def test_a_nested_include_entry_that_is_not_an_id_is_refused_by_both_paths(self):
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            cases = write_json(tmp / "cases.json", {"cases": [{"id": "a", **LATENCY}]})
+            nested = tmp / "nested.yaml"
+            nested.write_text(
+                yaml.safe_dump({"problems": {"source": str(cases), "include": ["a", 7]}}),
+                encoding="utf-8",
+            )
+            wrapper_file = tmp / "wrapper.yaml"
+            wrapper_file.write_text(yaml.safe_dump(wrapper(nested, ["a"])), encoding="utf-8")
+            stderr = io.StringIO()
+            with contextlib.redirect_stderr(stderr):
+                self.assertFalse(validator.validate_suite(wrapper_file), stderr.getvalue())
+            self.assertIn("include id 7 is not in the source", stderr.getvalue())
+            with self.assertRaises(ValueError) as raised:
+                suite_instances.resolve_suite_instance_ids(wrapper_file)
+            self.assertIn("include id 7 is not in the source", str(raised.exception))
+
 
 if __name__ == "__main__":
     unittest.main()
