@@ -40,7 +40,8 @@ def record(timestamp, commit, host=HOST, scale=1.0, unit='ms'):
         'suite_id': 'gpu/dense', 'target_profile': 'nvidia-gpu', 'tenferro_commit': commit,
         'timestamp': timestamp, 'unit': unit,
         'hardware': {'gpu': 'NVIDIA A100 80GB PCIe', 'host': host},
-        'rows': [{'case': 'dense_matmul', 'backend': backend, 'median': scale, 'status': 'ok'}
+        'rows': [{'case': 'dense_matmul', 'group': 'matmul', 'backend': backend, 'median': scale,
+                  'status': 'ok'}
                  for backend in ('tenferro-cuda-eager', 'pytorch-cuda')],
     }
 
@@ -139,6 +140,32 @@ class BaselineTests(unittest.TestCase):
         self.assertNotIn('| case |', text)
         self.assertNotIn('1000000.00x', text)
 
+    def test_rows_that_differ_only_in_group_are_distinct(self):
+        # The ingestion identity is (case, group, backend); keying on (case,
+        # backend) lets g2 overwrite g1 and the g1 regression disappears.
+        baseline, candidate = record(WEEK_44, COMMIT_A), record(WEEK_45_LATE, COMMIT_B)
+        baseline['rows'] = [dict(baseline['rows'][1], group='g1', median=1.0),
+                            dict(baseline['rows'][1], group='g2', median=100.0)]
+        candidate['rows'] = [dict(candidate['rows'][1], group='g1', median=10.0),
+                             dict(candidate['rows'][1], group='g2', median=100.0)]
+        result = compare(candidate, baseline, 1.2)
+        self.assertEqual([(row['case'], row['group'], row['backend'], row['ratio'])
+                          for row in result['rows']],
+                         [('dense_matmul', 'g1', 'pytorch-cuda', 10.0)])
+        self.assertIn('| dense_matmul | g1 | pytorch-cuda | 1 | 10 | 10.00x |', render(result))
+
+    def test_a_zero_baseline_ratio_is_reported_not_dropped(self):
+        # A zero median is a legal measurement (ingestion rejects only value < 0),
+        # so 0 -> positive must be reported instead of vanishing as "(none)".
+        baseline, candidate = record(WEEK_44, COMMIT_A), record(WEEK_45_LATE, COMMIT_B)
+        baseline['rows'][0]['median'] = 0.0
+        candidate['rows'][0]['median'] = 10.0
+        result = compare(candidate, baseline, 1.2)
+        text = render(result)
+        self.assertEqual(result['rows'], [])
+        self.assertIn('Ratio undefined (the baseline median is 0) for 1 row(s):', text)
+        self.assertIn('| dense_matmul | matmul | tenferro-cuda-eager | 0 | 10 |', text)
+
 
 class HistoryTests(unittest.TestCase):
     def setUp(self):
@@ -215,7 +242,7 @@ class HistoryTests(unittest.TestCase):
         self.assertTrue(lines[0].startswith('# Accepted run comparison: gpu/dense'))
         self.assertIn(f'candidate: tenferro-rs `{COMMIT_B[:7]}`', lines[2])
         self.assertIn(f'baseline: tenferro-rs `{COMMIT_A[:7]}`', lines[3])
-        self.assertIn('| dense_matmul | tenferro-cuda-eager | 1 | 1.5 | 1.50x |', process.stdout)
+        self.assertIn('| dense_matmul | matmul | tenferro-cuda-eager | 1 | 1.5 | 1.50x |', process.stdout)
 
     def test_cli_refuses_on_stdout_and_exits_one_without_a_table(self):
         self.accept(record(WEEK_44, COMMIT_A))

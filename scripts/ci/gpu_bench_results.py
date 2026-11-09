@@ -209,27 +209,37 @@ def refusals(candidate: dict, baseline: dict) -> list[str]:
     return out
 
 
-def slower_rows(baseline: dict, candidate: dict, threshold: float) -> list[dict]:
+def slower_rows(baseline: dict, candidate: dict, threshold: float) -> dict:
+    """Slower rows, plus the rows whose ratio cannot be taken (a zero baseline)."""
     def measured(record: dict) -> dict:
-        return {(row['case'], row['backend']): row for row in record['rows']
-                if row.get('status') == 'ok' and isinstance(row.get('median'), (int, float))
-                and row['median'] > 0}
+        # The identity the ingestion driver enforces is (case, group, backend)
+        # (``result_ingestion.validate_summary``): (case, backend) collides
+        # across groups and one row would hide the other.
+        return {(row['case'], row.get('group', ''), row['backend']): row for row in record['rows']
+                if row.get('status') == 'ok' and type(row.get('median')) in (int, float)
+                and math.isfinite(row['median']) and row['median'] >= 0}
 
     before, after = measured(baseline), measured(candidate)
-    rows = []
+    rows, undefined = [], []
     for key in sorted(before.keys() & after.keys()):
-        ratio = after[key]['median'] / before[key]['median']
-        if ratio >= threshold:
-            rows.append({'case': key[0], 'backend': key[1], 'baseline_ms': before[key]['median'],
-                         'candidate_ms': after[key]['median'], 'ratio': ratio})
-    return sorted(rows, key=lambda row: row['ratio'], reverse=True)
+        row = {'case': key[0], 'group': key[1], 'backend': key[2],
+               'baseline': before[key]['median'], 'candidate': after[key]['median']}
+        if row['baseline'] == 0:
+            # A zero baseline is a legal measurement, and 0 -> positive is not
+            # "no change": report the pair instead of dropping it.
+            undefined.append(row)
+        elif row['candidate'] / row['baseline'] >= threshold:
+            rows.append(dict(row, ratio=row['candidate'] / row['baseline']))
+    return {'rows': sorted(rows, key=lambda row: row['ratio'], reverse=True),
+            'undefined': undefined}
 
 
 def compare(candidate: dict, baseline: dict | None, threshold: float) -> dict:
     """Gate the pair first: a refused pair never reaches the table."""
     fired = refusals(candidate, baseline) if baseline is not None else []
-    rows = slower_rows(baseline, candidate, threshold) if baseline is not None and not fired else []
-    return {'candidate': candidate, 'baseline': baseline, 'refusals': fired, 'rows': rows,
+    computed = (slower_rows(baseline, candidate, threshold)
+                if baseline is not None and not fired else {'rows': [], 'undefined': []})
+    return {'candidate': candidate, 'baseline': baseline, 'refusals': fired, **computed,
             'threshold': threshold}
 
 
@@ -253,13 +263,21 @@ def render(result: dict) -> str:
         return '\n'.join(lines) + '\n'
     measure = unit(candidate)
     lines += ['', f'Rows slower than the baseline by at least {result["threshold"]}x:', '',
-              f'| case | backend | baseline {measure} | candidate {measure} | ratio |',
-              '|---|---|---|---|---|']
+              f'| case | group | backend | baseline {measure} | candidate {measure} | ratio |',
+              '|---|---|---|---|---|---|']
     for row in result['rows']:
-        lines.append(f"| {row['case']} | {row['backend']} | {row['baseline_ms']:.4g} "
-                     f"| {row['candidate_ms']:.4g} | {row['ratio']:.2f}x |")
+        lines.append(f"| {row['case']} | {row['group']} | {row['backend']} | {row['baseline']:.4g} "
+                     f"| {row['candidate']:.4g} | {row['ratio']:.2f}x |")
     if not result['rows']:
-        lines.append('| (none) | | | | |')
+        lines.append('| (none) | | | | | |')
+    if result['undefined']:
+        lines += ['', f'Ratio undefined (the baseline median is 0) for '
+                      f'{len(result["undefined"])} row(s):', '',
+                  f'| case | group | backend | baseline {measure} | candidate {measure} |',
+                  '|---|---|---|---|---|']
+        for row in result['undefined']:
+            lines.append(f"| {row['case']} | {row['group']} | {row['backend']} "
+                         f"| {row['baseline']:.4g} | {row['candidate']:.4g} |")
     return '\n'.join(lines) + '\n'
 
 
