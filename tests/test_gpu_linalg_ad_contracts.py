@@ -1,8 +1,10 @@
 """The GPU AD gate must reject wrong gradients even with correct primals."""
 import json
 import sys
+import time
 import unittest
 from pathlib import Path
+from unittest import mock
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
@@ -160,7 +162,7 @@ class AdVerification(unittest.TestCase):
         for phase in ("jvp", "vjp"):
             expected, diagnostic = cpu_reference(loss, x, t, None, phase)
             actual = [np.asarray(np.sum(x*x)), np.asarray(np.sum(2*x*t)) if phase == "jvp" else 2*x]
-            self.assertEqual(verify_arrays(actual, expected, 1e-6, 1e-8), (0., 0., 0.))
+            self.assertLessEqual(verify_arrays(actual, expected, 1e-6, 1e-8)[2], 1e-6)  # ~1.8e-10 of the budget: summation order, not a formula (numpy 2.0.2)
             self.assertLessEqual(diagnostic["max_error_over_budget"], 1)
             with self.assertRaises(ValueError):
                 verify_arrays([actual[0], np.zeros_like(actual[1])], expected, 1e-6, 1e-8)
@@ -172,6 +174,84 @@ class AdVerification(unittest.TestCase):
                        [expected[0], np.array([np.nan, -1.])]):
             with self.assertRaises(ValueError):
                 verify_arrays(values, expected, 1e-6, 1e-8)
+
+
+class CollectorJudgesTheFinalDownload(unittest.TestCase):
+    """The collector compares the final download, not only the probe.
+
+    #417 review: replacing `after = check(final)` with `after = verification` in
+    the collector left the whole suite green, so a corrupt final download still
+    published as verified. The device half is substituted (`_torch_framework`),
+    everything else — mode and tolerance resolution, the CPU reference, the
+    probe comparison, the merge — is the collector's own code.
+    """
+
+    PROBLEM = {"id": "case_a", "op": "vjp",
+               "linalg_ad": {"loss": "grad_sum_qr", "n": 4, "matrix_seed": 34},
+               "verify": {"mode": "cpu_reference", "rtol": 1e-5, "atol": 1e-8}}
+
+    def collect(self, corrupt_final):
+        import benchmark_gpu_linalg_ad as collector
+        import benchmark_gpu_public_api
+        import gpu_linalg_ad_contracts
+        from benchmark_cpu_ops_python import (data, matrix_for_linalg_ad,
+                                              tangent_seed, torch_loss_qr)
+
+        ad = self.PROBLEM["linalg_ad"]
+        matrix = matrix_for_linalg_ad(ad["loss"], ad["n"], ad["matrix_seed"])
+        tangent = data((ad["n"], ad["n"]), tangent_seed(ad["matrix_seed"]))
+        expected, _ = gpu_linalg_ad_contracts.cpu_reference(
+            torch_loss_qr, matrix, tangent, None, "vjp")
+        calls = {"reference": 0, "runner": 0}
+        reference = gpu_linalg_ad_contracts.cpu_reference
+
+        def counted_reference(*args, **kwargs):
+            calls["reference"] += 1
+            return reference(*args, **kwargs)
+
+        def framework(matrix, tangent, rhs, loss_name, phase, device_ordinal):
+            def runner():
+                calls["runner"] += 1
+                # Correct for the probe and for the sampled runs; only the
+                # download taken after sampling carries the wrong derivative.
+                derivative = expected[1]
+                if corrupt_final and calls["runner"] > 2:
+                    derivative = derivative * 1.02
+                return [expected[0], derivative]
+            return {"runner": runner, "ready": lambda values: None,
+                    "sync": lambda: None, "check_placement": lambda value: None,
+                    "download": lambda value: value, "version": "cpu-fixture",
+                    "compile_ms": None}
+
+        def fake_measure(runner, sync, ready, output_bytes, warmups, runs, **_):
+            started = time.perf_counter()
+            value = runner()
+            sync()
+            return {"operations_per_sample": 1,
+                    "batch_ms": [(time.perf_counter() - started) * 1000]}
+
+        with mock.patch.object(gpu_linalg_ad_contracts, "cpu_reference", counted_reference), \
+                mock.patch.object(collector, "_torch_framework", framework), \
+                mock.patch.object(benchmark_gpu_public_api, "measure", fake_measure):
+            row = collector.run_one("gpu/linalg_jvp_vjp", self.PROBLEM, "pytorch-cuda", 0,
+                                    ts="2026-01-01T00:00:00+00:00", bc=None, tc=None)
+        return row, calls
+
+    def test_a_correct_row_passes_and_builds_its_reference_once(self):
+        row, calls = self.collect(corrupt_final=False)
+        self.assertEqual(row["status"], "ok", row.get("execution"))
+        self.assertEqual(row["verification"]["status"], "passed")
+        self.assertLessEqual(row["verification"]["residual"], 1.0)
+        self.assertEqual(calls["reference"], 1)
+        self.assertEqual(calls["runner"], 3)  # probe, one sampled batch, final
+
+    def test_a_corrupt_final_download_is_refused(self):
+        row, calls = self.collect(corrupt_final=True)
+        self.assertEqual(row["status"], "runtime_failed", row["verification"])
+        self.assertIn("error/tolerance", row["execution"]["unsupported_reason"])
+        self.assertEqual(row["verification"]["status"], "skipped")
+        self.assertEqual(calls["reference"], 1)
+        self.assertEqual(calls["runner"], 3)  # probe, one sampled batch, final
 
 
 if __name__ == "__main__":

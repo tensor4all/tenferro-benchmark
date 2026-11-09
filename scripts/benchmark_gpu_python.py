@@ -1114,6 +1114,29 @@ def _jax_fn(op: str, d: dict):
 # Verification
 # ---------------------------------------------------------------------------
 
+def _verification_score(a_abs, a_rel, norm_ref, rtol, atol):
+    """One verdict from one error pair, or `failed` when it cannot be scored.
+
+    `passed = a_abs <= atol + rtol * max(|reference|, 1)` treats an infinite
+    `rtol` as an infinite budget, and `atol + rtol * 1.7e308` overflows to the
+    same, so `inf <= inf` published any miss as `passed` (the same fail-open
+    `compare_vectors` carries the guarded version of). A tolerance, a threshold
+    or an error that is not a finite number has not verified anything, so the
+    row says `failed` and reports no metrics rather than an `inf` no JSON reader
+    accepts.
+    """
+    import numpy as np
+
+    if any(not np.isfinite(value) for value in (a_abs, a_rel, norm_ref, rtol, atol)):
+        return "failed", None, None
+    if rtol < 0.0 or atol < 0.0:
+        return "failed", None, None
+    threshold = atol + rtol * max(float(norm_ref), 1.0)
+    if not np.isfinite(threshold):
+        return "failed", None, None
+    return ("passed" if a_abs <= threshold else "failed"), a_abs, a_rel
+
+
 def _verify_torch(op, gpu_result, cpu_result, data, rtol, atol):
     import torch
     import numpy as np
@@ -1131,8 +1154,7 @@ def _verify_torch(op, gpu_result, cpu_result, data, rtol, atol):
         return float(np.max(diff / np.maximum(np.abs(to_np(b).ravel()), 1e-10)))
 
     def check(a_abs, a_rel, norm_ref=1.0):
-        passed = a_abs <= atol + rtol * max(float(norm_ref), 1.0)
-        return ("passed" if passed else "failed"), a_abs, a_rel
+        return _verification_score(a_abs, a_rel, norm_ref, rtol, atol)
 
     try:
         if op == "solve":
@@ -1202,8 +1224,7 @@ def _verify_jax(op, gpu_result, cpu_result, data, rtol, atol):
         return float(np.max(diff / np.maximum(np.abs(to_np(b).ravel()), 1e-10)))
 
     def check(a_abs, a_rel, norm_ref=1.0):
-        passed = a_abs <= atol + rtol * max(float(norm_ref), 1.0)
-        return ("passed" if passed else "failed"), a_abs, a_rel
+        return _verification_score(a_abs, a_rel, norm_ref, rtol, atol)
 
     try:
         if op == "solve":

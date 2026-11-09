@@ -95,6 +95,28 @@ class LegacyGpuContracts(unittest.TestCase):
                 require_verification((status, None, None))
         self.assertEqual(require_verification(("passed", 0., 0.)), ("passed", 0., 0.))
 
+    def test_a_tolerance_the_legacy_check_cannot_express_is_not_a_pass(self):
+        # Measured on c2dca56: both helpers returned ("passed", ...) for both of
+        # these — an infinite rtol is an infinite budget, and `atol + rtol *
+        # 1.7e308` overflows to one, so `inf <= inf` passed a 1.7e308 miss. Same
+        # fail-open the Rust `compare_vectors` carries the guarded version of.
+        import numpy as np
+
+        for name in ("_verify_torch", "_verify_jax"):
+            check = getattr(runner, name)
+            for rtol, atol in ((float("inf"), 0.), (float("nan"), 0.),
+                               (1.5, 0.), (-1e-5, 0.)):
+                with self.subTest(check=name, rtol=rtol):
+                    gpu, cpu = np.array([-1.7e308]), np.array([1.7e308])
+                    self.assertEqual(check("matmul", gpu, cpu, {}, rtol, atol),
+                                     ("failed", None, None))
+            # The ordinary verdicts and their metrics are unchanged.
+            self.assertEqual(check("matmul", np.array([1.]), np.array([1.]), {}, 1e-5, 1e-8),
+                             ("passed", 0.0, 0.0))
+            status, max_abs, _ = check("matmul", np.array([999.]), np.array([1.]), {}, 1e-5, 1e-8)
+            self.assertEqual(status, "failed")
+            self.assertEqual(max_abs, 998.0)
+
     def test_verification_only_records_cannot_be_published(self):
         with self.assertRaises(ValueError):
             formatter.format_markdown([{"status": "verification_only"}])

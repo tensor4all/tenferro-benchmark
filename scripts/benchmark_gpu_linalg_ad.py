@@ -168,13 +168,78 @@ def verified_arrays(result, mode, check_placement, download):
     return [download(value) for value in leaves_of_result]
 
 
+def _jax_framework(matrix, tangent, rhs, loss_name, phase, device_ordinal):
+    """The device handle one JAX AD row runs on.
+
+    Fenced off from the row logic so a CPU-only test can substitute the device
+    half and still drive the real path, probe and final download included.
+    """
+    import numpy as np
+    import jax
+    import jax.numpy as jnp
+    jax.config.update("jax_enable_x64", True)
+    jax.config.update("jax_default_matmul_precision", "highest")
+    device = jax.devices("cuda")[device_ordinal]
+    x, t = (jax.device_put(np.asarray(v, dtype=np.float64), device) for v in (matrix, tangent))
+    b = None if rhs is None else jax.device_put(np.asarray(rhs, dtype=np.float64), device)
+    loss = LOSS_JAX[loss_name]
+    fn = loss if b is None else lambda a: loss(a, b)
+    if phase == "jvp":
+        operation = lambda a, seed: jax.jvp(fn, (a,), (seed,))
+        arguments = x, t
+    else:
+        def operation(a, seed):
+            primal, pullback = jax.vjp(fn, a)
+            return primal, pullback(seed)
+        arguments = x, jax.device_put(np.asarray(1., dtype=np.float64), device)
+    jax.block_until_ready((arguments, b))
+    started = time.perf_counter()
+    compiled = jax.jit(operation).lower(*arguments).compile()
+    compile_ms = (time.perf_counter()-started)*1000
+    def check_placement(value):
+        if value.devices() != {device} or value.dtype != jnp.float64:
+            raise ValueError("AD output is not F64 on the selected CUDA device")
+    return {"runner": lambda: compiled(*arguments), "ready": jax.block_until_ready,
+            "sync": lambda: jax.block_until_ready(arguments),
+            "check_placement": check_placement, "download": np.asarray,
+            "version": "jax=" + jax.__version__, "compile_ms": compile_ms}
+
+
+def _torch_framework(matrix, tangent, rhs, loss_name, phase, device_ordinal):
+    """The device handle one PyTorch AD row runs on; see `_jax_framework`."""
+    import torch
+    torch.set_num_threads(1)
+    torch.cuda.set_device(device_ordinal)
+    torch.backends.cuda.matmul.allow_tf32 = False
+    torch.backends.cudnn.allow_tf32 = False
+    device = torch.device(f"cuda:{device_ordinal}")
+    x, t = (torch.tensor(v, dtype=torch.float64, device=device) for v in (matrix, tangent))
+    b = None if rhs is None else torch.tensor(rhs, dtype=torch.float64, device=device)
+    loss = LOSS_TORCH[loss_name]
+    fn = loss if b is None else lambda a: loss(a, b)
+    if phase == "jvp":
+        runner = lambda: torch.func.jvp(fn, (x,), (t,))
+    else:
+        cotangent = torch.tensor(1., dtype=torch.float64, device=device)
+        def runner():
+            primal, pullback = torch.func.vjp(fn, x)
+            return primal, pullback(cotangent)
+    sync = lambda: torch.cuda.synchronize(device)
+    def check_placement(value):
+        if value.device != device or value.dtype != torch.float64:
+            raise ValueError("AD output is not F64 on the selected CUDA device")
+    return {"runner": runner, "ready": lambda values: sync(), "sync": sync,
+            "check_placement": check_placement,
+            "download": lambda value: value.detach().cpu().numpy(),
+            "version": "torch=" + torch.__version__, "compile_ms": None}
+
+
 def run_jax(suite_id, problem, backend, device_ordinal, *, ts, bc, tc, verify_defaults=None):
     return run_framework(suite_id, problem, backend, device_ordinal, ts=ts, bc=bc, tc=tc,
                          verify_defaults=verify_defaults)
 
 
 def run_framework(suite_id, problem, backend, device_ordinal, *, ts, bc, tc, verify_defaults=None):
-    import numpy as np
     from gpu_linalg_ad_contracts import cpu_reference, verify_arrays
     from benchmark_gpu_public_api import measure
     from benchmark_gpu_python import _timing_stats
@@ -209,64 +274,13 @@ def run_framework(suite_id, problem, backend, device_ordinal, *, ts, bc, tc, ver
         # Input generation plus the CPU AD reference: everything this case pays
         # before its own clocks start.
         fixture_ms = (time.perf_counter() - case_started) * 1000
-        compile_ms = None
         cache_dir = os.environ.get("JAX_COMPILATION_CACHE_DIR") or None
         cache_before = jax_cache_stats.stats(cache_dir)
-        if is_jax:
-            import jax
-            import jax.numpy as jnp
-            jax.config.update("jax_enable_x64", True)
-            jax.config.update("jax_default_matmul_precision", "highest")
-            device = jax.devices("cuda")[device_ordinal]
-            x, t = (jax.device_put(np.asarray(v, dtype=np.float64), device) for v in (matrix, tangent))
-            b = None if rhs is None else jax.device_put(np.asarray(rhs, dtype=np.float64), device)
-            loss = LOSS_JAX[loss_name]
-            fn = loss if b is None else lambda a: loss(a, b)
-            if phase == "jvp":
-                operation = lambda a, seed: jax.jvp(fn, (a,), (seed,))
-                arguments = x, t
-            else:
-                def operation(a, seed):
-                    primal, pullback = jax.vjp(fn, a)
-                    return primal, pullback(seed)
-                arguments = x, jax.device_put(np.asarray(1., dtype=np.float64), device)
-            jax.block_until_ready((arguments, b))
-            started = time.perf_counter()
-            compiled = jax.jit(operation).lower(*arguments).compile()
-            compile_ms = (time.perf_counter()-started)*1000
-            runner = lambda: compiled(*arguments)
-            ready = jax.block_until_ready
-            sync = lambda: jax.block_until_ready(arguments)
-            def check_placement(value):
-                if value.devices() != {device} or value.dtype != jnp.float64:
-                    raise ValueError("AD output is not F64 on the selected CUDA device")
-            download = np.asarray
-            version = "jax=" + jax.__version__
-        else:
-            import torch
-            torch.set_num_threads(1)
-            torch.cuda.set_device(device_ordinal)
-            torch.backends.cuda.matmul.allow_tf32 = False
-            torch.backends.cudnn.allow_tf32 = False
-            device = torch.device(f"cuda:{device_ordinal}")
-            x, t = (torch.tensor(v, dtype=torch.float64, device=device) for v in (matrix, tangent))
-            b = None if rhs is None else torch.tensor(rhs, dtype=torch.float64, device=device)
-            loss = LOSS_TORCH[loss_name]
-            fn = loss if b is None else lambda a: loss(a, b)
-            if phase == "jvp":
-                runner = lambda: torch.func.jvp(fn, (x,), (t,))
-            else:
-                cotangent = torch.tensor(1., dtype=torch.float64, device=device)
-                def runner():
-                    primal, pullback = torch.func.vjp(fn, x)
-                    return primal, pullback(cotangent)
-            sync = lambda: torch.cuda.synchronize(device)
-            ready = lambda values: sync()
-            def check_placement(value):
-                if value.device != device or value.dtype != torch.float64:
-                    raise ValueError("AD output is not F64 on the selected CUDA device")
-            download = lambda value: value.detach().cpu().numpy()
-            version = "torch=" + torch.__version__
+        framework = (_jax_framework if is_jax else _torch_framework)(
+            matrix, tangent, rhs, loss_name, phase, device_ordinal)
+        runner, ready, sync = framework["runner"], framework["ready"], framework["sync"]
+        check_placement, download = framework["check_placement"], framework["download"]
+        compile_ms, version = framework["compile_ms"], framework["version"]
         def check(result):
             arrays = verified_arrays(result, mode, check_placement, download)
             if arrays is None:
