@@ -422,6 +422,52 @@ fn real_and_imaginary(t: &Tensor) -> Result<(Vec<f64>, Vec<f64>)> {
     })
 }
 
+/// Every component has to be a finite non-negative allowance on its own. The sum
+/// alone is not enough: `(-1., 2.)` adds up to a positive budget and the positive
+/// component hides the negative one, so the Python side (`budget()`) and this
+/// one disagreed on the same case.
+fn check_tolerances(case: &Case) -> Result<()> {
+    if !case.rtol.is_finite() || !case.atol.is_finite() || case.rtol < 0. || case.atol < 0. {
+        return Err(format!(
+            "verification tolerance is not a finite non-negative allowance: rtol={} atol={}",
+            case.rtol, case.atol
+        )
+        .into());
+    }
+    Ok(())
+}
+
+/// `|miss| / (atol + rtol * |reference|)`, refused when the allowance cannot
+/// score a miss at all.
+///
+/// An allowance that overflows from finite components (`atol + rtol * 1.7e308`)
+/// divides every miss down to 0.0, so a wrong output reads as exact. An exact miss
+/// over a zero allowance (`atol = 0`, an off-diagonal Gram entry) is 0 / 0 = NaN
+/// and would drop the whole reduction. Both are decided here, before `max`.
+fn scored(case: &Case, miss: f64, reference: f64) -> Result<f64> {
+    // `f64::max` keeps the other operand when one side is NaN, so a NaN miss has
+    // to be refused here or it disappears from `worst` without a trace.
+    if miss.is_nan() {
+        return Err("verification nonfinite output".into());
+    }
+    check_tolerances(case)?;
+    let allowance = case.atol + case.rtol * reference.abs();
+    if !allowance.is_finite() {
+        return Err(format!(
+            "verification tolerance budget overflows: rtol={} atol={}",
+            case.rtol, case.atol
+        )
+        .into());
+    }
+    if miss == 0. {
+        return Ok(0.);
+    }
+    if allowance == 0. {
+        return Ok(f64::INFINITY);
+    }
+    Ok(miss / allowance)
+}
+
 fn verify(rt: &CudaRuntime, actual: &Tensor, expected: &Tensor, case: &Case) -> Result<f64> {
     let device = actual
         .placement()
@@ -445,6 +491,9 @@ fn verify(rt: &CudaRuntime, actual: &Tensor, expected: &Tensor, case: &Case) -> 
         .into());
     }
     let host = download_tensor(rt, actual)?;
+    // Before the exact-integer path as well: it returns a score without ever
+    // reaching `scored`.
+    check_tolerances(case)?;
     if matches!(expected.dtype(), DType::I32 | DType::I64) {
         let equal = match expected.dtype() {
             DType::I32 => host.as_slice::<i32>()? == expected.as_slice::<i32>()?,
@@ -456,15 +505,23 @@ fn verify(rt: &CudaRuntime, actual: &Tensor, expected: &Tensor, case: &Case) -> 
         }
         return Ok(0.0);
     }
+    compare_numbers(case, &numbers(&host)?, &numbers(expected)?)
+}
+
+/// The elementwise comparison every public-API output goes through.
+///
+/// It is a separate function so the exact-equality shortcut can be tested
+/// without a GPU.  That shortcut skips `scored`, so the tolerance check cannot
+/// live inside `scored` alone: an exactly-equal output used to bypass it and
+/// reported `Ok(0.0)` for `rtol=-1, atol=2`, which Python's `budget()` rejects.
+fn compare_numbers(case: &Case, actual: &[Complex64], expected: &[Complex64]) -> Result<f64> {
+    check_tolerances(case)?;
     let mut worst = 0.0_f64;
-    for (x, y) in numbers(&host)?.iter().zip(numbers(expected)?) {
-        if *x == y {
+    for (x, y) in actual.iter().zip(expected.iter()) {
+        if x == y {
             continue;
         }
-        let error = (*x - y).norm() / (case.atol + case.rtol * y.norm());
-        if !error.is_finite() {
-            return Err("verification nonfinite output".into());
-        }
+        let error = scored(case, (*x - *y).norm(), y.norm())?;
         worst = worst.max(error);
     }
     if worst > 1. {
@@ -945,6 +1002,78 @@ mod tests {
         for wall in [51.0, 60.0, 200.0, 21_600.0] {
             let warning = overhead_warning("case", Some(50.0), wall, 0.2);
             assert_eq!(warning.is_some(), wall > 60.0, "wall {wall}");
+        }
+    }
+
+    fn case_with(rtol: f64, atol: f64) -> Case {
+        let mut case: Case = serde_json::from_str(
+            r#"{"id":"c","op":"exp","n":1,"inputs":[],"outputs":[],"rtol":0.0,"atol":0.0,"reference":"cpu"}"#,
+        )
+        .unwrap();
+        case.rtol = rtol;
+        case.atol = atol;
+        case
+    }
+
+    /// Filtered by name in CI (`tests::budget`), so the guard cannot be
+    /// satisfied by the unrelated overhead-warning tests in this module.
+    mod budget {
+        use super::*;
+
+        #[test]
+        fn an_allowance_that_overflows_from_finite_components_is_not_a_pass() {
+            // #417 review third pass: 998 / (1.7e308 + 1.7e308) == 0.0, so a miss of 998
+            // against a reference of 1 scored as exact and every public-API output
+            // comparison accepted a wrong tensor.
+            assert!(
+                scored(&case_with(1.7e308, 1.7e308), 998., 1.).is_err(),
+                "an overflowing allowance must be refused, not divide the miss to zero"
+            );
+        }
+
+        #[test]
+        fn an_exact_miss_over_a_zero_allowance_is_zero_and_not_nan() {
+            // atol = 0 on an off-diagonal Gram entry: 0 / 0 must be an exact 0, and a
+            // real miss over no allowance must stay infinite so `worst > 1` rejects it.
+            let case = case_with(0., 0.);
+            assert_eq!(scored(&case, 0., 0.).unwrap(), 0.);
+            assert_eq!(scored(&case, 1., 0.).unwrap(), f64::INFINITY);
+            assert!(scored(&case, f64::NAN, 1.).is_err());
+            assert!(scored(&case_with(f64::NAN, 0.), 0., 0.).is_err());
+            assert!(scored(&case_with(-1e-9, 0.), 1., 1.).is_err());
+        }
+
+        #[test]
+        fn a_negative_component_is_not_hidden_by_the_other() {
+            // rtol = -1 with atol = 2 sums to a positive budget, and swapping the two
+            // does the same for atol.  Both must be refused component-wise, or the
+            // Rust gate accepts a case the Python `budget()` rejects.
+            assert!(scored(&case_with(-1., 2.), 0.5, 1.).is_err());
+            assert!(scored(&case_with(2., -1.), 0.5, 1.).is_err());
+            assert!(scored(&case_with(1., 1.), 0.5, 1.).is_ok());
+        }
+
+        #[test]
+        fn an_inexact_output_over_an_overflowing_allowance_is_refused() {
+            // The production comparison path, not `scored`: reverting its call to
+            // the old inline division makes this test pass `Ok(0.0)` again.
+            let actual = [Complex64::new(999., 0.)];
+            let expected = [Complex64::new(1., 0.)];
+            assert!(compare_numbers(&case_with(1.7e308, 1.7e308), &actual, &expected).is_err());
+        }
+
+        #[test]
+        fn an_exact_output_does_not_exempt_a_bad_allowance() {
+            // The comparison path, not `scored`: identical values used to `continue`
+            // past the only check, so `Ok(0.0)` came back for tolerances the Python
+            // `budget()` refuses.
+            let values = [Complex64::new(1., 0.)];
+            assert!(compare_numbers(&case_with(-1., 2.), &values, &values).is_err());
+            assert!(compare_numbers(&case_with(2., -1.), &values, &values).is_err());
+            assert_eq!(
+                compare_numbers(&case_with(1e-12, 0.), &values, &values).unwrap(),
+                0.
+            );
         }
     }
 }

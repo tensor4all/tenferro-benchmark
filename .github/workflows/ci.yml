@@ -226,6 +226,16 @@ jobs:
           cargo test --locked --features cuda --bin benchmark_gpu_rust verification_tests 2>&1 | tee /tmp/gpu-rust-verify.log
           grep -qE 'test result: ok\. [1-9][0-9]* passed' /tmp/gpu-rust-verify.log
 
+      - name: Check the public-API verification budget boundary
+        # `scored` is the one allowance every public-API output is measured
+        # against, and it lives behind the cuda-gated bin.  Filter to the
+        # `budget` module: the same binary holds unrelated overhead-warning
+        # tests, and unfiltered they satisfied this guard even with every
+        # budget test ignored or deleted.
+        run: |
+          cargo test --locked --features cuda --bin benchmark_gpu_public_api tests::budget 2>&1 | tee /tmp/gpu-api-verify.log
+          grep -qE 'test result: ok\. ([3-9]|[1-9][0-9]+) passed' /tmp/gpu-api-verify.log
+
       - name: Check the linalg AD JVP/VJP cases are registered on both arms
         run: cargo test --locked --bin publication_gate linalg_ad
 
