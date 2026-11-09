@@ -353,6 +353,10 @@ def build_summary(
                 reason=(record.get("notes") if status != "ok" else None),
             )
         )
+    rows += report_summary.rows_for_unrecorded_cases(
+        rows, report_summary.planned_case_ids(run_metadata),
+        suite_id=header["suite_id"] or "gpu/permutation"
+    )
     return report_summary.build_document(
         rows,
         target_profile=header["target_profile"] or "nvidia-gpu",

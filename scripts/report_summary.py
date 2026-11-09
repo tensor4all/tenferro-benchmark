@@ -38,7 +38,10 @@ run-level provenance v1 cannot express::
 
 Rows are sorted by ``(case, group, backend)`` so a summary is deterministic for
 the same input records.  ``median``/``iqr`` are ``null`` when a record is
-missing or not ``ok``.
+missing or not ``ok``.  ``rows_from_gpu_records`` gives every non-``ok`` row a
+non-empty ``reason``, and a planned case that produced no record at all keeps a
+``missing`` row with the reason it has no timing: a failure is never expressed
+as an absent row.
 """
 
 from __future__ import annotations
@@ -48,6 +51,8 @@ import os
 import re
 from pathlib import Path
 from typing import Any, Callable, Iterable
+
+from result_status import FAILED_STATUSES
 
 SCHEMA_VERSION = 1
 SCHEMA_VERSION_V2 = 2
@@ -59,6 +64,13 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 # stdout-piped formatter CLI (and its fixture tests) unchanged.
 SUMMARY_ENV = "BENCHMARK_REPORT_SUMMARY"
 RUN_METADATA_ENV = "BENCHMARK_RUN_METADATA"
+
+# A case the run planned to measure but never wrote a row for.  It is a
+# failure, not an omission: the row exists so a reader sees the case and why it
+# has no timing, instead of a hole between two measured rows.
+MISSING_STATUS = "missing"
+MISSING_REASON = ("no measurement row was written for this case; the runner "
+                  "produced no result for it (see this run's raw records and log)")
 
 
 def summary_path_for_report(report_path: Path) -> Path:
@@ -373,7 +385,14 @@ def rows_from_gpu_records(
                 status=status,
                 iqr=iqr,
                 group=grp,
-                verified=(verification.get("status") == "passed"
+                # A row that did not run cannot be verified, whatever the
+                # verification block inherited: a failed arm whose record kept a
+                # stale `passed` used to produce `verified: true` with no median.
+                # `verification_only` and `unsupported` rows can still be verified
+                # (an unavailable API may have had its numbers checked), so the
+                # rule is "not a failure", not "measured".
+                verified=(status not in FAILED_STATUSES
+                          and verification.get("status") == "passed"
                           and verification.get("mode") != "measure_only"),
                 reason=reason,
                 operations_per_sample=gpu_operations_per_sample(record),
@@ -381,6 +400,60 @@ def rows_from_gpu_records(
             )
         )
     return rows
+
+
+def planned_case_ids(run_metadata: dict[str, Any] | None) -> list[str]:
+    """The ``suite:problem:backend`` keys this suite's own plan asked it to measure.
+
+    ``run_gpu_suite.sh`` stamps the routine selection on each run's metadata, so
+    a formatter and the ingestion rebuild read the same plan from the same file
+    and produce byte-identical summaries.
+    """
+    collection = (run_metadata or {}).get("collection") or {}
+    keys = collection.get("selected_case_ids") or collection.get("expected_case_ids") or []
+    return [key for key in keys if isinstance(key, str) and key.count(":") >= 2]
+
+
+def split_case_key(key: str) -> tuple[str, str, str]:
+    """Split ``suite:problem:backend``; the problem may itself contain colons."""
+    suite, rest = key.split(":", 1)
+    problem, backend = rest.rsplit(":", 1)
+    return suite, problem, backend
+
+
+def rows_for_unrecorded_cases(
+    rows: Iterable[dict[str, Any]],
+    planned_keys: Iterable[str],
+    *,
+    suite_id: str | None = None,
+    group: str | None = None,
+) -> list[dict[str, Any]]:
+    """Rows for planned cases that produced no row, so no case disappears.
+
+    A planned case with no measurement row is a failure the reader must see;
+    dropping it would leave a hole where a comparison belongs.  The row carries
+    the ``missing`` status and the reason it has no timing.  Without a suite id
+    the plan cannot be attributed to this summary, so nothing is added.
+    """
+    if not suite_id:
+        return []
+    seen = {(str(row.get("case")), str(row.get("backend"))) for row in rows}
+    groups = {str(row.get("case")): row["group"] for row in rows if row.get("group")}
+    extra = []
+    for key in planned_keys:
+        try:
+            suite, problem, backend = split_case_key(key)
+        except ValueError:
+            continue
+        if suite_id is not None and suite != suite_id:
+            continue
+        if (problem, backend) in seen:
+            continue
+        extra.append(
+            make_row(problem, backend, None, status=MISSING_STATUS,
+                     group=groups.get(problem, group), verified=False, reason=MISSING_REASON)
+        )
+    return extra
 
 
 def maybe_write(

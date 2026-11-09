@@ -103,7 +103,15 @@ def problem_meta(problem_id: str) -> tuple[str, str, str]:
 def format_markdown(
     records: list[dict[str, Any]],
     run_metadata: dict[str, Any] | None = None,
+    *,
+    allow_partial: bool = False,
 ) -> str:
+    """Render the AD page.
+
+    With `allow_partial`, a case an arm failed to record and a row with a
+    failure status are published as such instead of refusing the page: the run
+    still exits non-zero, and the missing cells are listed instead of numbered.
+    """
     seen = set()
     for record in records:
         key = record["problem_id"], record["backend"]
@@ -148,12 +156,18 @@ def format_markdown(
             if any(not math.isfinite(v) or v <= 0 for v in samples):
                 raise ValueError(f"invalid AD batch durations: {key}")
         elif record["status"] != "unsupported":
-            raise ValueError(f"cannot publish AD status {record['status']}: {key}")
+            if not allow_partial:
+                raise ValueError(f"cannot publish AD status {record['status']}: {key}")
+            if not (report_summary.recorded_reason(record) or "").strip():
+                raise ValueError(f"failed AD row without a reason: {key}")
+    missing: list[tuple[str, str]] = []
     if run_metadata and run_metadata.get("suite_file"):
         suite = yaml.safe_load(Path(run_metadata["suite_file"]).read_text())
         expected = {(p["id"], b) for p in suite["problems"] for b in suite["backends"]}
         if seen != expected:
-            raise ValueError(f"incomplete/unselected AD matrix: missing={sorted(expected-seen)}, extra={sorted(seen-expected)}")
+            if not allow_partial:
+                raise ValueError(f"incomplete/unselected AD matrix: missing={sorted(expected-seen)}, extra={sorted(seen-expected)}")
+            missing = sorted(expected - seen)
     by_key: dict[tuple[str, str, str, str], dict[str, dict[str, Any]]] = defaultdict(dict)
     for record in records:
         suite, benchmark, shape = problem_meta(record["problem_id"])
@@ -254,6 +268,27 @@ def format_markdown(
             "device kernels are a small fraction of each row, so the numbers are not GPU "
             "throughput. GPU-sized AD results live in `result/nvidia-gpu/gpu/linalg_jvp_vjp.md`."
         )
+    if missing:
+        lines.append(
+            "Not measured: "
+            + "; ".join(f"`{case}` on `{backend}`" for case, backend in missing)
+            + ". These cells carry no number; the run reports the failure."
+        )
+    failed = [
+        record for record in records
+        if record["status"] not in {"ok", "unsupported", "verification_only"}
+    ]
+    if failed:
+        lines.append(
+            "Rows with a failure status: "
+            + "; ".join(
+                f"`{record['problem_id']}` on `{record['backend']}` "
+                f"({record['status']}: "
+                f"{str(report_summary.recorded_reason(record) or '').replace('|', '/')})"
+                for record in sorted(failed, key=lambda r: (r["problem_id"], r["backend"]))
+            )
+            + "."
+        )
     lines.append("")
 
     lines.extend(
@@ -289,7 +324,10 @@ def format_markdown(
                 # Throughput rows declare their own batched scope.
                 scope = sample.get("scope", scope)
         else:
-            count, samples, scope = "—", "—", record["execution"]["unsupported_reason"]
+            reason = (report_summary.recorded_reason(record)
+                      or record["execution"].get("unsupported_reason")
+                      or "no reason recorded")
+            count, samples, scope = "—", "—", reason
         lines.append(f"| {record['problem_id']} | {record['backend']} | {count} | {samples} | {scope.replace('|', '/')} |")
     covered = sorted({benchmark.rsplit("_", 1)[0] for _, benchmark, _, _ in by_key})
     if covered:
@@ -307,7 +345,29 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("results", type=Path)
     parser.add_argument("--run-metadata", type=Path)
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--allow-partial", action="store_true",
+                        help="render the rows that ran when an arm failed or a case is missing")
     return parser.parse_args()
+
+
+def expected_case_keys(run_metadata: dict[str, Any] | None) -> list[str]:
+    """The planned ``suite:problem:backend`` keys, from the same plan as the page.
+
+    The routine driver stamps `collection.selected_case_ids`, but the standalone
+    linalg AD driver only names its suite file. The Markdown takes its matrix
+    from that file, so the sidecar has to take the same one: otherwise a cell the
+    page calls "not measured" is simply absent from the summary.
+    """
+    keys = report_summary.planned_case_ids(run_metadata)
+    if keys:
+        return keys
+    if not run_metadata or not run_metadata.get("suite_file"):
+        return []
+    suite = yaml.safe_load(Path(run_metadata["suite_file"]).read_text())
+    suite_id = run_metadata.get("suite_id") or suite.get("suite_id")
+    return [f'{suite_id}:{problem["id"]}:{backend}'
+            for problem in suite.get("problems") or []
+            for backend in suite.get("backends") or []]
 
 
 def build_summary(
@@ -325,8 +385,12 @@ def build_summary(
         _suite, benchmark, _shape = problem_meta(record["problem_id"])
         return benchmark
 
+    rows = report_summary.rows_from_gpu_records(records, group=group)
+    rows += report_summary.rows_for_unrecorded_cases(
+        rows, expected_case_keys(run_metadata), suite_id=header["suite_id"]
+    )
     return report_summary.build_document(
-        report_summary.rows_from_gpu_records(records, group=group),
+        rows,
         target_profile=header["target_profile"],
         suite_id=header["suite_id"],
         timestamp=header["timestamp"],
@@ -343,6 +407,7 @@ def main() -> int:
     markdown = format_markdown(
         records,
         run_metadata,
+        allow_partial=args.allow_partial,
     )
     summary = build_summary(records, run_metadata)
     if args.output:

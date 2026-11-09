@@ -149,7 +149,11 @@ print(resolved["warmups"], resolved["runs"])
 PY
 )
 export BENCH_WARMUPS="$ROUTINE_WARMUPS" BENCH_RUNS="$ROUTINE_RUNS"
-"${VALIDATOR[@]}" "${SUITES[@]+"${SUITES[@]}"}"
+# Every failure below is recorded and the run continues: one suite or one case
+# must never cost the collection the rows that did succeed. The script reports
+# red at the very end, after the accounting and the reports are written.
+VALIDATION_FAILED=0
+"${VALIDATOR[@]}" "${SUITES[@]+"${SUITES[@]}"}" || VALIDATION_FAILED=1
 
 suite_id_for_file() {
     awk '$1 == "suite_id:" { print $2; exit }' "$1"
@@ -326,7 +330,13 @@ run_suite_serial_by_backend() {
         fi
         gpu_arm_finish "$run_dir" "$backend" "$arm_rc"
         GPU_ARM_PREFIX=()
-        [[ "$arm_rc" == 0 ]] || exit "$arm_rc"
+        if [[ "$arm_rc" != 0 ]]; then
+            # An arm that dies keeps whatever rows it wrote, the arm record
+            # carries its exit code, and the next backend still runs. The
+            # collection reports red at the end instead of here.
+            echo "ARM FAILED: $suite_id $backend exited $arm_rc; continuing with the next backend" >&2
+            VALIDATION_FAILED=1
+        fi
         backend_end="$(wall_now)"
         "${PYTHON[@]}" - "$run_dir/wall_backends.jsonl" "$backend" "$backend_start" "$backend_end" "$build_before" "$RUST_BUILD_NS" <<'PY'
 import json, sys
@@ -366,7 +376,6 @@ PY
 }
 
 RESULT_PATHS=()
-VALIDATION_FAILED=0
 for index in "${!SUITES[@]}"; do
     suite="${SUITES[$index]}"
     driver="${SUITE_DRIVERS[$index]}"
@@ -390,7 +399,7 @@ for index in "${!SUITES[@]}"; do
     RESULT_PATHS+=("$RESULT_JSONL")
     : > "$RUN_DIR/wall_backends.jsonl"
     # A delegated collector writes its own run metadata.
-    [[ "$driver" != gpu_suite ]] || write_run_metadata "$suite_id" "$suite" "$RUN_YAML"
+    [[ "$driver" != gpu_suite ]] || write_run_metadata "$suite_id" "$suite" "$RUN_YAML" || VALIDATION_FAILED=1
 
     # Each framework releases its CUDA allocator before the next process starts.
     SUITE_STARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -421,20 +430,28 @@ for index in "${!SUITES[@]}"; do
             GPU_BENCH_TIMESTAMP="$TIMESTAMP" BENCHMARK_TIMESTAMP="$TIMESTAMP" \
                 bash "$SCRIPT_DIR/run_gpu_permutation.sh" || VALIDATION_FAILED=1 ;;
         *)
-            run_suite_serial_by_backend "$suite" "$suite_id" "$RUN_DIR" "$RESULT_JSONL" ;;
+            # A suite whose collector dies leaves the rows it already wrote; the
+            # loop moves on to the next suite instead of ending the collection.
+            run_suite_serial_by_backend "$suite" "$suite_id" "$RUN_DIR" "$RESULT_JSONL" || {
+                suite_rc=$?
+                [[ "$suite_rc" != "$GPU_ARM_NO_USABLE_CPU" ]] || exit "$GPU_ARM_NO_USABLE_CPU"
+                echo "SUITE FAILED: $suite_id collector exited $suite_rc; continuing with the next suite" >&2
+                VALIDATION_FAILED=1
+            } ;;
     esac
     COLLECTION_END_NS="$(wall_now)"
     SUITE_FINISHED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
     [[ -f "$RUN_YAML" ]] || continue
     write_collection_block "$suite_id" "$RUN_YAML" "$SUITE_STARTED_AT" "$SUITE_FINISHED_AT" \
-        "$COLLECTION_START_NS" "$COLLECTION_END_NS"
+        "$COLLECTION_START_NS" "$COLLECTION_END_NS" || VALIDATION_FAILED=1
     if [[ "$driver" == gpu_suite ]] && compgen -G "$RUN_DIR/arms/*.json" >/dev/null; then
         "${PYTHON[@]}" "$SCRIPT_DIR/gpu_measurement_cpu.py" record-run --run-metadata "$RUN_YAML" \
-            "$RUN_DIR"/arms/*.json
+            "$RUN_DIR"/arms/*.json || VALIDATION_FAILED=1
     fi
     if [[ "$driver" != gpu_suite ]]; then
         # The delegate already validated and formatted this suite.
-        write_suite_wall_record "$RUN_DIR" "$COLLECTION_START_NS" "$COLLECTION_END_NS" "$COLLECTION_END_NS"
+        write_suite_wall_record "$RUN_DIR" "$COLLECTION_START_NS" "$COLLECTION_END_NS" "$COLLECTION_END_NS" \
+            || VALIDATION_FAILED=1
         echo ""
         echo "GPU benchmark suite complete: $suite_id"
         echo "Run YAML: $RUN_YAML"
@@ -443,18 +460,24 @@ for index in "${!SUITES[@]}"; do
         continue
     fi
 
-    if [[ ! -s "$RESULT_JSONL" ]]; then
-        echo "No records generated for $suite_id; skipping report."
-        continue
-    fi
     if [[ "${GPU_BENCH_VERIFY_ONLY:-0}" == 1 ]]; then
         # The final accounting owns classification, including verification failures.
         continue
     fi
 
-    if ! "${VALIDATOR[@]}" --kind run "$RUN_YAML" || ! "${VALIDATOR[@]}" --kind result "$RESULT_JSONL"; then
+    if ! "${VALIDATOR[@]}" --kind run "$RUN_YAML"; then
         VALIDATION_FAILED=1
         continue
+    fi
+    if [[ -s "$RESULT_JSONL" ]] && ! "${VALIDATOR[@]}" --kind result "$RESULT_JSONL"; then
+        VALIDATION_FAILED=1
+        continue
+    fi
+    if [[ ! -s "$RESULT_JSONL" ]]; then
+        # No case produced a record. The report still lists every planned case as
+        # missing, so the suite publishes a visible failure instead of silence.
+        echo "No records generated for $suite_id; reporting every planned case as missing."
+        VALIDATION_FAILED=1
     fi
 
     # Every arm records its output invariants; comparing them is the evidence
@@ -470,7 +493,12 @@ for index in "${!SUITES[@]}"; do
         > "$RUN_DIR/cross_arm_fingerprints.json" 2> "$RUN_DIR/cross_arm_fingerprints.err" || true
 
     REPORT_START_NS="$(wall_now)"
-    "${FORMATTER[@]}" "$RESULT_JSONL" --run-metadata "$RUN_YAML" --output "$MARKDOWN_OUT"
+    "${FORMATTER[@]}" "$RESULT_JSONL" --run-metadata "$RUN_YAML" --output "$MARKDOWN_OUT" || {
+        formatter_rc=$?
+        echo "FORMAT FAILED: $suite_id formatter exited $formatter_rc; its rows stay in the raw run" >&2
+        VALIDATION_FAILED=1
+        continue
+    }
     if [[ "${GPU_BENCH_SKIP_LATEST:-0}" != 1 ]]; then
         cp "$MARKDOWN_OUT" "$REPORT_OUT"
         # The formatter writes a dashboard summary sidecar next to the raw
@@ -490,10 +518,18 @@ for index in "${!SUITES[@]}"; do
     echo "Report:   $REPORT_OUT"
 done
 
-"${PYTHON[@]}" "$SCRIPT_DIR/gpu_routine_selection.py" --output "$SELECTION_DIR" --records "${RESULT_PATHS[@]+"${RESULT_PATHS[@]}"}"
-[[ "$VALIDATION_FAILED" == 0 ]] || exit 1
+# The accounting writes case_status.json even when it exits non-zero, so every
+# report below is written before this run can report failure: a red collection
+# still publishes the rows it measured and the failures it recorded.
+ACCOUNTING_RC=0
+"${PYTHON[@]}" "$SCRIPT_DIR/gpu_routine_selection.py" --output "$SELECTION_DIR" \
+    --records "${RESULT_PATHS[@]+"${RESULT_PATHS[@]}"}" || ACCOUNTING_RC=$?
+if [[ "$ACCOUNTING_RC" != 0 ]]; then
+    VALIDATION_FAILED=1
+    echo "ACCOUNTING: the collection is incomplete (exit $ACCOUNTING_RC); its rows and reasons are in $SELECTION_DIR/case_status.json" >&2
+fi
 "${PYTHON[@]}" "$SCRIPT_DIR/format_gpu_routine_coverage.py" "$SELECTION_DIR/case_status.json" \
-    --output "$SELECTION_DIR/report.md"
+    --output "$SELECTION_DIR/report.md" || VALIDATION_FAILED=1
 if [[ "${GPU_BENCH_SKIP_LATEST:-0}" != 1 && "${GPU_BENCH_VERIFY_ONLY:-0}" != 1 && "$FILTERED" == 0 ]]; then
     mkdir -p "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu"
     # A filtered probe is not a routine profile refresh: its accounting stays in
@@ -510,8 +546,18 @@ if [[ -z "$CONTROLS" ]]; then
     fi
 fi
 [[ "$CONTROLS" == 0 || "$CONTROLS" == 1 ]] || { echo "Invalid GPU_BENCH_ROUTINE_CONTROLS" >&2; exit 1; }
+CONTROLS_RC=0
 if [[ "$CONTROLS" == 1 ]]; then
-    GPU_BENCH_TIMESTAMP="$TIMESTAMP" bash "$SCRIPT_DIR/run_gpu_routine_controls.sh"
+    # The controls are their own lane: a control failure is reported, but it
+    # never costs the routine reports this run already wrote.
+    GPU_BENCH_TIMESTAMP="$TIMESTAMP" bash "$SCRIPT_DIR/run_gpu_routine_controls.sh" || CONTROLS_RC=$?
+    if [[ "$CONTROLS_RC" != 0 ]]; then
+        # A busy allocation is not a control failure: stop so the driver can
+        # request another allocation (#335) instead of publishing a run that
+        # measured on a contended card.
+        [[ "$CONTROLS_RC" != "$GPU_ARM_NO_USABLE_CPU" ]] || exit "$GPU_ARM_NO_USABLE_CPU"
+        echo "CONTROLS FAILED: run_gpu_routine_controls.sh exited $CONTROLS_RC; the routine reports above stay published" >&2
+    fi
 fi
 COMMAND_COMPLETE_NS="$(wall_now)"
 "${PYTHON[@]}" - "$SELECTION_DIR/wall_command_complete.json" "$COMMAND_START_NS" "$COMMAND_COMPLETE_NS" "$CONTROLS" <<'PY'
@@ -524,11 +570,20 @@ Path(sys.argv[1]).write_text(json.dumps({
 }, indent=2)+'\n')
 PY
 if [[ "${GPU_BENCH_VERIFY_ONLY:-0}" != 1 ]]; then
-    "${PYTHON[@]}" "$SCRIPT_DIR/format_gpu_routine_wall.py" "$SELECTION_DIR" --output "$SELECTION_DIR/wall_report.md"
+    "${PYTHON[@]}" "$SCRIPT_DIR/format_gpu_routine_wall.py" "$SELECTION_DIR" --output "$SELECTION_DIR/wall_report.md" \
+        || VALIDATION_FAILED=1
     if [[ "${GPU_BENCH_SKIP_LATEST:-0}" != 1 && "$FILTERED" == 0 ]]; then
-        cp "$SELECTION_DIR/wall_report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_workflow.md"
+        cp "$SELECTION_DIR/wall_report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_workflow.md" \
+            || VALIDATION_FAILED=1
     fi
 fi
 
 echo ""
+if [[ "$VALIDATION_FAILED" != 0 || "$CONTROLS_RC" != 0 ]]; then
+    # Everything measured is written and packaged by the caller's always-step;
+    # this exit code only makes the collection red so someone looks at it.
+    echo "GPU collection finished with failures (validation=$VALIDATION_FAILED accounting=$ACCOUNTING_RC controls=$CONTROLS_RC)." >&2
+    echo "The rows it measured and the reasons it recorded are in $SELECTION_DIR (case_status.json, report.md)." >&2
+    exit 1
+fi
 echo "GPU benchmark suites complete"

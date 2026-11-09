@@ -36,7 +36,14 @@ def compile_note(accounting):
             'describes this run only, and does not show that the CUDA artifact cache was warm.')
 
 
-def load_rows(suite, paths, *, verify_only=False):
+def load_rows(suite, paths, *, verify_only=False, allow_partial=False):
+    """The rows this page needs.
+
+    With `allow_partial`, a case an arm never reached is carried as a `missing`
+    row and a failed row is published as a failure instead of refusing the whole
+    page. The run still exits non-zero; this only decides whether the rows that
+    did run get a report.
+    """
     wanted = {(c["id"], b) for c in suite["cases"] for b in suite["backends"]}
     rows = {}
     for path in paths:
@@ -66,11 +73,18 @@ def load_rows(suite, paths, *, verify_only=False):
                     error = row["verification"]["max_error_over_tolerance"]
                     if not math.isfinite(error) or not 0 <= error <= 1:
                         raise ValueError(f"invalid excluded verification: {key}")
+            elif allow_partial:
+                reason = (row.get("reason") or "").strip()
+                row["reason"] = reason or f"{row['status']}: no reason recorded"
             else:
                 raise ValueError(f"cannot publish failed measurement {key}: {row.get('reason')}; raw run retained")
             rows[key] = row
     if rows.keys() != wanted:
-        raise ValueError(f"missing results: {sorted(wanted - rows.keys())}")
+        if not allow_partial:
+            raise ValueError(f"missing results: {sorted(wanted - rows.keys())}")
+        for key in sorted(wanted - rows.keys()):
+            rows[key] = {"case_id": key[0], "backend": key[1], "status": "missing",
+                         "reason": "missing: the arm recorded no row for this case"}
     return rows
 
 
@@ -94,8 +108,8 @@ def mixed_batching_cases(suite, rows):
     return mixed
 
 
-def render(suite, paths, metadata, timestamp, run_path=None):
-    rows = load_rows(suite, paths)
+def render(suite, paths, metadata, timestamp, run_path=None, allow_partial=False):
+    rows = load_rows(suite, paths, allow_partial=allow_partial)
     mixed = mixed_batching_cases(suite, rows)
     calibration = guard.calibration_of(metadata)
     for row in rows.values():
@@ -103,7 +117,12 @@ def render(suite, paths, metadata, timestamp, run_path=None):
             row.pop("samples_us", None)
     backends = suite["backends"]
     measured = sum(row["status"] == "ok" for row in rows.values())
+    unsupported = sum(row["status"] == "unsupported" for row in rows.values())
     excluded_verified = sum(row["status"] == "unsupported" and bool(row.get("cuda_implementation_verified")) for row in rows.values())
+    not_measured = sorted((key, row) for key, row in rows.items()
+                          if row["status"] not in {"ok", "unsupported"})
+    missing = sum(row["status"] == "missing" for _, row in not_measured)
+    failed = len(not_measured) - missing
     # The declared run is the one the page names, including a run collected under
     # an earlier suite-directory layout.
     raw_run = str(run_path or f'data/results/nvidia-gpu/{suite["suite_id"]}/{timestamp}').rstrip("/")
@@ -111,7 +130,9 @@ def render(suite, paths, metadata, timestamp, run_path=None):
         raise ValueError("suite selection records no 'description'; the page note "
                          "that says what its shape class means cannot be written")
     text = [f'# {suite["suite_id"]}: CUDA public API benchmark', "",
-            f'Measured cells: **{measured}**. Unsupported cells: **{len(rows)-measured}**, including **{excluded_verified}** numerically verified but timing-excluded cells. Unsupported cells do not count as measured coverage.', ""]
+            f'Measured cells: **{measured}**. Unsupported cells: **{unsupported}**, including **{excluded_verified}** numerically verified but timing-excluded cells. Unsupported cells do not count as measured coverage.', ""]
+    if not_measured:
+        text += [f'Not measured cells: **{len(not_measured)}** ({failed} failed, {missing} never recorded). They carry no number and count as no coverage; the run reports failure.', ""]
     if calibration:
         text += [f'Logical traffic: this run measured a plain device copy of {calibration["buffer_bytes"]} bytes at **{calibration["bytes_per_second"] / GIGABYTE:.1f} GB/s** on this device. Every record carries the logical bytes the case must move per operation and the ratio of the case\'s implied rate to that copy rate, in the sampling table below. Logical bytes are the declared array sizes, not device DRAM traffic: a case whose operands stay in cache moves less DRAM than its arrays suggest, so a ratio above 1 is recorded, not rejected.', ""]
     else:
@@ -157,6 +178,8 @@ def render(suite, paths, metadata, timestamp, run_path=None):
             row = rows[case["id"], backend]
             if row["status"] == "unsupported":
                 cells.append("unsupported")
+            elif row["status"] != "ok":
+                cells.append(row["status"])
             else:
                 v = row["samples_us"]
                 cells.append(f'{np.median(v):.3f} ({np.percentile(v, 75)-np.percentile(v, 25):.3f})')
@@ -175,6 +198,14 @@ def render(suite, paths, metadata, timestamp, run_path=None):
             text.append(f'| {key[0]} | {key[1]} | {t["operations_per_sample"]} | {len(t["batch_ms"])} | {np.median(t["batch_ms"]):.3f} | {traffic_cell} | {ratio_cell} | {row["verification"]["max_error_over_tolerance"]:.4g} |')
         else:
             text.append(f'| {key[0]} | {key[1]} | — | — | — | {traffic_cell} | {ratio_cell} | {row["reason"].replace("|", "/")} |')
+    if not_measured:
+        text += ["", "## Not measured", "",
+                 "These cells carry no number: the arm failed or never recorded the case. "
+                 "The run still reports failure; the rows that did run are above.", "",
+                 "| Case | Backend | Status | Reason |", "| --- | --- | --- | --- |"]
+        for (case, backend), row in not_measured:
+            text.append(f'| {case} | {backend} | {row["status"]} | '
+                        f'{str(row.get("reason") or "").replace("|", "/")} |')
     text += ["", "## Run metadata", "", "```yaml", yaml.safe_dump(metadata, sort_keys=False).rstrip(), "```", ""]
     return "\n".join(text)
 
@@ -185,12 +216,15 @@ def main():
     p.add_argument("--run-metadata", type=Path, required=True)
     p.add_argument("--output", type=Path, required=True)
     p.add_argument("--verify-only", action="store_true")
+    p.add_argument("--allow-partial", action="store_true",
+                   help="render the rows that ran when another arm failed or missed cases")
     p.add_argument("inputs", nargs="+", type=Path)
     args = p.parse_args()
     suite = json.loads(args.suite.read_text())
     metadata = yaml.safe_load(args.run_metadata.read_text())
     if args.verify_only:
-        rows = load_rows(suite, args.inputs, verify_only=True)
+        rows = load_rows(suite, args.inputs, verify_only=True,
+                         allow_partial=args.allow_partial)
         summary = {"suite_id": suite["suite_id"], "gpu_assignment": metadata["gpu_assignment"],
                    "verified_rows": sum(r["status"] == "verification_only" for r in rows.values()),
                    "unsupported_rows": sum(r["status"] == "unsupported" for r in rows.values()),
@@ -198,8 +232,10 @@ def main():
         content = json.dumps(summary, indent=2) + "\n"
         print(content, end="")
     else:
-        content = render(suite, args.inputs, metadata, args.run_metadata.parent.name)
-        content += overhead_warning_section(load_rows(suite, args.inputs))
+        content = render(suite, args.inputs, metadata, args.run_metadata.parent.name,
+                         allow_partial=args.allow_partial)
+        content += overhead_warning_section(load_rows(suite, args.inputs,
+                                                      allow_partial=args.allow_partial))
     args.output.parent.mkdir(parents=True, exist_ok=True)
     temp = args.output.with_suffix(".tmp")
     temp.write_text(content)
