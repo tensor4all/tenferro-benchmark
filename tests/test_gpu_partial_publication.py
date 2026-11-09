@@ -201,6 +201,38 @@ class PartialPublicationTest(unittest.TestCase):
         # The dropped suite leaves no half-copied file behind.
         self.assertFalse((self.root / 'bundle/result/nvidia-gpu/gpu/einsum.summary.json').exists())
 
+    def test_an_unattributable_failure_leaves_no_manifest_to_upload(self):
+        # The upload step runs even after a failure. An exception that names no
+        # suite used to escape the per-suite retry, leaving publication.json
+        # behind, so the rejected bundle was published as a result.
+        self.declaration('dense.yaml', SUITE, ['matmul'])
+        self.declaration('einsum.yaml', 'gpu/einsum', ['matmul'])
+        self.run_directory(problems=['matmul'], records=[record('matmul')])
+        run = self.root / f'data/results/nvidia-gpu/{SUITE}/{STAMP}'
+        broken = self.root / f'data/results/nvidia-gpu/gpu/einsum/{STAMP}'
+        shutil.copytree(run, broken)
+        meta = yaml.safe_load((broken / 'run.yaml').read_text())
+        meta['suite_id'] = 'gpu/einsum'
+        meta['collection']['selected_case_ids'] = [f'gpu/einsum:matmul:{BACKEND}']
+        meta['collection']['expected_case_ids'] = [f'gpu/einsum:matmul:{BACKEND}']
+        (broken / 'run.yaml').write_text(yaml.safe_dump(meta))
+        document = json.loads((broken / 'report.summary.json').read_text())
+        document['suite_id'] = 'gpu/einsum'
+        (broken / 'report.summary.json').write_text(json.dumps(document) + '\n')
+
+        with patch.object(packaging, 'validate_bundle',
+                          side_effect=ValueError('row count mismatch')):
+            with self.assertRaises(ValueError):
+                packaging.prepare_bundle(self.root, 'nvidia-gpu', self.source,
+                                         self.root / 'bundle',
+                                         suites='dense.yaml,einsum.yaml', backends=BACKEND)
+        # Both suites were packaged, so the failure came from the retry loop and
+        # not from a suite that never got that far.
+        self.assertTrue(
+            (self.root / 'bundle/result/nvidia-gpu/gpu/einsum.summary.json').exists()
+        )
+        self.assertFalse((self.root / 'bundle/publication.json').exists())
+
 
 if __name__ == '__main__':
     unittest.main()

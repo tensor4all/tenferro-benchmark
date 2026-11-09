@@ -140,6 +140,62 @@ def discard_gpu_suite(output: Path, suite: str, profile: str = 'nvidia-gpu') -> 
         (output / f'result/{profile}/{suite}{suffix}').unlink(missing_ok=True)
 
 
+def package_gpu_publication(root: Path, profile: str, source: dict, output: Path,
+                            suite_files: str, backends: str, timestamp: str | None):
+    """Package and validate the GPU suites, isolating each one's failure.
+
+    Returns the validated receipts when the per-suite retry already validated
+    the bundle, and ``None`` when the caller still has to validate the last one.
+    """
+    entries, missing, narrowed = [], [], {}
+    output.mkdir(parents=True, exist_ok=False)
+    for suite_file in suite_files.split(','):
+        # One suite that cannot be packaged (or whose own accounting is
+        # incomplete) is recorded as unpublished. It never costs the other
+        # suites the results they did produce.
+        suite_decl = yaml.safe_load(safe_file(ROOT, suite_file.strip()).read_text())
+        suite = suite_decl.get('suite_id', suite_file.strip())
+        try:
+            suite, entry, stamp, gaps = package_gpu_suite(root, profile, output, suite_file, source,
+                                                          timestamp, backends)
+        except NoSuiteOutputs:
+            missing.append(suite)
+            continue
+        except (ValueError, OSError, KeyError) as error:
+            discard_gpu_suite(output, suite)
+            missing.append(suite)
+            print(f'{suite}: not published: {error}', file=sys.stderr)
+            continue
+        if gaps:
+            narrowed[suite] = gaps
+        timestamp = timestamp or stamp
+        entries.append(entry)
+    if not entries:
+        raise ValueError('No GPU collection outputs in the selected run attempt')
+    manifest = {'schema_version': 2, 'timestamp': timestamp, 'suites': entries, 'missing_suites': missing}
+    if narrowed:
+        manifest['narrowed_routine_arms'] = narrowed
+    (output / 'publication.json').write_text(json.dumps(manifest, indent=2) + '\n')
+    # One suite whose artifacts fail the publication contract must not cost
+    # the week the suites that pass it. The failing suite is named at the
+    # front of the message, so it can be removed while the rest publishes;
+    # a bundle that has nothing left still fails with the original error.
+    while len(manifest['suites']) > 1:
+        try:
+            return validate_bundle(output, profile, source)
+        except Exception as error:
+            dropped = next((entry['suite_id'] for entry in manifest['suites']
+                            if str(error).startswith(entry['suite_id'] + ':')), None)
+            if dropped is None:
+                raise
+            print(f'{dropped}: not published: {error}', file=sys.stderr)
+            manifest['suites'] = [entry for entry in manifest['suites']
+                                  if entry['suite_id'] != dropped]
+            manifest['missing_suites'] = sorted(set(manifest['missing_suites']) | {dropped})
+            discard_gpu_suite(output, dropped)
+            (output / 'publication.json').write_text(json.dumps(manifest, indent=2) + '\n')
+
+
 def prepare_bundle(root: Path, profile: str, source: dict, output: Path,
                    *, suites='all', backends=GPU_BACKENDS, timestamp=None):
     """Validate all current outputs; missing suites are recorded, not replaced."""
@@ -160,53 +216,17 @@ def prepare_bundle(root: Path, profile: str, source: dict, output: Path,
         if suites == 'perf-issues-readback':
             raise ValueError('Manual readback is not a publication collection')
         suite_files = DEFAULT_SUITES if suites == 'all' else suites
-        entries, missing, narrowed = [], [], {}
-        output.mkdir(parents=True, exist_ok=False)
-        for suite_file in suite_files.split(','):
-            # One suite that cannot be packaged (or whose own accounting is
-            # incomplete) is recorded as unpublished. It never costs the other
-            # suites the results they did produce.
-            suite_decl = yaml.safe_load(safe_file(ROOT, suite_file.strip()).read_text())
-            suite = suite_decl.get('suite_id', suite_file.strip())
-            try:
-                suite, entry, stamp, gaps = package_gpu_suite(root, profile, output, suite_file, source,
-                                                              timestamp, backends)
-            except NoSuiteOutputs:
-                missing.append(suite)
-                continue
-            except (ValueError, OSError, KeyError) as error:
-                discard_gpu_suite(output, suite)
-                missing.append(suite)
-                print(f'{suite}: not published: {error}', file=sys.stderr)
-                continue
-            if gaps:
-                narrowed[suite] = gaps
-            timestamp = timestamp or stamp
-            entries.append(entry)
-        if not entries:
-            raise ValueError('No GPU collection outputs in the selected run attempt')
-        manifest = {'schema_version': 2, 'timestamp': timestamp, 'suites': entries, 'missing_suites': missing}
-        if narrowed:
-            manifest['narrowed_routine_arms'] = narrowed
-        (output / 'publication.json').write_text(json.dumps(manifest, indent=2) + '\n')
-        # One suite whose artifacts fail the publication contract must not cost
-        # the week the suites that pass it. The failing suite is named at the
-        # front of the message, so it can be removed while the rest publishes;
-        # a bundle that has nothing left still fails with the original error.
-        while len(manifest['suites']) > 1:
-            try:
-                return validate_bundle(output, profile, source)
-            except Exception as error:
-                dropped = next((entry['suite_id'] for entry in manifest['suites']
-                                if str(error).startswith(entry['suite_id'] + ':')), None)
-                if dropped is None:
-                    raise
-                print(f'{dropped}: not published: {error}', file=sys.stderr)
-                manifest['suites'] = [entry for entry in manifest['suites']
-                                      if entry['suite_id'] != dropped]
-                manifest['missing_suites'] = sorted(set(manifest['missing_suites']) | {dropped})
-                discard_gpu_suite(output, dropped)
-                (output / 'publication.json').write_text(json.dumps(manifest, indent=2) + '\n')
+        try:
+            validated = package_gpu_publication(root, profile, source, output,
+                                                suite_files, backends, timestamp)
+        except BaseException:
+            # An exception nobody can attribute to a suite used to skip the
+            # cleanup below, and the upload step runs even after a failure, so
+            # the half-built manifest was published as a result.
+            (output / 'publication.json').unlink(missing_ok=True)
+            raise
+        if validated is not None:
+            return validated
     # No manifest from a failed validation may authorize a results upload.
     try:
         return validate_bundle(output, profile, source)
