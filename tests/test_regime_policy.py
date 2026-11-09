@@ -226,6 +226,63 @@ class RegimePolicyUnitTests(unittest.TestCase):
             self.assertEqual(regime_policy.check_suite(document, ROOT), [], path.name)
 
 
+    def test_an_include_source_that_does_not_load_is_an_error(self):
+        # A broken catalogue used to produce no cases, so the suite validated.
+        with tempfile.TemporaryDirectory() as tmp:
+            document = {"suite_id": "gpu/structural",
+                        "problems": {"source": "data/instances/missing.json", "include": ["a"]}}
+            errors = regime_policy.check_suite(document, Path(tmp))
+        self.assertEqual(len(errors), 1)
+        self.assertIn("did not load", errors[0])
+        self.assertIn("missing.json", errors[0])
+
+    def test_a_broken_in_tree_source_is_an_error(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp) / "data/instances/cases.json"
+            source.parent.mkdir(parents=True)
+            source.write_text("{not json", encoding="utf-8")
+            document = {"suite_id": "gpu/structural",
+                        "problems": {"source": "data/instances/cases.json", "include": ["a"]}}
+            errors = regime_policy.check_suite(document, Path(tmp))
+        self.assertEqual(len(errors), 1)
+        self.assertIn("did not load", errors[0])
+
+    def test_an_unknown_include_id_is_named(self):
+        # A renamed instance used to be dropped, leaving fewer cases than the
+        # suite declared and still validating.
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp) / "data/instances/cases.json"
+            source.parent.mkdir(parents=True)
+            source.write_text(json.dumps({"cases": [{"id": "known", "regime": "latency"}]}), encoding="utf-8")
+            document = {"suite_id": "gpu/structural",
+                        "problems": {"source": "data/instances/cases.json", "include": ["renamed"]}}
+            errors = regime_policy.check_suite(document, Path(tmp))
+        self.assertEqual(len(errors), 1)
+        self.assertIn("renamed", errors[0])
+        self.assertIn("is not in", errors[0])
+
+    def test_missing_source_skip_is_allowed_and_reported(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            document = {"suite_id": "gpu/structural",
+                        "problems": {"source": "data/instances/missing.json",
+                                     "include": ["a"], "missing_source": "skip"}}
+            skips = []
+            errors = regime_policy.check_suite(document, Path(tmp), skips=skips)
+        self.assertEqual(errors, [])
+        self.assertEqual(len(skips), 1)
+        self.assertIn("skipped include source", skips[0])
+        self.assertIn("missing.json", skips[0])
+
+    def test_an_unknown_missing_source_declaration_is_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            document = {"suite_id": "gpu/structural",
+                        "problems": {"source": "data/instances/missing.json",
+                                     "include": ["a"], "missing_source": "ignore"}}
+            errors = regime_policy.check_suite(document, Path(tmp))
+        self.assertEqual(len(errors), 1)
+        self.assertIn("missing_source", errors[0])
+
+
 class GeneratedSuiteTests(unittest.TestCase):
     """The suites the collector regenerates must carry the same declarations.
 

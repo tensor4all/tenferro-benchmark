@@ -17,6 +17,10 @@ backends:
   - pytorch-cpu
 problems:
   source: generated
+  # The catalogue is produced outside this checkout (a generator reads a
+  # generated manifest); absent here is expected, and the validator names
+  # the skip on every run.
+  missing_source: skip
   include:
     - fft_c32_1d
     - fft_c64_1d

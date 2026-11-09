@@ -340,23 +340,36 @@ def _instances(document: Any) -> list[dict[str, Any]]:
 
 
 def declared_cases(
-    suite: dict[str, Any], project_dir: Path
+    suite: dict[str, Any], project_dir: Path, skips: list[str] | None = None
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     """The suite's defaults and its cases, with the selector resolved.
 
     Inline problems are returned as written.  A `{source, include}` selector is
     resolved against its instance document, so every included case keeps the
     record's own `regime`, `n`/`shape` and family-facing fields.
+
+    The selector fails closed.  A source that does not load, and an `include` id
+    the loaded source does not contain, are errors: a broken catalogue used to
+    produce no cases, so the suite validated with fewer cases than its author
+    declared.  A source that may legitimately be absent opts in with
+    `missing_source: skip`, and the skip is reported through `skips` so the
+    validator names it on every run.
     """
     defaults = suite.get("defaults")
     if not isinstance(defaults, dict):
         defaults = {}
+    suite_id = str(suite.get("suite_id") or "")
     problems = suite.get("problems")
     if isinstance(problems, list):
         return defaults, [row for row in problems if isinstance(row, dict)]
     if not isinstance(problems, dict):
         return defaults, []
 
+    missing = problems.get("missing_source")
+    if missing is not None and missing != "skip":
+        raise RegimeError(
+            f"{suite_id}: missing_source {missing!r} is not supported (only skip)"
+        )
     source = problems.get("source")
     include = problems.get("include") or []
     exclude = set(problems.get("exclude") or [])
@@ -379,8 +392,20 @@ def declared_cases(
                     document.append(record)
         else:
             document = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, ValueError):
+    except FileNotFoundError as error:
+        # Only an absent source may be skipped, and only on request: a source
+        # that exists but does not parse stays an error either way.
+        if problems.get("missing_source") != "skip":
+            raise RegimeError(
+                f"{suite_id}: include source {source!r} did not load: {error}"
+            ) from error
+        if skips is not None:
+            skips.append(f"{suite_id}: skipped include source {source!r} (missing_source: skip)")
         return defaults, []
+    except (OSError, ValueError) as error:
+        raise RegimeError(
+            f"{suite_id}: include source {source!r} did not load: {error}"
+        ) from error
     records = {str(row["id"]): row for row in _instances(document) if row.get("id")}
 
     selected: list[dict[str, Any]] = []
@@ -390,7 +415,7 @@ def declared_cases(
         if isinstance(entry, str):
             record = records.get(entry)
             if record is None:
-                continue
+                raise RegimeError(f"{suite_id}: include id {entry!r} is not in {source!r}")
             if entry not in exclude:
                 selected.append(record)
     return defaults, selected
@@ -508,13 +533,18 @@ def suite_cases(
     return rows
 
 
-def check_suite(suite: dict[str, Any], project_dir: Path) -> list[str]:
+def check_suite(
+    suite: dict[str, Any], project_dir: Path, skips: list[str] | None = None
+) -> list[str]:
     """Validate one suite document; return the errors instead of raising."""
     errors: list[str] = []
     if not isinstance(suite, dict):
         return errors
     suite_id = str(suite.get("suite_id") or "")
-    _defaults, cases = declared_cases(suite, Path(project_dir))
+    try:
+        _defaults, cases = declared_cases(suite, Path(project_dir), skips)
+    except RegimeError as exc:
+        return [str(exc)]
     defaults = suite.get("defaults") or {}
     for problem in cases:
         case_id = str(problem.get("id") or "")

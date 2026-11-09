@@ -14,4 +14,8 @@ defaults:
 backends: [tenferro-direct, tenferro-eager, tenferro-trace, pytorch-cpu, jax-cpu]
 problems:
   source: generated
+  # The catalogue is produced outside this checkout (a generator reads a
+  # generated manifest); absent here is expected, and the validator names
+  # the skip on every run.
+  missing_source: skip
   include: [neural_public_api]
