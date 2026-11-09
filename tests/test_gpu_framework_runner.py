@@ -104,18 +104,54 @@ class LegacyGpuContracts(unittest.TestCase):
 
         for name in ("_verify_torch", "_verify_jax"):
             check = getattr(runner, name)
-            for rtol, atol in ((float("inf"), 0.), (float("nan"), 0.),
-                               (1.5, 0.), (-1e-5, 0.)):
-                with self.subTest(check=name, rtol=rtol):
-                    gpu, cpu = np.array([-1.7e308]), np.array([1.7e308])
-                    self.assertEqual(check("matmul", gpu, cpu, {}, rtol, atol),
-                                     ("failed", None, None))
+            for gpu, cpu, rtol, atol in (
+                # Finite errors, infinite tolerance: 999 vs 1 has to fail, so a
+                # fix that only rejected non-finite *errors* would not do.
+                ([999.], [1.], float("inf"), 0.),
+                # Finite errors, finite tolerance, threshold overflows.
+                ([1.], [1.7e308], 1.5, 0.),
+                # The overflowing error itself.
+                ([-1.7e308], [1.7e308], 1.5, 0.),
+                ([999.], [1.], float("nan"), 0.),
+                ([1.], [1.], -1e-5, 0.),
+            ):
+                with self.subTest(check=name, rtol=rtol, gpu=gpu, cpu=cpu):
+                    self.assertEqual(
+                        check("matmul", np.array(gpu), np.array(cpu), {}, rtol, atol),
+                        ("failed", None, None))
             # The ordinary verdicts and their metrics are unchanged.
             self.assertEqual(check("matmul", np.array([1.]), np.array([1.]), {}, 1e-5, 1e-8),
                              ("passed", 0.0, 0.0))
             status, max_abs, _ = check("matmul", np.array([999.]), np.array([1.]), {}, 1e-5, 1e-8)
             self.assertEqual(status, "failed")
             self.assertEqual(max_abs, 998.0)
+
+    def test_a_failed_row_cannot_record_the_tolerance_it_refused(self):
+        # Measured on c2dca56: the failure stub copied `rtol=inf` into the record,
+        # which `json.dumps` writes as the invalid token `Infinity` and the result
+        # schema rejects (a negative one violates its minimum). The reason keeps
+        # the value the row refused.
+        row = runner._stub(
+            "gpu/dense", {"id": "p", "op": "matmul", "layout": {}, "dtype": {}},
+            "pytorch-cuda", 0, status="verification_failed",
+            reason="verification failed", path="legacy", ts=None, bc=None, tc=None,
+            ver_status="failed", rtol=float("inf"), atol=-1e-8)
+        json.dumps(row, allow_nan=False)
+        import jsonschema
+        schema = json.loads((ROOT / "schemas/benchmark-result.schema.json").read_text())
+        jsonschema.validate(row, schema)
+        self.assertIsNone(row["verification"]["rtol"])
+        self.assertIsNone(row["verification"]["atol"])
+        self.assertIn("refused tolerance rtol=inf atol=-1e-08", row["verification"]["reason"])
+        # A usable tolerance is still recorded.
+        kept = runner._stub(
+            "gpu/dense", {"id": "p", "op": "matmul", "layout": {}, "dtype": {}},
+            "pytorch-cuda", 0, status="verification_failed",
+            reason="verification failed", path="legacy", ts=None, bc=None, tc=None,
+            ver_status="failed", rtol=1e-5, atol=1e-8)
+        self.assertEqual((kept["verification"]["rtol"], kept["verification"]["atol"]),
+                         (1e-5, 1e-8))
+        self.assertEqual(kept["verification"]["reason"], "verification failed")
 
     def test_verification_only_records_cannot_be_published(self):
         with self.assertRaises(ValueError):

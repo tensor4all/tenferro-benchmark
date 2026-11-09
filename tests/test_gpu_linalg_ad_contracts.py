@@ -1,7 +1,6 @@
 """The GPU AD gate must reject wrong gradients even with correct primals."""
 import json
 import sys
-import time
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -224,11 +223,9 @@ class CollectorJudgesTheFinalDownload(unittest.TestCase):
                     "compile_ms": None}
 
         def fake_measure(runner, sync, ready, output_bytes, warmups, runs, **_):
-            started = time.perf_counter()
-            value = runner()
+            runner()
             sync()
-            return {"operations_per_sample": 1,
-                    "batch_ms": [(time.perf_counter() - started) * 1000]}
+            return {"operations_per_sample": 1, "batch_ms": [1.0]}
 
         with mock.patch.object(gpu_linalg_ad_contracts, "cpu_reference", counted_reference), \
                 mock.patch.object(collector, "_torch_framework", framework), \

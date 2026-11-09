@@ -1317,6 +1317,15 @@ def _base_env(device_ordinal, ts, bc, tc):
 
 def _stub(suite_id, problem, backend, device_ordinal, *, status, reason, path,
           ts, bc, tc, ver_status=None, max_abs=None, max_rel=None, rtol=None, atol=None):
+    # A row that refused its tolerance may not record it: `inf`/`NaN` are not
+    # JSON tokens and a negative tolerance violates the schema. Keep the value
+    # in the reason the row states instead.
+    import numpy as np
+    refused = [f"{name}={value!r}" for name, value in (("rtol", rtol), ("atol", atol))
+               if value is not None and not (np.isfinite(value) and value >= 0)]
+    if refused:
+        reason = f"{reason}; refused tolerance {' '.join(refused)}"
+        rtol = atol = None
     if ver_status is None:
         ver_status = "skipped" if status in ("unsupported", "not_configured") else "skipped"
     if status == "verification_failed":
