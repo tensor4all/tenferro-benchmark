@@ -1,4 +1,4 @@
-use super::{Case, EngineScope, Result, Settings};
+use super::{scored, Case, EngineScope, Result, Settings};
 use num_complex::Complex64;
 use serde_json::Value;
 use std::path::Path;
@@ -123,10 +123,11 @@ fn check(
             let reconstructed = (0..k).fold(Complex64::new(0., 0.), |v, p| {
                 v + u[i + m * p] * s[p] * vh[p + n * j]
             });
-            worst = worst.max(
-                (reconstructed - a[i + m * j]).norm()
-                    / (case.atol + case.rtol * a[i + m * j].norm()),
-            );
+            worst = worst.max(scored(
+                case,
+                (reconstructed - a[i + m * j]).norm(),
+                a[i + m * j].norm(),
+            )?);
         }
     }
     // Check the complete square factors, including the nullspace columns/rows.
@@ -136,7 +137,7 @@ fn check(
                 v + u[p + m * i].conj() * u[p + m * j]
             });
             let target = if i == j { 1. } else { 0. };
-            worst = worst.max((value - target).norm() / (case.atol + case.rtol * target));
+            worst = worst.max(scored(case, (value - target).norm(), target)?);
         }
     }
     for j in 0..n {
@@ -145,7 +146,7 @@ fn check(
                 v + vh[i + n * p] * vh[j + n * p].conj()
             });
             let target = if i == j { 1. } else { 0. };
-            worst = worst.max((value - target).norm() / (case.atol + case.rtol * target));
+            worst = worst.max(scored(case, (value - target).norm(), target)?);
         }
     }
     if !worst.is_finite() || worst > 1. {
@@ -185,8 +186,11 @@ pub(super) fn check_qr(
             let value = (0..k).fold(Complex64::new(0., 0.), |v, p| {
                 v + q[i + m * p] * r[p + k * j]
             });
-            worst = worst
-                .max((value - a[i + m * j]).norm() / (case.atol + case.rtol * a[i + m * j].norm()));
+            worst = worst.max(scored(
+                case,
+                (value - a[i + m * j]).norm(),
+                a[i + m * j].norm(),
+            )?);
         }
     }
     for j in 0..m {
@@ -195,12 +199,12 @@ pub(super) fn check_qr(
                 v + q[p + m * i].conj() * q[p + m * j]
             });
             let target = if i == j { 1. } else { 0. };
-            worst = worst.max((value - target).norm() / (case.atol + case.rtol * target));
+            worst = worst.max(scored(case, (value - target).norm(), target)?);
         }
     }
     for j in 0..n {
         for i in (j + 1)..k {
-            worst = worst.max(r[i + k * j].norm() / case.atol);
+            worst = worst.max(scored(case, r[i + k * j].norm(), 0.)?);
         }
     }
     if !worst.is_finite() || worst > 1. {
