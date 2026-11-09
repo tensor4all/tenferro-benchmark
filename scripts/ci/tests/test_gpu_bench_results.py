@@ -294,6 +294,23 @@ class HistoryTests(unittest.TestCase):
         records = accepted_runs(self.repo, 'nvidia-gpu', 'gpu/dense')
         self.assertEqual([item['timestamp'] for item in records], [WEEK_45_EARLY, WEEK_44])
 
+    def test_a_run_merged_from_a_branch_is_still_accepted(self):
+        # Git's default path history simplification drops a commit whose sidecar
+        # the merge did not keep (-s ours), so the week-44 run disappeared and the
+        # tool said "no baseline" although the run is an ancestor of the candidate.
+        self.accept(record(WEEK_43, COMMIT_A))
+        self.git('checkout', '-q', '-b', 'feature')
+        self.accept(record(WEEK_44, COMMIT_B[:39] + 'c'))
+        self.git('checkout', '-q', 'main')
+        self.accept(record(WEEK_45_LATE, COMMIT_B, scale=1.5))
+        self.git('merge', '--no-ff', '-s', 'ours', 'feature', '-m', 'merge the feature branch')
+        records = accepted_runs(self.repo, 'nvidia-gpu', 'gpu/dense')
+        self.assertEqual([item['timestamp'] for item in records], [WEEK_45_LATE, WEEK_44, WEEK_43])
+        process = self.run_tool()
+        self.assertEqual(process.returncode, 0)
+        self.assertIn('| baseline ms | candidate ms |', process.stdout)
+        self.assertNotIn('no baseline', process.stdout)
+
     def test_cli_rejects_a_non_finite_or_out_of_range_threshold(self):
         self.accept(record(WEEK_44, COMMIT_A))
         self.accept(record(WEEK_45_LATE, COMMIT_B, scale=1.5))

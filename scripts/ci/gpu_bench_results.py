@@ -90,7 +90,8 @@ def require_full_history(repo: Path) -> None:
 
 def first_receipt(repo: Path, *paths: str) -> str | None:
     """The oldest commit that added one of ``paths``, if this history has one."""
-    shas = git(repo, 'log', '--reverse', '--format=%H', '--diff-filter=A', '--', *paths).split()
+    shas = git(repo, 'log', '--full-history', '--reverse', '--format=%H', '--diff-filter=A', '--',
+               *paths).split()
     return shas[0] if shas else None
 
 
@@ -143,8 +144,12 @@ def accepted_runs(repo: Path, profile: str, suite: str) -> list[dict]:
     # history; the boundary is the first receipt in the history and never moves.
     cutoff = first_receipt(repo, 'result/*/*/*.provenance.json')
     records, seen = [], set()
-    # A receipt-only acceptance changes just the provenance path, so both are walked.
-    for sha in git(repo, 'log', '--format=%H', '--', relative, receipt_path).split():
+    # --full-history: Git's default path simplification drops a commit whose
+    # sidecar a merge did not keep, which would hide a real run and report
+    # "no baseline".  A receipt-only acceptance changes just the receipt path, so
+    # both paths are walked.
+    for sha in git(repo, 'log', '--full-history', '--format=%H', '--',
+                   relative, receipt_path).split():
         content = git_file(repo, sha, relative)
         if content is None or not accepted(repo, sha, relative, receipt_path, content, cutoff):
             continue
