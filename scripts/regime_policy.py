@@ -348,7 +348,12 @@ def _instances(document: Any) -> list[dict[str, Any]]:
             raise ValueError("`cases` must be a list of records")
     else:
         raise ValueError("the catalogue root must be a list or a mapping with `cases`")
-    return [row for row in rows if isinstance(row, dict)]
+    # A malformed record is an error, not a record to drop: filtering it used to
+    # hide a case whose id was empty or whose body was not a mapping.
+    malformed = [index for index, row in enumerate(rows) if not isinstance(row, dict)]
+    if malformed:
+        raise ValueError(f"record {malformed[0]} is not a mapping")
+    return rows
 
 
 def declared_cases(
@@ -425,7 +430,7 @@ def declared_cases(
         if skips is not None:
             skips.append(f"{suite_id}: skipped include source {source!r} (missing_source: skip)")
         return defaults, []
-    if path.suffix in {".yaml", ".yml"}:
+    if not path.is_dir() and path.suffix in {".yaml", ".yml"}:
         # A nested suite: `scripts/suite_instances.py` supports a YAML source and
         # resolves its problems recursively, so the regime check has to follow the
         # same rule instead of parsing it as JSON.  Its cases keep their own
@@ -454,6 +459,10 @@ def declared_cases(
         # its cases reach the regime checks (the dashboard reads those fields).
         from validate_benchmark_suite import SUITE_SCHEMA, validator_for
 
+        nested_suite_id = str(document.get("suite_id") or "")
+        # The family a case inherits from its own suite is part of its effective
+        # declaration: without it, a wrapper computed the floor from its own id.
+        nested_family = family_for(nested_suite_id)
         nested_errors = [
             f"{'/'.join(str(part) for part in error.absolute_path) or 'root'}: {error.message}"
             for error in validator_for(SUITE_SCHEMA).iter_errors(document)
@@ -471,6 +480,7 @@ def declared_cases(
         # the wrapper's regime through a selector.
         records = [
             {**{key: nested_defaults[key] for key in ("regime", "measure") if key in nested_defaults and key not in row},
+             **({"family": nested_family} if nested_family is not None and "family" not in row else {}),
              **row}
             for row in records
         ]
@@ -482,10 +492,14 @@ def declared_cases(
                 document = []
                 for entry in sorted(path.glob("*.json")):
                     record = json.loads(entry.read_text(encoding="utf-8"))
+                    if isinstance(record, list):
+                        # A per-instance file may hold several records; dropping
+                        # a list root silently lost every case in it.
+                        document.extend(record)
+                        continue
                     if isinstance(record, dict) and not record.get("id"):
                         record = {**record, "id": record.get("name") or entry.stem}
-                    if isinstance(record, dict):
-                        document.append(record)
+                    document.append(record)
             else:
                 document = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, ValueError) as error:
@@ -493,7 +507,7 @@ def declared_cases(
                 f"{suite_id}: include source {source!r} did not load: {error}"
             ) from error
         try:
-            records = [row for row in _instances(document) if row.get("id")]
+            records = _instances(document)
         except ValueError as error:
             raise RegimeError(
                 f"{suite_id}: include source {source!r} did not load: {error}"

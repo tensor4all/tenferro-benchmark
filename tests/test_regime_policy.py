@@ -460,6 +460,67 @@ class RegimePolicyUnitTests(unittest.TestCase):
             with self.assertRaises(validate_benchmark_suite.ValidationLoadError):
                 validate_benchmark_suite.load_yaml(bad)
 
+    def test_a_nested_selector_keeps_the_source_suite_family(self):
+        # The family a case inherits from its own suite is part of its
+        # effective declaration; without it a wrapper applied its own floor.
+        import yaml
+
+        with tempfile.TemporaryDirectory() as tmp:
+            cases = Path(tmp) / "cases.json"
+            cases.write_text(
+                json.dumps({"cases": [{"id": "a", "regime": "throughput", "n": 65536}]}),
+                encoding="utf-8",
+            )
+            inner = self._nested_suite(
+                {"source": "cases.json", "include": ["a"]}, suite_id="gpu/elementwise"
+            )
+            (Path(tmp) / "inner.yaml").write_text(yaml.safe_dump(inner), encoding="utf-8")
+            assert regime_policy.check_suite(inner, Path(tmp))
+            wrapper = {"suite_id": "gpu/dense",
+                       "problems": {"source": "inner.yaml", "include": ["a"]}}
+            errors = regime_policy.check_suite(wrapper, Path(tmp))
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("elementwise floor", errors[0])
+
+    def test_a_catalogue_record_without_an_id_is_an_error(self):
+        # Filtering falsey ids out before the id check hid a malformed record.
+        with tempfile.TemporaryDirectory() as tmp:
+            bad = Path(tmp) / "cases.json"
+            bad.write_text(
+                json.dumps({"cases": [{"id": "a", "regime": "latency"},
+                                {"id": "", "regime": "throughput"}]}),
+                encoding="utf-8",
+            )
+            document = {"suite_id": "gpu/structural",
+                        "problems": {"source": "cases.json", "include": ["a"]}}
+            errors = regime_policy.check_suite(document, Path(tmp))
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("without a non-empty id", errors[0])
+
+    def test_a_catalogue_record_that_is_not_a_mapping_is_an_error(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            bad = Path(tmp) / "cases.json"
+            bad.write_text(json.dumps({"cases": [False]}), encoding="utf-8")
+            document = {"suite_id": "gpu/structural",
+                        "problems": {"source": "cases.json", "include": ["a"]}}
+            errors = regime_policy.check_suite(document, Path(tmp))
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("did not load", errors[0])
+
+    def test_a_directory_source_is_a_catalogue_even_with_a_yaml_suffix(self):
+        # The suffix was checked before the directory branch, so a directory
+        # named `catalogue.yaml` was read as YAML (IsADirectoryError).
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp) / "catalogue.yaml"
+            directory.mkdir()
+            (directory / "a.json").write_text(
+                json.dumps({"id": "a", "regime": "latency"}), encoding="utf-8"
+            )
+            document = {"suite_id": "gpu/structural",
+                        "problems": {"source": "catalogue.yaml", "include": ["a"]}}
+            errors = regime_policy.check_suite(document, Path(tmp))
+        self.assertEqual(errors, [])
+
     def test_a_nested_yaml_that_fails_the_suite_schema_is_rejected(self):
         # The wrapper must not accept a nested suite that direct validation
         # rejects: the dashboard reads those fields and used to crash on them.
