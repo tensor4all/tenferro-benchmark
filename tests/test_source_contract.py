@@ -650,6 +650,7 @@ class SourceContractTests(unittest.TestCase):
         shapes = [
             {"source": "absent.json", "include": ["a"], "exclude": ["a"], "missing_source": "skip"},
             {"source": "absent.json", "include": ["a", 7], "missing_source": "skip"},
+            {"source": "absent.json", "include": ["", "a"], "missing_source": "skip"},
         ]
         for problems in shapes:
             with self.subTest(problems=problems), tempfile.TemporaryDirectory() as raw:

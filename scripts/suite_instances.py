@@ -86,7 +86,7 @@ def _resolve_problems(
     # Before the absence branch: a skipped source used to return the entries
     # unchecked, so `include: [a, 7]` resolved while the validator rejected it.
     for entry in include:
-        if not isinstance(entry, str):
+        if not isinstance(entry, str) or not entry:
             raise ValueError(include_missing_error(source_path, entry))
 
     # The same value the validator rejects, rejected here too: this used to be read
