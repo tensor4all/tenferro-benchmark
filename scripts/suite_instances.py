@@ -54,8 +54,15 @@ def _resolve_problems(problems: Any, *, project_dir: Path) -> list[str]:
         ids = list(include)
     elif source_path.suffix in {".yaml", ".yml"}:
         base_ids = resolve_suite_instance_ids(source_path, project_dir=project_dir)
-        allowed = set(include)
-        ids = [instance_id for instance_id in base_ids if instance_id in allowed]
+        known = set(base_ids)
+        missing = [instance_id for instance_id in include if instance_id not in known]
+        if missing:
+            # A selector must not collect fewer cases than it declares: the
+            # validator rejects the same miss, but run_all.sh does not run it.
+            raise ValueError(
+                f"{source_path}: include id {missing[0]!r} is not in the source"
+            )
+        ids = [instance_id for instance_id in include if instance_id in known]
     else:
         ids = list(include)
 

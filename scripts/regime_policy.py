@@ -517,7 +517,7 @@ def declared_cases(
                     document.append(record)
             else:
                 document = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, ValueError) as error:
+        except (OSError, ValueError, RecursionError) as error:
             raise RegimeError(
                 f"{suite_id}: include source {source!r} did not load: {error}"
             ) from error

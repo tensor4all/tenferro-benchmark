@@ -21,6 +21,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import generate_dashboard as dashboard  # noqa: E402
+import yaml  # noqa: E402
 import regime_policy  # noqa: E402
 
 
@@ -462,26 +463,52 @@ class RegimePolicyUnitTests(unittest.TestCase):
 
     def test_a_nested_selector_keeps_the_source_suite_family(self):
         # The family a case inherits from its own suite is part of its
-        # effective declaration; without it a wrapper applied its own floor.
-        import yaml
-
+        # effective declaration. The inner case is valid on its own (a
+        # 262,144-element elementwise case), so only the wrapper floor can
+        # reject it if the family is not carried across the selector.
         with tempfile.TemporaryDirectory() as tmp:
             cases = Path(tmp) / "cases.json"
             cases.write_text(
-                json.dumps({"cases": [{"id": "a", "regime": "throughput", "n": 65536}]}),
+                json.dumps({"cases": [{"id": "a", "regime": "throughput", "n": 262144}]}),
                 encoding="utf-8",
             )
             inner = self._nested_suite(
                 {"source": "cases.json", "include": ["a"]}, suite_id="gpu/elementwise"
             )
+            inner["defaults"] = {}
             (Path(tmp) / "inner.yaml").write_text(yaml.safe_dump(inner), encoding="utf-8")
-            assert regime_policy.check_suite(inner, Path(tmp))
-            wrapper = {"suite_id": "gpu/dense",
+            self.assertEqual(regime_policy.check_suite(inner, Path(tmp)), [])
+            wrapper = {"suite_id": "gpu/einsum",
                        "problems": {"source": "inner.yaml", "include": ["a"]}}
             errors = regime_policy.check_suite(wrapper, Path(tmp))
-        self.assertEqual(len(errors), 1, errors)
-        self.assertIn("elementwise floor", errors[0])
+        self.assertEqual(errors, [])
 
+    def test_a_json_recursion_error_is_a_load_error(self):
+        # The JSON parser raises RecursionError on a pathological nesting
+        # depth; it must not escape the per-source boundary.
+        from unittest import mock
+
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "cases.json").write_text("{}", encoding="utf-8")
+            document = {"suite_id": "gpu/structural",
+                        "problems": {"source": "cases.json", "include": ["a"]}}
+            with mock.patch("json.loads", side_effect=RecursionError("too deep")):
+                errors = regime_policy.check_suite(document, Path(tmp))
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("did not load", errors[0])
+
+    def test_the_collector_rejects_an_unknown_include_id(self):
+        # The validator rejects it, but run_all.sh collects without validating.
+        import suite_instances
+
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp) / "base.yaml"
+            base.write_text(yaml.safe_dump(self._nested_suite([self._case("known")])), encoding="utf-8")
+            with self.assertRaises(ValueError):
+                suite_instances._resolve_problems(
+                    {"source": str(base), "include": ["known", "missing"]},
+                    project_dir=Path(tmp),
+                )
     def test_a_catalogue_record_without_an_id_is_an_error(self):
         # Filtering falsey ids out before the id check hid a malformed record.
         with tempfile.TemporaryDirectory() as tmp:
