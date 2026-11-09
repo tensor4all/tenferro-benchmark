@@ -26,6 +26,25 @@ def budget(case, reference, exact=None):
     return scale
 
 
+def scored(values, allowance):
+    """|miss| / allowance, with 0/0 = 0 and a miss outside a zero allowance = inf.
+
+    A plain division produced NaN wherever the reference element and the miss
+    were both exactly zero. With atol = 0 every zero of the identity reference
+    carries an allowance of 0, so a scaled u whose u.T @ u = 8 I scored NaN off
+    the diagonal, np.max returned NaN, and max(worst, NaN) dropped the whole
+    comparison. Checking finiteness after the reduction cannot recover it; the
+    comparison has to be scored here.
+    """
+    miss = np.abs(values)
+    out = np.zeros(miss.shape, dtype=np.float64)
+    positive = allowance > 0
+    out[positive] = miss[positive] / allowance[positive]
+    out[~positive] = np.inf
+    out[~positive & (miss == 0)] = 0.0
+    return out
+
+
 def verify_outputs(actual, expected, case, inputs, verify_one):
     actual, expected = leaves(actual), leaves(expected)
     if len(actual) != len(expected):
@@ -45,9 +64,9 @@ def verify_outputs(actual, expected, case, inputs, verify_one):
             q[:, j:] -= tau[j]*np.outer(q[:, j:] @ v, v.conj())
         r = np.triu(packed[:k, :])
         a = inputs[0].astype(dtype)
-        worst = float(np.max(np.abs(q[:, :k] @ r-a)/budget(case, a)))
+        worst = float(np.max(scored(q[:, :k] @ r-a, budget(case, a))))
         identity = np.eye(m)
-        worst = max(worst, float(np.max(np.abs(q.conj().T @ q-identity)/budget(case, identity))))
+        worst = max(worst, float(np.max(scored(q.conj().T @ q-identity, budget(case, identity)))))
         if not np.isfinite(worst) or worst > 1:
             raise ValueError(f"verification compact-QR error/tolerance = {worst}")
         return worst
@@ -64,10 +83,10 @@ def verify_outputs(actual, expected, case, inputs, verify_one):
     if np.any(s < 0) or np.any(s[1:] > s[:-1]):
         raise ValueError("verification singular values are not sorted/nonnegative")
     reconstructed = (u[:, :k] * s.astype(np.float64)) @ vh[:k, :]
-    worst = float(np.max(np.abs(reconstructed-a)/budget(case, a)))
+    worst = float(np.max(scored(reconstructed-a, budget(case, a))))
     for gram in (u.conj().T @ u, vh @ vh.conj().T):
         identity = np.eye(len(gram))
-        worst = max(worst, float(np.max(np.abs(gram-identity)/budget(case, identity))))
+        worst = max(worst, float(np.max(scored(gram-identity, budget(case, identity)))))
     worst = max(worst, verify_one(s, expected[1], case))
     if not np.isfinite(worst) or worst > 1:
         raise ValueError(f"verification full-SVD error/tolerance = {worst}")
