@@ -74,6 +74,30 @@ FAMILY_PAGES = ("gpu/", "gpu/latency/", "cpu/", "cpu/latency/")
 Placement = tuple[str, str, str, str]  # (page, profile, suite, case)
 
 
+def tree_summaries(result_dir: Path) -> dict[tuple[str, str], dict]:
+    """Read the sidecars without going through the dashboard's loader.
+
+    load_summaries() is one of the functions the render finds its data with, and
+    it silently drops unreadable or unsupported files; an oracle that calls it
+    shrinks with a filter (or a parse failure) applied there.  The glob and the
+    schema check are the loader's, restated so the expectation has its own path
+    to the same files.
+    """
+    documents: dict[tuple[str, str], dict] = {}
+    for path in sorted(result_dir.glob("*/*/*.summary.json")):
+        try:
+            document = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        accepted = (1, dashboard.report_summary.SCHEMA_VERSION_V2)
+        if document.get("schema_version") not in accepted:
+            continue
+        profile = path.parent.parent.name
+        suffix = dashboard.report_summary.SUMMARY_SUFFIX
+        documents[(profile, f"{path.parent.name}/{path.name[: -len(suffix)]}")] = document
+    return documents
+
+
 def tree_placements(result_dir: Path, benchmarks_dir: Path) -> dict[Placement, set[str]]:
     """(page, profile, suite, case) → its `(case, group)` keys with an `ok` row.
 
@@ -83,7 +107,7 @@ def tree_placements(result_dir: Path, benchmarks_dir: Path) -> dict[Placement, s
     a case that left its declared page is a mismatch instead of a smaller
     expectation.
     """
-    summaries = dashboard.load_summaries(result_dir)
+    summaries = tree_summaries(result_dir)
     metadata = dashboard.load_suite_metadata(benchmarks_dir)
     placements: dict[Placement, set[str]] = {}
     # Iterate the summaries, not `discover_reports`: the expectation must not
@@ -1463,6 +1487,32 @@ class PublishedPlacementMutationTests(unittest.TestCase):
         site = Path(self.tmp.name) / "site"
         self.assertEqual(render_site(site, build), 0)
         return placement_gaps(site)
+
+    def test_a_filter_in_the_summary_loader_does_not_shrink_the_expectation(self):
+        """A suite the loader drops is still an expected placement."""
+        real = dashboard.load_summaries
+
+        def without_gpu(result_dir):
+            return {
+                key: value for key, value in real(result_dir).items() if not key[1].startswith("gpu/")
+            }
+
+        site = Path(self.tmp.name) / "site"
+        with mock.patch.object(dashboard, "load_summaries", without_gpu):
+            self.assertEqual(render_site(site), 0)
+            missing, invented = placement_gaps(site)
+        expected_gpu = sorted(
+            key
+            for key, groups in tree_placements(ROOT / "result", ROOT / "benchmarks").items()
+            if groups and key[0].startswith("gpu/")
+        )
+        self.assertTrue(expected_gpu, "no GPU workload is published at all")
+        self.assertEqual(missing, expected_gpu, place_text(missing, "no longer publishes"))
+        self.assertEqual(
+            invented,
+            [],
+            place_text(invented, "publishes a case the result tree does not declare"),
+        )
 
     def test_a_filter_in_report_discovery_does_not_shrink_the_expectation(self):
         """A suite hidden from discovery is still an expected placement."""
