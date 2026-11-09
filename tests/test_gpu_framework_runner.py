@@ -110,8 +110,12 @@ class LegacyGpuContracts(unittest.TestCase):
                 ([999.], [1.], float("inf"), 0.),
                 # Finite errors, finite tolerance, threshold overflows.
                 ([1.], [1.7e308], 1.5, 0.),
-                # The overflowing error itself.
+                # The reviewer's second reproduction verbatim: the error and
+                # the threshold both overflow.
                 ([-1.7e308], [1.7e308], 1.5, 0.),
+                # The overflowing error under a tolerance whose threshold stays
+                # finite: only the error check rejects this one.
+                ([-1.7e308], [1.7e308], 1e-5, 0.),
                 ([999.], [1.], float("nan"), 0.),
                 ([1.], [1.], -1e-5, 0.),
             ):
@@ -143,7 +147,17 @@ class LegacyGpuContracts(unittest.TestCase):
         self.assertIsNone(row["verification"]["rtol"])
         self.assertIsNone(row["verification"]["atol"])
         self.assertIn("refused tolerance rtol=inf atol=-1e-08", row["verification"]["reason"])
-        # A usable tolerance is still recorded.
+        # A refused tolerance does not take the usable one with it.
+        mixed = runner._stub(
+            "gpu/dense", {"id": "p", "op": "matmul", "layout": {}, "dtype": {}},
+            "pytorch-cuda", 0, status="verification_failed",
+            reason="verification failed", path="legacy", ts=None, bc=None, tc=None,
+            ver_status="failed", rtol=float("inf"), atol=1e-8)
+        self.assertIsNone(mixed["verification"]["rtol"])
+        self.assertEqual(mixed["verification"]["atol"], 1e-8)
+        self.assertEqual(mixed["verification"]["reason"],
+                         "verification failed; refused tolerance rtol=inf")
+        # A usable tolerance is recorded untouched.
         kept = runner._stub(
             "gpu/dense", {"id": "p", "op": "matmul", "layout": {}, "dtype": {}},
             "pytorch-cuda", 0, status="verification_failed",
