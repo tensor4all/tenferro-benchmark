@@ -19,6 +19,27 @@ def leaves(value):
     return [value]
 
 
+def tensor_network_verdict(actual, reference, rtol, atol):
+    """The elementwise tensor-network comparison, refused when it cannot score.
+
+    The per-element budget is `atol + rtol * |reference|`; an infinite `rtol` or
+    an overflowed budget makes it infinite for every element, which scored every
+    miss as `passed`. The refusal rule is the one `_verification_score` uses.
+    """
+    import numpy as np
+
+    import benchmark_gpu_python as legacy
+
+    error = np.abs(np.asarray(actual, dtype=np.float64) - reference)
+    with np.errstate(over="ignore", invalid="ignore"):
+        threshold = atol + rtol * np.abs(reference)
+        absolute = float(np.max(error))
+        relative = float(np.max(error / np.maximum(np.abs(reference), 1e-10)))
+    if not legacy._scorable(absolute, relative, rtol, atol, threshold):
+        return "failed", None, None
+    return ("passed" if bool(np.all(error <= threshold)) else "failed"), absolute, relative
+
+
 def require_verification(result):
     status, absolute, relative = result
     if status != "passed":
@@ -149,11 +170,8 @@ def run(legacy, suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
                 captured['arrays'] = [actual]
                 if actual.dtype != np.float32 or actual.shape != reference.shape or not np.all(np.isfinite(actual)):
                     raise ValueError("verification tensor-network shape/nonfinite output")
-                error = np.abs(actual.astype(np.float64) - reference)
-                absolute = float(np.max(error))
-                relative = float(np.max(error / np.maximum(np.abs(reference), 1e-10)))
-                passed = np.all(error <= atol + rtol * np.abs(reference))
-                return require_verification(("passed" if passed else "failed", absolute, relative))
+                return require_verification(
+                    tensor_network_verdict(actual, reference, rtol, atol))
         else:
             data = legacy._make_data_np(problem)
             if is_jax:

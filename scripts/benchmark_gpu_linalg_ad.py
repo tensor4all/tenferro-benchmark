@@ -377,7 +377,11 @@ def run_framework(suite_id, problem, backend, device_ordinal, *, ts, bc, tc, ver
                                "CPU AD reference, transfers, compilation, validation, output destruction"}))
         return rec
     except Exception as exc:
-        return stub(suite_id, problem, backend, device_ordinal, status="runtime_failed", reason=str(exc), path=path, ts=ts, bc=bc, tc=tc, mode=mode)
+        # An exception with no message would leave `verification.reason` blank,
+        # which a `not_run` row cannot be (minLength 1, pattern \S). State the
+        # class instead of nothing.
+        reason = str(exc).strip() or type(exc).__name__
+        return stub(suite_id, problem, backend, device_ordinal, status="runtime_failed", reason=reason, path=path, ts=ts, bc=bc, tc=tc, mode=mode)
 
 
 def _layout_str(problem) -> str:

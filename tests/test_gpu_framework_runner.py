@@ -117,6 +117,7 @@ class LegacyGpuContracts(unittest.TestCase):
                 # finite: only the error check rejects this one.
                 ([-1.7e308], [1.7e308], 1e-5, 0.),
                 ([999.], [1.], float("nan"), 0.),
+                ([999.], [1.], 1e-5, float("nan")),
                 ([1.], [1.], -1e-5, 0.),
             ):
                 with self.subTest(check=name, rtol=rtol, gpu=gpu, cpu=cpu):
@@ -129,6 +130,27 @@ class LegacyGpuContracts(unittest.TestCase):
             status, max_abs, _ = check("matmul", np.array([999.]), np.array([1.]), {}, 1e-5, 1e-8)
             self.assertEqual(status, "failed")
             self.assertEqual(max_abs, 998.0)
+
+    def test_the_sparse_and_tensor_network_verdicts_refuse_a_bad_tolerance(self):
+        # Measured on 78454d8: both self-built comparisons scored
+        # ("passed", 998.0, 998.0) for 999 vs 1 under an infinite rtol, and
+        # passed 1 vs 1.7e308 under rtol=1.5, whose threshold overflows.
+        import numpy as np
+
+        from gpu_framework_runner import tensor_network_verdict
+
+        for verdict in (runner._sparse_residual_verdict, tensor_network_verdict):
+            with self.subTest(verdict=verdict.__name__):
+                self.assertEqual(
+                    verdict(np.array([999.]), np.array([1.]), float("inf"), 0.),
+                    ("failed", None, None))
+                self.assertEqual(
+                    verdict(np.array([1.]), np.array([1.7e308]), 1.5, 0.),
+                    ("failed", None, None))
+                self.assertEqual(verdict(np.array([1.]), np.array([1.]), 1e-5, 1e-8),
+                                 ("passed", 0.0, 0.0))
+                self.assertEqual(
+                    verdict(np.array([999.]), np.array([1.]), 1e-5, 1e-8)[0], "failed")
 
     def test_a_failed_row_cannot_record_the_tolerance_it_refused(self):
         # Measured on c2dca56: the failure stub copied `rtol=inf` into the record,

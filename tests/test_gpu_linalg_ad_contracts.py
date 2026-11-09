@@ -81,6 +81,26 @@ class CollectorErrorBoundary(unittest.TestCase):
                 jsonschema.validate(row, self.SCHEMA)
 
 
+    def test_a_silent_exception_still_states_a_reason(self):
+        # Measured on 78454d8: a MemoryError from the fixtures left
+        # verification.reason="" on a measure_only row, and a `not_run` row
+        # requires a non-blank reason (minLength 1, pattern \S). The class name
+        # is the reason when the exception has no message.
+        import jsonschema
+        import benchmark_gpu_linalg_ad as collector
+
+        problem = self.problem({"mode": "measure_only", "reason": "no independent reference"})
+        with mock.patch.object(collector, "matrix_for_linalg_ad", side_effect=MemoryError()):
+            row = collector.run_one("gpu/linalg_jvp_vjp", problem, "pytorch-cuda", 0,
+                                    ts="2026-01-01T00:00:00+00:00", bc=None, tc=None,
+                                    verify_defaults={"verify": dict(problem["verify"])})
+        jsonschema.validate(row, self.SCHEMA)
+        self.assertEqual(row["status"], "runtime_failed")
+        self.assertEqual(row["verification"]["status"], "not_run")
+        self.assertEqual(row["verification"]["mode"], "measure_only")
+        self.assertEqual(row["verification"]["reason"], "MemoryError")
+
+
 class AdVerification(unittest.TestCase):
     def test_latency_publication_requires_matching_scope_and_per_call_sync(self):
         import copy
