@@ -211,7 +211,12 @@ jobs:
         run: cargo test --locked --lib cpu_engine_tests
 
       - name: Check the verification-mode record writer
-        run: cargo test --locked --lib verification_mode::tests
+        # A filter that matches no test still prints `0 passed` and exits 0, so
+        # the run alone would stay green if the tests disappeared. Require the
+        # run to report at least one passing test.
+        run: |
+          cargo test --locked --lib verification_mode::tests 2>&1 | tee /tmp/vm.log
+          grep -qE 'test result: ok\. [1-9][0-9]* passed' /tmp/vm.log
 
       - name: Check the linalg AD JVP/VJP cases are registered on both arms
         run: cargo test --locked --bin publication_gate linalg_ad
