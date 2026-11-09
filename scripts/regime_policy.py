@@ -332,12 +332,22 @@ def case_elements(problem: dict[str, Any]) -> int | None:
 
 
 def _instances(document: Any) -> list[dict[str, Any]]:
+    """The records of a catalogue, or `ValueError` on a malformed container.
+
+    A catalogue is a list or a mapping with a `cases`/`patterns` list.  Anything
+    else used to reach the iteration below and raise `TypeError`, which escaped
+    the caller error boundary and stopped the remaining command-line inputs.
+    """
     if isinstance(document, list):
         rows = document
     elif isinstance(document, dict):
-        rows = document.get("cases") or document.get("patterns") or []
+        rows = document.get("cases")
+        if rows is None:
+            rows = document.get("patterns", [])
+        if not isinstance(rows, list):
+            raise ValueError("`cases` must be a list of records")
     else:
-        rows = []
+        raise ValueError("the catalogue root must be a list or a mapping with `cases`")
     return [row for row in rows if isinstance(row, dict)]
 
 
@@ -482,7 +492,12 @@ def declared_cases(
             raise RegimeError(
                 f"{suite_id}: include source {source!r} did not load: {error}"
             ) from error
-        records = [row for row in _instances(document) if row.get("id")]
+        try:
+            records = [row for row in _instances(document) if row.get("id")]
+        except ValueError as error:
+            raise RegimeError(
+                f"{suite_id}: include source {source!r} did not load: {error}"
+            ) from error
     by_id: dict[str, dict[str, Any]] = {}
     for row in records:
         if not isinstance(row.get("id"), str) or not row["id"]:

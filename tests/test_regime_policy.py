@@ -437,6 +437,29 @@ class RegimePolicyUnitTests(unittest.TestCase):
         self.assertEqual(len(errors), 1, errors)
         self.assertIn("did not load", errors[0])
 
+    def test_a_catalogue_with_a_malformed_container_is_a_load_error(self):
+        # `{"cases": 1}` used to raise `TypeError` out of `_instances()` and stop
+        # the remaining files; it has to be reported against this one source.
+        with tempfile.TemporaryDirectory() as tmp:
+            bad = Path(tmp) / "bad.json"
+            bad.write_text(json.dumps({"cases": 1}), encoding="utf-8")
+            document = {"suite_id": "gpu/structural",
+                        "problems": {"source": "bad.json", "include": ["a"]}}
+            errors = regime_policy.check_suite(document, Path(tmp))
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("did not load", errors[0])
+
+    def test_the_direct_yaml_loader_reports_undecodable_bytes(self):
+        # The same bytes reached through a nested source were handled, but the
+        # top-level loader let `UnicodeDecodeError` escape the validator loop.
+        import validate_benchmark_suite
+
+        with tempfile.TemporaryDirectory() as tmp:
+            bad = Path(tmp) / "bad.yaml"
+            bad.write_bytes(b"\xff")
+            with self.assertRaises(validate_benchmark_suite.ValidationLoadError):
+                validate_benchmark_suite.load_yaml(bad)
+
     def test_a_nested_yaml_that_fails_the_suite_schema_is_rejected(self):
         # The wrapper must not accept a nested suite that direct validation
         # rejects: the dashboard reads those fields and used to crash on them.
