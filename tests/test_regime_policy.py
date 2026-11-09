@@ -381,6 +381,35 @@ class RegimePolicyUnitTests(unittest.TestCase):
         self.assertEqual(len(errors), 1, errors)
         self.assertIn("did not load", errors[0])
 
+    def test_a_nested_yaml_that_is_not_utf8_is_a_load_error(self):
+        # `read_text()` raises `UnicodeDecodeError`, which used to escape the
+        # `(OSError, YAMLError)` handler and abort the remaining command-line
+        # files.
+        with tempfile.TemporaryDirectory() as tmp:
+            bad = Path(tmp) / "bad.yaml"
+            bad.write_bytes(b"\xff")
+            document = {"suite_id": "gpu/structural",
+                        "problems": {"source": "bad.yaml", "include": ["a"]}}
+            errors = regime_policy.check_suite(document, Path(tmp))
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("did not load", errors[0])
+
+    def test_a_nested_yaml_case_without_an_id_is_reported(self):
+        import yaml
+
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp) / "noid.yaml"
+            base.write_text(
+                yaml.safe_dump({"suite_id": "gpu/noid",
+                                "problems": [{"regime": "latency"}]}),
+                encoding="utf-8",
+            )
+            document = {"suite_id": "gpu/structural",
+                        "problems": {"source": "noid.yaml", "include": ["a"]}}
+            errors = regime_policy.check_suite(document, Path(tmp))
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("without a non-empty id", errors[0])
+
     def test_a_nested_yaml_cycle_is_reported_not_recurse(self):
         with tempfile.TemporaryDirectory() as tmp:
             loop = Path(tmp) / "loop.yaml"

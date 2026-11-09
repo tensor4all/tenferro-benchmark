@@ -421,7 +421,9 @@ def declared_cases(
             )
         try:
             document = yaml.safe_load(path.read_text(encoding="utf-8"))
-        except (OSError, yaml.YAMLError) as error:
+        except (OSError, ValueError, yaml.YAMLError) as error:
+            # `ValueError` covers `UnicodeDecodeError` from `read_text()`; without
+            # it one unreadable byte aborted validation of every later file.
             raise RegimeError(
                 f"{suite_id}: include source {source!r} did not load: {error}"
             ) from error
@@ -454,7 +456,11 @@ def declared_cases(
         records = [row for row in _instances(document) if row.get("id")]
     by_id: dict[str, dict[str, Any]] = {}
     for row in records:
-        record_id = str(row["id"])
+        if not isinstance(row.get("id"), str) or not row["id"]:
+            raise RegimeError(
+                f"{suite_id}: include source {source!r} has a case without a non-empty id"
+            )
+        record_id = row["id"]
         if record_id in by_id:
             # A selector used to reach a catalogue the validator had already
             # rejected as duplicated, and silently kept the last record: the
