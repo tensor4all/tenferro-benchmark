@@ -83,14 +83,17 @@ def tree_placements(result_dir: Path, benchmarks_dir: Path) -> dict[Placement, s
     a case that left its declared page is a mismatch instead of a smaller
     expectation.
     """
-    reports = dashboard.discover_reports(result_dir)
     summaries = dashboard.load_summaries(result_dir)
     metadata = dashboard.load_suite_metadata(benchmarks_dir)
     placements: dict[Placement, set[str]] = {}
-    for profile, suite_id, _report in reports:
+    # Iterate the summaries, not `discover_reports`: the expectation must not
+    # shrink with the function the render uses to find its suites, or a filter
+    # that hides a suite from the render hides it from the oracle too.
+    for (profile, suite_id), document in summaries.items():
+        if profile in dashboard.RETIRED_PROFILES:
+            continue  # retired profiles are not published at all
         if (profile, suite_id) not in dashboard.MAINTAINED:
             continue  # the family pages publish the maintained suites only
-        document = summaries.get((profile, suite_id))
         if not document:
             continue  # report-only suite: it declares no workload to place
         # Read the sidecar's own rows: `grouped_workloads` is what
@@ -124,9 +127,9 @@ def rendered_placements(site: Path, profiles: Iterable[str]) -> set[Placement]:
     missing block shows up as missing keys rather than as a missing file.
     """
     labels: dict[str, str] = {}
-    for profile in profiles:
+    for profile in [*dashboard.PROFILE_LABEL, *profiles]:
         label = dashboard.profile_label(profile)
-        if label in labels:
+        if labels.get(label, profile) != profile:
             raise AssertionError(
                 f"profiles {labels[label]!r} and {profile!r} share the page label {label!r}"
             )
@@ -138,10 +141,19 @@ def rendered_placements(site: Path, profiles: Iterable[str]) -> set[Placement]:
             continue
         sections = path.read_text(encoding="utf-8").split('<section class="profile-card"')[1:]
         for section in sections:
+            if section.startswith(' id="trend"'):
+                continue  # the trend section is not a profile: it places no case
             head = re.search(r"<h2>([^<]*)</h2>", section)
-            profile = labels.get(unescape(head.group(1))) if head else None
+            if head is None:
+                raise AssertionError(f"{page}index.html: a profile-card has no <h2>")
+            profile = labels.get(unescape(head.group(1)))
             if profile is None:
-                continue  # the trend section is not a profile
+                # An unknown heading used to skip the whole section, so any case
+                # it published escaped the reverse comparison.
+                raise AssertionError(
+                    f"{page}index.html: unknown profile heading "
+                    f"{unescape(head.group(1))!r}"
+                )
             for block in section.split('<details class="suite-block"')[1:]:
                 suite_id = unescape(re.search(r"<code>([^<]+)</code>", block).group(1))
                 cases = {
@@ -1451,6 +1463,45 @@ class PublishedPlacementMutationTests(unittest.TestCase):
         site = Path(self.tmp.name) / "site"
         self.assertEqual(render_site(site, build), 0)
         return placement_gaps(site)
+
+    def test_a_filter_in_report_discovery_does_not_shrink_the_expectation(self):
+        """A suite hidden from discovery is still an expected placement."""
+        real = dashboard.discover_reports
+
+        def without_gpu(result_dir):
+            return [item for item in real(result_dir) if not item[1].startswith("gpu/")]
+
+        site = Path(self.tmp.name) / "site"
+        with mock.patch.object(dashboard, "discover_reports", without_gpu):
+            self.assertEqual(render_site(site), 0)
+            missing, invented = placement_gaps(site)
+        expected_gpu = sorted(
+            key
+            for key, groups in tree_placements(ROOT / "result", ROOT / "benchmarks").items()
+            if groups and key[0].startswith("gpu/")
+        )
+        self.assertTrue(expected_gpu, "no GPU workload is published at all")
+        self.assertEqual(missing, expected_gpu, place_text(missing, "no longer publishes"))
+        self.assertEqual(
+            invented,
+            [],
+            place_text(invented, "publishes a case the result tree does not declare"),
+        )
+
+    def test_an_unknown_profile_section_is_rejected_not_skipped(self):
+        """A section the labels do not know must fail, not vanish from the check."""
+        site = Path(self.tmp.name) / "site"
+        self.assertEqual(render_site(site), 0)
+        page = site / "cpu" / "index.html"
+        page.write_text(
+            page.read_text(encoding="utf-8")
+            + '<section class="profile-card"><h2>unexpected-profile</h2>'
+            '<details class="suite-block"><code>cpu/dense</code>'
+            '<svg><text class="chart-label">invented_case</text></svg></details></section>',
+            encoding="utf-8",
+        )
+        with self.assertRaises(AssertionError):
+            placement_gaps(site)
 
     def test_a_vanished_suite_block_is_reported_with_its_page(self):
         real = dashboard.build_suite_views
