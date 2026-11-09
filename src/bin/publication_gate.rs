@@ -13,6 +13,7 @@ use std::time::{Duration, Instant};
 use tenferro_ad::{AdContext, EagerRuntime, EagerSession, EagerTensor};
 use tenferro_cpu::{runtime_engine_id, runtime_engine_registration, CpuEngine};
 use tenferro_einsum::{EagerSessionEinsumExt, TraceContextEinsumExt};
+use tenferro_einsum_benchmark::spd_from_base;
 use tenferro_einsum_benchmark::thread_enforcement::{
     enforce_thread_request, verify_backend_threads,
 };
@@ -2611,22 +2612,12 @@ fn well_conditioned_matrix(n: usize, seed: u64) -> Vec<f64> {
     data
 }
 
+/// The `spd` fixture: `BᵀB + I` for the well-conditioned `B`.
+///
+/// One BLAS-shaped GEMM instead of a triple loop: `BᵀB` is 2n³ flops, and the
+/// batched rows build one matrix per batch element. See `spd_from_base`.
 fn spd_matrix(n: usize, seed: u64) -> Vec<f64> {
-    let base = well_conditioned_matrix(n, seed);
-    let mut out = vec![0.0; n * n];
-    for j in 0..n {
-        for i in 0..n {
-            let mut sum = 0.0;
-            for k in 0..n {
-                sum += base[k + n * i] * base[k + n * j];
-            }
-            if i == j {
-                sum += 1.0;
-            }
-            out[i + n * j] = sum;
-        }
-    }
-    out
+    spd_from_base(&well_conditioned_matrix(n, seed), n)
 }
 
 fn batched_well_conditioned(n: usize, batch: usize, seed: u64) -> Vec<f64> {
