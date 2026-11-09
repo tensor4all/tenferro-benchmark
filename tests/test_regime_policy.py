@@ -735,5 +735,20 @@ class PublishedNumbersTests(unittest.TestCase):
         self.assertGreater(checked, 50)
 
 
+    def test_a_broken_member_of_a_present_catalogue_is_not_skipped(self):
+        # missing_source: skip covers the source being absent, never a file
+        # inside it failing to load.
+        with tempfile.TemporaryDirectory() as tmp:
+            instances = Path(tmp) / "data/instances"
+            instances.mkdir(parents=True)
+            (instances / "a.json").write_text("{not json", encoding="utf-8")
+            document = {"suite_id": "cpu/einsum",
+                        "problems": {"source": "data/instances", "include": ["a"],
+                                     "missing_source": "skip"}}
+            errors = regime_policy.check_suite(document, Path(tmp))
+        self.assertEqual(len(errors), 1)
+        self.assertIn("did not load", errors[0])
+
+
 if __name__ == "__main__":
     unittest.main()

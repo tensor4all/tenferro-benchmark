@@ -379,6 +379,14 @@ def declared_cases(
     path = Path(source)
     if not path.is_absolute():
         path = project_dir / path
+    # Absence of the declared source is the only thing the opt-in covers: a file
+    # that disappears while its directory is read is a load failure, not a skip.
+    if not path.exists():
+        if problems.get("missing_source") != "skip":
+            raise RegimeError(f"{suite_id}: include source {source!r} did not load: no such file or directory")
+        if skips is not None:
+            skips.append(f"{suite_id}: skipped include source {source!r} (missing_source: skip)")
+        return defaults, []
     try:
         if path.is_dir():
             # A catalogue can point at a directory of per-instance files (the CPU
@@ -392,16 +400,6 @@ def declared_cases(
                     document.append(record)
         else:
             document = json.loads(path.read_text(encoding="utf-8"))
-    except FileNotFoundError as error:
-        # Only an absent source may be skipped, and only on request: a source
-        # that exists but does not parse stays an error either way.
-        if problems.get("missing_source") != "skip":
-            raise RegimeError(
-                f"{suite_id}: include source {source!r} did not load: {error}"
-            ) from error
-        if skips is not None:
-            skips.append(f"{suite_id}: skipped include source {source!r} (missing_source: skip)")
-        return defaults, []
     except (OSError, ValueError) as error:
         raise RegimeError(
             f"{suite_id}: include source {source!r} did not load: {error}"
