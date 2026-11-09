@@ -37,6 +37,22 @@ from __future__ import annotations
 
 import numpy as np
 
+
+def tolerance_value(name: str, value) -> float:
+    """A tolerance the comparison can use: a finite, non-negative number.
+
+    A ``.nan`` in a manifest used to pass every earlier guard: ``nan > 0`` is
+    False, so an exact match scored ``0`` and the row published ``passed`` with
+    ``rtol: NaN`` in a record no JSON reader accepts.
+    """
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError(f"{name} must be a number, got {value!r}")
+    value = float(value)
+    if not np.isfinite(value) or value < 0:
+        raise ValueError(f"{name} must be finite and non-negative, got {value!r}")
+    return value
+
+
 MODES = ("cpu_reference", "analytic", "finite_difference", "measure_only")
 DEFAULT_MODE = "cpu_reference"
 
@@ -77,7 +93,10 @@ def tolerances(problem: dict, defaults: dict | None = None) -> tuple[float, floa
                 return float(value)
         return fallback
 
-    return pick("rtol", DEFAULT_RTOL), pick("atol", DEFAULT_ATOL)
+    return (
+        tolerance_value("rtol", pick("rtol", DEFAULT_RTOL)),
+        tolerance_value("atol", pick("atol", DEFAULT_ATOL)),
+    )
 
 
 def mode_for(problem: dict, defaults: dict | None = None) -> str:
@@ -291,6 +310,8 @@ def directional_of_actual(phase: str, derivative, tangent) -> float:
 
 def elementwise_errors(actual, reference, rtol: float, atol: float):
     """``(max_abs, max_rel, worst_over_tolerance)`` for one pair of outputs."""
+    rtol = tolerance_value("rtol", rtol)
+    atol = tolerance_value("atol", atol)
     actual = np.asarray(actual)
     reference = np.asarray(reference)
     if actual.shape != reference.shape:
@@ -301,26 +322,53 @@ def elementwise_errors(actual, reference, rtol: float, atol: float):
         raise ValueError("nonfinite AD output")
     if not np.all(np.isfinite(reference)):
         raise ValueError("nonfinite reference")
-    error = np.abs(actual - reference)
-    max_abs = float(np.max(error)) if error.size else 0.0
+    # Subtraction can overflow to inf for two finite inputs of opposite sign.
+    # The overflowed value is the TRUE error and must stay in the comparison:
+    # clamping it before `error <= tolerance` turned a 2x miss into `passed`
+    # (#417 review). Only the reported metric is clamped.
+    with np.errstate(over="ignore", invalid="ignore"):
+        error = np.abs(actual - reference)
+        reported = np.minimum(error, np.finfo(np.float64).max)
+    max_abs = float(np.max(reported)) if error.size else 0.0
     # `atol` may be 0, and a correct element of the reference can be exactly 0.
     # Dividing then gives 0/0, which either poisons the maximum with NaN or, if
     # it is dropped, lets a large wrong element hide behind the element that had
     # nothing to compare with.  Score each element against its own tolerance and
     # keep an element that has no tolerance at all (error > 0) as a failure.
-    tolerance = atol + rtol * np.abs(reference)
-    within = error <= tolerance
-    guard = np.maximum(tolerance, np.finfo(np.float64).tiny)
-    ratio = np.where(within, error / guard, np.inf)
-    worst = float(np.max(ratio)) if ratio.size else 0.0
-    denominator = np.maximum(np.abs(reference), atol)
-    relative = np.divide(
-        error,
-        denominator,
-        out=np.where(error > 0, np.inf, 0.0),
-        where=denominator > 0,
-    )
-    max_rel = float(np.max(relative)) if error.size else 0.0
+    #
+    # A failed element keeps its ratio, finite like every other number in the
+    # record: substituting `inf` for it made an ordinary failure serialize as the
+    # invalid JSON token `Infinity`.  Only an element with no tolerance at all
+    # (atol=0 and reference=0) can overflow, and it is clamped to the largest
+    # finite double — still a failure, never a JSON token no reader accepts.
+    largest = np.finfo(np.float64).max
+    with np.errstate(over="ignore", invalid="ignore"):
+        tolerance = atol + rtol * np.abs(reference)
+    if not np.all(np.isfinite(tolerance)):
+        # `rtol * |reference|` left the range of f64: the manifest states a budget
+        # no double can express. Scoring it instead gives `inf/inf = nan`, and
+        # `max(0.0, nan)` is 0.0, which published a 2x miss as `passed 0.0`.
+        raise ValueError(
+            "tolerance overflows float64 for this reference "
+            f"(rtol={rtol!r}, atol={atol!r}); the check cannot be scored"
+        )
+    # The verdict is the manifest's own comparison, `error <= tolerance`; the
+    # guard below only keeps the reported ratio a finite number. With
+    # rtol=atol=0 any nonzero error fails, even a subnormal one that a `tiny`
+    # denominator would have shrunk below 1.
+    positive = tolerance > 0
+    with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
+        guarded = np.where(positive, error / np.where(positive, tolerance, 1.0),
+                           np.where(error > 0, largest, 0.0))
+        worst = float(np.max(np.minimum(guarded, largest))) if error.size else 0.0
+        denominator = np.maximum(np.abs(reference), atol)
+        relative = np.divide(
+            error,
+            denominator,
+            out=np.where(error > 0, largest, 0.0),
+            where=denominator > 0,
+        )
+        max_rel = float(np.max(np.minimum(relative, largest))) if error.size else 0.0
     return max_abs, max_rel, worst
 
 
@@ -328,65 +376,69 @@ def elementwise_errors(actual, reference, rtol: float, atol: float):
 _worst = elementwise_errors
 
 
-def check(
+def reference(
     mode: str,
     loss: str,
     phase: str,
-    actual,
     matrix,
     tangent,
     rhs,
-    rtol: float,
-    atol: float,
     *,
     device: str | None = None,
     step: float | None = None,
-) -> dict:
-    """Hold one row's outputs to ``mode`` and return the record's verification fields.
+):
+    """The ``(reference, backend, diagnostic)`` one row's outputs are held to.
 
-    ``cpu_reference`` and ``analytic`` compare every element of the primal and
-    the derivative.  ``finite_difference`` compares the primal element by
-    element and the directional derivative as one number.  The verdict always
-    uses the manifest's own ``rtol``/``atol``: a check that cannot meet them
-    fails instead of loosening them.
+    The reference depends on the case, not on which download of its outputs is
+    being judged, so a caller that verifies both the initial and the final
+    download of a row builds it once and compares twice. Building it per
+    comparison doubled the most expensive CPU work of the verification pass.
     """
-    actual = [np.asarray(value) for value in actual]
-    if not actual:
-        raise ValueError("row has no outputs to check")
-    def pairs_of(reference):
-        if len(actual) != len(reference):
-            raise ValueError(
-                f"{mode}: output arity mismatch: {len(actual)} outputs, "
-                f"{len(reference)} reference values"
-            )
-        return list(zip(actual, reference))
-
     if mode == "cpu_reference":
-        from gpu_linalg_ad_contracts import cpu_reference
+        from gpu_linalg_ad_contracts import cpu_reference as cpu_ad_reference
 
-        reference, diagnostic = cpu_reference(
+        arrays, diagnostic = cpu_ad_reference(
             _loss_fn(loss), matrix, tangent, rhs, phase
         )
-        pairs = pairs_of(reference)
-        backend = "cpu_fp64 AD re-execution"
-        reason = None
-    elif mode == "analytic":
-        reference, diagnostic = analytic_reference(
+        return arrays, "cpu_fp64 AD re-execution", diagnostic
+    if mode == "analytic":
+        arrays, diagnostic = analytic_reference(
             loss, phase, matrix, tangent, rhs, device=device
         )
-        pairs = pairs_of(reference)
-        backend = f"{diagnostic['reference']} ({diagnostic['device']})"
-        reason = None
-    elif mode == "finite_difference":
+        return arrays, f"{diagnostic['reference']} ({diagnostic['device']})", diagnostic
+    if mode == "finite_difference":
         primal, directional, diagnostic = finite_difference_directional(
             loss, phase, matrix, tangent, rhs, device=device, step=step
         )
+        backend = (
+            f"central difference of the primal loss on {diagnostic['device']} "
+            f"(t={diagnostic['step']:.3e} = {diagnostic['step_rule']})"
+        )
+        return [np.asarray(primal), np.asarray(directional)], backend, diagnostic
+    raise ValueError(f"{mode}: no check to run")
+
+
+def compare(
+    mode: str,
+    phase: str,
+    actual,
+    prepared,
+    tangent,
+    rtol: float,
+    atol: float,
+) -> dict:
+    """Hold one row's outputs to a reference built by :func:`reference`."""
+    reference, backend, diagnostic = prepared
+    actual = [np.asarray(value) for value in actual]
+    if not actual:
+        raise ValueError("row has no outputs to check")
+    if mode == "finite_difference":
         if len(actual) != 2:
             raise ValueError(
                 "a finite_difference row must report exactly a primal and a "
                 f"derivative, got {len(actual)} outputs"
             )
-        derivative = np.asarray(actual[1])
+        derivative = actual[1]
         if phase == "vjp" and derivative.shape != np.asarray(tangent).shape:
             # A scalar or a broadcastable shape would be reduced through NumPy's
             # broadcasting rules and compared as if it were the full derivative;
@@ -397,25 +449,36 @@ def check(
                 f"{np.asarray(tangent).shape}"
             )
         measured = directional_of_actual(phase, derivative, tangent)
-        pairs = [
-            (actual[0], np.asarray(primal)),
-            (np.asarray(measured), np.asarray(directional)),
-        ]
-        backend = (
-            f"central difference of the primal loss on {diagnostic['device']} "
-            f"(t={diagnostic['step']:.3e} = {diagnostic['step_rule']})"
-        )
+        directional = float(reference[1])
+        pairs = [(actual[0], reference[0]), (np.asarray(measured), reference[1])]
         reason = (
             f"finite_difference: t={diagnostic['step']:.6e}, "
             f"directional={directional:.12e}, measured={measured:.12e}, "
             f"error={abs(measured - directional):.3e}"
         )
+    elif len(actual) != len(reference):
+        raise ValueError(
+            f"{mode}: output arity mismatch: {len(actual)} outputs, "
+            f"{len(reference)} reference values"
+        )
     else:
-        raise ValueError(f"{mode}: no check to run")
+        pairs = list(zip(actual, reference))
+        reason = None
 
     max_abs = max_rel = worst = 0.0
     for observed, expected in pairs:
         abs_error, rel_error, ratio = _worst(observed, expected, rtol, atol)
+        # `max(0.0, nan)` is 0.0, so a non-finite term would turn a failure into
+        # a pass. Refuse to score the row instead of guessing.
+        if not (
+            np.isfinite(abs_error)
+            and np.isfinite(rel_error)
+            and np.isfinite(ratio)
+        ):
+            raise ValueError(
+                f"{mode}: non-finite score (max_abs_error={abs_error!r}, "
+                f"max_rel_error={rel_error!r}, residual={ratio!r})"
+            )
         max_abs = max(max_abs, abs_error)
         max_rel = max(max_rel, rel_error)
         worst = max(worst, ratio)
@@ -438,6 +501,36 @@ def check(
             verdict,
         )
     return verdict
+
+
+def check(
+    mode: str,
+    loss: str,
+    phase: str,
+    actual,
+    matrix,
+    tangent,
+    rhs,
+    rtol: float,
+    atol: float,
+    *,
+    device: str | None = None,
+    step: float | None = None,
+) -> dict:
+    """Build the reference and hold one row's outputs to ``mode``.
+
+    Prefer :func:`reference` + :func:`compare` when more than one download of a
+    row is checked: this one rebuilds the reference for every call.
+    """
+    return compare(
+        mode,
+        phase,
+        actual,
+        reference(mode, loss, phase, matrix, tangent, rhs, device=device, step=step),
+        tangent,
+        rtol,
+        atol,
+    )
 
 
 class VerificationFailure(ValueError):

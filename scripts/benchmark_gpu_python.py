@@ -630,14 +630,10 @@ def _run_ginkgo(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
         reference = torch.sparse.mm(csr, torch.as_tensor(x_np, dtype=torch.float64).reshape(cols, -1)).numpy().ravel()
         expected_shape = (rows,) if op == "spmv" else (rows, x.shape[1])
         def check(result):
-            import numpy as np
             if tuple(result.shape) != expected_shape:
                 raise RuntimeError("verification: wrong Ginkgo output shape")
-            actual = result.detach().cpu().numpy().ravel()
-            max_abs = float(np.max(np.abs(actual-reference)))
-            max_rel = float(np.max(np.abs(actual-reference)/np.maximum(np.abs(reference),1e-10)))
-            passed = np.isfinite(actual).all() and max_abs <= atol+rtol*max(float(np.max(np.abs(reference))),1.0)
-            return ("passed" if passed else "failed", max_abs, max_rel)
+            return _sparse_residual_verdict(result.detach().cpu().numpy().ravel(),
+                                            reference, rtol, atol)
         phases = dict(backend_initialization=backend_end-case_start,
                       input_reference_and_preparation=time.monotonic_ns()-backend_end)
         sampling, verification = _sample_vendor(prepared.run, prepared.synchronize, check, device, n_warmup, n_runs, phases=phases)
@@ -1114,6 +1110,47 @@ def _jax_fn(op: str, d: dict):
 # Verification
 # ---------------------------------------------------------------------------
 
+def _scorable(*values):
+    """Whether every value is a finite, non-negative number (arrays included).
+
+    A comparison that cannot express its own budget has not verified anything:
+    `rtol = inf` makes every threshold infinite, and `atol + rtol * 1.7e308`
+    overflows to the same, so `inf <= inf` scores every miss as `passed` (the
+    fail-open `compare_vectors` carries the guarded version of).
+    """
+    import numpy as np
+
+    return all(value is not None and bool(np.all(np.isfinite(value)))
+               and bool(np.all(np.asarray(value) >= 0)) for value in values)
+
+
+def _verification_score(a_abs, a_rel, norm_ref, rtol, atol):
+    """One verdict from one error pair, or `failed` when it cannot be scored.
+
+    The row says `failed` and reports no metrics rather than an `inf` no JSON
+    reader accepts; the refusal rule is `_scorable`.
+    """
+    import numpy as np
+
+    with np.errstate(over="ignore", invalid="ignore"):
+        threshold = atol + rtol * max(float(norm_ref), 1.0)
+    if not _scorable(a_abs, a_rel, norm_ref, rtol, atol, threshold):
+        return "failed", None, None
+    return ("passed" if a_abs <= threshold else "failed"), a_abs, a_rel
+
+
+def _sparse_residual_verdict(actual, reference, rtol, atol):
+    """The Ginkgo CSR-apply comparison: residual norm, scored by `_scorable`."""
+    import numpy as np
+
+    error = np.abs(np.asarray(actual, dtype=np.float64).ravel()
+                   - np.asarray(reference, dtype=np.float64).ravel())
+    with np.errstate(over="ignore", invalid="ignore"):
+        max_abs = float(np.max(error))
+        max_rel = float(np.max(error / np.maximum(np.abs(reference), 1e-10)))
+    return _verification_score(max_abs, max_rel, float(np.max(np.abs(reference))), rtol, atol)
+
+
 def _verify_torch(op, gpu_result, cpu_result, data, rtol, atol):
     import torch
     import numpy as np
@@ -1131,8 +1168,7 @@ def _verify_torch(op, gpu_result, cpu_result, data, rtol, atol):
         return float(np.max(diff / np.maximum(np.abs(to_np(b).ravel()), 1e-10)))
 
     def check(a_abs, a_rel, norm_ref=1.0):
-        passed = a_abs <= atol + rtol * max(float(norm_ref), 1.0)
-        return ("passed" if passed else "failed"), a_abs, a_rel
+        return _verification_score(a_abs, a_rel, norm_ref, rtol, atol)
 
     try:
         if op == "solve":
@@ -1202,8 +1238,7 @@ def _verify_jax(op, gpu_result, cpu_result, data, rtol, atol):
         return float(np.max(diff / np.maximum(np.abs(to_np(b).ravel()), 1e-10)))
 
     def check(a_abs, a_rel, norm_ref=1.0):
-        passed = a_abs <= atol + rtol * max(float(norm_ref), 1.0)
-        return ("passed" if passed else "failed"), a_abs, a_rel
+        return _verification_score(a_abs, a_rel, norm_ref, rtol, atol)
 
     try:
         if op == "solve":
@@ -1296,6 +1331,18 @@ def _base_env(device_ordinal, ts, bc, tc):
 
 def _stub(suite_id, problem, backend, device_ordinal, *, status, reason, path,
           ts, bc, tc, ver_status=None, max_abs=None, max_rel=None, rtol=None, atol=None):
+    # A row that refused its tolerance may not record it: `inf`/`NaN` are not
+    # JSON tokens and a negative tolerance violates the schema. Keep the value
+    # in the reason the row states instead, and keep the other one.
+    import numpy as np
+    def refused(value):
+        return value is not None and not (np.isfinite(value) and value >= 0)
+    refused_tolerances = [f"{name}={value!r}" for name, value in (("rtol", rtol), ("atol", atol))
+                          if refused(value)]
+    if refused_tolerances:
+        reason = f"{reason}; refused tolerance {' '.join(refused_tolerances)}"
+    rtol = None if refused(rtol) else rtol
+    atol = None if refused(atol) else atol
     if ver_status is None:
         ver_status = "skipped" if status in ("unsupported", "not_configured") else "skipped"
     if status == "verification_failed":

@@ -142,6 +142,34 @@ pub fn resolved_measure_only_reason(problem: &Value) -> Option<&str> {
         .filter(|reason| !reason.is_empty())
 }
 
+/// The verification block of a row the runner never verified.
+///
+/// A `measure_only` problem runs no check by definition, so its row says
+/// `not_run` — the one status that carries no evidence — whatever stopped the
+/// case from running. Every other mode stopped before it had evidence, so the
+/// caller's own `status` (`skipped`, `failed`) stands.
+pub fn unchecked_verification(
+    status: &str,
+    mode: Option<VerificationMode>,
+    reason: &str,
+) -> serde_json::Value {
+    let measure_only = mode.is_some_and(VerificationMode::is_measure_only);
+    let mut verification = serde_json::json!({
+        "status": if measure_only { "not_run" } else { status },
+        "reference_backend": null,
+        "max_abs_error": null,
+        "max_rel_error": null,
+        "residual": null,
+        "rtol": null,
+        "atol": null,
+        "reason": reason,
+    });
+    if let Some(mode) = mode {
+        verification["mode"] = serde_json::json!(mode.as_str());
+    }
+    verification
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -221,5 +249,34 @@ mod tests {
             assert_eq!(VerificationMode::parse(mode.as_str()), Some(mode));
         }
         assert_eq!(VerificationMode::parse(DEFAULT_MODE), Some(VerificationMode::CpuReference));
+    }
+
+    #[test]
+    fn a_measure_only_stub_states_not_run_and_no_check_keeps_its_own_status() {
+        let block = unchecked_verification(
+            "skipped",
+            Some(VerificationMode::MeasureOnly),
+            "no CUDA GPU available",
+        );
+        // The schema accepts `not_run` only with `mode: measure_only` and null
+        // evidence; a `measure_only` row that says `skipped` is not a record.
+        assert_eq!(block["status"], "not_run");
+        assert_eq!(block["mode"], "measure_only");
+        assert_eq!(block["reason"], "no CUDA GPU available");
+        for field in ["reference_backend", "max_abs_error", "max_rel_error", "residual"] {
+            assert!(block[field].is_null(), "{field} must stay null");
+        }
+        for mode in [
+            VerificationMode::CpuReference,
+            VerificationMode::Analytic,
+            VerificationMode::FiniteDifference,
+        ] {
+            let block = unchecked_verification("skipped", Some(mode), "no CUDA GPU available");
+            assert_eq!(block["status"], "skipped");
+            assert_eq!(block["mode"], mode.as_str());
+        }
+        // A row whose check failed keeps saying so.
+        let block = unchecked_verification("failed", Some(VerificationMode::CpuReference), "mismatch");
+        assert_eq!(block["status"], "failed");
     }
 }

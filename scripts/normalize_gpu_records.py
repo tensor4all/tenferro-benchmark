@@ -177,7 +177,11 @@ def fold(row, suite_id=None):
         },
         "verification": {
             "status": _verification(row),
-            "reference_backend": (row.get("verification") or {}).get("reference") or "cpu_fp64",
+            # Only a reference the row actually recorded: defaulting to
+            # `cpu_fp64` made every family runner look like it had been checked
+            # against the CPU, including the rows that were checked against
+            # something else and the rows that ran no check at all.
+            "reference_backend": (row.get("verification") or {}).get("reference"),
             "rtol": None, "atol": None,
             "reason": reason,
         },

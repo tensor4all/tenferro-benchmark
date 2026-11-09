@@ -27,6 +27,7 @@ from validate_benchmark_suite import validate_suite  # noqa: E402
 
 SUITE_SCHEMA = json.loads((ROOT / "schemas/benchmark-suite.schema.json").read_text())
 RESULT_SCHEMA = json.loads((ROOT / "schemas/benchmark-result.schema.json").read_text())
+VERIFICATION_SCHEMA = RESULT_SCHEMA["properties"]["verification"]
 
 BASE_SUITE = {
     "schema_version": 1,
@@ -140,6 +141,48 @@ class ResultSchema(unittest.TestCase):
         with self.assertRaises(jsonschema.ValidationError):
             jsonschema.validate(row, RESULT_SCHEMA)
 
+    def test_not_run_must_name_a_mode(self):
+        # Without a mode, a row that says no check ran could still carry
+        # `reference_backend: cpu_fp64` and `residual: 0.0`, which reads as
+        # evidence. The status alone is not the claim; the pair is.
+        #
+        # Delete the mode from the FINAL record: `record(**block)` reinstates its
+        # default, which made this test pass for the wrong reason (the non-null
+        # evidence) even with the requirement removed from the schema.
+        row = self.record()
+        del row["verification"]["mode"]
+        with self.assertRaises(jsonschema.ValidationError):
+            jsonschema.validate(row, RESULT_SCHEMA)
+        # And the record this defect was reported with: no mode plus the
+        # invented evidence. Rejected as well, but it is the first case above
+        # that keeps `required: ["mode"]` load-bearing.
+        row = self.record(reference_backend="cpu_fp64", residual=0.0)
+        del row["verification"]["mode"]
+        with self.assertRaises(jsonschema.ValidationError):
+            jsonschema.validate(row, RESULT_SCHEMA)
+
+    def test_not_run_with_measure_only_is_a_record(self):
+        # The pair the Rust writer emits for an unchecked measure_only case.
+        jsonschema.validate(self.record(status="not_run", mode="measure_only"), RESULT_SCHEMA)
+
+    def test_the_row_a_runner_writes_for_an_unchecked_case_is_valid(self):
+        # `verification_mode::unchecked_verification` writes `not_run` for a
+        # `measure_only` problem that never ran and `skipped` for every other
+        # mode. Both have to be records, and a `measure_only` row that still
+        # claims a check is not one.
+        unchecked = self.record(status="not_run", reference_backend=None)
+        unchecked["status"] = "unsupported"
+        jsonschema.validate(unchecked, RESULT_SCHEMA)
+        unchecked["status"] = "runtime_failed"
+        jsonschema.validate(unchecked, RESULT_SCHEMA)
+        checked = self.record(status="skipped", mode="cpu_reference", reference_backend=None)
+        checked["status"] = "unsupported"
+        jsonschema.validate(checked, RESULT_SCHEMA)
+        claimed = self.record(status="skipped")
+        claimed["status"] = "unsupported"
+        with self.assertRaises(jsonschema.ValidationError):
+            jsonschema.validate(claimed, RESULT_SCHEMA)
+
     def test_an_unknown_mode_is_refused(self):
         row = self.record(status="passed", mode="cpu_fp64")
         with self.assertRaises(jsonschema.ValidationError):
@@ -182,6 +225,19 @@ class RecordAndSummary(unittest.TestCase):
     def test_a_legacy_record_gains_no_mode(self):
         record = fold(self.raw_row(status="passed"))
         self.assertNotIn("mode", record["verification"])
+
+    def test_the_fold_invents_no_reference(self):
+        # A family runner that recorded no reference did not check against the
+        # CPU; stamping `cpu_fp64` on it changed what a published number meant.
+        record = fold(self.raw_row(status="passed"))
+        self.assertIsNone(record["verification"]["reference_backend"])
+
+    def test_the_fold_keeps_an_unchecked_row_self_consistent(self):
+        # `measure_only` requires a null reference: inventing one produced the
+        # one combination the result schema has to reject.
+        record = fold(self.raw_row(status="not_run", mode="measure_only",
+                                   reason="no reference fits at n=4096"))
+        jsonschema.validate(record["verification"], VERIFICATION_SCHEMA)
 
     def test_a_legacy_record_makes_a_byte_identical_summary_row(self):
         legacy = {

@@ -139,6 +139,162 @@ class CheckMustFailClosed(unittest.TestCase):
         self.assertGreater(max_rel, 1.0)
         self.assertEqual(max_abs, 1000.0)
 
+    def test_an_ordinary_failure_stays_a_finite_number(self):
+        # The residual used to be `inf` for every out-of-tolerance element, which
+        # `json.dumps` writes as the token `Infinity` -- not JSON. A finite
+        # failure has to report its finite ratio.
+        max_abs, _, worst = modes._worst(np.array([1.02]), np.array([1.0]), RTOL, ATOL)
+        self.assertAlmostEqual(max_abs, 0.02, places=12)
+        self.assertAlmostEqual(worst, 0.02 / (RTOL * 1.0 + ATOL), places=3)
+        verdict_row = {"max_abs_error": max_abs, "residual": worst}
+        self.assertNotIn("Infinity", json.dumps(verdict_row, allow_nan=False))
+
+    def test_a_subnormal_error_fails_a_zero_tolerance(self):
+        # The ratio denominator guard used to shrink a subnormal error below 1,
+        # so a nonzero error passed when both tolerances were zero.
+        _, _, worst = modes._worst(np.array([0.0]), np.array([1e-310]), 0.0, 0.0)
+        self.assertGreater(worst, 1.0)
+        self.assertLessEqual(modes._worst(np.array([0.0]), np.array([0.0]), 0.0, 0.0)[2], 1.0)
+
+    def test_an_overflowing_difference_stays_a_json_number(self):
+        # Two finite inputs of opposite sign overflow the subtraction; the
+        # reported max_abs_error must stay a finite JSON number all the same.
+        max_abs, _, worst = modes._worst(np.array([-1e308]), np.array([1e308]), 1e-5, 1e-8)
+        self.assertTrue(np.isfinite(max_abs) and np.isfinite(worst))
+        json.dumps({"max_abs_error": max_abs, "residual": worst}, allow_nan=False)
+        self.assertGreater(worst, 1.0)
+
+    def test_an_overflowing_difference_is_not_clamped_into_a_pass(self):
+        # Clamping the error before the tolerance comparison turned a 2x miss
+        # (tolerance 1.0, true error 2x max) into `passed` (#417 review).
+        largest = np.finfo(np.float64).max
+        self.assertGreater(
+            modes._worst(np.asarray(-largest), np.asarray(largest), 1.0, 0.0)[2], 1.0
+        )
+
+    def test_two_overflowing_values_cannot_score_a_pass(self):
+        # Both sides overflow: error is inf and `rtol * |reference|` is inf, so
+        # `inf/inf` is nan, `max(0.0, nan)` is 0.0, and compare() published a 2x
+        # miss as `passed 0.0` (#417 review repro).
+        prepared = ([np.asarray(1.7e308)], "ref", {})
+        with self.assertRaisesRegex(ValueError, "tolerance overflows"):
+            modes.compare(
+                "cpu_reference", "jvp", [np.asarray(-1.7e308)], prepared, None, 1.5, 0.0
+            )
+
+    def test_a_non_finite_score_is_refused_instead_of_scored(self):
+        # The same class, whatever produces it: a nan term must never reach
+        # `max(0.0, nan)`, which is 0.0 and reads as a pass.
+        import unittest.mock as mock
+
+        with mock.patch.object(modes, "_worst", return_value=(0.0, 0.0, float("nan"))):
+            with self.assertRaisesRegex(ValueError, "non-finite score"):
+                modes.compare(
+                    "cpu_reference", "jvp", [np.asarray(1.0)],
+                    ([np.asarray(1.0)], "ref", {}), None, 1e-5, 1e-8,
+                )
+
+    def test_a_failed_check_keeps_its_residual_serializable(self):
+        expected, matrix, tangent, rhs = cpu_outputs("grad_sum_qr", "jvp")
+        with self.assertRaises(modes.VerificationFailure) as caught:
+            modes.check(
+                "cpu_reference", "grad_sum_qr", "jvp", corrupt("jvp", expected),
+                matrix, tangent, rhs, RTOL, ATOL, device="cpu",
+            )
+        verdict = caught.exception.verdict
+        self.assertGreater(verdict["residual"], 1.0)
+        json.dumps(verdict, allow_nan=False)  # must not raise
+
+
+class OneReferencePerRow(unittest.TestCase):
+    """The check a row declares is built once, not once per download."""
+
+    def test_one_finite_difference_reference_evaluates_the_loss_three_times(self):
+        # `docs/verification-modes.md` states three (the point and both ends of
+        # the central difference); #381's body said two, and a Rust row runs the
+        # check once per row after #416. Counted, not estimated.
+        import unittest.mock as mock
+
+        matrix, tangent, rhs = case("grad_sum_qr", n=8)
+        original = modes._loss_fn
+        calls = []
+
+        def counting(name):
+            fn = original(name)
+
+            def counted(*args, **kwargs):
+                calls.append(1)
+                return fn(*args, **kwargs)
+
+            return counted
+
+        with mock.patch.object(modes, "_loss_fn", counting):
+            modes.reference("finite_difference", "grad_sum_qr", "vjp",
+                            matrix, tangent, rhs, device="cpu")
+        self.assertEqual(len(calls), 3)
+
+    def _validate_rust_row(self, seen, corrupt_phase=None):
+        """Hold a fake Rust row to `cpu_reference`, one download made wrong.
+
+        `seen` collects the phases the reference was built for, so a caller can
+        assert the build count alongside the verdict.
+        """
+        import unittest.mock as mock
+
+        import gpu_linalg_ad_contracts
+        from verify_gpu_linalg_ad_rust import validate
+
+        def fake_cpu_reference(loss_fn, matrix, tangent, rhs, phase):
+            seen.append(phase)
+            reference = [np.asarray(1.0), np.ones(np.shape(matrix))]
+            return reference, {"step": 1.0e-5, "max_error_over_budget": 0.0}
+
+        derivative = [1.0] * 16
+        outputs = {
+            phase: [
+                {"shape": [], "dtype": "f64", "values_col_major": [1.0]},
+                {"shape": [4, 4], "dtype": "f64",
+                 "values_col_major": list(derivative)},
+            ]
+            for phase in ("initial", "final")
+        }
+        if corrupt_phase is not None:
+            outputs[corrupt_phase][1]["values_col_major"] = [
+                value * (1.0 + 2.0e-2) for value in derivative]
+        row = {
+            "status": "ok",
+            "problem_id": "linalg_ad_grad_sum_qr_vjp_f64_4",
+            "op": "vjp",
+            "verification": {"status": "skipped"},
+            "execution": {"notes": json.dumps({"verification_outputs": outputs})},
+        }
+        problem = {
+            "id": "linalg_ad_grad_sum_qr_vjp_f64_4",
+            "op": "vjp",
+            "linalg_ad": {"loss": "grad_sum_qr", "n": 4, "matrix_seed": 34},
+            "verify": {"mode": "cpu_reference", "rtol": RTOL, "atol": ATOL},
+        }
+        with mock.patch.object(gpu_linalg_ad_contracts, "cpu_reference", fake_cpu_reference):
+            return validate(row, problem)
+
+    def test_the_rust_verifier_builds_the_reference_once(self):
+        seen = []
+        row = self._validate_rust_row(seen)
+        self.assertEqual(row["verification"]["status"], "passed")
+        self.assertEqual(seen, ["vjp"])
+
+    def test_a_corrupt_download_fails_whichever_phase_it_is_in(self):
+        # #417 review: the loop names both phases, but nothing held it there —
+        # dropping "final" still passed every test, so a corrupt final download
+        # published as verified. Each phase is corrupted on its own.
+        seen = []
+        for phase in ("initial", "final"):
+            with self.subTest(phase=phase):
+                with self.assertRaises(modes.VerificationFailure):
+                    self._validate_rust_row(seen, corrupt_phase=phase)
+        # Still one reference build per row, corrupt or not.
+        self.assertEqual(seen, ["vjp", "vjp"])
+
 
 class TolerancesComeFromTheManifest(unittest.TestCase):
     """A suite-level tolerance must not be replaced by the runner's fallback."""
@@ -158,6 +314,32 @@ class TolerancesComeFromTheManifest(unittest.TestCase):
 
     def test_the_fallback_is_only_for_a_manifest_that_states_nothing(self):
         self.assertEqual(modes.tolerances({}), (modes.DEFAULT_RTOL, modes.DEFAULT_ATOL))
+
+    def test_a_tolerance_that_is_not_a_finite_non_negative_number_is_refused(self):
+        # `validate_suite()` cannot express "not NaN" in its schema, so a
+        # `verify.rtol: .nan` reaches the check. It must not reach the score:
+        # `nan > 0` is False, an exact match scored 0, and the row published
+        # `passed` with `rtol: NaN` in a record no JSON reader accepts.
+        cases = ({"rtol": float("nan"), "atol": 1e-8},
+                 {"rtol": 1e-5, "atol": float("nan")},
+                 {"rtol": float("inf"), "atol": 1e-8},
+                 {"rtol": 1e-5, "atol": float("inf")},
+                 {"rtol": -1e-5, "atol": 1e-8},
+                 {"rtol": 1e-5, "atol": -1e-8})
+        # Both places a tolerance can come from: the problem's own block and the
+        # suite defaults that fill in for it.
+        for block in cases:
+            for where in ("problem", "suite default"):
+                with self.subTest(block=block, where=where):
+                    problem, defaults = (
+                        ({"verify": block}, {}) if where == "problem"
+                        else ({}, {"verify": block})
+                    )
+                    with self.assertRaisesRegex(ValueError, "finite and non-negative"):
+                        modes.tolerances(problem, defaults)
+        # A manifest that states nothing still takes the fallback.
+        self.assertEqual(modes.tolerances({}, {"verify": {}}),
+                         (modes.DEFAULT_RTOL, modes.DEFAULT_ATOL))
 
 
 class FiniteDifferenceShape(unittest.TestCase):

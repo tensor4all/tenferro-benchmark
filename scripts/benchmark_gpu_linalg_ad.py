@@ -36,6 +36,7 @@ from benchmark_cpu_ops_python import jax_loss_lu as _jax_loss_lu  # noqa: E402
 from benchmark_cpu_ops_python import jax_loss_qr as _jax_loss_qr  # noqa: E402
 from benchmark_cpu_ops_python import jax_loss_solve_wrt_a as _jax_loss_solve_wrt_a  # noqa: E402
 from benchmark_cpu_ops_python import jax_loss_svd_s as _jax_loss_svd_s  # noqa: E402
+from gpu_linalg_ad_contracts import leaves  # noqa: E402
 
 LOSS_TORCH = {
     "grad_sum_svd_s": torch_loss_svd_s,
@@ -153,14 +154,93 @@ def _value_bytes(value) -> int:
     return int(np.prod(shape, dtype=np.int64)) * int(np.dtype(value.dtype).itemsize)
 
 
+def verified_arrays(result, mode, check_placement, download):
+    """The host copies one verdict reads, or ``None`` when no check runs.
+
+    ``measure_only`` exists to skip exactly this: a 4096² VJP gradient is
+    134,217,728 bytes per probe, and the mode compares nothing.
+    """
+    if mode == "measure_only":
+        return None
+    leaves_of_result = leaves(result)
+    for value in leaves_of_result:
+        check_placement(value)
+    return [download(value) for value in leaves_of_result]
+
+
+def _jax_framework(matrix, tangent, rhs, loss_name, phase, device_ordinal):
+    """The device handle one JAX AD row runs on.
+
+    Fenced off from the row logic so a CPU-only test can substitute the device
+    half and still drive the real path, probe and final download included.
+    """
+    import numpy as np
+    import jax
+    import jax.numpy as jnp
+    jax.config.update("jax_enable_x64", True)
+    jax.config.update("jax_default_matmul_precision", "highest")
+    device = jax.devices("cuda")[device_ordinal]
+    x, t = (jax.device_put(np.asarray(v, dtype=np.float64), device) for v in (matrix, tangent))
+    b = None if rhs is None else jax.device_put(np.asarray(rhs, dtype=np.float64), device)
+    loss = LOSS_JAX[loss_name]
+    fn = loss if b is None else lambda a: loss(a, b)
+    if phase == "jvp":
+        operation = lambda a, seed: jax.jvp(fn, (a,), (seed,))
+        arguments = x, t
+    else:
+        def operation(a, seed):
+            primal, pullback = jax.vjp(fn, a)
+            return primal, pullback(seed)
+        arguments = x, jax.device_put(np.asarray(1., dtype=np.float64), device)
+    jax.block_until_ready((arguments, b))
+    started = time.perf_counter()
+    compiled = jax.jit(operation).lower(*arguments).compile()
+    compile_ms = (time.perf_counter()-started)*1000
+    def check_placement(value):
+        if value.devices() != {device} or value.dtype != jnp.float64:
+            raise ValueError("AD output is not F64 on the selected CUDA device")
+    return {"runner": lambda: compiled(*arguments), "ready": jax.block_until_ready,
+            "sync": lambda: jax.block_until_ready(arguments),
+            "check_placement": check_placement, "download": np.asarray,
+            "version": "jax=" + jax.__version__, "compile_ms": compile_ms}
+
+
+def _torch_framework(matrix, tangent, rhs, loss_name, phase, device_ordinal):
+    """The device handle one PyTorch AD row runs on; see `_jax_framework`."""
+    import torch
+    torch.set_num_threads(1)
+    torch.cuda.set_device(device_ordinal)
+    torch.backends.cuda.matmul.allow_tf32 = False
+    torch.backends.cudnn.allow_tf32 = False
+    device = torch.device(f"cuda:{device_ordinal}")
+    x, t = (torch.tensor(v, dtype=torch.float64, device=device) for v in (matrix, tangent))
+    b = None if rhs is None else torch.tensor(rhs, dtype=torch.float64, device=device)
+    loss = LOSS_TORCH[loss_name]
+    fn = loss if b is None else lambda a: loss(a, b)
+    if phase == "jvp":
+        runner = lambda: torch.func.jvp(fn, (x,), (t,))
+    else:
+        cotangent = torch.tensor(1., dtype=torch.float64, device=device)
+        def runner():
+            primal, pullback = torch.func.vjp(fn, x)
+            return primal, pullback(cotangent)
+    sync = lambda: torch.cuda.synchronize(device)
+    def check_placement(value):
+        if value.device != device or value.dtype != torch.float64:
+            raise ValueError("AD output is not F64 on the selected CUDA device")
+    return {"runner": runner, "ready": lambda values: sync(), "sync": sync,
+            "check_placement": check_placement,
+            "download": lambda value: value.detach().cpu().numpy(),
+            "version": "torch=" + torch.__version__, "compile_ms": None}
+
+
 def run_jax(suite_id, problem, backend, device_ordinal, *, ts, bc, tc, verify_defaults=None):
     return run_framework(suite_id, problem, backend, device_ordinal, ts=ts, bc=bc, tc=tc,
                          verify_defaults=verify_defaults)
 
 
 def run_framework(suite_id, problem, backend, device_ordinal, *, ts, bc, tc, verify_defaults=None):
-    import numpy as np
-    from gpu_linalg_ad_contracts import cpu_reference, leaves, verify_arrays
+    from gpu_linalg_ad_contracts import cpu_reference, verify_arrays
     from benchmark_gpu_public_api import measure
     from benchmark_gpu_python import _timing_stats
     import linalg_ad_verify_modes as verify_modes
@@ -170,12 +250,16 @@ def run_framework(suite_id, problem, backend, device_ordinal, *, ts, bc, tc, ver
     n, loss_name, seed = ad["n"], ad["loss"], ad["matrix_seed"]
     warmups = int(os.environ.get("BENCH_WARMUPS", problem.get("run", {}).get("warmups", 3)))
     runs = int(os.environ.get("BENCH_RUNS", problem.get("run", {}).get("runs", 7)))
-    rtol, atol = verify_modes.tolerances(problem, verify_defaults)
     verify_only = os.environ.get("GPU_BENCH_VERIFY_ONLY") == "1"
     case_started = time.perf_counter()
-    # Which check backs this row is the manifest's decision, not the runner's.
-    mode = verify_modes.mode_for(problem, verify_defaults)
+    # Resolving the manifest belongs to this case, inside the error boundary: a
+    # mode or a tolerance the check refuses must cost one row that states why,
+    # not the whole collector run. `mode` stays None when resolution itself is
+    # what failed, so the stub row claims no check at all.
+    mode = None
     try:
+        mode = verify_modes.mode_for(problem, verify_defaults)
+        rtol, atol = verify_modes.tolerances(problem, verify_defaults)
         if warmups < 0 or runs < 1:
             raise ValueError("invalid AD sampling counts")
         matrix = matrix_for_linalg_ad(loss_name, n, seed)
@@ -190,77 +274,23 @@ def run_framework(suite_id, problem, backend, device_ordinal, *, ts, bc, tc, ver
         # Input generation plus the CPU AD reference: everything this case pays
         # before its own clocks start.
         fixture_ms = (time.perf_counter() - case_started) * 1000
-        compile_ms = None
         cache_dir = os.environ.get("JAX_COMPILATION_CACHE_DIR") or None
         cache_before = jax_cache_stats.stats(cache_dir)
-        if is_jax:
-            import jax
-            import jax.numpy as jnp
-            jax.config.update("jax_enable_x64", True)
-            jax.config.update("jax_default_matmul_precision", "highest")
-            device = jax.devices("cuda")[device_ordinal]
-            x, t = (jax.device_put(np.asarray(v, dtype=np.float64), device) for v in (matrix, tangent))
-            b = None if rhs is None else jax.device_put(np.asarray(rhs, dtype=np.float64), device)
-            loss = LOSS_JAX[loss_name]
-            fn = loss if b is None else lambda a: loss(a, b)
-            if phase == "jvp":
-                operation = lambda a, seed: jax.jvp(fn, (a,), (seed,))
-                arguments = x, t
-            else:
-                def operation(a, seed):
-                    primal, pullback = jax.vjp(fn, a)
-                    return primal, pullback(seed)
-                arguments = x, jax.device_put(np.asarray(1., dtype=np.float64), device)
-            jax.block_until_ready((arguments, b))
-            started = time.perf_counter()
-            compiled = jax.jit(operation).lower(*arguments).compile()
-            compile_ms = (time.perf_counter()-started)*1000
-            runner = lambda: compiled(*arguments)
-            ready = jax.block_until_ready
-            sync = lambda: jax.block_until_ready(arguments)
-            def check_placement(value):
-                if value.devices() != {device} or value.dtype != jnp.float64:
-                    raise ValueError("AD output is not F64 on the selected CUDA device")
-            download = np.asarray
-            version = "jax=" + jax.__version__
-        else:
-            import torch
-            torch.set_num_threads(1)
-            torch.cuda.set_device(device_ordinal)
-            torch.backends.cuda.matmul.allow_tf32 = False
-            torch.backends.cudnn.allow_tf32 = False
-            device = torch.device(f"cuda:{device_ordinal}")
-            x, t = (torch.tensor(v, dtype=torch.float64, device=device) for v in (matrix, tangent))
-            b = None if rhs is None else torch.tensor(rhs, dtype=torch.float64, device=device)
-            loss = LOSS_TORCH[loss_name]
-            fn = loss if b is None else lambda a: loss(a, b)
-            if phase == "jvp":
-                runner = lambda: torch.func.jvp(fn, (x,), (t,))
-            else:
-                cotangent = torch.tensor(1., dtype=torch.float64, device=device)
-                def runner():
-                    primal, pullback = torch.func.vjp(fn, x)
-                    return primal, pullback(cotangent)
-            sync = lambda: torch.cuda.synchronize(device)
-            ready = lambda values: sync()
-            def check_placement(value):
-                if value.device != device or value.dtype != torch.float64:
-                    raise ValueError("AD output is not F64 on the selected CUDA device")
-            download = lambda value: value.detach().cpu().numpy()
-            version = "torch=" + torch.__version__
+        framework = (_jax_framework if is_jax else _torch_framework)(
+            matrix, tangent, rhs, loss_name, phase, device_ordinal)
+        runner, ready, sync = framework["runner"], framework["ready"], framework["sync"]
+        check_placement, download = framework["check_placement"], framework["download"]
+        compile_ms, version = framework["compile_ms"], framework["version"]
         def check(result):
-            for value in leaves(result):
-                check_placement(value)
-            arrays = [download(v) for v in leaves(result)]
-            if mode == "measure_only":
+            arrays = verified_arrays(result, mode, check_placement, download)
+            if arrays is None:
                 return None
             if mode == "cpu_reference":
                 max_abs, max_rel, worst = verify_arrays(arrays, expected, rtol, atol)
                 return {"max_abs_error": max_abs, "max_rel_error": max_rel,
                         "residual": worst, "reference_backend": "cpu_fp64 AD re-execution",
                         "reason": None, "mode": mode, "diagnostic": difference}
-            return verify_modes.check(mode, loss_name, phase, arrays, matrix, tangent, rhs,
-                                      rtol, atol)
+            return verify_modes.compare(mode, phase, arrays, prepared, tangent, rtol, atol)
         probe_started = time.perf_counter()
         probe = runner()
         ready(probe)
@@ -274,6 +304,13 @@ def run_framework(suite_id, problem, backend, device_ordinal, *, ts, bc, tc, ver
         # comparison of both downloaded outputs, and it happens outside every clock.
         verify_ms = 0.0
         verify_started = time.perf_counter()
+        # The reference is built once for the whole row: the initial and the
+        # final download are judged against the same case.
+        prepared = (
+            None
+            if mode in {"cpu_reference", "measure_only"}
+            else verify_modes.reference(mode, loss_name, phase, matrix, tangent, rhs)
+        )
         verification = check(probe)
         verify_ms += (time.perf_counter() - verify_started) * 1000
         if expected is None:
@@ -340,7 +377,11 @@ def run_framework(suite_id, problem, backend, device_ordinal, *, ts, bc, tc, ver
                                "CPU AD reference, transfers, compilation, validation, output destruction"}))
         return rec
     except Exception as exc:
-        return stub(suite_id, problem, backend, device_ordinal, status="runtime_failed", reason=str(exc), path=path, ts=ts, bc=bc, tc=tc)
+        # An exception with no message would leave `verification.reason` blank,
+        # which a `not_run` row cannot be (minLength 1, pattern \S). State the
+        # class instead of nothing.
+        reason = str(exc).strip() or type(exc).__name__
+        return stub(suite_id, problem, backend, device_ordinal, status="runtime_failed", reason=reason, path=path, ts=ts, bc=bc, tc=tc, mode=mode)
 
 
 def _layout_str(problem) -> str:
@@ -363,6 +404,7 @@ def stub(
     ts,
     bc,
     tc,
+    mode=None,
 ):
     return {
         "schema_version": 1,
@@ -388,7 +430,8 @@ def stub(
             "peak_memory_bytes": None,
         },
         "verification": {
-            "status": "skipped",
+            **({"mode": mode} if mode else {}),
+            "status": "not_run" if mode == "measure_only" else "skipped",
             "reference_backend": None,
             "max_abs_error": None,
             "max_rel_error": None,

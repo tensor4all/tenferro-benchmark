@@ -255,15 +255,9 @@ fn verify_tensor_network_scalar(
     rtol: f64,
     atol: f64,
 ) -> (String, Option<f64>, Option<f64>) {
-    let max_abs = (gpu - cpu).abs() as f64;
-    let max_rel = max_abs / cpu.abs().max(1e-10_f32) as f64;
-    let norm = cpu.abs().max(1.0_f32) as f64;
-    let passed = max_abs <= atol + rtol * norm;
-    (
-        if passed { "passed" } else { "failed" }.to_string(),
-        Some(max_abs),
-        Some(max_rel),
-    )
+    // A one-element tensor network result is scored by the same guarded
+    // comparison as a vector: an unusable tolerance must not pass it either.
+    compare_vectors(&[gpu as f64], &[cpu as f64], rtol, atol)
 }
 
 fn constant_tree_scalar(node: &TreeNode, spec: &TensorNetworkSpec) -> Result<f32, String> {
@@ -2862,6 +2856,13 @@ fn compare_vectors(
     {
         return ("failed".into(), None, None);
     }
+    // A tolerance the comparison cannot express scores every input as `passed`:
+    // `rtol = inf` makes the threshold infinite, and a plausible `rtol = 1.5` on
+    // 1e308 inputs overflows `atol + rtol * norm` into one. Refuse to score the
+    // row, exactly as for a non-finite input.
+    if !rtol.is_finite() || !atol.is_finite() || rtol < 0.0 || atol < 0.0 {
+        return ("failed".into(), None, None);
+    }
     let max_abs = actual
         .iter()
         .zip(expected.iter())
@@ -2873,11 +2874,17 @@ fn compare_vectors(
         .map(|(x, y)| (x - y).abs() / y.abs().max(1e-10))
         .fold(0.0_f64, f64::max);
     let norm = expected.iter().map(|x| x.abs()).fold(0.0_f64, f64::max);
-    let passed = max_abs <= atol + rtol * norm.max(1.0);
+    let threshold = atol + rtol * norm.max(1.0);
+    if !threshold.is_finite() {
+        return ("failed".into(), None, None);
+    }
+    let passed = max_abs <= threshold;
+    // The metrics are reported, so they have to be numbers a JSON record can
+    // carry: a true error of 1e308 - (-1e308) overflows the subtraction.
     (
         if passed { "passed" } else { "failed" }.to_string(),
-        Some(max_abs),
-        Some(max_rel),
+        Some(max_abs.min(f64::MAX)),
+        Some(max_rel.min(f64::MAX)),
     )
 }
 
@@ -2912,6 +2919,50 @@ mod verification_tests {
     #[test]
     fn nan_cannot_disappear_in_max_error_fold() {
         assert_eq!(compare_vectors(&[f64::NAN], &[0.], 1e-8, 1e-10).0, "failed");
+    }
+    #[test]
+    fn an_unusable_tolerance_cannot_score_a_pass() {
+        // Measured before the fix: (1.5, 0.0) returned ("passed", Some(inf),
+        // Some(inf)) and an infinite rtol passed a 999x miss.
+        for (rtol, atol) in [
+            (1.5, 0.0),           // atol + rtol * |reference| overflows
+            (f64::INFINITY, 0.0), // not a budget at all
+            (f64::NAN, 0.0),
+            (1.0, f64::INFINITY),
+            (-1e-8, 0.0), // a negative tolerance is not a budget
+        ] {
+            let scored = compare_vectors(&[-1.7e308], &[1.7e308], rtol, atol);
+            assert_eq!(scored.0, "failed", "rtol={rtol} atol={atol} -> {scored:?}");
+            assert!(scored.1.is_none() && scored.2.is_none(), "{scored:?}");
+        }
+        // The ordinary cases are unchanged.
+        assert_eq!(compare_vectors(&[999.0], &[1.0], 1e-5, 1e-8).0, "failed");
+        assert_eq!(compare_vectors(&[1.0], &[1.0], 1e-5, 1e-8).0, "passed");
+        // A finite tolerance still reports the (clamped) error of an overflowed
+        // difference instead of `inf`.
+        let (status, max_abs, _) = compare_vectors(&[-1e308], &[1e308], 1e-5, 1e-8);
+        assert_eq!(status, "failed");
+        assert!(max_abs.unwrap().is_finite());
+    }
+    #[test]
+    fn a_scalar_verdict_goes_through_the_guarded_comparison() {
+        // Measured before the fix: (999, 1, inf, 0) returned "passed" and so
+        // did a f32-max miss under an overflowing rtol.
+        for (gpu, cpu, rtol, atol) in [
+            (999.0, 1.0, f64::INFINITY, 0.0),
+            (-f32::MAX, f32::MAX, 1e308, 0.0),
+        ] {
+            let scored = verify_tensor_network_scalar(gpu, cpu, rtol, atol);
+            assert_eq!(scored.0, "failed", "{gpu} {cpu} {rtol} -> {scored:?}");
+        }
+        assert_eq!(
+            verify_tensor_network_scalar(1.0, 1.0, 1e-5, 1e-8).0,
+            "passed"
+        );
+        assert_eq!(
+            verify_tensor_network_scalar(999.0, 1.0, 1e-5, 1e-8).0,
+            "failed"
+        );
     }
     #[test]
     fn the_verified_tensor_path_returns_its_invariants() {
@@ -3165,13 +3216,11 @@ fn stub(
             "timing_scope": "steady_state_host_api_plus_device_sync"
         },
         "performance": { "tflops": null, "effective_bandwidth_gbps": null, "peak_memory_bytes": null },
-        "verification": {
-            "status": ver_status,
-            "mode": problem_verify_mode(problem).as_str(),
-            "reference_backend": null,
-            "max_abs_error": null, "max_rel_error": null, "residual": null,
-            "rtol": null, "atol": null, "reason": reason
-        },
+        "verification": verification_mode::unchecked_verification(
+            ver_status,
+            Some(problem_verify_mode(problem)),
+            reason,
+        ),
         "execution": {
             "device": "cuda", "device_ordinal": device_ordinal,
             "execution_path": path, "synchronization": "not executed",

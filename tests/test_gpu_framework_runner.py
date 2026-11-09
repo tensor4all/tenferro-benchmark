@@ -95,6 +95,100 @@ class LegacyGpuContracts(unittest.TestCase):
                 require_verification((status, None, None))
         self.assertEqual(require_verification(("passed", 0., 0.)), ("passed", 0., 0.))
 
+    def test_a_tolerance_the_legacy_check_cannot_express_is_not_a_pass(self):
+        # Measured on c2dca56: both helpers returned ("passed", ...) for both of
+        # these — an infinite rtol is an infinite budget, and `atol + rtol *
+        # 1.7e308` overflows to one, so `inf <= inf` passed a 1.7e308 miss. Same
+        # fail-open the Rust `compare_vectors` carries the guarded version of.
+        import numpy as np
+
+        for name in ("_verify_torch", "_verify_jax"):
+            check = getattr(runner, name)
+            for gpu, cpu, rtol, atol in (
+                # Finite errors, infinite tolerance: 999 vs 1 has to fail, so a
+                # fix that only rejected non-finite *errors* would not do.
+                ([999.], [1.], float("inf"), 0.),
+                # Finite errors, finite tolerance, threshold overflows.
+                ([1.], [1.7e308], 1.5, 0.),
+                # The reviewer's second reproduction verbatim: the error and
+                # the threshold both overflow.
+                ([-1.7e308], [1.7e308], 1.5, 0.),
+                # The overflowing error under a tolerance whose threshold stays
+                # finite: only the error check rejects this one.
+                ([-1.7e308], [1.7e308], 1e-5, 0.),
+                ([999.], [1.], float("nan"), 0.),
+                ([999.], [1.], 1e-5, float("nan")),
+                ([1.], [1.], -1e-5, 0.),
+            ):
+                with self.subTest(check=name, rtol=rtol, gpu=gpu, cpu=cpu):
+                    self.assertEqual(
+                        check("matmul", np.array(gpu), np.array(cpu), {}, rtol, atol),
+                        ("failed", None, None))
+            # The ordinary verdicts and their metrics are unchanged.
+            self.assertEqual(check("matmul", np.array([1.]), np.array([1.]), {}, 1e-5, 1e-8),
+                             ("passed", 0.0, 0.0))
+            status, max_abs, _ = check("matmul", np.array([999.]), np.array([1.]), {}, 1e-5, 1e-8)
+            self.assertEqual(status, "failed")
+            self.assertEqual(max_abs, 998.0)
+
+    def test_the_sparse_and_tensor_network_verdicts_refuse_a_bad_tolerance(self):
+        # Measured on 78454d8: both self-built comparisons scored
+        # ("passed", 998.0, 998.0) for 999 vs 1 under an infinite rtol, and
+        # passed 1 vs 1.7e308 under rtol=1.5, whose threshold overflows.
+        import numpy as np
+
+        from gpu_framework_runner import tensor_network_verdict
+
+        for verdict in (runner._sparse_residual_verdict, tensor_network_verdict):
+            with self.subTest(verdict=verdict.__name__):
+                self.assertEqual(
+                    verdict(np.array([999.]), np.array([1.]), float("inf"), 0.),
+                    ("failed", None, None))
+                self.assertEqual(
+                    verdict(np.array([1.]), np.array([1.7e308]), 1.5, 0.),
+                    ("failed", None, None))
+                self.assertEqual(verdict(np.array([1.]), np.array([1.]), 1e-5, 1e-8),
+                                 ("passed", 0.0, 0.0))
+                self.assertEqual(
+                    verdict(np.array([999.]), np.array([1.]), 1e-5, 1e-8)[0], "failed")
+
+    def test_a_failed_row_cannot_record_the_tolerance_it_refused(self):
+        # Measured on c2dca56: the failure stub copied `rtol=inf` into the record,
+        # which `json.dumps` writes as the invalid token `Infinity` and the result
+        # schema rejects (a negative one violates its minimum). The reason keeps
+        # the value the row refused.
+        row = runner._stub(
+            "gpu/dense", {"id": "p", "op": "matmul", "layout": {}, "dtype": {}},
+            "pytorch-cuda", 0, status="verification_failed",
+            reason="verification failed", path="legacy", ts=None, bc=None, tc=None,
+            ver_status="failed", rtol=float("inf"), atol=-1e-8)
+        json.dumps(row, allow_nan=False)
+        import jsonschema
+        schema = json.loads((ROOT / "schemas/benchmark-result.schema.json").read_text())
+        jsonschema.validate(row, schema)
+        self.assertIsNone(row["verification"]["rtol"])
+        self.assertIsNone(row["verification"]["atol"])
+        self.assertIn("refused tolerance rtol=inf atol=-1e-08", row["verification"]["reason"])
+        # A refused tolerance does not take the usable one with it.
+        mixed = runner._stub(
+            "gpu/dense", {"id": "p", "op": "matmul", "layout": {}, "dtype": {}},
+            "pytorch-cuda", 0, status="verification_failed",
+            reason="verification failed", path="legacy", ts=None, bc=None, tc=None,
+            ver_status="failed", rtol=float("inf"), atol=1e-8)
+        self.assertIsNone(mixed["verification"]["rtol"])
+        self.assertEqual(mixed["verification"]["atol"], 1e-8)
+        self.assertEqual(mixed["verification"]["reason"],
+                         "verification failed; refused tolerance rtol=inf")
+        # A usable tolerance is recorded untouched.
+        kept = runner._stub(
+            "gpu/dense", {"id": "p", "op": "matmul", "layout": {}, "dtype": {}},
+            "pytorch-cuda", 0, status="verification_failed",
+            reason="verification failed", path="legacy", ts=None, bc=None, tc=None,
+            ver_status="failed", rtol=1e-5, atol=1e-8)
+        self.assertEqual((kept["verification"]["rtol"], kept["verification"]["atol"]),
+                         (1e-5, 1e-8))
+        self.assertEqual(kept["verification"]["reason"], "verification failed")
+
     def test_verification_only_records_cannot_be_published(self):
         with self.assertRaises(ValueError):
             formatter.format_markdown([{"status": "verification_only"}])
