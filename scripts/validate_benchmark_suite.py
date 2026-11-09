@@ -44,6 +44,17 @@ def load_yaml(path: Path) -> Any:
         raise ValidationLoadError(f"{path}: failed to read YAML: {exc}") from exc
     except yaml.YAMLError as exc:
         raise ValidationLoadError(f"{path}: invalid YAML: {exc}") from exc
+    except RecursionError as exc:
+        raise ValidationLoadError(f"{path}: invalid YAML: {exc}") from exc
+    except ValueError as exc:
+        # `open()`/`read()` raise `UnicodeDecodeError` (a `ValueError`) for bytes
+        # that are not UTF-8; it used to escape this handler and abort the rest.
+        raise ValidationLoadError(f"{path}: invalid YAML: {exc}") from exc
+    except AttributeError as exc:
+        # PyYAML 6.0.3's implicit `!!timestamp` resolver raises `AttributeError`
+        # (`None.groupdict()`) for an unparsable value, which is not a `YAMLError`;
+        # it used to escape this handler and abort the remaining inputs.
+        raise ValidationLoadError(f"{path}: invalid YAML: {exc}") from exc
 
 
 def validator_for(schema_path: Path) -> Draft202012Validator:
@@ -114,9 +125,14 @@ def validate_suite(path: Path) -> bool:
     # schema accepted: a malformed `defaults` (a list, say) is a schema error, not
     # an exception thrown out of the checker.
     if ok:
-        for message in regime_policy.check_suite(suite, PROJECT_DIR):
+        skips: list[str] = []
+        for message in regime_policy.check_suite(suite, PROJECT_DIR, skips=skips):
             print(f"{path}: {message}", file=sys.stderr)
             ok = False
+        # A `missing_source: skip` that only lives in the config is the same
+        # silent hole as an unreadable catalogue: name it on every run.
+        for line in skips:
+            print(f"{path}: {line}", file=sys.stderr)
     return ok
 
 

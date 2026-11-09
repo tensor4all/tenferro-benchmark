@@ -21,6 +21,11 @@ backends:
   - strided-jl
 problems:
   source: generated
+  # `generated` is a sentinel, not a path: `scripts/run_cpu_public_api.sh`
+  # enumerates the public-API rows it measures, so this checkout ships no
+  # catalogue file.  Absence is the expected state, and the validator names
+  # the skip on every run.
+  missing_source: skip
   include:
     - elementwise_reduction_public_api
     - indexing_layout_public_api

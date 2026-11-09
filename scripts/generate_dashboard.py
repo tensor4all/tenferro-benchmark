@@ -217,7 +217,7 @@ def load_suite_metadata(benchmarks_dir: Path) -> dict[str, dict[str, Any]]:
             raise SystemExit(
                 "regime policy violation:\n  " + "\n  ".join(errors)
             )
-        _defaults, declared_problems = regime_policy.declared_cases(document, project_dir)
+        _defaults, declared_problems, _skipped = regime_policy.declared_cases(document, project_dir)
         problems: dict[str, dict[str, Any]] = {}
         for problem in declared_problems:
             problem_id = problem.get("id")

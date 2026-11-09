@@ -140,7 +140,7 @@ jobs:
         run: uv run campaign-sync-pins . --repo tenferro-benchmark --check
 
       - name: Validate results dashboard
-        run: uv run python -m unittest tests.test_generate_dashboard tests.test_generate_history tests.test_result_pipeline tests.test_cpu_thread_reports tests.test_publish_runs tests.test_publish_gpu_page tests.test_report_summary_reasons tests.test_regime_policy tests.test_verification_mode_contract
+        run: uv run python -m unittest tests.test_generate_dashboard tests.test_generate_history tests.test_result_pipeline tests.test_cpu_thread_reports tests.test_publish_runs tests.test_publish_gpu_page tests.test_report_summary_reasons tests.test_regime_policy tests.test_source_contract tests.test_verification_mode_contract
 
       - name: Validate the linalg AD verification modes
         run: uv run python -m unittest tests.test_linalg_ad_verify_modes

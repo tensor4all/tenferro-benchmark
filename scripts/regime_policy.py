@@ -28,11 +28,12 @@ table, the evidence for each value, and which values are provisional.
 
 from __future__ import annotations
 
-import json
 import math
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable
+
+import suite_instances
 
 THROUGHPUT = "throughput"
 LATENCY = "latency"
@@ -329,71 +330,196 @@ def case_elements(problem: dict[str, Any]) -> int | None:
     return None
 
 
-def _instances(document: Any) -> list[dict[str, Any]]:
-    if isinstance(document, list):
-        rows = document
-    elif isinstance(document, dict):
-        rows = document.get("cases") or document.get("patterns") or []
-    else:
-        rows = []
-    return [row for row in rows if isinstance(row, dict)]
-
-
 def declared_cases(
-    suite: dict[str, Any], project_dir: Path
-) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    suite: dict[str, Any],
+    project_dir: Path,
+    skips: list[str] | None = None,
+) -> tuple[dict[str, Any], list[dict[str, Any]], bool]:
     """The suite's defaults and its cases, with the selector resolved.
 
     Inline problems are returned as written.  A `{source, include}` selector is
     resolved against its instance document, so every included case keeps the
     record's own `regime`, `n`/`shape` and family-facing fields.
+
+    The selector fails closed.  A source that does not load, and an `include` id
+    the loaded source does not contain, are errors: a broken catalogue used to
+    produce no cases, so the suite validated with fewer cases than its author
+    declared.  A source that may legitimately be absent opts in with
+    `missing_source: skip`, and the skip is reported through `skips` so the
+    validator names it on every run.
     """
     defaults = suite.get("defaults")
     if not isinstance(defaults, dict):
         defaults = {}
+    suite_id = str(suite.get("suite_id") or "")
     problems = suite.get("problems")
     if isinstance(problems, list):
-        return defaults, [row for row in problems if isinstance(row, dict)]
+        return defaults, [row for row in problems if isinstance(row, dict)], False
     if not isinstance(problems, dict):
-        return defaults, []
+        return defaults, [], False
 
+    missing = problems.get("missing_source")
+    if missing is not None and missing != "skip":
+        raise RegimeError(
+            f"{suite_id}: missing_source {missing!r} is not supported (only skip)"
+        )
     source = problems.get("source")
     include = problems.get("include") or []
     exclude = set(problems.get("exclude") or [])
     if not isinstance(source, str) or not source or not isinstance(include, list):
-        return defaults, []
+        # Callers unpack three values on every path; this one used to raise
+        # `ValueError: not enough values to unpack` instead of a diagnostic.
+        return defaults, [], False
+    repeated = [entry for index, entry in enumerate(include) if entry in include[:index]]
+    if repeated:
+        # Repeating an id declared the same case twice; the inline form and the
+        # collector both reject that, and run_all.sh collected the pair.
+        raise RegimeError(
+            f"{suite_id}: include repeats id {repeated[0]!r}; a selector declares "
+            "each id once"
+        )
 
     path = Path(source)
     if not path.is_absolute():
         path = project_dir / path
+    # Absence of the declared source is the only thing the opt-in covers: a file
+    # that disappears while its directory is read is a load failure, not a skip.
+    # `Path.exists()` is not the discriminator here: in CPython 3.14 it returns
+    # False for *any* OSError (3.12 raises PermissionError for the same call), so
+    # an unreadable catalogue -- a permission error on the file or on its
+    # directory -- looked absent and the suite validated with zero cases.
+    # `stat()` only swallows "not there".
     try:
-        if path.is_dir():
-            # A catalogue can point at a directory of per-instance files (the CPU
-            # einsum suite); each file is one instance, named by `name`.
-            document = []
-            for entry in sorted(path.glob("*.json")):
-                record = json.loads(entry.read_text(encoding="utf-8"))
-                if isinstance(record, dict) and not record.get("id"):
-                    record = {**record, "id": record.get("name") or entry.stem}
-                if isinstance(record, dict):
-                    document.append(record)
-        else:
-            document = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, ValueError):
-        return defaults, []
-    records = {str(row["id"]): row for row in _instances(document) if row.get("id")}
+        path.stat()
+    except FileNotFoundError:
+        absent = True
+    except OSError as error:
+        raise RegimeError(
+            f"{suite_id}: include source {source!r} did not load: "
+            f"{error.strerror or error}"
+        ) from error
+    except ValueError as error:
+        # `schema` accepts any non-empty string, so a path with an embedded NUL
+        # reaches `stat()` and raises `ValueError` there; it must be reported
+        # against this file, not abort the remaining command-line inputs.
+        raise RegimeError(
+            f"{suite_id}: include source {source!r} did not load: {error}"
+        ) from error
+    else:
+        absent = False
+    if absent:
+        if problems.get("missing_source") != "skip":
+            raise RegimeError(f"{suite_id}: include source {source!r} did not load: no such file or directory")
+        if skips is not None:
+            skips.append(f"{suite_id}: skipped include source {source!r} (missing_source: skip)")
+        return defaults, [], True
+    # Ids that exist only inside a member the directory loader skips, mapped to the
+    # file holding them: the error below names that file instead of sending the
+    # reader back to a catalogue that looks complete.
+    unreadable: dict[str, str] = {}
+    # One classifier, shared with the resolver: reading the source here its own way
+    # is how the validator accepted ids the run never collected, and rejected a
+    # source the run reads as one record.
+    kind, records, load_error = suite_instances.resolve_source(path, unreadable)
+    if load_error is not None:
+        raise RegimeError(f"{suite_id}: {load_error}")
+    if kind == suite_instances.SUITE_DOCUMENT:
+        # A nested suite: the run resolves it through the resolver, so the
+        # validator reads the same cases.  Each one keeps its own suite's
+        # declaration rather than borrowing the wrapper's `defaults`.
+        try:
+            nested_problems = records[0].get("problems")
+            if isinstance(nested_problems, list) and any(
+                not isinstance(row, dict) for row in nested_problems
+            ):
+                # The resolver rejects a non-mapping inline entry ("problems list
+                # entries must be mappings"); the validator dropped it and accepted
+                # the wrapper, so the two paths disagreed about one document.
+                raise RegimeError(
+                    f"{suite_id}: include source {source!r} did not load: "
+                    "problems list entries must be mappings"
+                )
+            nested_defaults, nested_cases, nested_skipped = declared_cases(
+                records[0], project_dir, skips=skips
+            )
+            if nested_skipped:
+                # The nested selector names a producer that may be absent
+                # (`missing_source: skip`): ask the resolver for the ids it returns,
+                # so the validator reads the same set -- entry types and exclusions
+                # included -- instead of zero cases that reject every include as
+                # unknown. `id` is written last because a nested `defaults` may
+                # carry an `id` of its own and must not rename the case.
+                nested_ids = suite_instances.resolve_suite_instance_ids(
+                    path, project_dir=project_dir
+                )
+                nested_cases = [
+                    {**nested_defaults, "id": entry} for entry in nested_ids
+                ]
+        except RegimeError:
+            raise
+        except Exception as error:  # noqa: BLE001 -- one source must not stop the rest
+            # A nested document is resolved without passing through the suite schema,
+            # so its selector can be shaped wrongly: `exclude: [{}]` raises
+            # `TypeError` from `set()` and a `problems` list raises `AttributeError`,
+            # and either used to escape this boundary and stop validation of every
+            # later input.  A chain that includes itself raises `RecursionError`,
+            # which escaped the same way before.  Report it against this file.
+            raise RegimeError(
+                f"{suite_id}: include source {source!r} did not load: "
+                f"{type(error).__name__}: {error}"
+            ) from error
+        rows = [
+            {
+                **row,
+                **{
+                    key: nested_defaults[key]
+                    for key in ("regime", "measure")
+                    if key not in row and key in nested_defaults
+                },
+            }
+            for row in nested_cases
+        ]
+    else:
+        rows = records
+    by_id: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        # `resolve_source()` guarantees an id for a catalogue; a nested suite's
+        # inline problems are returned as written, so the check lives here.
+        if not isinstance(row.get("id"), str) or not row["id"]:
+            raise RegimeError(
+                f"{suite_id}: include source {source!r} has a case without a non-empty id"
+            )
+        record_id = row["id"]
+        if record_id in by_id:
+            # A selector used to reach a catalogue the validator had already
+            # rejected as duplicated, and silently kept the last record: the
+            # wrapper then validated with fewer cases than the source declares.
+            raise RegimeError(
+                f"{suite_id}: include source {source!r} declares duplicate problem id {record_id!r}"
+            )
+        by_id[record_id] = row
 
     selected: list[dict[str, Any]] = []
     for entry in include:
         # `include` stays a list of ids: the GPU selection tooling reads it as a
-        # set of strings, so an id-to-regime mapping is not an option here.
-        if isinstance(entry, str):
-            record = records.get(entry)
-            if record is None:
-                continue
-            if entry not in exclude:
-                selected.append(record)
-    return defaults, selected
+        # set of strings, so an id-to-regime mapping is not an option here. A nested
+        # selector is not schema-checked, so a non-string entry has to be rejected
+        # here: the resolver checks it against the source and raises, and dropping it
+        # made the wrapper validate on the remaining ids.
+        if not isinstance(entry, str):
+            raise RegimeError(
+                f"{suite_id}: "
+                + suite_instances.include_missing_error(path, entry, unreadable)
+            )
+        record = by_id.get(entry)
+        if record is None:
+            raise RegimeError(
+                f"{suite_id}: "
+                + suite_instances.include_missing_error(path, entry, unreadable)
+            )
+        if entry not in exclude:
+            selected.append(record)
+    return defaults, selected, False
 
 
 def resolve(
@@ -486,7 +612,7 @@ def suite_cases(
     if not isinstance(suite, dict) or not suite.get("suite_id"):
         return []
     suite_id = str(suite["suite_id"])
-    defaults, cases = declared_cases(suite, project_dir)
+    defaults, cases, _skipped = declared_cases(suite, project_dir)
     rows = []
     for problem in cases:
         case_id = problem.get("id")
@@ -508,13 +634,18 @@ def suite_cases(
     return rows
 
 
-def check_suite(suite: dict[str, Any], project_dir: Path) -> list[str]:
+def check_suite(
+    suite: dict[str, Any], project_dir: Path, skips: list[str] | None = None
+) -> list[str]:
     """Validate one suite document; return the errors instead of raising."""
     errors: list[str] = []
     if not isinstance(suite, dict):
         return errors
     suite_id = str(suite.get("suite_id") or "")
-    _defaults, cases = declared_cases(suite, Path(project_dir))
+    try:
+        _defaults, cases, _skipped = declared_cases(suite, Path(project_dir), skips)
+    except RegimeError as exc:
+        return [str(exc)]
     defaults = suite.get("defaults") or {}
     for problem in cases:
         case_id = str(problem.get("id") or "")

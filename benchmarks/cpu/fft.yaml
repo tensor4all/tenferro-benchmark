@@ -17,6 +17,12 @@ backends:
   - pytorch-cpu
 problems:
   source: generated
+  # `generated` is a sentinel, not a path: `scripts/run_cpu_fft.sh` runs
+  # `src/bin/benchmark_cpu_fft.rs`, which enumerates its (op, dtype) pairs
+  # from `--lengths` at collection time, so this checkout ships no catalogue
+  # file.  Absence is the expected state, and the validator names the skip
+  # on every run.
+  missing_source: skip
   include:
     - fft_c32_1d
     - fft_c64_1d

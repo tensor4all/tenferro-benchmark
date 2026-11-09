@@ -266,7 +266,16 @@ assert_top_level_backends benchmarks/gpu/einsum.yaml
 assert_top_level_backends benchmarks/gpu/sparse.yaml
 assert_gpu_dense_large_solve_cases
 
-cat > "$TMP/cpu_selector_suite.yaml" <<'YAML'
+mkdir -p "$TMP/instances"
+# One record per file, keyed by `name`: that is how benchmark_python.load_instances()
+# reads a directory catalogue, so the fixture has to look the same.
+cat > "$TMP/instances/bin_matmul_256.json" <<'JSON'
+{"name": "bin_matmul_256", "regime": "latency"}
+JSON
+cat > "$TMP/instances/einsum_skip_me.json" <<'JSON'
+{"name": "einsum_skip_me", "regime": "latency"}
+JSON
+cat > "$TMP/cpu_selector_suite.yaml" <<YAML
 schema_version: 1
 suite_id: cpu/einsum
 title: CPU einsum selector suite
@@ -276,7 +285,7 @@ defaults:
   verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10}
 backends: [tenferro-eager, pytorch-cpu]
 problems:
-  source: benchmarks/cpu/einsum.yaml
+  source: "$TMP/instances"
   include: [bin_matmul_256]
   exclude: [einsum_skip_me]
 YAML
@@ -284,20 +293,15 @@ assert_valid suite "$TMP/cpu_selector_suite.yaml" "valid CPU selector suite"
 assert_yaml_list_contains "$TMP/cpu_selector_suite.yaml" backends tenferro-eager
 assert_yaml_list_contains "$TMP/cpu_selector_suite.yaml" problems.include bin_matmul_256
 
-cat > "$TMP/legacy_suite_id.yaml" <<'YAML'
-schema_version: 1
-suite_id: gpu_einsum_contract_v1
-title: Legacy GPU einsum suite
-description: Legacy underscore suite IDs should be rejected.
-defaults:
-  run: {warmups: 1, runs: 1, timing_scope: steady_state_host_api_plus_device_sync}
-  verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10}
-backends: [pytorch-cuda]
-problems:
-  source: benchmarks/gpu/einsum.yaml
-  include: [einsum_bin_matmul_3072_f64]
-YAML
+# The legacy-ID fixture is an otherwise-valid suite with only its `suite_id`
+# edited, so the suite-ID rule is the one thing that can make it fail: the same
+# bytes under a compliant ID must validate.
+sed 's|^suite_id: gpu/einsum$|suite_id: gpu_einsum_contract_v1|' \
+  benchmarks/gpu/einsum.yaml >"$TMP/legacy_suite_id.yaml"
 assert_invalid suite "$TMP/legacy_suite_id.yaml" "legacy underscore suite ID"
+sed 's|^suite_id: gpu/einsum$|suite_id: gpu/einsum-contract-v1|' \
+  benchmarks/gpu/einsum.yaml >"$TMP/renamed_suite_id.yaml"
+assert_valid suite "$TMP/renamed_suite_id.yaml" "renamed GPU einsum suite"
 
 cat > "$TMP/run.yaml" <<'YAML'
 schema_version: 1

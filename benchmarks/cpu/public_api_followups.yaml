@@ -14,4 +14,10 @@ defaults:
 backends: [tenferro-direct, tenferro-eager, tenferro-trace, pytorch-cpu, jax-cpu]
 problems:
   source: generated
+  # `generated` is a sentinel, not a path: `scripts/public_api_followups.py`
+  # declares its operation names and shapes and
+  # `src/bin/benchmark_cpu_public_api/followups.rs` emits them, so this
+  # checkout ships no catalogue file.  Absence is the expected state, and the
+  # validator names the skip on every run.
+  missing_source: skip
   include: [neural_public_api]
