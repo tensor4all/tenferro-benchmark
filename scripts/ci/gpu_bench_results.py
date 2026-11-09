@@ -10,26 +10,106 @@ borrowing a neighbouring run.  There is no override for the baseline: a pair
 outside that policy is not what this tool reports.
 
 Two runs are only comparable when the ``tenferro_commit`` changed, both were
-collected on the same ``hardware.host``, and they fall in different ISO weeks.
-That gate is applied to the pair before any row is computed; when it fires, the
-report names the mechanisms, prints no table, and exits 1.  When the table is
-printed, the two runs' commit, host, week and arm set are stated above it, so
-the reader never reconstructs which measurements were compared.
+collected on the same ``hardware.host``, they fall in different ISO weeks, and
+they record the same unit.  That gate is applied to the pair before any row is
+computed; when it fires, the report names the mechanisms, prints no table, and
+exits 1.  When the table is printed, the two runs' commit, host, week and arm
+set are stated above it, so the reader never reconstructs which measurements
+were compared.
 
-Exit status: 0 a comparison table was printed, 1 refused or no baseline.
+A run is accepted when the data says so: the ingestion driver commits the
+sidecar together with ``<suite>.provenance.json``, whose ``files`` map holds the
+sidecar's sha256 (``result_ingestion.plan_updates``).  A receipt that disagrees
+belongs to an edit, not to an accepted measurement; a revision without a receipt
+is history from before the receipts exist, and otherwise only a commit that
+publishes the report with the sidecar.  A committed receipt is a trusted marker
+of the driver's decision, not authentication.
+
+Exit status: 0 a comparison table was printed, 1 refused or no baseline, 2 the
+history could not be read (git's message on stderr) or the threshold is invalid.
 """
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import math
 import subprocess
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 
+class GitError(RuntimeError):
+    """A git command failed; the message is git's own diagnostic."""
+
+
+MAX_THRESHOLD = 1_000_000
+
+
 def git(repo: Path, *args: str) -> str:
-    return subprocess.run(['git', '-C', str(repo), *args], capture_output=True, text=True).stdout
+    done = subprocess.run(['git', '-C', str(repo), *args], capture_output=True, text=True)
+    if done.returncode != 0:
+        raise GitError(done.stderr.strip() or f'git {args[0]} exited {done.returncode}')
+    return done.stdout
+
+
+def git_file(repo: Path, sha: str, relative: str) -> bytes | None:
+    """The file's committed content at ``sha``, or None when that commit lacks it.
+
+    Absence is ``rev-parse --verify --quiet`` exiting 1, so an unreadable
+    repository is an error and never an absent record.
+    """
+    name = f'{sha}:{relative}'
+    present = subprocess.run(['git', '-C', str(repo), 'rev-parse', '--verify', '--quiet', name],
+                             capture_output=True)
+    if present.returncode == 1:
+        return None
+    if present.returncode != 0:
+        raise GitError(present.stderr.decode(errors='replace').strip() or f'cannot read {name}')
+    done = subprocess.run(['git', '-C', str(repo), 'cat-file', 'blob', name], capture_output=True)
+    if done.returncode != 0:
+        raise GitError(done.stderr.decode(errors='replace').strip() or f'cannot read {name}')
+    return done.stdout
+
+
+def is_ancestor(repo: Path, older: str, newer: str) -> bool:
+    done = subprocess.run(['git', '-C', str(repo), 'merge-base', '--is-ancestor', older, newer],
+                          capture_output=True, text=True)
+    if done.returncode in (0, 1):
+        return done.returncode == 0
+    raise GitError(done.stderr.strip() or 'git merge-base --is-ancestor failed')
+
+
+def require_full_history(repo: Path) -> None:
+    """A shallow clone hides the week a baseline has to come from."""
+    if git(repo, 'rev-parse', '--is-shallow-repository').strip() == 'true':
+        raise GitError('the repository is a shallow clone, so the previous week may be missing; '
+                       'fetch the full history first (git fetch --unshallow)')
+
+
+def first_receipt(repo: Path, *paths: str) -> str | None:
+    """The oldest commit that added one of ``paths``, if this history has one."""
+    shas = git(repo, 'log', '--reverse', '--format=%H', '--diff-filter=A', '--', *paths).split()
+    return shas[0] if shas else None
+
+
+def accepted(repo: Path, sha: str, relative: str, receipt_path: str, content: bytes,
+             cutoff: str | None) -> bool:
+    """Whether this sidecar revision is a published run rather than an edit."""
+    receipt = git_file(repo, sha, receipt_path)
+    if receipt is not None:
+        return json.loads(receipt).get('files', {}).get(relative) == hashlib.sha256(content).hexdigest()
+    # No receipt in that commit: acceptance was not recorded there.  Up to the
+    # fixed boundary that is the published history, and afterwards only a commit
+    # that publishes the run's report with the sidecar.
+    if cutoff is not None and is_ancestor(repo, sha, cutoff):
+        return True
+    # shortcut: a commit that rewrites the report as well is still taken as a
+    # publish, so an edit of both files passes; the fix is for every publisher of
+    # this sidecar to write the ingestion receipt (#431).
+    return bool(git(repo, 'diff-tree', '--root', '--no-commit-id', '--name-only', '-r', '-m', sha, '--',
+                    relative.replace('.summary.json', '.md')).strip())
 
 
 def collected(record: dict) -> datetime:
@@ -52,17 +132,23 @@ def host(record: dict) -> str | None:
 def accepted_runs(repo: Path, profile: str, suite: str) -> list[dict]:
     """Every accepted run of one suite, newest measurement first.
 
-    A revision that records no commit, host or collection time cannot be placed
-    in a week or gated, so it is not a run this tool can compare.
+    Acceptance is the driver's receipt for that revision, not the commit
+    message.  A revision that records no commit, host or collection time cannot
+    be placed in a week or gated, so it is not a run this tool can compare.
     """
     relative = f'result/{profile}/{suite}.summary.json'
+    receipt_path = f'result/{profile}/{suite}.provenance.json'
+    require_full_history(repo)
+    # The revisions from before acceptance receipts exist are the published
+    # history; the boundary is the first receipt in the history and never moves.
+    cutoff = first_receipt(repo, 'result/*/*/*.provenance.json')
     records, seen = [], set()
-    for sha in git(repo, 'log', '--format=%H', '--', relative).split():
-        show = subprocess.run(['git', '-C', str(repo), 'show', f'{sha}:{relative}'],
-                              capture_output=True, text=True)
-        if show.returncode != 0:
+    # A receipt-only acceptance changes just the provenance path, so both are walked.
+    for sha in git(repo, 'log', '--format=%H', '--', relative, receipt_path).split():
+        content = git_file(repo, sha, relative)
+        if content is None or not accepted(repo, sha, relative, receipt_path, content, cutoff):
             continue
-        document = json.loads(show.stdout)
+        document = json.loads(content)
         if not (document.get('tenferro_commit') and host(document) and document.get('timestamp')):
             continue
         try:
@@ -112,6 +198,9 @@ def refusals(candidate: dict, baseline: dict) -> list[str]:
         out.append(f'different host: {host(baseline)} vs {host(candidate)}: the comparison is across machines')
     if iso_week(candidate) == iso_week(baseline):
         out.append(f'same ISO week {iso_week(candidate)}: not a week-over-week comparison')
+    if unit(candidate) != unit(baseline):
+        out.append(f'different unit: {unit(baseline)} vs {unit(candidate)}: '
+                   f'two units do not make one ratio')
     return out
 
 
@@ -173,14 +262,33 @@ def status(result: dict) -> int:
     return 0 if result['baseline'] is not None and not result['refusals'] else 1
 
 
+def threshold(text: str) -> float:
+    """A finite regression factor between 1 and 1000000, the permitted range.
+
+    NaN compares false with every ratio, which would drop every regression and
+    still exit 0; a factor below 1x would list rows that got faster, and one
+    above the range reports nothing by construction.
+    """
+    value = float(text)
+    if not math.isfinite(value) or not 1 <= value <= MAX_THRESHOLD:
+        raise argparse.ArgumentTypeError(
+            f'must be a finite factor between 1 and {MAX_THRESHOLD}, not {text}')
+    return value
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--repo', type=Path, default=Path('.'))
     parser.add_argument('--profile', required=True)
     parser.add_argument('--suite', required=True)
-    parser.add_argument('--threshold', type=float, default=1.2)
+    parser.add_argument('--threshold', type=threshold, default=1.2,
+                        help=f'report rows at least this factor slower (1 to {MAX_THRESHOLD}; default 1.2)')
     args = parser.parse_args()
-    records = accepted_runs(args.repo, args.profile, args.suite)
+    try:
+        records = accepted_runs(args.repo, args.profile, args.suite)
+    except (GitError, ValueError) as error:
+        print(f'gpu_bench_results: {error}', file=sys.stderr)
+        return 2
     if not records:
         print(f"no accepted run of {args.profile} {args.suite} records a commit, a host and a "
               f'collection time; nothing to compare')

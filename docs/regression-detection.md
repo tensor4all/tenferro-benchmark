@@ -173,13 +173,24 @@ Unsupported routes stay explicit and do not count as measured coverage.
 results (#420): the baseline is the previous ISO week's accepted run of the same
 suite, taken from the committed summary sidecars by collection time, never
 "the last two accepted runs". A pair whose `tenferro_commit` is identical, whose
-`hardware.host` differs, or whose runs fall in the same ISO week is refused by
-name with no table and exit 1, and a previous week without an accepted run says
-`no baseline` rather than borrowing a neighbouring run. The report states both
-runs' commit, host, week and arm set above any row. It reads committed results
-and measures nothing, so it needs no GPU. It is the repository-side entry point
-for that reading: a weekly job that selects its own two runs is the #420 defect,
-so the comparison has to come from here.
+`hardware.host` differs, whose runs fall in the same ISO week, or whose records
+disagree on `unit` is refused by name with no table and exit 1, and a previous
+week without an accepted run says `no baseline` rather than borrowing a
+neighbouring run. The report states both runs' commit, host, week and arm set
+above any row.
+
+An accepted run is a revision the ingestion driver recorded a receipt for: it
+commits `<suite>.provenance.json` together with the sidecar, holding the
+sidecar's sha256 (`result_ingestion.plan_updates`). A revision without that
+receipt is an edit, not a measurement: a receipt-free revision is the published
+history up to the first receipt in the history, and after that only a commit
+that publishes the run's report together with the sidecar (a receipt-free edit
+of both files is still taken as a publish; #431 removes that second acceptance
+path). A shallow clone, an unreadable repository, and a `--threshold` outside 1
+to 1000000 are errors (exit 2) and never read as "no baseline".
+
+It reads committed results and measures nothing, so it needs no GPU and no
+scheduler change.
 
 These GPU scan rows are workflow-latency diagnostics. They contain no paired
 baseline/candidate performance conclusion. GPU paired confirmation and
