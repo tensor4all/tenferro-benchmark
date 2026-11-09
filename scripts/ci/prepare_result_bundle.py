@@ -138,12 +138,17 @@ def package_gpu_suite(root: Path, profile: str, output: Path, suite_file: str, s
 
 
 def unbacked_medians(run: Path) -> list[str]:
-    """Cases whose recorded median has no finite, positive sample behind it.
+    """Cases whose recorded samples contradict the median they publish.
 
     `timed_runs >= 1` says a row was measured; it does not say the samples were
-    usable. A row whose `sampling.batch_ms` is empty, non-finite or non-positive
-    still carries a median, and publishing it would put a number on a page that
-    no measurement supports.
+    usable. A row that lists samples but whose `sampling.batch_ms` holds a
+    non-finite, non-positive or malformed value still carries a median, and
+    publishing it would put a number on a page that no measurement supports.
+
+    A row with no sampling inventory (or an empty one) is not rejected here: the
+    accounting files that as `raw_samples_unavailable`, not as a failure, and
+    several collectors legitimately record only the summary statistics. What
+    matters is that no *stated* sample contradicts the number.
     """
     records = run / 'records.jsonl'
     if not records.is_file():
@@ -162,7 +167,12 @@ def unbacked_medians(run: Path) -> list[str]:
             # No sampling inventory at all is the accounting's
             # `raw_samples_unavailable` category, not a bad measurement.
             continue
-        if not isinstance(samples, list) or not samples:
+        if samples is None:
+            continue
+        if not isinstance(samples, list):
+            unbacked.append(str(row.get('problem_id') or row.get('case') or '?'))
+            continue
+        if not samples:
             continue
         if any(not isinstance(value, (int, float)) or isinstance(value, bool)
                or not math.isfinite(value) or value <= 0 for value in samples):
