@@ -52,6 +52,8 @@ import re
 from pathlib import Path
 from typing import Any, Callable, Iterable
 
+from result_status import FAILED_STATUSES
+
 SCHEMA_VERSION = 1
 SCHEMA_VERSION_V2 = 2
 SUMMARY_SUFFIX = ".summary.json"
@@ -386,7 +388,10 @@ def rows_from_gpu_records(
                 # A row that did not run cannot be verified, whatever the
                 # verification block inherited: a failed arm whose record kept a
                 # stale `passed` used to produce `verified: true` with no median.
-                verified=(status == "ok"
+                # `verification_only` and `unsupported` rows can still be verified
+                # (an unavailable API may have had its numbers checked), so the
+                # rule is "not a failure", not "measured".
+                verified=(status not in FAILED_STATUSES
                           and verification.get("status") == "passed"
                           and verification.get("mode") != "measure_only"),
                 reason=reason,
