@@ -646,9 +646,10 @@ class RegimePolicyUnitTests(unittest.TestCase):
                 self.assertEqual("part.json" in errors[0], named, errors[0])
 
     def test_a_json_catalogue_named_yaml_validates_and_collects(self):
-        # The validator reads every non-directory source as JSON, so this file is a
-        # catalogue to it; the collector keyed on the suffix and sent the same file
-        # down the nested-suite path, where collection died on `KeyError: 'problems'`.
+        # JSON is what the collector opens, so this file is a catalogue to both the
+        # validator and the resolver; the collector used to key on the suffix and
+        # send the same file down the nested-suite path, where it died on
+        # `KeyError: 'problems'`.
         import suite_instances
         import validate_benchmark_suite
 

@@ -28,11 +28,12 @@ table, the evidence for each value, and which values are provisional.
 
 from __future__ import annotations
 
-import json
 import math
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable
+
+import suite_instances
 
 THROUGHPUT = "throughput"
 LATENCY = "latency"
@@ -329,57 +330,6 @@ def case_elements(problem: dict[str, Any]) -> int | None:
     return None
 
 
-def _candidate_ids(document: Any) -> list[str]:
-    """Ids a catalogue member advertises, for the error that names its file.
-
-    Only used to explain why a selected id is missing: the member itself is not a
-    record to the loader (a JSON array, or a mapping without `name`).
-    """
-    if isinstance(document, list):
-        rows = document
-    elif isinstance(document, dict):
-        rows = document.get("cases")
-    else:
-        rows = None
-    if not isinstance(rows, list):
-        return []
-    ids: list[str] = []
-    for row in rows:
-        if not isinstance(row, dict):
-            continue
-        for key in ("id", "name"):
-            value = row.get(key)
-            if isinstance(value, str) and value:
-                ids.append(value)
-                break
-    return ids
-
-
-def _instances(document: Any) -> list[dict[str, Any]]:
-    """The records of a catalogue, or `ValueError` on a malformed container.
-
-    A catalogue is a list or a mapping with a `cases`/`patterns` list.  Anything
-    else used to reach the iteration below and raise `TypeError`, which escaped
-    the caller error boundary and stopped the remaining command-line inputs.
-    """
-    if isinstance(document, list):
-        rows = document
-    elif isinstance(document, dict):
-        rows = document.get("cases")
-        if rows is None:
-            rows = document.get("patterns", [])
-        if not isinstance(rows, list):
-            raise ValueError("`cases` must be a list of records")
-    else:
-        raise ValueError("the catalogue root must be a list or a mapping with `cases`")
-    # A malformed record is an error, not a record to drop: filtering it used to
-    # hide a case whose id was empty or whose body was not a mapping.
-    malformed = [index for index, row in enumerate(rows) if not isinstance(row, dict)]
-    if malformed:
-        raise ValueError(f"record {malformed[0]} is not a mapping")
-    return rows
-
-
 def declared_cases(
     suite: dict[str, Any],
     project_dir: Path,
@@ -467,47 +417,43 @@ def declared_cases(
     # file holding them: the error below names that file instead of sending the
     # reader back to a catalogue that looks complete.
     unreadable: dict[str, str] = {}
-    try:
-        if path.is_dir():
-            members = [
-                (entry, json.loads(entry.read_text(encoding="utf-8")))
-                for entry in sorted(path.glob("*.json"))
-            ]
-        else:
-            members = None
-            document = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, ValueError, RecursionError) as error:
-        raise RegimeError(
-            f"{suite_id}: include source {source!r} did not load: {error}"
-        ) from error
-    if members is not None:
-        # `benchmark_python.load_instances()` is what collects this directory: one
-        # record per file, recognised by `name`, and a JSON array or a mapping
-        # without `name` is skipped there with a warning.  Expanding an array here,
-        # or naming a record by its `id` or its file stem, validated ids the loader
-        # never collects.
-        document = []
-        for entry, record in members:
-            name = record.get("name") if isinstance(record, dict) else None
-            if not isinstance(name, str) or not name:
-                for other in _candidate_ids(record):
-                    unreadable.setdefault(other, entry.name)
-                continue
-            declared = record.get("id")
-            if isinstance(declared, str) and declared and declared != name:
-                raise RegimeError(
-                    f"{suite_id}: catalogue member {entry.name} declares id "
-                    f"{declared!r} and name {name!r}; the loader collects by `name`"
-                )
-            document.append({**record, "id": name})
-    try:
-        records = _instances(document)
-    except ValueError as error:
-        raise RegimeError(
-            f"{suite_id}: include source {source!r} did not load: {error}"
-        ) from error
+    # One classifier, shared with the resolver: reading the source here its own way
+    # is how the validator accepted ids the run never collected, and rejected a
+    # source the run reads as one record.
+    kind, records, load_error = suite_instances.resolve_source(path, unreadable)
+    if load_error is not None:
+        raise RegimeError(f"{suite_id}: {load_error}")
+    if kind == suite_instances.SUITE_DOCUMENT:
+        # A nested suite: the run resolves it through the resolver, so the
+        # validator reads the same cases.  Each one keeps its own suite's
+        # declaration rather than borrowing the wrapper's `defaults`.
+        try:
+            nested_defaults, nested_cases, _nested_skipped = declared_cases(
+                records[0], project_dir
+            )
+        except RecursionError as error:
+            # Following a nested source can walk a chain that includes itself; an
+            # escaping `RecursionError` stopped validation of every later input.
+            raise RegimeError(
+                f"{suite_id}: include source {source!r} did not load: {error}"
+            ) from error
+        rows = [
+            {
+                **row,
+                **{
+                    key: nested_defaults[key]
+                    for key in ("regime", "measure")
+                    if key not in row and key in nested_defaults
+                },
+            }
+            for row in nested_cases
+        ]
+    else:
+        rows = records
     by_id: dict[str, dict[str, Any]] = {}
-    for row in records:
+    for row in rows:
+        # `resolve_source()` guarantees an id for a catalogue; a nested suite's
+        # inline problems are returned as written, so the check lives here.
         if not isinstance(row.get("id"), str) or not row["id"]:
             raise RegimeError(
                 f"{suite_id}: include source {source!r} has a case without a non-empty id"
@@ -529,14 +475,10 @@ def declared_cases(
         if isinstance(entry, str):
             record = by_id.get(entry)
             if record is None:
-                member = unreadable.get(entry)
-                if member is not None:
-                    raise RegimeError(
-                        f"{suite_id}: include id {entry!r} is declared in {member}, "
-                        "which is not one record: the collector reads one record "
-                        "per file, keyed by `name`"
-                    )
-                raise RegimeError(f"{suite_id}: include id {entry!r} is not in {source!r}")
+                raise RegimeError(
+                    f"{suite_id}: "
+                    + suite_instances.include_missing_error(path, entry, unreadable)
+                )
             if entry not in exclude:
                 selected.append(record)
     return defaults, selected, False
