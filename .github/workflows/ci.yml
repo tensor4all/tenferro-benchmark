@@ -234,7 +234,7 @@ jobs:
         # budget test ignored or deleted.
         run: |
           cargo test --locked --features cuda --bin benchmark_gpu_public_api tests::budget 2>&1 | tee /tmp/gpu-api-verify.log
-          grep -qE 'test result: ok\. [3-9][0-9]* passed' /tmp/gpu-api-verify.log
+          grep -qE 'test result: ok\. ([3-9]|[1-9][0-9]+) passed' /tmp/gpu-api-verify.log
 
       - name: Check the linalg AD JVP/VJP cases are registered on both arms
         run: cargo test --locked --bin publication_gate linalg_ad

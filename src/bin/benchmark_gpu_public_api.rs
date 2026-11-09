@@ -1054,6 +1054,15 @@ mod tests {
         }
 
         #[test]
+        fn an_inexact_output_over_an_overflowing_allowance_is_refused() {
+            // The production comparison path, not `scored`: reverting its call to
+            // the old inline division makes this test pass `Ok(0.0)` again.
+            let actual = [Complex64::new(999., 0.)];
+            let expected = [Complex64::new(1., 0.)];
+            assert!(compare_numbers(&case_with(1.7e308, 1.7e308), &actual, &expected).is_err());
+        }
+
+        #[test]
         fn an_exact_output_does_not_exempt_a_bad_allowance() {
             // The comparison path, not `scored`: identical values used to `continue`
             // past the only check, so `Ok(0.0)` came back for tolerances the Python
