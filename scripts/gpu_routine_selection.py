@@ -283,8 +283,12 @@ def account(plan, paths):
             result["raw_samples_unavailable"].append(key)
             reasons[key] = "the record carries an empty sampling batch, so no median can be checked"
             continue
-        if any(not math.isfinite(value) or value <= 0 for value in samples):
-            result["failed"].append(key); continue
+        if any(not isinstance(value, (int, float)) or isinstance(value, bool)
+               or not math.isfinite(value) or value <= 0 for value in samples):
+            result["failed"].append(key)
+            reasons[key] = ("the sampling batch carries a non-finite or non-positive "
+                            "duration, so the case has no usable sample")
+            continue
         result["executed"].append(key)
         if len(samples)>1 and statistics.stdev(samples)/statistics.mean(samples)>.10:
             result["noisy"].append(key)
