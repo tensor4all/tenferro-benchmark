@@ -87,11 +87,16 @@ def tree_summaries(result_dir: Path) -> dict[tuple[str, str], dict]:
     for path in sorted(result_dir.glob("*/*/*.summary.json")):
         try:
             document = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, ValueError):
-            continue
+        except (OSError, ValueError) as error:
+            # A sidecar the oracle cannot read must fail the check, not leave the
+            # expectation quietly smaller: that is the shrinking oracle again.
+            raise AssertionError(f"{path}: cannot read the sidecar ({error})") from error
         accepted = (1, dashboard.report_summary.SCHEMA_VERSION_V2)
         if document.get("schema_version") not in accepted:
-            continue
+            raise AssertionError(
+                f"{path}: schema_version {document.get('schema_version')!r} is not one"
+                " this oracle reads"
+            )
         profile = path.parent.parent.name
         suffix = dashboard.report_summary.SUMMARY_SUFFIX
         documents[(profile, f"{path.parent.name}/{path.name[: -len(suffix)]}")] = document
@@ -131,10 +136,13 @@ def tree_placements(result_dir: Path, benchmarks_dir: Path) -> dict[Placement, s
             if row.get("status") == "ok" and row.get("median") is not None:
                 ok_groups.setdefault(case, set()).add(group)
         for case in groups:
-            # `build_suite_views` keeps the pre-rule placement of an undeclared
-            # CPU case (docs/regime-floors.md); a policed suite cannot reach here
-            # with an undeclared case, because the dashboard refuses to publish it.
-            regime = dashboard.case_regime(metadata, suite_id, case) or regime_policy.THROUGHPUT
+            # The declared regime, read from the parsed manifest without
+            # the shared case_regime helper, which is part of the render's own
+            # interpretation, so a regression in it would move both sides at once.
+            suite_meta = metadata.get(suite_id) or {}
+            problem_meta = (suite_meta.get("problems") or {}).get(case) or {}
+            regime = problem_meta.get("regime") or suite_meta.get("regime")
+            regime = str(regime or regime_policy.THROUGHPUT)
             page = dashboard.family_of(profile) + (
                 "/latency/" if regime == regime_policy.LATENCY else "/"
             )
@@ -1508,6 +1516,38 @@ class PublishedPlacementMutationTests(unittest.TestCase):
         )
         self.assertTrue(expected_gpu, "no GPU workload is published at all")
         self.assertEqual(missing, expected_gpu, place_text(missing, "no longer publishes"))
+        self.assertEqual(
+            invented,
+            [],
+            place_text(invented, "publishes a case the result tree does not declare"),
+        )
+
+    def test_a_corrupt_sidecar_is_an_error_not_a_smaller_oracle(self):
+        """A sidecar the oracle cannot read must fail, not shrink the expectation."""
+        root = Path(self.tmp.name) / "result"
+        good = root / "mac-cpu" / "cpu"
+        good.mkdir(parents=True)
+        (good / "einsum.summary.json").write_text(
+            json.dumps(summary("mac-cpu", "cpu/einsum", [("dense_einsum", 1.0)])),
+            encoding="utf-8",
+        )
+        broken = root / "zen5-cpu" / "cpu"
+        broken.mkdir(parents=True)
+        (broken / "einsum.summary.json").write_text("{not json", encoding="utf-8")
+        with self.assertRaises(AssertionError):
+            tree_summaries(root)
+
+    def test_the_expectation_does_not_move_with_the_shared_regime_helper(self):
+        """case_regime() is the render's helper; the oracle must not follow it."""
+
+        def all_throughput(metadata, suite_id, case):
+            return regime_policy.THROUGHPUT
+
+        site = Path(self.tmp.name) / "site"
+        self.assertEqual(render_site(site), 0)
+        with mock.patch.object(dashboard, "case_regime", all_throughput):
+            missing, invented = placement_gaps(site)
+        self.assertEqual(missing, [], place_text(missing, "no longer publishes"))
         self.assertEqual(
             invented,
             [],
