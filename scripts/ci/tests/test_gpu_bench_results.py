@@ -167,6 +167,55 @@ class BaselineTests(unittest.TestCase):
         self.assertIn('Ratio undefined (the baseline median is 0) for 1 row(s):', text)
         self.assertIn('| dense_matmul | matmul | tenferro-cuda-eager | 0 | 10 |', text)
 
+    def test_a_duplicate_identity_is_refused_instead_of_overwritten(self):
+        # result_ingestion rejects a summary with a repeated identity, so the
+        # comparison must not keep the last of the two rows: a 10 -> 1 pair then
+        # disappears and the table says "(none)".
+        baseline, candidate = record(WEEK_44, COMMIT_A), record(WEEK_45_LATE, COMMIT_B)
+        candidate['rows'] = [dict(candidate['rows'][0], median=10.0),
+                             dict(candidate['rows'][0], median=1.0)]
+        result = compare(candidate, baseline, 1.2)
+        text = render(result)
+        self.assertEqual(result['rows'], [])
+        self.assertNotIn('| case |', text)
+        self.assertIn('candidate dense_matmul/matmul/tenferro-cuda-eager: duplicate identity', text)
+
+    def test_a_negative_iqr_row_is_not_a_regression(self):
+        # result_ingestion rejects a negative or non-finite IQR, so a receipt-free
+        # record carrying one is not a 10x regression to report.
+        baseline, candidate = record(WEEK_44, COMMIT_A), record(WEEK_45_LATE, COMMIT_B)
+        candidate['rows'][0].update(median=10.0, iqr=-1)
+        result = compare(candidate, baseline, 1.2)
+        text = render(result)
+        self.assertEqual(result['rows'], [])
+        self.assertNotIn('10.00x', text)
+        self.assertIn('candidate dense_matmul/matmul/tenferro-cuda-eager: IQR is not finite and '
+                      'non-negative', text)
+
+    def test_an_unverified_row_without_a_counterpart_is_still_named(self):
+        # Verification was inspected only after intersecting the measured
+        # identities, so a row without a counterpart vanished without a word.
+        baseline, candidate = record(WEEK_44, COMMIT_A), record(WEEK_45_LATE, COMMIT_B)
+        candidate['rows'] = [{'case': 'new', 'group': 'matmul', 'backend': 'tenferro-cuda-eager',
+                              'median': 1.0, 'status': 'ok', 'verified': False}]
+        result = compare(candidate, baseline, 1.2)
+        text = render(result)
+        self.assertEqual([row['case'] for row in result['unverified']], ['new'])
+        self.assertIn('Skipped 1 unverified row(s)', text)
+        self.assertIn('new/matmul/tenferro-cuda-eager (candidate unverified)', text)
+
+    def test_a_row_whose_counterpart_is_not_ok_is_named(self):
+        # The identity exists on both sides but the candidate recorded a skip, so
+        # no ratio exists; the row used to disappear without a diagnostic.
+        baseline, candidate = record(WEEK_44, COMMIT_A), record(WEEK_45_LATE, COMMIT_B)
+        candidate['rows'][0] = {'case': 'dense_matmul', 'group': 'matmul',
+                                'backend': 'tenferro-cuda-eager', 'status': 'skipped',
+                                'reason': 'no kernel', 'median': None, 'iqr': None}
+        result = compare(candidate, baseline, 1.2)
+        text = render(result)
+        self.assertEqual(result['rows'], [])
+        self.assertIn('dense_matmul/matmul/tenferro-cuda-eager (candidate status skipped)', text)
+
 
 class HistoryTests(unittest.TestCase):
     def setUp(self):

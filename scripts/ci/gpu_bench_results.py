@@ -14,10 +14,13 @@ collected on the same ``hardware.host``, they fall in different ISO weeks, and
 they record the same unit.  That gate is applied to the pair before any row is
 computed; when it fires, the report names the mechanisms, prints no table, and
 exits 1.  A row enters a table only when the ingestion driver would accept it
-(status ``ok``, a finite non-negative median, ``verified: true``); an unverified
-row is named under the table instead.  When the table is printed, the two runs' commit, host, week and arm
-set are stated above it, so the reader never reconstructs which measurements
-were compared.
+(status ``ok``, a finite non-negative median and IQR, ``verified: true``).  An
+unverified row is named under the table instead, and so is a row the other run
+did not record as a measurement.  A record the driver would reject as a whole (a
+repeated identity) refuses the comparison by name rather than overwriting one of
+the rows: keeping the last one hides a regression.  When the table is printed,
+the two runs' commit, host, week and arm set are stated above it, so the reader
+never reconstructs which measurements were compared.
 
 A run is accepted when the data says so: the ingestion driver commits the
 sidecar together with ``<suite>.provenance.json``, whose ``files`` map holds the
@@ -207,46 +210,102 @@ def refusals(candidate: dict, baseline: dict) -> list[str]:
     return out
 
 
-def slower_rows(baseline: dict, candidate: dict, threshold: float) -> dict:
-    """Slower rows, the rows whose ratio cannot be taken, and the unverified ones."""
-    def measured(record: dict) -> dict:
-        # The identity the ingestion driver enforces is (case, group, backend)
-        # (``result_ingestion.validate_summary``): (case, backend) collides
-        # across groups and one row would hide the other.
-        return {(row['case'], row.get('group', ''), row['backend']): row for row in record['rows']
-                if row.get('status') == 'ok' and type(row.get('median')) in (int, float)
-                and math.isfinite(row['median']) and row['median'] >= 0}
+def row_key(row: dict) -> tuple[str, str, str]:
+    """The identity the ingestion driver enforces (``validate_summary``).
 
-    before, after = measured(baseline), measured(candidate)
-    rows, undefined, unverified = [], [], []
-    for key in sorted(before.keys() & after.keys()):
-        sides = [name for name, side in (('baseline', before), ('candidate', after))
-                 if side[key].get('verified') is not True]
-        row = {'case': key[0], 'group': key[1], 'backend': key[2],
-               'baseline': before[key]['median'], 'candidate': after[key]['median']}
+    (case, group, backend): (case, backend) collides across groups and one row
+    would hide the other.
+    """
+    return (row['case'], row.get('group', ''), row['backend'])
+
+
+def name(key: tuple[str, str, str]) -> str:
+    return '/'.join(key)
+
+
+def invalid_rows(record: dict) -> list[str]:
+    """Why the ingestion driver would reject this record's rows, if it would.
+
+    ``result_ingestion.validate_summary`` refuses a repeated identity and a
+    measurement whose median or IQR is not a finite non-negative number, and it
+    refuses the whole summary when it does.  A receipt-free revision never
+    passed that gate, so its rows are checked here before any ratio is taken.
+    """
+    def valid(value) -> bool:
+        return type(value) in (int, float) and math.isfinite(value) and value >= 0
+
+    out, seen = [], set()
+    for row in record['rows']:
+        key = row_key(row)
+        if key in seen:
+            out.append(f'{name(key)}: duplicate identity')
+            continue
+        seen.add(key)
+        if row.get('status') != 'ok':
+            continue
+        if not valid(row.get('median')):
+            out.append(f'{name(key)}: median is not a finite non-negative number')
+        if row.get('iqr') is not None and not valid(row['iqr']):
+            out.append(f'{name(key)}: IQR is not finite and non-negative')
+    return out
+
+
+def slower_rows(baseline: dict, candidate: dict, threshold: float) -> dict:
+    """Slower rows, the rows whose ratio cannot be taken, and the ones not compared."""
+    def measured(row: dict) -> bool:
+        return (row.get('status') == 'ok' and type(row.get('median')) in (int, float)
+                and math.isfinite(row['median']) and row['median'] >= 0)
+
+    before = {row_key(row): row for row in baseline['rows']}
+    after = {row_key(row): row for row in candidate['rows']}
+    rows, undefined, unverified, not_ok = [], [], [], []
+    for key in sorted(before.keys() | after.keys()):
+        left, right = before.get(key), after.get(key)
+        # Rows are classified over both records' identities, not their
+        # intersection: intersecting first is what let an unverified row with no
+        # counterpart vanish without the diagnostic the table owes the reader.
+        sides = [side for side, row in (('baseline', left), ('candidate', right))
+                 if row is not None and measured(row) and row.get('verified') is not True]
         if sides:
             # ``result_ingestion`` refuses a measurement whose ``verified`` is not
             # true, so a receipt-free record can carry rows the driver rejected:
             # they are named instead of being compared or dropped silently.
-            unverified.append(dict(row, sides=sides))
-        elif row['baseline'] == 0:
+            unverified.append({'case': key[0], 'group': key[1], 'backend': key[2],
+                               'baseline': (left or {}).get('median'),
+                               'candidate': (right or {}).get('median'), 'sides': sides})
+            continue
+        dropped = [f'{side} status {(row or {}).get("status")}'
+                   for side, row, other in (('baseline', left, right), ('candidate', right, left))
+                   if row is not None and not measured(row) and other is not None and measured(other)]
+        if dropped:
+            # The identity is a measurement on one side and a non-`ok` row on the
+            # other, so there is no ratio; naming it is the diagnostic.
+            not_ok.append({'case': key[0], 'group': key[1], 'backend': key[2], 'notes': dropped})
+            continue
+        if not (left is not None and right is not None and measured(left) and measured(right)):
+            continue
+        row = {'case': key[0], 'group': key[1], 'backend': key[2],
+               'baseline': left['median'], 'candidate': right['median']}
+        if row['baseline'] == 0:
             # A zero baseline is a legal measurement, and 0 -> positive is not
             # "no change": report the pair instead of dropping it.
             undefined.append(row)
         elif row['candidate'] / row['baseline'] >= threshold:
             rows.append(dict(row, ratio=row['candidate'] / row['baseline']))
     return {'rows': sorted(rows, key=lambda row: row['ratio'], reverse=True),
-            'undefined': undefined, 'unverified': unverified}
+            'undefined': undefined, 'unverified': unverified, 'not_ok': not_ok}
 
 
 def compare(candidate: dict, baseline: dict | None, threshold: float) -> dict:
-    """Gate the pair first: a refused pair never reaches the table."""
+    """Gate the pair first: a refused or invalid pair never reaches the table."""
     fired = refusals(candidate, baseline) if baseline is not None else []
+    invalid = [f'{side} {why}' for side, record in (('baseline', baseline), ('candidate', candidate))
+               if record is not None for why in invalid_rows(record)]
     computed = (slower_rows(baseline, candidate, threshold)
-                if baseline is not None and not fired
-                else {'rows': [], 'undefined': [], 'unverified': []})
-    return {'candidate': candidate, 'baseline': baseline, 'refusals': fired, **computed,
-            'threshold': threshold}
+                if baseline is not None and not fired and not invalid
+                else {'rows': [], 'undefined': [], 'unverified': [], 'not_ok': []})
+    return {'candidate': candidate, 'baseline': baseline, 'refusals': fired, 'invalid': invalid,
+            **computed, 'threshold': threshold}
 
 
 def identity(record: dict) -> str:
@@ -263,6 +322,9 @@ def render(result: dict) -> str:
     if baseline is None:
         lines += ['', f"no baseline: {candidate['suite_id']} has no accepted run in the previous ISO week "
                       f"{previous_iso_week(candidate)}; no neighbouring run is substituted."]
+        return '\n'.join(lines) + '\n'
+    if result['invalid']:
+        lines += ['', 'invalid: ' + '; '.join(result['invalid']) + '.']
         return '\n'.join(lines) + '\n'
     if result['refusals']:
         lines += ['', 'refused: ' + '; '.join(result['refusals']) + '.']
@@ -290,11 +352,18 @@ def render(result: dict) -> str:
                           for row in result['unverified'])
         lines += ['', f'Skipped {len(result["unverified"])} unverified row(s) (the ingestion driver '
                       f'records only measurements whose `verified` is true): {named}.']
+    if result['not_ok']:
+        named = '; '.join(f"{row['case']}/{row['group']}/{row['backend']} "
+                          f"({' and '.join(row['notes'])})"
+                          for row in result['not_ok'])
+        lines += ['', f'Not compared: {len(result["not_ok"])} row(s) the other run did not record as '
+                      f'a measurement: {named}.']
     return '\n'.join(lines) + '\n'
 
 
 def status(result: dict) -> int:
-    return 0 if result['baseline'] is not None and not result['refusals'] else 1
+    return 0 if (result['baseline'] is not None and not result['refusals']
+                 and not result['invalid']) else 1
 
 
 def threshold(text: str) -> float:
