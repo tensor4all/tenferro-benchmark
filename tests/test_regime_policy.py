@@ -336,6 +336,38 @@ class RegimePolicyUnitTests(unittest.TestCase):
         self.assertIn("did not load", errors[0])
         self.assertEqual(skips, [])
 
+    def test_a_nested_yaml_selector_is_resolved_and_checked(self):
+        # `scripts/suite_instances.py` supports a YAML source and resolves it
+        # recursively; the regime check must follow the same rule instead of
+        # parsing every source as JSON (which rejected a supported selector).
+        import yaml
+
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp) / "data/cases.yaml"
+            base.parent.mkdir(parents=True)
+            base.write_text(
+                yaml.safe_dump(
+                    {
+                        "schema_version": 1,
+                        "suite_id": "cpu/base",
+                        "title": "t",
+                        "description": "d",
+                        "defaults": {"regime": "latency"},
+                        "backends": ["tenferro-eager"],
+                        "problems": [{"id": "known", "regime": "latency"}],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            document = {"suite_id": "gpu/structural",
+                        "problems": {"source": "data/cases.yaml", "include": ["known"]}}
+            self.assertEqual(regime_policy.check_suite(document, Path(tmp)), [])
+            document["problems"]["include"] = ["renamed"]
+            errors = regime_policy.check_suite(document, Path(tmp))
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("renamed", errors[0])
+        self.assertIn("is not in", errors[0])
+
     def test_an_unknown_missing_source_declaration_is_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
             document = {"suite_id": "gpu/structural",

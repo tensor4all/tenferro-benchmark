@@ -34,6 +34,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable
 
+import yaml
+
 THROUGHPUT = "throughput"
 LATENCY = "latency"
 REGIMES = (THROUGHPUT, LATENCY)
@@ -403,31 +405,50 @@ def declared_cases(
         if skips is not None:
             skips.append(f"{suite_id}: skipped include source {source!r} (missing_source: skip)")
         return defaults, []
-    try:
-        if path.is_dir():
-            # A catalogue can point at a directory of per-instance files (the CPU
-            # einsum suite); each file is one instance, named by `name`.
-            document = []
-            for entry in sorted(path.glob("*.json")):
-                record = json.loads(entry.read_text(encoding="utf-8"))
-                if isinstance(record, dict) and not record.get("id"):
-                    record = {**record, "id": record.get("name") or entry.stem}
-                if isinstance(record, dict):
-                    document.append(record)
-        else:
-            document = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, ValueError) as error:
-        raise RegimeError(
-            f"{suite_id}: include source {source!r} did not load: {error}"
-        ) from error
-    records = {str(row["id"]): row for row in _instances(document) if row.get("id")}
+    if path.suffix in {".yaml", ".yml"}:
+        # A nested suite: `scripts/suite_instances.py` supports a YAML source and
+        # resolves its problems recursively, so the regime check has to follow the
+        # same rule instead of parsing it as JSON.  Its cases keep their own
+        # declarations, which is what the checks below read.
+        try:
+            document = yaml.safe_load(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as error:
+            raise RegimeError(
+                f"{suite_id}: include source {source!r} did not load: {error}"
+            ) from error
+        if not isinstance(document, dict):
+            raise RegimeError(
+                f"{suite_id}: include source {source!r} did not load: "
+                "the suite root must be a mapping"
+            )
+        _nested_defaults, records = declared_cases(document, project_dir, skips)
+    else:
+        try:
+            if path.is_dir():
+                # A catalogue can point at a directory of per-instance files (the CPU
+                # einsum suite); each file is one instance, named by `name`.
+                document = []
+                for entry in sorted(path.glob("*.json")):
+                    record = json.loads(entry.read_text(encoding="utf-8"))
+                    if isinstance(record, dict) and not record.get("id"):
+                        record = {**record, "id": record.get("name") or entry.stem}
+                    if isinstance(record, dict):
+                        document.append(record)
+            else:
+                document = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as error:
+            raise RegimeError(
+                f"{suite_id}: include source {source!r} did not load: {error}"
+            ) from error
+        records = [row for row in _instances(document) if row.get("id")]
+    by_id = {str(row["id"]): row for row in records}
 
     selected: list[dict[str, Any]] = []
     for entry in include:
         # `include` stays a list of ids: the GPU selection tooling reads it as a
         # set of strings, so an id-to-regime mapping is not an option here.
         if isinstance(entry, str):
-            record = records.get(entry)
+            record = by_id.get(entry)
             if record is None:
                 raise RegimeError(f"{suite_id}: include id {entry!r} is not in {source!r}")
             if entry not in exclude:
