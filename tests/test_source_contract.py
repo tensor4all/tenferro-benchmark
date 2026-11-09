@@ -223,6 +223,19 @@ def json_file_holding_yaml(data: Path, tmp: Path):
     return path, ["a"]
 
 
+def yaml_whose_resolver_fails(data: Path, tmp: Path):
+    # PyYAML 6.0.3's implicit `!!timestamp` resolver raises `AttributeError` -- not
+    # `YAMLError` -- for an unparsable value, so this source used to escape the
+    # per-source boundary and abort the validator's remaining inputs.
+    (data / "instances").mkdir(parents=True, exist_ok=True)
+    path = data / "bad.yaml"
+    path.write_text(
+        "cases:\n  - id: a\n    regime: latency\n    date: !!timestamp not-a-date\n",
+        encoding="utf-8",
+    )
+    return path, ["a"]
+
+
 TABLE = [
     {
         "shape": "a directory of name records",
@@ -416,6 +429,16 @@ TABLE = [
         "collected": [],
         "names": ["both.json", "`problems` and `cases`"],
     },
+    {
+        "shape": "a YAML source whose parser raises outside `YAMLError`",
+        "write": yaml_whose_resolver_fails,
+        "kind": suite_instances.BROKEN,
+        "outcome": "error",
+        "ids": [],
+        "collected": [],
+        "collect_in": "instances",
+        "names": ["bad.yaml", "include source did not load"],
+    },
 ]
 
 
@@ -498,7 +521,7 @@ class SourceContractTests(unittest.TestCase):
     def test_every_source_shape_is_read_the_same_way_three_times(self):
         self.assertEqual(
             len(TABLE),
-            20,
+            21,
             "one row per source shape: a new shape needs a row here",
         )
         for row in TABLE:

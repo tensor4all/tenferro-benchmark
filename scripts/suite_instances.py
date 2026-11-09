@@ -224,6 +224,16 @@ def _parse_document(text: str, source_path: Path) -> Any:
             raise ValueError(
                 f"{source_path}: include source did not load: {error}"
             ) from error
+        except Exception as error:  # noqa: BLE001 -- one file must not stop the rest
+            # PyYAML's implicit resolvers can fail outside `YAMLError`: 6.0.3's
+            # `!!timestamp` resolver raises `AttributeError: 'NoneType' object has
+            # no attribute `groupdict` for an unparsable value, so a handler keyed
+            # only on `YAMLError` lets one malformed source abort the validator's
+            # remaining inputs. Report it against this file instead.
+            raise ValueError(
+                f"{source_path}: include source did not load: "
+                f"{type(error).__name__}: {error}"
+            ) from error
     raise ValueError(
         f"{source_path}: include source is neither a JSON document nor a "
         ".yaml/.yml one"
