@@ -936,6 +936,21 @@ class RegimePolicyUnitTests(unittest.TestCase):
         self.assertEqual(len(errors), 1, errors)
         self.assertIn("not in", errors[0])
 
+    def test_a_repeated_include_id_selects_one_record_in_the_validator(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "base.yaml").write_text(
+                yaml.safe_dump(self._nested_suite([self._case("a")])), encoding="utf-8"
+            )
+            (Path(tmp) / "middle.yaml").write_text(
+                yaml.safe_dump(
+                    self._nested_suite({"source": "base.yaml", "include": ["a", "a"]})
+                ),
+                encoding="utf-8",
+            )
+            wrapper = {"suite_id": "gpu/outer",
+                       "problems": {"source": "middle.yaml", "include": ["a"]}}
+            self.assertEqual(regime_policy.check_suite(wrapper, Path(tmp)), [])
+
     def test_a_repeated_include_id_expands_once(self):
         import suite_instances
 

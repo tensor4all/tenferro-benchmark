@@ -403,6 +403,9 @@ def declared_cases(
         return defaults, [], False
     if not isinstance(include, list):
         raise RegimeError(f"{suite_id}: problems include is not a list")
+    # A repeated selector id names one case, as in the collector; appending it
+    # twice would fail the duplicate-id guard of the next wrapper.
+    include = list(dict.fromkeys(entry for entry in include if isinstance(entry, str)))
 
     path = Path(source)
     if not path.is_absolute():
