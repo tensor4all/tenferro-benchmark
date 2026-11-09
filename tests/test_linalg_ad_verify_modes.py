@@ -233,27 +233,34 @@ class OneReferencePerRow(unittest.TestCase):
                             matrix, tangent, rhs, device="cpu")
         self.assertEqual(len(calls), 3)
 
-    def test_the_rust_verifier_builds_the_reference_once(self):
+    def _validate_rust_row(self, seen, corrupt_phase=None):
+        """Hold a fake Rust row to `cpu_reference`, one download made wrong.
+
+        `seen` collects the phases the reference was built for, so a caller can
+        assert the build count alongside the verdict.
+        """
         import unittest.mock as mock
 
         import gpu_linalg_ad_contracts
         from verify_gpu_linalg_ad_rust import validate
 
-        seen = []
-
         def fake_cpu_reference(loss_fn, matrix, tangent, rhs, phase):
             seen.append(phase)
-            reference = [np.asarray(1.0), np.zeros(np.shape(matrix))]
+            reference = [np.asarray(1.0), np.ones(np.shape(matrix))]
             return reference, {"step": 1.0e-5, "max_error_over_budget": 0.0}
 
+        derivative = [1.0] * 16
         outputs = {
             phase: [
                 {"shape": [], "dtype": "f64", "values_col_major": [1.0]},
                 {"shape": [4, 4], "dtype": "f64",
-                 "values_col_major": [0.0] * 16},
+                 "values_col_major": list(derivative)},
             ]
             for phase in ("initial", "final")
         }
+        if corrupt_phase is not None:
+            outputs[corrupt_phase][1]["values_col_major"] = [
+                value * (1.0 + 2.0e-2) for value in derivative]
         row = {
             "status": "ok",
             "problem_id": "linalg_ad_grad_sum_qr_vjp_f64_4",
@@ -268,9 +275,25 @@ class OneReferencePerRow(unittest.TestCase):
             "verify": {"mode": "cpu_reference", "rtol": RTOL, "atol": ATOL},
         }
         with mock.patch.object(gpu_linalg_ad_contracts, "cpu_reference", fake_cpu_reference):
-            row = validate(row, problem)
+            return validate(row, problem)
+
+    def test_the_rust_verifier_builds_the_reference_once(self):
+        seen = []
+        row = self._validate_rust_row(seen)
         self.assertEqual(row["verification"]["status"], "passed")
         self.assertEqual(seen, ["vjp"])
+
+    def test_a_corrupt_download_fails_whichever_phase_it_is_in(self):
+        # #417 review: the loop names both phases, but nothing held it there —
+        # dropping "final" still passed every test, so a corrupt final download
+        # published as verified. Each phase is corrupted on its own.
+        seen = []
+        for phase in ("initial", "final"):
+            with self.subTest(phase=phase):
+                with self.assertRaises(modes.VerificationFailure):
+                    self._validate_rust_row(seen, corrupt_phase=phase)
+        # Still one reference build per row, corrupt or not.
+        self.assertEqual(seen, ["vjp", "vjp"])
 
 
 class TolerancesComeFromTheManifest(unittest.TestCase):
