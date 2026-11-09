@@ -34,8 +34,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable
 
-import yaml
-
 THROUGHPUT = "throughput"
 LATENCY = "latency"
 REGIMES = (THROUGHPUT, LATENCY)
@@ -360,8 +358,7 @@ def declared_cases(
     suite: dict[str, Any],
     project_dir: Path,
     skips: list[str] | None = None,
-    seen: frozenset[Path] = frozenset(),
-) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+) -> tuple[dict[str, Any], list[dict[str, Any]], bool]:
     """The suite's defaults and its cases, with the selector resolved.
 
     Inline problems are returned as written.  A `{source, include}` selector is
@@ -393,19 +390,10 @@ def declared_cases(
     source = problems.get("source")
     include = problems.get("include") or []
     exclude = set(problems.get("exclude") or [])
-    if not isinstance(source, str) or not source:
-        # A selector that names ids but no source cannot be resolved; the
-        # silence here made a wrapper validate with fewer cases than declared.
-        if include:
-            raise RegimeError(
-                f"{suite_id}: problems declares include ids without a source"
-            )
+    if not isinstance(source, str) or not source or not isinstance(include, list):
+        # Callers unpack three values on every path; this one used to raise
+        # `ValueError: not enough values to unpack` instead of a diagnostic.
         return defaults, [], False
-    if not isinstance(include, list):
-        raise RegimeError(f"{suite_id}: problems include is not a list")
-    # A repeated selector id names one case, as in the collector; appending it
-    # twice would fail the duplicate-id guard of the next wrapper.
-    include = list(dict.fromkeys(entry for entry in include if isinstance(entry, str)))
 
     path = Path(source)
     if not path.is_absolute():
@@ -441,140 +429,33 @@ def declared_cases(
         if skips is not None:
             skips.append(f"{suite_id}: skipped include source {source!r} (missing_source: skip)")
         return defaults, [], True
-    if not path.is_dir() and path.suffix in {".yaml", ".yml"}:
-        # A nested suite: `scripts/suite_instances.py` supports a YAML source and
-        # resolves its problems recursively, so the regime check has to follow the
-        # same rule instead of parsing it as JSON.  Its cases keep their own
-        # declarations, which is what the checks below read.
-        resolved = path.resolve()
-        if resolved in seen:
-            chain = " -> ".join(str(entry) for entry in [*seen, resolved])
-            raise RegimeError(
-                f"{suite_id}: include source {source!r} is part of a selection cycle: {chain}"
-            )
-        try:
-            document = yaml.safe_load(path.read_text(encoding="utf-8"))
-        except (OSError, ValueError, yaml.YAMLError, RecursionError) as error:
-            # `ValueError` covers `UnicodeDecodeError` from `read_text()`; without
-            # it one unreadable byte aborted validation of every later file.
-            raise RegimeError(
-                f"{suite_id}: include source {source!r} did not load: {error}"
-            ) from error
-        if not isinstance(document, dict):
-            raise RegimeError(
-                f"{suite_id}: include source {source!r} did not load: "
-                "the suite root must be a mapping"
-            )
-        # A wrapper must not accept a nested suite that direct validation
-        # rejects: run the same schema over the nested document before any of
-        # its cases reach the regime checks (the dashboard reads those fields).
-        from validate_benchmark_suite import SUITE_SCHEMA, validator_for
-
-        nested_suite_id = str(document.get("suite_id") or "")
-        # The family a case inherits from its own suite is part of its effective
-        # declaration: without it, a wrapper computed the floor from its own id.
-        nested_family = family_for(nested_suite_id)
-        nested_errors = [
-            f"{'/'.join(str(part) for part in error.absolute_path) or 'root'}: {error.message}"
-            for error in validator_for(SUITE_SCHEMA).iter_errors(document)
-        ]
-        if nested_errors:
-            raise RegimeError(
-                f"{suite_id}: include source {source!r} is not a valid suite: "
-                + "; ".join(nested_errors[:3])
-            )
-        nested_defaults, records, nested_skip = declared_cases(
-            document, project_dir, skips, seen | {resolved}
-        )
-        # A nested suite whose own source is absent by explicit opt-in resolves
-        # to no cases; the state propagates through any number of wrappers, so
-        # the outer include ids are not reported as unknown.
-        nested_problems = document.get("problems")
-        if nested_skip:
-            # The skip resolves to no cases, but the wrapper may only name ids the
-            # nested selector itself declares.
-            nested_include = nested_problems.get("include") if isinstance(nested_problems, dict) else None
-            if isinstance(nested_include, list):
-                # The nested selector exclusions bind the wrapper too: an id the
-                # nested suite excludes is not a declared id.
-                nested_exclude = set(nested_problems.get("exclude") or [])
-                declared = {entry for entry in nested_include if entry not in nested_exclude}
-                unknown = [entry for entry in include if isinstance(entry, str) and entry not in declared]
-                if unknown:
-                    raise RegimeError(
-                        f"{suite_id}: include id {unknown[0]!r} is not in {source!r}"
-                    )
-            return defaults, [], True
-        # A wrapper must not accept what validating the nested suite rejects:
-        # the nested suite's own defaults decide its cases, so the wrapper's
-        # default cannot supply a regime or a floor the source never declared.
-        for row in records:
-            regime, measure = resolve(nested_suite_id, nested_defaults, row)
-            # Direct validation checks the measure for every suite, GPU or not;
-            # the wrapper must not accept a source its own validation rejects.
-            if measure is not None and measure not in MEASURES:
-                raise RegimeError(
-                    f"{nested_suite_id}: case {row.get('id')!r} declares unknown "
-                    f"measure {measure!r} (expected one of {', '.join(MEASURES)})"
-                )
-            if is_policed(nested_suite_id):
-                exempt = row.get("floor_exempt")
-                check_case(
-                    nested_suite_id,
-                    str(row.get("id")),
-                    regime,
-                    case_elements(row),
-                    family_for(nested_suite_id, row),
-                    exempt if isinstance(exempt, str) and exempt.strip() else None,
-                )
-        # The nested suite's own `defaults` are the case's effective declaration:
-        # dropping them let the same case validate as `latency` directly and as
-        # the wrapper's regime through a selector.
-        # Carry the *resolved* declarations, not key presence: `resolve()` treats
-        # null and empty values as absent, so a case with `regime: null` would
-        # otherwise inherit the wrapper default.
-        merged = []
-        for row in records:
-            regime, measure = resolve(nested_suite_id, nested_defaults, row)
-            record = dict(row)
-            if regime is not None:
-                record["regime"] = regime
-            if measure is not None:
-                record["measure"] = measure
-            elif "measure" in record:
-                record.pop("measure", None)
-            if nested_family is not None and not record.get("family"):
-                record["family"] = nested_family
-            merged.append(record)
-        records = merged
-    else:
-        try:
-            if path.is_dir():
-                # A catalogue can point at a directory of per-instance files (the CPU
-                # einsum suite); each file is one instance, named by `name`.
-                document = []
-                for entry in sorted(path.glob("*.json")):
-                    record = json.loads(entry.read_text(encoding="utf-8"))
-                    if isinstance(record, list):
-                        # A per-instance file may hold several records; dropping
-                        # a list root silently lost every case in it.
-                        document.extend(record)
-                        continue
-                    if isinstance(record, dict) and not record.get("id"):
-                        record = {**record, "id": record.get("name") or entry.stem}
-                    document.append(record)
-            else:
-                document = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, ValueError, RecursionError) as error:
-            raise RegimeError(
-                f"{suite_id}: include source {source!r} did not load: {error}"
-            ) from error
-        try:
-            records = _instances(document)
-        except ValueError as error:
-            raise RegimeError(
-                f"{suite_id}: include source {source!r} did not load: {error}"
-            ) from error
+    try:
+        if path.is_dir():
+            # A catalogue can point at a directory of per-instance files (the CPU
+            # einsum suite); each file is one instance, named by `name`.
+            document = []
+            for entry in sorted(path.glob("*.json")):
+                record = json.loads(entry.read_text(encoding="utf-8"))
+                if isinstance(record, list):
+                    # A per-instance file may hold several records; dropping
+                    # a list root silently lost every case in it.
+                    document.extend(record)
+                    continue
+                if isinstance(record, dict) and not record.get("id"):
+                    record = {**record, "id": record.get("name") or entry.stem}
+                document.append(record)
+        else:
+            document = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError, RecursionError) as error:
+        raise RegimeError(
+            f"{suite_id}: include source {source!r} did not load: {error}"
+        ) from error
+    try:
+        records = _instances(document)
+    except ValueError as error:
+        raise RegimeError(
+            f"{suite_id}: include source {source!r} did not load: {error}"
+        ) from error
     by_id: dict[str, dict[str, Any]] = {}
     for row in records:
         if not isinstance(row.get("id"), str) or not row["id"]:

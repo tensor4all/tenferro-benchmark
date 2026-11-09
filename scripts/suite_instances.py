@@ -22,7 +22,7 @@ def _load_suite(path: Path) -> dict[str, Any]:
 
 
 def _resolve_problems(
-    problems: Any, *, project_dir: Path, seen: frozenset[Path] = frozenset()
+    problems: Any, *, project_dir: Path
 ) -> list[str]:
     if isinstance(problems, list):
         ids: list[str] = []
@@ -63,8 +63,7 @@ def _resolve_problems(
     except FileNotFoundError:
         if problems.get("missing_source") != "skip":
             raise ValueError(f"{source_path}: include source did not load: no such file or directory")
-        # Set semantics: a repeated selector id expands once, as it did before.
-        return [i for i in dict.fromkeys(include) if i not in exclude]
+        return [instance_id for instance_id in include if instance_id not in exclude]
     except OSError as error:
         raise ValueError(f"{source_path}: include source did not load: {error}") from error
 
@@ -78,25 +77,13 @@ def _resolve_problems(
             raise ValueError(
                 f"{source_path}: include id {missing[0]!r} is not in the source"
             )
-        ids = list(dict.fromkeys(include))
-    elif source_path.suffix in {".yaml", ".yml"}:
-        base_ids = resolve_suite_instance_ids(
-            source_path, project_dir=project_dir, seen=seen
-        )
-        if len(set(base_ids)) != len(base_ids):
-            # The validator rejects duplicate ids; run_all.sh collects first.
-            raise ValueError(f"{source_path}: declares duplicate problem ids")
-        known = set(base_ids)
-        missing = [instance_id for instance_id in include if instance_id not in known]
-        if missing:
-            # A selector must not collect fewer cases than it declares: the
-            # validator rejects the same miss, but run_all.sh does not run it.
-            raise ValueError(
-                f"{source_path}: include id {missing[0]!r} is not in the source"
-            )
-        ids = [i for i in dict.fromkeys(include) if i in known]
-    else:
         ids = list(include)
+    elif source_path.suffix in {".yaml", ".yml"}:
+        # A nested suite: main's behaviour, kept as it is. #426 owns making the
+        # nested path as strict as the catalogue path (unknown ids, duplicates).
+        base_ids = resolve_suite_instance_ids(source_path, project_dir=project_dir)
+        allowed = set(include)
+        ids = [instance_id for instance_id in base_ids if instance_id in allowed]
 
     return [instance_id for instance_id in ids if instance_id not in exclude]
 
@@ -150,17 +137,10 @@ def resolve_suite_instance_ids(
     suite_file: Path,
     *,
     project_dir: Path = PROJECT_DIR,
-    seen: frozenset[Path] = frozenset(),
 ) -> list[str]:
     suite_path = suite_file if suite_file.is_absolute() else project_dir / suite_file
-    resolved = suite_path.resolve()
-    if resolved in seen:
-        chain = " -> ".join(str(entry) for entry in [*seen, resolved])
-        raise ValueError(f"{suite_path}: selection cycle: {chain}")
     suite = _load_suite(suite_path)
-    return _resolve_problems(
-        suite["problems"], project_dir=project_dir, seen=seen | {resolved}
-    )
+    return _resolve_problems(suite["problems"], project_dir=project_dir)
 
 
 def parse_args() -> argparse.Namespace:

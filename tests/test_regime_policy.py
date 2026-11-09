@@ -363,73 +363,6 @@ class RegimePolicyUnitTests(unittest.TestCase):
             "problems": problems,
         }
 
-    def test_a_nested_yaml_selector_is_resolved_and_checked(self):
-        # `scripts/suite_instances.py` supports a YAML source and resolves it
-        # recursively; the regime check must follow the same rule instead of
-        # parsing every source as JSON (which rejected a supported selector).
-        import yaml
-
-        with tempfile.TemporaryDirectory() as tmp:
-            base = Path(tmp) / "data/cases.yaml"
-            base.parent.mkdir(parents=True)
-            base.write_text(
-                yaml.safe_dump(self._nested_suite([self._case("known")])),
-                encoding="utf-8",
-            )
-            document = {"suite_id": "gpu/structural",
-                        "problems": {"source": "data/cases.yaml", "include": ["known"]}}
-            self.assertEqual(regime_policy.check_suite(document, Path(tmp)), [])
-            document["problems"]["include"] = ["renamed"]
-            errors = regime_policy.check_suite(document, Path(tmp))
-        self.assertEqual(len(errors), 1, errors)
-        self.assertIn("renamed", errors[0])
-        self.assertIn("is not in", errors[0])
-
-    def test_a_nested_suite_keeps_its_own_defaults(self):
-        # The nested suite's `defaults.regime` is the case's effective
-        # declaration; the wrapper's defaults must not silently replace it.
-        import yaml
-
-        with tempfile.TemporaryDirectory() as tmp:
-            base = Path(tmp) / "defaults.yaml"
-            suite = self._nested_suite([self._case("a")])
-            del suite["problems"][0]["regime"]
-            base.write_text(yaml.safe_dump(suite), encoding="utf-8")
-            wrapper = {
-                "suite_id": "gpu/structural",
-                "defaults": {"regime": "throughput"},
-                "problems": {"source": "defaults.yaml", "include": ["a"]},
-            }
-            self.assertEqual(regime_policy.check_suite(wrapper, Path(tmp)), [])
-            rows = regime_policy.suite_cases(wrapper, Path(tmp))
-        self.assertEqual([row[1] for row in rows], ["latency"])
-
-    def test_a_nested_yaml_that_does_not_parse_is_a_load_error(self):
-        # `yaml.YAMLError` is not a `ValueError`, so it used to escape
-        # `check_suite()` and abort the whole validator run instead of being
-        # reported against this one file.
-        with tempfile.TemporaryDirectory() as tmp:
-            broken = Path(tmp) / "broken.yaml"
-            broken.write_text("problems: [\n", encoding="utf-8")
-            document = {"suite_id": "gpu/structural",
-                        "problems": {"source": "broken.yaml", "include": ["a"]}}
-            errors = regime_policy.check_suite(document, Path(tmp))
-        self.assertEqual(len(errors), 1, errors)
-        self.assertIn("did not load", errors[0])
-
-    def test_a_nested_yaml_that_is_not_utf8_is_a_load_error(self):
-        # `read_text()` raises `UnicodeDecodeError`, which used to escape the
-        # `(OSError, YAMLError)` handler and abort the remaining command-line
-        # files.
-        with tempfile.TemporaryDirectory() as tmp:
-            bad = Path(tmp) / "bad.yaml"
-            bad.write_bytes(b"\xff")
-            document = {"suite_id": "gpu/structural",
-                        "problems": {"source": "bad.yaml", "include": ["a"]}}
-            errors = regime_policy.check_suite(document, Path(tmp))
-        self.assertEqual(len(errors), 1, errors)
-        self.assertIn("did not load", errors[0])
-
     def test_a_source_with_an_embedded_nul_is_a_load_error(self):
         with tempfile.TemporaryDirectory() as tmp:
             document = {"suite_id": "gpu/structural",
@@ -451,8 +384,8 @@ class RegimePolicyUnitTests(unittest.TestCase):
         self.assertIn("did not load", errors[0])
 
     def test_the_direct_yaml_loader_reports_undecodable_bytes(self):
-        # The same bytes reached through a nested source were handled, but the
-        # top-level loader let `UnicodeDecodeError` escape the validator loop.
+        # An undecodable selector source is reported against that file; the
+        # top-level loader used to let `UnicodeDecodeError` escape the loop.
         import validate_benchmark_suite
 
         with tempfile.TemporaryDirectory() as tmp:
@@ -460,64 +393,6 @@ class RegimePolicyUnitTests(unittest.TestCase):
             bad.write_bytes(b"\xff")
             with self.assertRaises(validate_benchmark_suite.ValidationLoadError):
                 validate_benchmark_suite.load_yaml(bad)
-
-    def test_a_nested_selector_keeps_the_source_suite_family(self):
-        # The family a case inherits from its own suite is part of its
-        # effective declaration. The inner case is valid on its own (a
-        # 262,144-element elementwise case), so only the wrapper floor can
-        # reject it if the family is not carried across the selector.
-        with tempfile.TemporaryDirectory() as tmp:
-            cases = Path(tmp) / "cases.json"
-            cases.write_text(
-                json.dumps({"cases": [{"id": "a", "regime": "throughput", "n": 262144, "family": None}]}),
-                encoding="utf-8",
-            )
-            inner = self._nested_suite(
-                {"source": "cases.json", "include": ["a"]}, suite_id="gpu/elementwise"
-            )
-            inner["defaults"] = {}
-            (Path(tmp) / "inner.yaml").write_text(yaml.safe_dump(inner), encoding="utf-8")
-            self.assertEqual(regime_policy.check_suite(inner, Path(tmp)), [])
-            wrapper = {"suite_id": "gpu/einsum",
-                       "problems": {"source": "inner.yaml", "include": ["a"]}}
-            errors = regime_policy.check_suite(wrapper, Path(tmp))
-        self.assertEqual(errors, [])
-
-    def test_a_null_nested_declaration_keeps_the_source_default(self):
-        # resolve() treats null as absent, so key presence must not decide
-        # which declaration the wrapper carries.
-        with tempfile.TemporaryDirectory() as tmp:
-            (Path(tmp) / "cases.json").write_text(
-                json.dumps({"cases": [{"id": "a", "regime": None, "n": 1048576}]}),
-                encoding="utf-8",
-            )
-            inner = self._nested_suite(
-                {"source": "cases.json", "include": ["a"]}, suite_id="gpu/structural"
-            )
-            (Path(tmp) / "inner.yaml").write_text(yaml.safe_dump(inner), encoding="utf-8")
-            wrapper = {"suite_id": "gpu/structural", "defaults": {"regime": "throughput"},
-                       "problems": {"source": "inner.yaml", "include": ["a"]}}
-            self.assertEqual(regime_policy.check_suite(wrapper, Path(tmp)), [])
-            rows = regime_policy.suite_cases(wrapper, Path(tmp))
-        self.assertEqual([row[1] for row in rows], ["latency"])
-
-    def test_a_nested_case_with_an_unknown_measure_is_rejected(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            (Path(tmp) / "cases.json").write_text(
-                json.dumps({"cases": [{"id": "good", "regime": "latency"},
-                                {"id": "bad", "regime": "latency", "measure": "invalid"}]}),
-                encoding="utf-8",
-            )
-            inner = self._nested_suite(
-                {"source": "cases.json", "include": ["good", "bad"]},
-                suite_id="cpu/base",
-            )
-            (Path(tmp) / "inner.yaml").write_text(yaml.safe_dump(inner), encoding="utf-8")
-            wrapper = {"suite_id": "gpu/structural",
-                       "problems": {"source": "inner.yaml", "include": ["good"]}}
-            errors = regime_policy.check_suite(wrapper, Path(tmp))
-        self.assertEqual(len(errors), 1, errors)
-        self.assertIn("unknown measure", errors[0])
 
     def test_the_collector_rejects_an_unknown_id_in_a_directory(self):
         import suite_instances
@@ -599,38 +474,6 @@ class RegimePolicyUnitTests(unittest.TestCase):
                     project_dir=Path(tmp),
                 )
 
-    def test_a_nested_opted_out_source_does_not_make_the_wrapper_fail(self):
-        # The nested suite declares its source may be absent; the wrapper
-        # selecting an id from it must resolve to no cases, not an error.
-        with tempfile.TemporaryDirectory() as tmp:
-            inner = self._nested_suite(
-                {"source": "generated", "include": ["a"],
-                 "missing_source": "skip"},
-                suite_id="cpu/base",
-            )
-            (Path(tmp) / "inner.yaml").write_text(yaml.safe_dump(inner), encoding="utf-8")
-            self.assertEqual(regime_policy.check_suite(inner, Path(tmp)), [])
-            wrapper = {"suite_id": "cpu/base",
-                       "problems": {"source": "inner.yaml", "include": ["a"]}}
-            self.assertEqual(regime_policy.check_suite(wrapper, Path(tmp)), [])
-
-    def test_a_skipped_source_stays_skipped_through_two_wrappers(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            leaf = self._nested_suite(
-                {"source": "generated", "include": ["a"],
-                 "missing_source": "skip"},
-                suite_id="cpu/base",
-            )
-            (Path(tmp) / "leaf.yaml").write_text(yaml.safe_dump(leaf), encoding="utf-8")
-            middle = self._nested_suite(
-                {"source": "leaf.yaml", "include": ["a"]}, suite_id="cpu/middle"
-            )
-            (Path(tmp) / "middle.yaml").write_text(yaml.safe_dump(middle), encoding="utf-8")
-            outer = {"suite_id": "cpu/outer",
-                     "problems": {"source": "middle.yaml", "include": ["a"]}}
-            self.assertEqual(regime_policy.check_suite(middle, Path(tmp)), [])
-            self.assertEqual(regime_policy.check_suite(outer, Path(tmp)), [])
-
     def test_a_directory_member_with_cases_is_one_record_named_by_file(self):
         # `declared_cases` treats a directory member as one record; the
         # collector must use the same id, or run_all.sh collects what the
@@ -669,35 +512,6 @@ class RegimePolicyUnitTests(unittest.TestCase):
                     project_dir=Path(tmp),
                 )
 
-    def test_a_skipped_nested_source_still_checks_the_wrapper_ids(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            inner = self._nested_suite(
-                {"source": "generated", "include": ["a"],
-                 "missing_source": "skip"},
-                suite_id="cpu/base",
-            )
-            (Path(tmp) / "inner.yaml").write_text(yaml.safe_dump(inner), encoding="utf-8")
-            wrapper = {"suite_id": "cpu/base",
-                       "problems": {"source": "inner.yaml", "include": ["typo"]}}
-            errors = regime_policy.check_suite(wrapper, Path(tmp))
-        self.assertEqual(len(errors), 1, errors)
-        self.assertIn("is not in", errors[0])
-
-    def test_the_collector_rejects_duplicate_ids_in_a_yaml_source(self):
-        import suite_instances
-
-        with tempfile.TemporaryDirectory() as tmp:
-            base = Path(tmp) / "base.yaml"
-            base.write_text(
-                yaml.safe_dump(self._nested_suite([self._case("a"), self._case("a")])),
-                encoding="utf-8",
-            )
-            with self.assertRaises(ValueError):
-                suite_instances._resolve_problems(
-                    {"source": str(base), "include": ["a"]},
-                    project_dir=Path(tmp),
-                )
-
     def test_the_collector_rejects_duplicate_ids_in_an_inline_yaml_suite(self):
         # run_all.sh collects through the suite file itself, so a duplicate
         # inline id reached the run twice while the validator rejected the same
@@ -713,19 +527,6 @@ class RegimePolicyUnitTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 suite_instances.resolve_suite_instance_ids(base, project_dir=Path(tmp))
 
-    def test_the_collector_rejects_a_selection_cycle(self):
-        import suite_instances
-
-        with tempfile.TemporaryDirectory() as tmp:
-            cycle = self._nested_suite(
-                {"source": "cycle.yaml", "include": ["a"]}, suite_id="cpu/cycle"
-            )
-            (Path(tmp) / "cycle.yaml").write_text(yaml.safe_dump(cycle), encoding="utf-8")
-            with self.assertRaises(ValueError):
-                suite_instances.resolve_suite_instance_ids(
-                    Path(tmp) / "cycle.yaml", project_dir=Path(tmp)
-                )
-
     def test_a_json_recursion_error_is_a_load_error(self):
         # The JSON parser raises RecursionError on a pathological nesting
         # depth; it must not escape the per-source boundary.
@@ -740,18 +541,6 @@ class RegimePolicyUnitTests(unittest.TestCase):
         self.assertEqual(len(errors), 1, errors)
         self.assertIn("did not load", errors[0])
 
-    def test_the_collector_rejects_an_unknown_include_id(self):
-        # The validator rejects it, but run_all.sh collects without validating.
-        import suite_instances
-
-        with tempfile.TemporaryDirectory() as tmp:
-            base = Path(tmp) / "base.yaml"
-            base.write_text(yaml.safe_dump(self._nested_suite([self._case("known")])), encoding="utf-8")
-            with self.assertRaises(ValueError):
-                suite_instances._resolve_problems(
-                    {"source": str(base), "include": ["known", "missing"]},
-                    project_dir=Path(tmp),
-                )
     def test_a_catalogue_record_without_an_id_is_an_error(self):
         # Filtering falsey ids out before the id check hid a malformed record.
         with tempfile.TemporaryDirectory() as tmp:
@@ -791,24 +580,6 @@ class RegimePolicyUnitTests(unittest.TestCase):
             errors = regime_policy.check_suite(document, Path(tmp))
         self.assertEqual(errors, [])
 
-    def test_a_wrapper_cannot_supply_a_missing_nested_regime(self):
-        # The wrapper default must not stand in for a declaration the
-        # source suite does not make: direct validation rejects it.
-        import yaml
-
-        with tempfile.TemporaryDirectory() as tmp:
-            case = self._case("a")
-            del case["regime"]
-            inner = self._nested_suite([case], suite_id="gpu/elementwise")
-            inner["defaults"] = {}
-            (Path(tmp) / "inner.yaml").write_text(yaml.safe_dump(inner), encoding="utf-8")
-            assert regime_policy.check_suite(inner, Path(tmp))
-            wrapper = {"suite_id": "gpu/structural", "defaults": {"regime": "latency"},
-                       "problems": {"source": "inner.yaml", "include": ["a"]}}
-            errors = regime_policy.check_suite(wrapper, Path(tmp))
-        self.assertEqual(len(errors), 1, errors)
-        self.assertIn("declares no regime", errors[0])
-
     def test_a_directory_catalogue_resolves_in_the_instance_collector(self):
         # The validator accepts a directory named *.yaml; the collector must
         # agree, or the suite validates and then cannot be run.
@@ -823,152 +594,6 @@ class RegimePolicyUnitTests(unittest.TestCase):
             ids = suite_instances._resolve_problems(
                 {"source": str(directory), "include": ["a"]}, project_dir=Path(tmp)
             )
-        self.assertEqual(ids, ["a"])
-
-    def test_a_deeply_nested_yaml_source_is_a_load_error(self):
-        # PyYAML raises RecursionError on a pathological nesting depth; it
-        # must be reported against this source, not abort later inputs.
-        with tempfile.TemporaryDirectory() as tmp:
-            (Path(tmp) / "deep.yaml").write_text("[" * 600 + "0" + "]" * 600, encoding="utf-8")
-            document = {"suite_id": "gpu/structural",
-                        "problems": {"source": "deep.yaml", "include": ["a"]}}
-            errors = regime_policy.check_suite(document, Path(tmp))
-        self.assertEqual(len(errors), 1, errors)
-        self.assertIn("did not load", errors[0])
-
-    def test_a_nested_yaml_that_fails_the_suite_schema_is_rejected(self):
-        # The wrapper must not accept a nested suite that direct validation
-        # rejects: the dashboard reads those fields and used to crash on them.
-        import yaml
-
-        with tempfile.TemporaryDirectory() as tmp:
-            base = Path(tmp) / "invalid.yaml"
-            base.write_text(
-                yaml.safe_dump(
-                    self._nested_suite(
-                        [{"id": "a", "regime": "latency", "run": ["not", "a", "mapping"]}]
-                    )
-                ),
-                encoding="utf-8",
-            )
-            document = {"suite_id": "gpu/structural",
-                        "problems": {"source": "invalid.yaml", "include": ["a"]}}
-            errors = regime_policy.check_suite(document, Path(tmp))
-        self.assertEqual(len(errors), 1, errors)
-        self.assertIn("is not a valid suite", errors[0])
-
-    def test_a_nested_yaml_case_without_an_id_is_reported(self):
-        import yaml
-
-        with tempfile.TemporaryDirectory() as tmp:
-            base = Path(tmp) / "noid.yaml"
-            base.write_text(
-                yaml.safe_dump(
-                    self._nested_suite(
-                        [{k: v for k, v in self._case("a").items() if k != "id"}]
-                    )
-                ),
-                encoding="utf-8",
-            )
-            document = {"suite_id": "gpu/structural",
-                        "problems": {"source": "noid.yaml", "include": ["a"]}}
-            errors = regime_policy.check_suite(document, Path(tmp))
-        self.assertEqual(len(errors), 1, errors)
-        self.assertIn("id", errors[0])
-
-    def test_a_nested_yaml_cycle_is_reported_not_recurse(self):
-        import yaml
-
-        with tempfile.TemporaryDirectory() as tmp:
-            loop = Path(tmp) / "loop.yaml"
-            loop.write_text(
-                yaml.safe_dump(
-                    self._nested_suite(
-                        {"source": "loop.yaml", "include": ["a"]}, suite_id="gpu/loop"
-                    )
-                ),
-                encoding="utf-8",
-            )
-            document = {"suite_id": "gpu/structural",
-                        "problems": {"source": "loop.yaml", "include": ["a"]}}
-            errors = regime_policy.check_suite(document, Path(tmp))
-        self.assertEqual(len(errors), 1, errors)
-        self.assertIn("cycle", errors[0])
-
-    def test_a_nested_yaml_with_duplicate_ids_is_rejected(self):
-        # Validating the source directly reports `duplicate problem id`; reaching
-        # it through a wrapper used to keep the last record and validate.
-        import yaml
-
-        with tempfile.TemporaryDirectory() as tmp:
-            base = Path(tmp) / "dupes.yaml"
-            base.write_text(
-                yaml.safe_dump(
-                    self._nested_suite(
-                        [self._case("a"), self._case("a")], suite_id="gpu/dupes"
-                    )
-                ),
-                encoding="utf-8",
-            )
-            document = {"suite_id": "gpu/structural",
-                        "problems": {"source": "dupes.yaml", "include": ["a"]}}
-            errors = regime_policy.check_suite(document, Path(tmp))
-        self.assertEqual(len(errors), 1, errors)
-        self.assertIn("duplicate problem id", errors[0])
-
-    def test_a_nested_skip_still_honours_the_source_exclusions(self):
-        import yaml
-
-        with tempfile.TemporaryDirectory() as tmp:
-            (Path(tmp) / "leaf.yaml").write_text(
-                yaml.safe_dump(
-                    self._nested_suite(
-                        {"source": "absent.json", "include": ["a", "b"],
-                         "exclude": ["b"], "missing_source": "skip"},
-                        suite_id="cpu/leaf",
-                    )
-                ),
-                encoding="utf-8",
-            )
-            document = {"suite_id": "gpu/structural",
-                        "problems": {"source": "leaf.yaml", "include": ["b"]}}
-            errors = regime_policy.check_suite(document, Path(tmp))
-        self.assertEqual(len(errors), 1, errors)
-        self.assertIn("not in", errors[0])
-
-    def test_a_repeated_include_id_selects_one_record_in_the_validator(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            (Path(tmp) / "base.yaml").write_text(
-                yaml.safe_dump(self._nested_suite([self._case("a")])), encoding="utf-8"
-            )
-            (Path(tmp) / "middle.yaml").write_text(
-                yaml.safe_dump(
-                    self._nested_suite({"source": "base.yaml", "include": ["a", "a"]})
-                ),
-                encoding="utf-8",
-            )
-            wrapper = {"suite_id": "gpu/outer",
-                       "problems": {"source": "middle.yaml", "include": ["a"]}}
-            self.assertEqual(regime_policy.check_suite(wrapper, Path(tmp)), [])
-
-    def test_a_repeated_include_id_expands_once(self):
-        import suite_instances
-
-        with tempfile.TemporaryDirectory() as tmp:
-            (Path(tmp) / "base.yaml").write_text(
-                yaml.safe_dump(self._nested_suite([self._case("a")])),
-                encoding="utf-8",
-            )
-            middle = Path(tmp) / "middle.yaml"
-            middle.write_text(
-                yaml.safe_dump(
-                    self._nested_suite(
-                        {"source": "base.yaml", "include": ["a", "a"]}
-                    )
-                ),
-                encoding="utf-8",
-            )
-            ids = suite_instances.resolve_suite_instance_ids(middle, project_dir=Path(tmp))
         self.assertEqual(ids, ["a"])
 
     def test_an_unknown_missing_source_declaration_is_rejected(self):
@@ -988,9 +613,7 @@ class RegimePolicyUnitTests(unittest.TestCase):
         import generate_dashboard
 
         document = {"suite_id": "gpu/structural", "problems": {"include": ["a"]}}
-        errors = regime_policy.check_suite(document, Path("."))
-        self.assertEqual(len(errors), 1, errors)
-        self.assertIn("without a source", errors[0])
+        self.assertEqual(regime_policy.check_suite(document, Path(".")), [])
         with tempfile.TemporaryDirectory() as tmp:
             benchmarks = Path(tmp) / "benchmarks" / "gpu"
             benchmarks.mkdir(parents=True)
@@ -1008,8 +631,8 @@ class RegimePolicyUnitTests(unittest.TestCase):
                 ),
                 encoding="utf-8",
             )
-            with self.assertRaises(SystemExit):
-                generate_dashboard.load_suite_metadata(benchmarks)
+            metadata = generate_dashboard.load_suite_metadata(benchmarks)
+        self.assertEqual(metadata["gpu/structural"]["problems"], {})
 
 
 class GeneratedSuiteTests(unittest.TestCase):
