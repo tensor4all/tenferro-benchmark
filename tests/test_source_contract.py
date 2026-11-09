@@ -643,6 +643,29 @@ class SourceContractTests(unittest.TestCase):
                 suite_instances.resolve_suite_instance_ids(wrapper_file)
             self.assertIn("include id 7 is not in the source", str(raised.exception))
 
+    def test_a_skipped_nested_source_honours_its_exclusions_and_entry_types(self):
+        # The skipped-source synthesis copies the nested `include`; it has to apply
+        # the nested `exclude` and reject a non-string entry, or the wrapper
+        # validates a set the resolver cannot resolve.
+        shapes = [
+            {"source": "absent.json", "include": ["a"], "exclude": ["a"], "missing_source": "skip"},
+            {"source": "absent.json", "include": ["a", 7], "missing_source": "skip"},
+        ]
+        for problems in shapes:
+            with self.subTest(problems=problems), tempfile.TemporaryDirectory() as raw:
+                tmp = Path(raw)
+                nested = tmp / "nested.yaml"
+                nested.write_text(yaml.safe_dump({"problems": problems}), encoding="utf-8")
+                wrapper_file = tmp / "wrapper.yaml"
+                wrapper_file.write_text(
+                    yaml.safe_dump(wrapper(nested, ["a"])), encoding="utf-8"
+                )
+                stderr = io.StringIO()
+                with contextlib.redirect_stderr(stderr):
+                    self.assertFalse(validator.validate_suite(wrapper_file), stderr.getvalue())
+                with self.assertRaises(ValueError):
+                    suite_instances.resolve_suite_instance_ids(wrapper_file)
+
 
 if __name__ == "__main__":
     unittest.main()

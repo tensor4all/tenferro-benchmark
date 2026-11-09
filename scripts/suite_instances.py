@@ -83,6 +83,12 @@ def _resolve_problems(
     if not source_path.is_absolute():
         source_path = project_dir / source_path
 
+    # Before the absence branch: a skipped source used to return the entries
+    # unchecked, so `include: [a, 7]` resolved while the validator rejected it.
+    for entry in include:
+        if not isinstance(entry, str):
+            raise ValueError(include_missing_error(source_path, entry))
+
     # The same value the validator rejects, rejected here too: this used to be read
     # only inside the `FileNotFoundError` branch, so an unsupported policy passed
     # whenever the source happened to exist.

@@ -452,7 +452,22 @@ def declared_cases(
                     if isinstance(nested_problems, dict)
                     else []
                 )
-                nested_cases = [{"id": i, **nested_defaults} for i in nested_include]
+                nested_excluded = set(
+                    nested_problems.get("exclude") or []
+                    if isinstance(nested_problems, dict)
+                    else []
+                )
+                for entry in nested_include:
+                    if not isinstance(entry, str):
+                        raise RegimeError(
+                            f"{suite_id}: "
+                            + suite_instances.include_missing_error(path, entry)
+                        )
+                nested_cases = [
+                    {"id": entry, **nested_defaults}
+                    for entry in nested_include
+                    if entry not in nested_excluded
+                ]
         except RegimeError:
             raise
         except Exception as error:  # noqa: BLE001 -- one source must not stop the rest
