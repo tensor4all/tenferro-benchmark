@@ -6,6 +6,47 @@ def leaves(value):
     return list(value) if isinstance(value, (tuple, list)) else [value]
 
 
+def budget(case, reference, exact=None):
+    """The per-element allowance, refused when the comparison cannot express it.
+
+    A budget that is not finite scores every miss as 0: `rtol = inf` makes every
+    threshold infinite, and `atol + rtol * abs(1.7e308+1.7e308j)` overflows to the
+    same from finite components. `exact` masks the elements the comparison already
+    found equal, which get a budget of exactly 1.
+    """
+    rtol, atol = case["rtol"], case["atol"]
+    if not all(np.isfinite(tolerance) and tolerance >= 0 for tolerance in (rtol, atol)):
+        raise ValueError(f"verification tolerance must be finite and non-negative: rtol={rtol!r} atol={atol!r}")
+    with np.errstate(over="ignore", invalid="ignore"):
+        scale = atol + rtol * np.abs(reference)
+    if exact is not None:
+        scale = np.where(exact, 1, scale)
+    if not np.all(np.isfinite(scale)):
+        raise ValueError(f"verification tolerance budget is not finite: rtol={rtol!r} atol={atol!r}")
+    return scale
+
+
+def scored(values, allowance):
+    """|miss| / allowance, with 0/0 = 0 and a miss outside a zero allowance = inf.
+
+    A plain division produced NaN wherever the reference element and the miss
+    were both exactly zero. With atol = 0 every zero of the identity reference
+    carries an allowance of 0, so a scaled u whose u.T @ u = 8 I scored NaN off
+    the diagonal, np.max returned NaN, and max(worst, NaN) dropped the whole
+    comparison. Checking finiteness after the reduction cannot recover it; the
+    comparison has to be scored here.
+    """
+    miss = np.abs(values)
+    positive = allowance > 0
+    with np.errstate(invalid="ignore", divide="ignore", over="ignore"):
+        out = np.where(positive, miss / np.where(positive, allowance, 1.0), np.inf)
+    # A non-finite miss is a failure, never a score: an overflowing product in
+    # the Gram matrix can be NaN, and NaN survives both np.max and max().
+    out = np.where(np.isfinite(miss), out, np.inf)
+    out = np.where((allowance <= 0) & (miss == 0), 0.0, out)
+    return out
+
+
 def verify_outputs(actual, expected, case, inputs, verify_one):
     actual, expected = leaves(actual), leaves(expected)
     if len(actual) != len(expected):
@@ -25,9 +66,9 @@ def verify_outputs(actual, expected, case, inputs, verify_one):
             q[:, j:] -= tau[j]*np.outer(q[:, j:] @ v, v.conj())
         r = np.triu(packed[:k, :])
         a = inputs[0].astype(dtype)
-        worst = float(np.max(np.abs(q[:, :k] @ r-a)/(case["atol"]+case["rtol"]*np.abs(a))))
+        worst = float(np.max(scored(q[:, :k] @ r-a, budget(case, a))))
         identity = np.eye(m)
-        worst = max(worst, float(np.max(np.abs(q.conj().T @ q-identity)/(case["atol"]+case["rtol"]*identity))))
+        worst = max(worst, float(np.max(scored(q.conj().T @ q-identity, budget(case, identity)))))
         if not np.isfinite(worst) or worst > 1:
             raise ValueError(f"verification compact-QR error/tolerance = {worst}")
         return worst
@@ -44,11 +85,10 @@ def verify_outputs(actual, expected, case, inputs, verify_one):
     if np.any(s < 0) or np.any(s[1:] > s[:-1]):
         raise ValueError("verification singular values are not sorted/nonnegative")
     reconstructed = (u[:, :k] * s.astype(np.float64)) @ vh[:k, :]
-    budget = case["atol"] + case["rtol"] * np.abs(a)
-    worst = float(np.max(np.abs(reconstructed-a)/budget))
+    worst = float(np.max(scored(reconstructed-a, budget(case, a))))
     for gram in (u.conj().T @ u, vh @ vh.conj().T):
         identity = np.eye(len(gram))
-        worst = max(worst, float(np.max(np.abs(gram-identity)/(case["atol"]+case["rtol"]*identity))))
+        worst = max(worst, float(np.max(scored(gram-identity, budget(case, identity)))))
     worst = max(worst, verify_one(s, expected[1], case))
     if not np.isfinite(worst) or worst > 1:
         raise ValueError(f"verification full-SVD error/tolerance = {worst}")

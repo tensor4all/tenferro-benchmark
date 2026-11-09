@@ -148,6 +148,89 @@ class MultiOutputVerification(unittest.TestCase):
             with self.assertRaises(ValueError):
                 verify_outputs(bad, expected, case, inputs, verify)
 
+    def test_a_budget_that_overflows_from_finite_components_is_not_a_pass(self):
+        # #417 review: both components are finite, but `abs(1.7e308+1.7e308j)` and the
+        # scale built from it overflow to inf, so the miss scored 0.0 and the output
+        # counted as verified. `verify_outputs` is the collector's path.
+        case = {"op": "exp", "rtol": 1e-9, "atol": 1e-9}
+        actual = np.array([complex(1.7e308, 0)])
+        expected = np.array([complex(1.7e308, 1.7e308)])
+        for run in (lambda: verify_outputs([actual], [expected], case, [], verify),
+                    lambda: verify(actual, expected, case)):
+            with self.assertRaisesRegex(ValueError, "^verification.*not finite"):
+                run()
+        self.assertTrue(np.all(np.isfinite(actual)) and np.all(np.isfinite(expected)))
+
+    def test_the_factorization_branches_use_the_same_budget(self):
+        # Second #417 reproduction: `householder_qr` and `svd_full` scored their own
+        # budget inline, so the same overflow passed a 0-miss QR (rtol=1.5 on 1.7e308)
+        # and accepted an 8.5e307 reconstruction miss at 0.5 of the budget.
+        qr = {"op": "householder_qr", "rtol": 1.5, "atol": 0.0}
+        for tolerance in (qr, dict(qr, rtol=float("inf"))):
+            with self.assertRaisesRegex(ValueError, "^verification tolerance"):
+                verify_outputs([np.array([[0.0]]), np.array([0.0])],
+                               [np.array([[1.7e308]]), np.array([0.0])],
+                               tolerance, [np.array([[1.7e308]])], verify)
+        svd = {"op": "svd_full", "rtol": 1.5, "atol": 0.0}
+        u, s, vh = np.array([[0.5]]), np.array([1.7e308]), np.array([[1.0]])
+        for tolerance in (svd, dict(svd, rtol=float("inf"))):
+            with self.assertRaisesRegex(ValueError, "^verification tolerance"):
+                verify_outputs([u, s, vh], [u, s, vh], tolerance, [np.array([[1.7e308]])], verify)
+
+    def test_a_tolerance_the_verifier_cannot_express_is_refused(self):
+        values = np.array([1.0])
+        for tolerance in ({"rtol": float("inf"), "atol": 0.0},
+                          {"rtol": 1e-9, "atol": float("nan")},
+                          {"rtol": -1e-9, "atol": 0.0}):
+            with self.assertRaisesRegex(ValueError, "^verification tolerance must be finite and non-negative"):
+                verify(values, np.array([2.0]), tolerance)
+
+
+    def test_a_nonunitary_factor_is_not_scored_away_by_a_nan(self):
+        # #417 review follow-up: with atol = 0 every zero of the identity
+        # reference carries an allowance of 0, so the off-diagonal misses were
+        # 0/0 = NaN, np.max returned NaN, and max(worst, NaN) dropped the whole
+        # orthogonality comparison. A u with u.T @ u = 8 I then scored only its
+        # reconstruction (2.2e-07) and was accepted.
+        a = np.array([[1.0, 1.0], [1.0, -1.0]])
+        u, s, vh = 2 * np.sqrt(2) * np.eye(2), np.full(2, np.sqrt(2)), .25 * a
+        expected = list(np.linalg.svd(a, full_matrices=True))
+        case = {'op': 'svd_full', 'rtol': 1e-9, 'atol': 0.0}
+        np.testing.assert_allclose(u.T @ u, 8 * np.eye(2))
+        with self.assertRaisesRegex(ValueError, '^verification full-SVD'):
+            verify_outputs([u, s, vh], expected, case, [a], verify)
+
+    def test_the_orthogonality_guards_refuse_a_budget_they_cannot_express(self):
+        # A regression test that only exercises reconstruction lets the inline
+        # denominator back in: rtol = atol = 1e308 overflows on the identity
+        # reference, and with no guard every orthogonality miss scores 0.0.
+        tolerance = {'rtol': 1e308, 'atol': 1e308}
+        qr = dict(tolerance, op='householder_qr')
+        with self.assertRaisesRegex(ValueError, 'budget is not finite'):
+            verify_outputs([np.array([[0.0]]), np.array([-1.0])],
+                           [np.array([[0.0]]), np.array([-1.0])],
+                           qr, [np.array([[0.0]])], verify)
+        svd = dict(tolerance, op='svd_full')
+        with self.assertRaisesRegex(ValueError, 'budget is not finite'):
+            verify_outputs([np.array([[2.0]]), np.array([0.0]), np.array([[1.0]])],
+                           [np.array([[1.0]]), np.array([0.0]), np.array([[1.0]])],
+                           svd, [np.array([[0.0]])], verify)
+
+
+    def test_an_overflowing_gram_matrix_is_not_scored_away_by_a_nan(self):
+        # An overflowing product inside u.conj().T @ u is NaN, and NaN survives
+        # both np.max and max(): the orthogonality comparison scored nothing and
+        # the reconstruction score alone accepted the output.
+        a = np.eye(4, 2, dtype=np.complex128)
+        u = np.eye(4, dtype=np.complex128)
+        u[2:, 2:] = 1e308 * np.array([[1 + 1j, 1j], [-1 + 1j, 1]])
+        s, vh = np.ones(2), np.eye(2, dtype=np.complex128)
+        case = {'op': 'svd_full', 'rtol': 1e-9, 'atol': 1e-9}
+        self.assertTrue(all(np.isfinite(x).all() for x in (a, u, s, vh)))
+        expected = list(np.linalg.svd(a, full_matrices=True))
+        with self.assertRaisesRegex(ValueError, '^verification full-SVD'):
+            verify_outputs([u, s, vh], expected, case, [a], verify)
+
 
 if __name__ == "__main__":
     unittest.main()
