@@ -20,7 +20,9 @@ backends:
   - julia-base
   - strided-jl
 problems:
+  # No catalogue file: the case list lives in the runner (docs/regime-floors.md).
   source: generated
+  missing_source: skip
   include:
     - elementwise_reduction_public_api
     - indexing_layout_public_api

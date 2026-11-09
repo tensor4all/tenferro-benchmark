@@ -13,5 +13,7 @@ defaults:
   verify: {reference: pytorch, rtol: 2.0e-5, atol: 2.0e-5}
 backends: [tenferro-direct, tenferro-eager, tenferro-trace, pytorch-cpu, jax-cpu]
 problems:
+  # No catalogue file: the case list lives in the runner (docs/regime-floors.md).
   source: generated
+  missing_source: skip
   include: [neural_public_api]

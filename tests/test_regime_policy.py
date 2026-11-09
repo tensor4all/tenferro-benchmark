@@ -226,6 +226,132 @@ class RegimePolicyUnitTests(unittest.TestCase):
             self.assertEqual(regime_policy.check_suite(document, ROOT), [], path.name)
 
 
+class IncludeSourceTests(unittest.TestCase):
+    """The `include` source loader fails closed (#412).
+
+    A source that did not load produced no cases, which is the same thing a
+    suite that declares no case produces: validation passed and the suite lost
+    its catalogue without a word.  The three ways in (absent, unparseable,
+    unknown id) are errors; exactly one declaration turns an absent source into
+    a skip, and the validator then names it on every run.
+    """
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def catalogue(self, name: str, ids: list[str]) -> str:
+        path = self.root / name
+        path.write_text(json.dumps({"cases": [{"id": item, "n": 1024} for item in ids]}))
+        return str(path)
+
+    def suite(self, selector: dict) -> dict:
+        return {
+            "suite_id": "gpu/dense",
+            "defaults": {"regime": "latency"},
+            "problems": selector,
+        }
+
+    def write_suite(self, selector: dict) -> Path:
+        import yaml
+
+        document = {
+            "schema_version": 1,
+            "title": "fixture",
+            "description": "fixture",
+            "backends": ["tenferro-cuda-trace"],
+            **self.suite(selector),
+        }
+        path = self.root / "dense.yaml"
+        path.write_text(yaml.safe_dump(document))
+        return path
+
+    def test_a_missing_source_fails_the_load(self):
+        source = str(self.root / "absent.json")
+        document = self.suite({"source": source, "include": ["case_a"]})
+        errors = regime_policy.check_suite(document, ROOT)
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn(source, errors[0])
+        self.assertIn("does not exist", errors[0])
+        self.assertIn("missing_source: skip", errors[0])
+
+    def test_the_validator_rejects_a_missing_source(self):
+        import validate_benchmark_suite as validator
+
+        path = self.write_suite(
+            {"source": str(self.root / "absent.json"), "include": ["case_a"]}
+        )
+        self.assertFalse(validator.validate_suite(path))
+
+    def test_a_missing_source_is_a_skip_only_where_declared(self):
+        source = str(self.root / "absent.json")
+        document = self.suite(
+            {"source": source, "include": ["case_a"], "missing_source": "skip"}
+        )
+        skipped: list[str] = []
+        self.assertEqual(regime_policy.check_suite(document, ROOT, skipped), [])
+        self.assertEqual(skipped, [source])
+
+    def test_an_unknown_include_id_is_named(self):
+        source = self.catalogue("catalogue.json", ["case_a"])
+        document = self.suite({"source": source, "include": ["case_a", "renamed_case"]})
+        errors = regime_policy.check_suite(document, ROOT)
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("'renamed_case'", errors[0])
+        self.assertIn("not in source", errors[0])
+
+    def test_a_broken_source_fails_even_with_the_skip_declaration(self):
+        source = self.root / "catalogue.json"
+        source.write_text("{ not json")
+        for extra in ({}, {"missing_source": "skip"}):
+            document = self.suite({"source": str(source), "include": ["case_a"], **extra})
+            errors = regime_policy.check_suite(document, ROOT)
+            self.assertEqual(len(errors), 1, errors)
+            self.assertIn("cannot be loaded", errors[0])
+
+    def test_an_unreadable_source_is_reported_not_raised(self):
+        # `PermissionError` is not "absent": it must come back as a validation
+        # error, not abort the rest of the files the caller asked about.
+        directory = self.root / "locked"
+        directory.mkdir()
+        (directory / "catalogue.json").write_text(
+            json.dumps({"cases": [{"id": "case_a"}]})
+        )
+        source = str(directory / "catalogue.json")
+        directory.chmod(0o000)
+        try:
+            for extra in ({}, {"missing_source": "skip"}):
+                document = self.suite({"source": source, "include": ["case_a"], **extra})
+                errors = regime_policy.check_suite(document, ROOT)
+                self.assertEqual(len(errors), 1, errors)
+                self.assertIn("cannot be loaded", errors[0])
+        finally:
+            directory.chmod(0o755)
+
+    def test_the_validator_reports_each_skipped_source_on_every_run(self):
+        import contextlib
+        import io
+
+        import validate_benchmark_suite as validator
+
+        source = str(self.root / "absent.json")
+        path = self.write_suite(
+            {"source": source, "include": ["case_a"], "missing_source": "skip"}
+        )
+        for _ in range(2):
+            out, err = io.StringIO(), io.StringIO()
+            with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+                self.assertTrue(validator.validate_suite(path))
+            lines = [line for line in out.getvalue().splitlines() if line]
+            self.assertEqual(len(lines), 1, out.getvalue())
+            self.assertIn("skipping include source", lines[0])
+            self.assertIn("absent.json", lines[0])
+            self.assertEqual(err.getvalue(), "")
+
+
 class GeneratedSuiteTests(unittest.TestCase):
     """The suites the collector regenerates must carry the same declarations.
 

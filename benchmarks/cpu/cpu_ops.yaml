@@ -32,7 +32,9 @@ backends:
   - pytorch-cpu
   - jax-cpu
 problems:
+  # No catalogue file: the case list lives in the runner (docs/regime-floors.md).
   source: generated
+  missing_source: skip
   include:
     - small_matrix_ops
     - large_matrix_ops

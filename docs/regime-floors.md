@@ -113,6 +113,40 @@ A case can be `latency` and `deferred_batch`: that is exactly what the two
 `gpu/linalg_ad_throughput` cases are, and the suite page labels the amortization
 in the latency section.
 
+## A catalogue source must load
+
+A `{source, include}` selector is a promise about which cases run, so a source
+that does not load is an error and not an empty catalogue. This one applies to
+every suite, CPU ones included, because it is about the suite being the document
+it claims to be rather than about how its cases are classified:
+
+| what is wrong | result |
+|---|---|
+| the source file is absent | validation error naming the source |
+| the source cannot be read or parsed | validation error naming the source |
+| an `include` id the source does not have | validation error naming the id |
+
+A source that may legitimately be absent says so in the selector:
+
+```yaml
+problems:
+  source: generated   # the case list lives in the runner; no catalogue file
+  missing_source: skip
+  include: [...]
+```
+
+`missing_source: skip` is the only thing that turns an absent source into a
+skip, and the validator then prints one line per skipped source on every run:
+
+```
+benchmarks/cpu/public_api.yaml: skipping include source 'generated' (missing_source: skip)
+```
+
+The declaration is a permission and the log is where it becomes visible: a suite
+that lost its catalogue in a refactor still says so on every validate. The skip
+covers an absent source only — a source that exists but does not parse fails
+even with the declaration.
+
 ## Adding a case
 
 1. Declare `regime` (on the problem or the instance record) or rely on an
@@ -137,6 +171,9 @@ The rule is enforced for `gpu/` suites. The CPU catalogues still mix size
 classes (their `throughput` default is marked provisional in each YAML) and
 their floors are a follow-up: enforcing today's table on them would move several
 hundred cases, which is a separate decision about what the CPU pages are for.
+The source rule above is not part of that exception: it applies to every suite,
+which is why the five CPU suites whose `source: generated` names no file carry
+`missing_source: skip`.
 The CPU throughput banner therefore states the size range it actually holds,
 how many of those cases sit below their (provisional) family floor and how many
 carry no floor at all, and it claims "each at or above its family floor" only

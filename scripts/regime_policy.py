@@ -24,6 +24,13 @@ Two rules are enforced here, and both fail closed:
 The floors are derived from the published NVIDIA A100 summaries in
 `result/nvidia-gpu/gpu/*.summary.json`; `docs/regime-floors.md` carries the
 table, the evidence for each value, and which values are provisional.
+
+Resolving a `{source, include}` selector follows the same rule: an absent
+source, an unparseable one and an `include` id the source does not have are all
+errors, so a catalogue that failed to load can never pass for one that declares
+nothing.  A suite whose source may legitimately be absent says so with
+`problems.missing_source: skip`, and the validator then reports the skip on
+every run.
 """
 
 from __future__ import annotations
@@ -47,6 +54,15 @@ MEASURES = ("deferred_batch", "per_call")
 
 class RegimeError(ValueError):
     """Raised when a suite declares a regime that cannot be published."""
+
+
+class SourceError(ValueError):
+    """Raised when a suite's `include` source cannot be resolved."""
+
+
+# Only this value on a `problems.missing_source` declaration turns an absent
+# include source into a reported skip.  Nothing else may swallow the error.
+MISSING_SOURCE_SKIP = "skip"
 
 
 @dataclass(frozen=True)
@@ -340,13 +356,20 @@ def _instances(document: Any) -> list[dict[str, Any]]:
 
 
 def declared_cases(
-    suite: dict[str, Any], project_dir: Path
+    suite: dict[str, Any],
+    project_dir: Path,
+    skipped: list[str] | None = None,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     """The suite's defaults and its cases, with the selector resolved.
 
     Inline problems are returned as written.  A `{source, include}` selector is
     resolved against its instance document, so every included case keeps the
-    record's own `regime`, `n`/`shape` and family-facing fields.
+    record's own `regime`, `n`/`shape` and family-facing fields.  The selector
+    fails closed: an absent source (unless the suite declares
+    `missing_source: skip`), an unparseable one, and an `include` id the source
+    does not have are all `SourceError`, because an empty catalogue and a
+    broken one must not look alike.  A skipped source is appended to `skipped`
+    so the caller can report it.
     """
     defaults = suite.get("defaults")
     if not isinstance(defaults, dict):
@@ -379,20 +402,45 @@ def declared_cases(
                     document.append(record)
         else:
             document = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, ValueError):
-        return defaults, []
+    except (FileNotFoundError, NotADirectoryError) as exc:
+        # An absent source is the one load failure a suite may allow: the
+        # declaration is the difference between "I allowed this" and "nobody
+        # looked", so it is opt-in and reported, never inferred.
+        if problems.get("missing_source") == MISSING_SOURCE_SKIP:
+            if skipped is not None:
+                skipped.append(source)
+            return defaults, []
+        raise SourceError(
+            f"{suite.get('suite_id')}: include source {source!r} does not exist. Add "
+            "`missing_source: skip` to `problems` if this suite may legitimately run "
+            "without it."
+        ) from exc
+    except (OSError, ValueError) as exc:
+        # A source that is present but unreadable or unparseable is never a skip:
+        # the declaration covers an absent source, not a broken one.  It is still
+        # reported rather than raised, so one bad source does not abort the rest
+        # of the files a caller asked about.
+        raise SourceError(
+            f"{suite.get('suite_id')}: include source {source!r} cannot be loaded: {exc}"
+        ) from exc
     records = {str(row["id"]): row for row in _instances(document) if row.get("id")}
 
-    selected: list[dict[str, Any]] = []
-    for entry in include:
-        # `include` stays a list of ids: the GPU selection tooling reads it as a
-        # set of strings, so an id-to-regime mapping is not an option here.
-        if isinstance(entry, str):
-            record = records.get(entry)
-            if record is None:
-                continue
-            if entry not in exclude:
-                selected.append(record)
+    # `include` stays a list of ids: the GPU selection tooling reads it as a set
+    # of strings, so an id-to-regime mapping is not an option here.  An id the
+    # source does not have is named and fatal: a renamed instance must not leave
+    # the suite with fewer cases than its author declared.
+    unknown = [entry for entry in include if isinstance(entry, str) and entry not in records]
+    if unknown:
+        raise SourceError(
+            f"{suite.get('suite_id')}: "
+            f"include {'id' if len(unknown) == 1 else 'ids'} "
+            f"{', '.join(repr(entry) for entry in unknown)} not in source {source!r}"
+        )
+    selected = [
+        records[entry]
+        for entry in include
+        if isinstance(entry, str) and entry not in exclude
+    ]
     return defaults, selected
 
 
@@ -508,13 +556,22 @@ def suite_cases(
     return rows
 
 
-def check_suite(suite: dict[str, Any], project_dir: Path) -> list[str]:
-    """Validate one suite document; return the errors instead of raising."""
+def check_suite(
+    suite: dict[str, Any], project_dir: Path, skipped: list[str] | None = None
+) -> list[str]:
+    """Validate one suite document; return the errors instead of raising.
+
+    `skipped` collects the sources the suite declared absent-but-allowed, so
+    the caller can name them in its own output.
+    """
     errors: list[str] = []
     if not isinstance(suite, dict):
         return errors
     suite_id = str(suite.get("suite_id") or "")
-    _defaults, cases = declared_cases(suite, Path(project_dir))
+    try:
+        _defaults, cases = declared_cases(suite, Path(project_dir), skipped)
+    except SourceError as exc:
+        return [str(exc)]
     defaults = suite.get("defaults") or {}
     for problem in cases:
         case_id = str(problem.get("id") or "")

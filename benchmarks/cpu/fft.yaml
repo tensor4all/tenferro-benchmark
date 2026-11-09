@@ -16,7 +16,9 @@ backends:
   - tenferro-fft-executor-cached
   - pytorch-cpu
 problems:
+  # No catalogue file: the case list lives in the runner (docs/regime-floors.md).
   source: generated
+  missing_source: skip
   include:
     - fft_c32_1d
     - fft_c64_1d

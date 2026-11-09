@@ -114,9 +114,15 @@ def validate_suite(path: Path) -> bool:
     # schema accepted: a malformed `defaults` (a list, say) is a schema error, not
     # an exception thrown out of the checker.
     if ok:
-        for message in regime_policy.check_suite(suite, PROJECT_DIR):
+        skipped: list[str] = []
+        for message in regime_policy.check_suite(suite, PROJECT_DIR, skipped):
             print(f"{path}: {message}", file=sys.stderr)
             ok = False
+        # An allowed-absent source is named on every run: a `missing_source:
+        # skip` that only lives in the YAML is the same silent hole in a nicer
+        # spelling, so the log -- not the config -- says the suite lost a source.
+        for source in skipped:
+            print(f"{path}: skipping include source {source!r} (missing_source: skip)")
     return ok
 
 
