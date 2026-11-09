@@ -267,11 +267,13 @@ assert_top_level_backends benchmarks/gpu/sparse.yaml
 assert_gpu_dense_large_solve_cases
 
 mkdir -p "$TMP/instances"
+# One record per file, keyed by `name`: that is how benchmark_python.load_instances()
+# reads a directory catalogue, so the fixture has to look the same.
 cat > "$TMP/instances/bin_matmul_256.json" <<'JSON'
-{"id": "bin_matmul_256", "regime": "latency"}
+{"name": "bin_matmul_256", "regime": "latency"}
 JSON
 cat > "$TMP/instances/einsum_skip_me.json" <<'JSON'
-{"id": "einsum_skip_me", "regime": "latency"}
+{"name": "einsum_skip_me", "regime": "latency"}
 JSON
 cat > "$TMP/cpu_selector_suite.yaml" <<YAML
 schema_version: 1

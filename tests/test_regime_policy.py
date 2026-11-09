@@ -363,6 +363,12 @@ class RegimePolicyUnitTests(unittest.TestCase):
             "problems": problems,
         }
 
+    @staticmethod
+    def _write(document: dict, path: Path) -> Path:
+        """Write a suite document as YAML and return its path."""
+        path.write_text(yaml.safe_dump(document), encoding="utf-8")
+        return path
+
     def test_a_source_with_an_embedded_nul_is_a_load_error(self):
         with tempfile.TemporaryDirectory() as tmp:
             document = {"suite_id": "gpu/structural",
@@ -474,10 +480,151 @@ class RegimePolicyUnitTests(unittest.TestCase):
                     project_dir=Path(tmp),
                 )
 
-    def test_a_directory_member_with_cases_is_one_record_named_by_file(self):
-        # `declared_cases` treats a directory member as one record; the
-        # collector must use the same id, or run_all.sh collects what the
-        # validator rejects.
+    def test_a_directory_array_member_is_not_expanded_into_records(self):
+        # The einsum directory loader reads one record per file and warns away a JSON
+        # array; expanding it here validated `b` and then collected one case of two.
+        import suite_instances
+
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp) / "instances"
+            directory.mkdir()
+            (directory / "a.json").write_text(
+                json.dumps({"name": "a", "regime": "latency"}), encoding="utf-8"
+            )
+            (directory / "group.json").write_text(
+                json.dumps([{"name": "b", "regime": "latency"}]), encoding="utf-8"
+            )
+            selector = {"source": "instances", "include": ["a", "b"]}
+            with self.assertRaises(ValueError):
+                suite_instances._resolve_problems(selector, project_dir=Path(tmp))
+            suite = {"suite_id": "cpu/catalogue", "problems": selector}
+            errors = regime_policy.check_suite(suite, Path(tmp))
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("group.json", errors[0])
+        self.assertIn("'b'", errors[0])
+
+    def test_a_directory_member_whose_id_disagrees_with_its_name_is_rejected(self):
+        # The loader collects by `name`; an `id` that claims something else made the
+        # validator accept an id no run collects, so the author has to pick one.
+        import suite_instances
+
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp) / "instances"
+            directory.mkdir()
+            (directory / "a.json").write_text(
+                json.dumps({"name": "a", "id": "b", "regime": "latency"}),
+                encoding="utf-8",
+            )
+            suite = {"suite_id": "cpu/catalogue",
+                     "problems": {"source": "instances", "include": ["a"]}}
+            errors = regime_policy.check_suite(suite, Path(tmp))
+            with self.assertRaises(ValueError):
+                suite_instances._resolve_problems(suite["problems"], project_dir=Path(tmp))
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("a.json", errors[0])
+        self.assertIn("name", errors[0])
+
+    def test_a_directory_catalogue_yields_what_the_loader_collects(self):
+        # The declaration and the run must agree on a directory source: same files,
+        # same ids, same count.
+        import benchmark_python
+        import suite_instances
+
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp) / "instances"
+            directory.mkdir()
+            for name in ("a", "b"):
+                (directory / f"{name}.json").write_text(
+                    json.dumps({"name": name, "regime": "latency"}),
+                    encoding="utf-8",
+                )
+            (directory / "skipped.json").write_text(
+                json.dumps([{"name": "c", "regime": "latency"}]), encoding="utf-8"
+            )
+            problems = {"source": "instances", "include": ["a", "b"]}
+            suite = {"suite_id": "cpu/catalogue", "problems": problems}
+            self.assertEqual(regime_policy.check_suite(suite, Path(tmp)), [])
+            declared = [row[0] for row in regime_policy.suite_cases(suite, Path(tmp))]
+            self.assertEqual(
+                suite_instances._resolve_problems(problems, project_dir=Path(tmp)),
+                ["a", "b"],
+            )
+            original = benchmark_python.DATA_DIR
+            benchmark_python.DATA_DIR = directory
+            try:
+                collected = benchmark_python.load_instances(suite_include="a,b")
+            finally:
+                benchmark_python.DATA_DIR = original
+        self.assertEqual(declared, ["a", "b"])
+        self.assertEqual([row["name"] for row in collected], declared)
+
+    def test_a_json_syntax_nested_suite_still_resolves(self):
+        # JSON is a subset of YAML, so "parses as JSON" cannot separate a catalogue
+        # from a suite document: a suite written with `json.dumps()` used to be sent
+        # to the catalogue reader and lost its nested resolution.
+        import suite_instances
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            base = self._nested_suite([self._case("a")], suite_id="cpu/base")
+            (tmp / "base.yaml").write_text(json.dumps(base), encoding="utf-8")
+            wrapper = {"suite_id": "cpu/wrapper",
+                       "problems": {"source": str(tmp / "base.yaml"),
+                                    "include": ["a"]}}
+            self.assertEqual(
+                suite_instances.resolve_suite_instance_ids(
+                    self._write(wrapper, tmp / "wrapper.yaml"), project_dir=tmp
+                ),
+                ["a"],
+            )
+            # The same document, as YAML syntax, has to keep working too.
+            (tmp / "plain.yaml").write_text(yaml.safe_dump(base), encoding="utf-8")
+            wrapper["problems"]["source"] = str(tmp / "plain.yaml")
+            self.assertEqual(
+                suite_instances.resolve_suite_instance_ids(
+                    self._write(wrapper, tmp / "wrapper.yaml"), project_dir=tmp
+                ),
+                ["a"],
+            )
+
+    def test_a_selector_that_repeats_an_id_is_rejected(self):
+        # A repeated id is the same declaration twice: the inline form rejects it,
+        # and the selector used to accept it and collect the case twice.
+        import suite_instances
+        import validate_benchmark_suite
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            (tmp / "cases.json").write_text(
+                json.dumps({"cases": [{"id": "a", "regime": "latency"}]}),
+                encoding="utf-8",
+            )
+            problems = {"source": str(tmp / "cases.json"), "include": ["a", "a"]}
+            with self.assertRaises(ValueError):
+                suite_instances._resolve_problems(problems, project_dir=tmp)
+            errors = regime_policy.check_suite(
+                {"suite_id": "gpu/structural", "problems": problems}, tmp
+            )
+            self.assertEqual(len(errors), 1, errors)
+            self.assertIn("repeats id 'a'", errors[0])
+            # The schema rejects the document before the regime check runs: the
+            # suite is otherwise valid, so the duplicate include is the only defect.
+            suite_file = self._write(
+                self._nested_suite(problems, suite_id="cpu/repeat"),
+                tmp / "repeat.yaml",
+            )
+            self.assertFalse(validate_benchmark_suite.validate_suite(suite_file))
+            problems["include"] = ["a"]
+            suite_file = self._write(
+                self._nested_suite(problems, suite_id="cpu/repeat"), suite_file
+            )
+            self.assertTrue(validate_benchmark_suite.validate_suite(suite_file))
+
+    def test_a_directory_member_without_a_name_is_not_a_record(self):
+        # The directory loader reads one record per file, keyed by `name`, and skips
+        # anything else with a warning. A member rooted at a `cases` mapping used to
+        # be a record named by the file stem here, so the validator accepted ids the
+        # loader never collects.
         import suite_instances
 
         with tempfile.TemporaryDirectory() as tmp:
@@ -487,15 +634,16 @@ class RegimePolicyUnitTests(unittest.TestCase):
                 json.dumps({"cases": [{"id": "a", "regime": "latency"}]}),
                 encoding="utf-8",
             )
-            selector = {"source": "catalogue", "include": ["part"]}
-            self.assertEqual(
-                suite_instances._resolve_problems(selector, project_dir=Path(tmp)),
-                ["part"],
-            )
-            suite = {"suite_id": "cpu/catalogue", "problems": selector}
-            self.assertEqual(regime_policy.check_suite(suite, Path(tmp)), [])
-            suite["problems"] = {"source": "catalogue", "include": ["a"]}
-            self.assertTrue(regime_policy.check_suite(suite, Path(tmp)))
+            for wanted, named in (("part", False), ("a", True)):
+                selector = {"source": "catalogue", "include": [wanted]}
+                with self.assertRaises(ValueError):
+                    suite_instances._resolve_problems(selector, project_dir=Path(tmp))
+                suite = {"suite_id": "cpu/catalogue", "problems": selector}
+                errors = regime_policy.check_suite(suite, Path(tmp))
+                self.assertEqual(len(errors), 1, errors)
+                # An id the skipped member advertises gets its file named; a name it
+                # never declares is simply not in the source.
+                self.assertEqual("part.json" in errors[0], named, errors[0])
 
     def test_a_json_catalogue_named_yaml_validates_and_collects(self):
         # The validator reads every non-directory source as JSON, so this file is a
@@ -620,7 +768,7 @@ class RegimePolicyUnitTests(unittest.TestCase):
             directory = Path(tmp) / "catalogue.yaml"
             directory.mkdir()
             (directory / "a.json").write_text(
-                json.dumps({"id": "a", "regime": "latency"}), encoding="utf-8"
+                json.dumps({"name": "a", "regime": "latency"}), encoding="utf-8"
             )
             document = {"suite_id": "gpu/structural",
                         "problems": {"source": "catalogue.yaml", "include": ["a"]}}
@@ -636,7 +784,7 @@ class RegimePolicyUnitTests(unittest.TestCase):
             directory = Path(tmp) / "catalogue.yaml"
             directory.mkdir()
             (directory / "a.json").write_text(
-                json.dumps({"id": "a", "regime": "latency"}), encoding="utf-8"
+                json.dumps({"name": "a", "regime": "latency"}), encoding="utf-8"
             )
             ids = suite_instances._resolve_problems(
                 {"source": str(directory), "include": ["a"]}, project_dir=Path(tmp)

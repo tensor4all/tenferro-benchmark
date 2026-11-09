@@ -50,6 +50,11 @@ def _resolve_problems(
         raise ValueError("problem selector requires a non-empty source")
     if not isinstance(include, list) or not include:
         raise ValueError("problem selector requires a non-empty include list")
+    repeated = [entry for index, entry in enumerate(include) if entry in include[:index]]
+    if repeated:
+        # The inline form rejects the same id twice; here it resolved to the case
+        # twice, so run_all.sh collected a duplicate the validator accepted.
+        raise ValueError(f"selector repeats problem id {repeated[0]!r}")
 
     source_path = Path(source)
     if not source_path.is_absolute():
@@ -76,22 +81,19 @@ def _resolve_problems(
     except OSError as error:
         raise ValueError(f"{source_path}: include source did not load: {error}") from error
 
-    # Dispatch on the content, not on the file name: the validator reads every
-    # non-directory source as JSON, so a catalogue named `cases.yaml` validates.
-    # Keying on the suffix sent that same file down the nested-suite path here and
-    # collection died on `KeyError: 'problems'`.
-    if source_path.is_dir() or _is_json_document(source_path):
-        # A JSON catalogue is read for its declared ids: copying `include`
-        # unchecked was the same fail-open the validator rejected, and
-        # run_all.sh collects through this resolver without validating.
-        known = set(_catalogue_ids(source_path))
+    kind, document = _source_kind(source_path)
+    if kind in {"catalogue", "directory"}:
+        # A catalogue is read for its declared ids: copying `include` unchecked was
+        # the same fail-open the validator rejected, and run_all.sh collects through
+        # this resolver without validating.
+        known = set(_catalogue_ids(source_path, document))
         missing = [instance_id for instance_id in include if instance_id not in known]
         if missing:
             raise ValueError(
                 f"{source_path}: include id {missing[0]!r} is not in the source"
             )
         ids = list(include)
-    elif source_path.suffix in {".yaml", ".yml"}:
+    elif kind == "suite":
         # A nested suite: main's behaviour, kept as it is. #426 owns making the
         # nested path as strict as the catalogue path (unknown ids, duplicates).
         base_ids = resolve_suite_instance_ids(source_path, project_dir=project_dir)
@@ -99,66 +101,104 @@ def _resolve_problems(
         ids = [instance_id for instance_id in base_ids if instance_id in allowed]
     else:
         raise ValueError(
-            f"{source_path}: include source did not load: not a JSON catalogue"
+            f"{source_path}: include source is neither a suite (a `problems` "
+            "mapping) nor a catalogue (a `cases` list, a record list, or one record)"
         )
 
     return [instance_id for instance_id in ids if instance_id not in exclude]
 
 
-def _is_json_document(source_path: Path) -> bool:
-    """Whether a file parses as JSON, which is how the validator reads a source."""
+def _source_kind(source_path: Path) -> tuple[str, Any]:
+    """`("directory"|"catalogue"|"suite", parsed document)` for a selector source.
+
+    Decided by structure, never by syntax or file name: JSON is a subset of YAML, so
+    a successful `json.loads` says nothing about what the document means, and a
+    suffix says nothing about its content. A `problems` mapping is a suite, a
+    `cases`/`patterns` list is a catalogue, a bare `name` record is one instance.
+    """
+    if source_path.is_dir():
+        return "directory", None
+    text = _read_source(source_path)
     try:
-        json.loads(source_path.read_text(encoding="utf-8"))
+        document = json.loads(text)
     except json.JSONDecodeError:
-        return False
+        # JSON is what every collector opens; YAML only adds the nested-suite form.
+        document = yaml.safe_load(text)
+    if isinstance(document, dict):
+        if "problems" in document:
+            return "suite", document
+        if isinstance(document.get("cases"), list) or isinstance(document.get("patterns"), list):
+            return "catalogue", document
+        if isinstance(document.get("name"), str) and document["name"]:
+            return "catalogue", document
+    elif isinstance(document, list):
+        return "catalogue", document
+    return "unknown", document
+
+
+def _read_source(source_path: Path) -> str:
+    try:
+        return source_path.read_text(encoding="utf-8")
     except (OSError, ValueError) as error:
-        # `ValueError` covers `UnicodeDecodeError`; the validator reports it as a
-        # load failure against this file, so the ids cannot be collected either.
+        # `ValueError` covers `UnicodeDecodeError`; the validator reports it against
+        # this file, so no ids can be collected from it either.
         raise ValueError(f"{source_path}: include source did not load: {error}") from error
-    return True
 
 
-def _catalogue_ids(source_path: Path) -> list[str]:
-    """Every record id a JSON catalogue file or directory declares."""
+def _catalogue_ids(source_path: Path, document: Any = None) -> list[str]:
+    """Every record id a catalogue file or directory declares.
+
+    A directory is read exactly as `benchmark_python.load_instances()` reads it --
+    one record per file, keyed by `name`, arrays and nameless mappings skipped -- so
+    the collector cannot collect an id the validator would not accept, or miss one
+    it would. A standalone file is read by its own collector: a record list or a
+    `{cases|patterns: [...]}` mapping keyed by `id`, or one `name` record.
+    """
     ids: list[str] = []
     seen: set[str] = set()
-    directory = source_path.is_dir()
-    files = sorted(source_path.glob("*.json")) if directory else [source_path]
-    for entry in files:
-        data = json.loads(entry.read_text(encoding="utf-8"))
-        if directory:
-            # Mirrors `declared_cases`: each file is one record, named by `id`,
-            # then `name`, then the file stem; a list root is several records.
-            if isinstance(data, list):
-                records, fallback = data, None
-            else:
-                records, fallback = [data], entry.stem
-        else:
-            # Mirrors `declared_cases`: a standalone catalogue is a list or a
-            # {cases|patterns: [...]} mapping. A bare record declares no ids.
-            if isinstance(data, list):
-                records = data
-            elif isinstance(data, dict):
-                records = data.get("cases")
-                if records is None:
-                    records = data.get("patterns", [])
-            else:
-                records = []
-            fallback = None
-        if not isinstance(records, list):
-            raise ValueError(f"{entry}: `cases` must be a list of records")
-        for index, record in enumerate(records):
-            if not isinstance(record, dict):
-                raise ValueError(f"{entry}: record {index} is not a mapping")
-            record_id = record.get("id")
-            if not record_id and fallback is not None:
-                record_id = record.get("name") or fallback
-            if not isinstance(record_id, str) or not record_id:
-                raise ValueError(f"{entry}: record {index} has no non-empty id")
-            if record_id in seen:
-                raise ValueError(f"{entry}: duplicate problem id {record_id!r}")
-            seen.add(record_id)
-            ids.append(record_id)
+    if source_path.is_dir():
+        for entry in sorted(source_path.glob("*.json")):
+            data = json.loads(entry.read_text(encoding="utf-8"))
+            name = data.get("name") if isinstance(data, dict) else None
+            if not isinstance(name, str) or not name:
+                continue
+            declared = data.get("id")
+            if isinstance(declared, str) and declared and declared != name:
+                raise ValueError(
+                    f"{entry}: declares id {declared!r} and name {name!r}; "
+                    "the loader collects by `name`"
+                )
+            if name in seen:
+                raise ValueError(f"{entry}: duplicate problem id {name!r}")
+            seen.add(name)
+            ids.append(name)
+        return ids
+
+    data = document
+    if isinstance(data, list):
+        records = data
+    elif isinstance(data, dict):
+        if isinstance(data.get("name"), str) and data["name"] and not isinstance(
+            data.get("cases"), list
+        ):
+            return [data["name"]]
+        records = data.get("cases")
+        if records is None:
+            records = data.get("patterns", [])
+    else:
+        records = []
+    if not isinstance(records, list):
+        raise ValueError(f"{source_path}: `cases` must be a list of records")
+    for index, record in enumerate(records):
+        if not isinstance(record, dict):
+            raise ValueError(f"{source_path}: record {index} is not a mapping")
+        record_id = record.get("id")
+        if not isinstance(record_id, str) or not record_id:
+            raise ValueError(f"{source_path}: record {index} has no non-empty id")
+        if record_id in seen:
+            raise ValueError(f"{source_path}: duplicate problem id {record_id!r}")
+        seen.add(record_id)
+        ids.append(record_id)
     return ids
 
 

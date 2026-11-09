@@ -329,6 +329,32 @@ def case_elements(problem: dict[str, Any]) -> int | None:
     return None
 
 
+def _candidate_ids(document: Any) -> list[str]:
+    """Ids a catalogue member advertises, for the error that names its file.
+
+    Only used to explain why a selected id is missing: the member itself is not a
+    record to the loader (a JSON array, or a mapping without `name`).
+    """
+    if isinstance(document, list):
+        rows = document
+    elif isinstance(document, dict):
+        rows = document.get("cases")
+    else:
+        rows = None
+    if not isinstance(rows, list):
+        return []
+    ids: list[str] = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        for key in ("id", "name"):
+            value = row.get(key)
+            if isinstance(value, str) and value:
+                ids.append(value)
+                break
+    return ids
+
+
 def _instances(document: Any) -> list[dict[str, Any]]:
     """The records of a catalogue, or `ValueError` on a malformed container.
 
@@ -394,6 +420,14 @@ def declared_cases(
         # Callers unpack three values on every path; this one used to raise
         # `ValueError: not enough values to unpack` instead of a diagnostic.
         return defaults, [], False
+    repeated = [entry for index, entry in enumerate(include) if entry in include[:index]]
+    if repeated:
+        # Repeating an id declared the same case twice; the inline form and the
+        # collector both reject that, and run_all.sh collected the pair.
+        raise RegimeError(
+            f"{suite_id}: include repeats id {repeated[0]!r}; a selector declares "
+            "each id once"
+        )
 
     path = Path(source)
     if not path.is_absolute():
@@ -429,27 +463,43 @@ def declared_cases(
         if skips is not None:
             skips.append(f"{suite_id}: skipped include source {source!r} (missing_source: skip)")
         return defaults, [], True
+    # Ids that exist only inside a member the directory loader skips, mapped to the
+    # file holding them: the error below names that file instead of sending the
+    # reader back to a catalogue that looks complete.
+    unreadable: dict[str, str] = {}
     try:
         if path.is_dir():
-            # A catalogue can point at a directory of per-instance files (the CPU
-            # einsum suite); each file is one instance, named by `name`.
-            document = []
-            for entry in sorted(path.glob("*.json")):
-                record = json.loads(entry.read_text(encoding="utf-8"))
-                if isinstance(record, list):
-                    # A per-instance file may hold several records; dropping
-                    # a list root silently lost every case in it.
-                    document.extend(record)
-                    continue
-                if isinstance(record, dict) and not record.get("id"):
-                    record = {**record, "id": record.get("name") or entry.stem}
-                document.append(record)
+            members = [
+                (entry, json.loads(entry.read_text(encoding="utf-8")))
+                for entry in sorted(path.glob("*.json"))
+            ]
         else:
+            members = None
             document = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, ValueError, RecursionError) as error:
         raise RegimeError(
             f"{suite_id}: include source {source!r} did not load: {error}"
         ) from error
+    if members is not None:
+        # `benchmark_python.load_instances()` is what collects this directory: one
+        # record per file, recognised by `name`, and a JSON array or a mapping
+        # without `name` is skipped there with a warning.  Expanding an array here,
+        # or naming a record by its `id` or its file stem, validated ids the loader
+        # never collects.
+        document = []
+        for entry, record in members:
+            name = record.get("name") if isinstance(record, dict) else None
+            if not isinstance(name, str) or not name:
+                for other in _candidate_ids(record):
+                    unreadable.setdefault(other, entry.name)
+                continue
+            declared = record.get("id")
+            if isinstance(declared, str) and declared and declared != name:
+                raise RegimeError(
+                    f"{suite_id}: catalogue member {entry.name} declares id "
+                    f"{declared!r} and name {name!r}; the loader collects by `name`"
+                )
+            document.append({**record, "id": name})
     try:
         records = _instances(document)
     except ValueError as error:
@@ -479,6 +529,13 @@ def declared_cases(
         if isinstance(entry, str):
             record = by_id.get(entry)
             if record is None:
+                member = unreadable.get(entry)
+                if member is not None:
+                    raise RegimeError(
+                        f"{suite_id}: include id {entry!r} is declared in {member}, "
+                        "which is not one record: the collector reads one record "
+                        "per file, keyed by `name`"
+                    )
                 raise RegimeError(f"{suite_id}: include id {entry!r} is not in {source!r}")
             if entry not in exclude:
                 selected.append(record)
