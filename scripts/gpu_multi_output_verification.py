@@ -37,11 +37,13 @@ def scored(values, allowance):
     comparison has to be scored here.
     """
     miss = np.abs(values)
-    out = np.zeros(miss.shape, dtype=np.float64)
     positive = allowance > 0
-    out[positive] = miss[positive] / allowance[positive]
-    out[~positive] = np.inf
-    out[~positive & (miss == 0)] = 0.0
+    with np.errstate(invalid="ignore", divide="ignore", over="ignore"):
+        out = np.where(positive, miss / np.where(positive, allowance, 1.0), np.inf)
+    # A non-finite miss is a failure, never a score: an overflowing product in
+    # the Gram matrix can be NaN, and NaN survives both np.max and max().
+    out = np.where(np.isfinite(miss), out, np.inf)
+    out = np.where((allowance <= 0) & (miss == 0), 0.0, out)
     return out
 
 

@@ -217,5 +217,20 @@ class MultiOutputVerification(unittest.TestCase):
                            svd, [np.array([[0.0]])], verify)
 
 
+    def test_an_overflowing_gram_matrix_is_not_scored_away_by_a_nan(self):
+        # An overflowing product inside u.conj().T @ u is NaN, and NaN survives
+        # both np.max and max(): the orthogonality comparison scored nothing and
+        # the reconstruction score alone accepted the output.
+        a = np.eye(4, 2, dtype=np.complex128)
+        u = np.eye(4, dtype=np.complex128)
+        u[2:, 2:] = 1e308 * np.array([[1 + 1j, 1j], [-1 + 1j, 1]])
+        s, vh = np.ones(2), np.eye(2, dtype=np.complex128)
+        case = {'op': 'svd_full', 'rtol': 1e-9, 'atol': 1e-9}
+        self.assertTrue(all(np.isfinite(x).all() for x in (a, u, s, vh)))
+        expected = list(np.linalg.svd(a, full_matrices=True))
+        with self.assertRaisesRegex(ValueError, '^verification full-SVD'):
+            verify_outputs([u, s, vh], expected, case, [a], verify)
+
+
 if __name__ == "__main__":
     unittest.main()
