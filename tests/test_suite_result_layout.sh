@@ -266,6 +266,10 @@ assert_top_level_backends benchmarks/gpu/einsum.yaml
 assert_top_level_backends benchmarks/gpu/sparse.yaml
 assert_gpu_dense_large_solve_cases
 
+mkdir -p "$TMP/instances"
+cat > "$TMP/instances/cases.json" <<'JSON'
+{"cases": [{"id": "bin_matmul_256", "regime": "latency"}, {"id": "einsum_skip_me", "regime": "latency"}]}
+JSON
 cat > "$TMP/cpu_selector_suite.yaml" <<'YAML'
 schema_version: 1
 suite_id: cpu/einsum
@@ -276,7 +280,7 @@ defaults:
   verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10}
 backends: [tenferro-eager, pytorch-cpu]
 problems:
-  source: benchmarks/cpu/einsum.yaml
+  source: "$TMP/instances"
   include: [bin_matmul_256]
   exclude: [einsum_skip_me]
 YAML
@@ -294,8 +298,8 @@ defaults:
   verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10}
 backends: [pytorch-cuda]
 problems:
-  source: benchmarks/gpu/einsum.yaml
-  include: [einsum_bin_matmul_3072_f64]
+  - id: einsum_bin_matmul_3072_f64
+    regime: latency
 YAML
 assert_invalid suite "$TMP/legacy_suite_id.yaml" "legacy underscore suite ID"
 
