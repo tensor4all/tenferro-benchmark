@@ -284,6 +284,7 @@ mod spd_fixture_tests {
             match &reference {
                 None => reference = Some(fixture),
                 Some(want) => {
+                    assert_eq!(fixture.len(), want.len(), "workers={workers}");
                     for (index, (got, expected)) in fixture.iter().zip(want).enumerate() {
                         assert!(
                             (got - expected).abs() <= 1e-12 * expected.abs().max(1.0),
