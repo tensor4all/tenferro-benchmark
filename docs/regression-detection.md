@@ -169,6 +169,18 @@ diagnostics are described in [the shape-stream workflow](gpu-shape-stream.md),
 with [GPU0 scan timings and separate GPU1 counters](../result/nvidia-gpu/gpu/shape_stream.md).
 Unsupported routes stay explicit and do not count as measured coverage.
 
+`scripts/ci/gpu_bench_results.py` is the week-over-week reading of accepted GPU
+results (#420): the baseline is the previous ISO week's accepted run of the same
+suite, taken from the committed summary sidecars by collection time, never
+"the last two accepted runs". A pair whose `tenferro_commit` is identical, whose
+`hardware.host` differs, or whose runs fall in the same ISO week is refused by
+name with no table and exit 1, and a previous week without an accepted run says
+`no baseline` rather than borrowing a neighbouring run. The report states both
+runs' commit, host, week and arm set above any row. It reads committed results
+and measures nothing, so it needs no GPU. It is the repository-side entry point
+for that reading: a weekly job that selects its own two runs is the #420 defect,
+so the comparison has to come from here.
+
 These GPU scan rows are workflow-latency diagnostics. They contain no paired
 baseline/candidate performance conclusion. GPU paired confirmation and
 quick/full command-wall budgeting remain tracked in #107; the CPU paired
