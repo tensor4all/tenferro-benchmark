@@ -431,11 +431,18 @@ def declared_cases(
             nested_defaults, nested_cases, _nested_skipped = declared_cases(
                 records[0], project_dir
             )
-        except RecursionError as error:
-            # Following a nested source can walk a chain that includes itself; an
-            # escaping `RecursionError` stopped validation of every later input.
+        except RegimeError:
+            raise
+        except Exception as error:  # noqa: BLE001 -- one source must not stop the rest
+            # A nested document is resolved without passing through the suite schema,
+            # so its selector can be shaped wrongly: `exclude: [{}]` raises
+            # `TypeError` from `set()` and a `problems` list raises `AttributeError`,
+            # and either used to escape this boundary and stop validation of every
+            # later input.  A chain that includes itself raises `RecursionError`,
+            # which escaped the same way before.  Report it against this file.
             raise RegimeError(
-                f"{suite_id}: include source {source!r} did not load: {error}"
+                f"{suite_id}: include source {source!r} did not load: "
+                f"{type(error).__name__}: {error}"
             ) from error
         rows = [
             {

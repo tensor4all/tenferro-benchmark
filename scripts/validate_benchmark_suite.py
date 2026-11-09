@@ -50,6 +50,11 @@ def load_yaml(path: Path) -> Any:
         # `open()`/`read()` raise `UnicodeDecodeError` (a `ValueError`) for bytes
         # that are not UTF-8; it used to escape this handler and abort the rest.
         raise ValidationLoadError(f"{path}: invalid YAML: {exc}") from exc
+    except AttributeError as exc:
+        # PyYAML 6.0.3's implicit `!!timestamp` resolver raises `AttributeError`
+        # (`None.groupdict()`) for an unparsable value, which is not a `YAMLError`;
+        # it used to escape this handler and abort the remaining inputs.
+        raise ValidationLoadError(f"{path}: invalid YAML: {exc}") from exc
 
 
 def validator_for(schema_path: Path) -> Draft202012Validator:

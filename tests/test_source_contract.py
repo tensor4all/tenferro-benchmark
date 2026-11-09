@@ -537,6 +537,49 @@ class SourceContractTests(unittest.TestCase):
             "add a row for the kind that is missing from the table",
         )
 
+    def test_a_malformed_input_is_reported_and_the_next_file_still_runs(self):
+        # PyYAML 6.0.3 raises `AttributeError` -- not `YAMLError` -- from its
+        # `!!timestamp` resolver, which used to abort the command-line inputs after
+        # the first bad file.
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            bad = tmp / "bad.yaml"
+            bad.write_text("date: !!timestamp not-a-date\n", encoding="utf-8")
+            cases = write_json(tmp / "cases.json", {"cases": [{"id": "a", **LATENCY}]})
+            good = tmp / "good.yaml"
+            good.write_text(yaml.safe_dump(wrapper(cases, ["a"])), encoding="utf-8")
+            stderr = io.StringIO()
+            with contextlib.redirect_stderr(stderr):
+                self.assertFalse(validator.validate_suite(bad), stderr.getvalue())
+                self.assertTrue(validator.validate_suite(good), stderr.getvalue())
+            self.assertIn(str(bad), stderr.getvalue())
+
+    def test_a_malformed_nested_selector_names_the_source_and_the_run_continues(self):
+        # A nested suite is resolved without passing through the suite schema, so a
+        # wrongly shaped selector reaches `set(problems["exclude"])` as it is; the
+        # `TypeError` used to escape the per-source boundary.
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            nested = tmp / "nested.yaml"
+            nested.write_text(
+                yaml.safe_dump(
+                    {"problems": {"source": "generated", "include": ["a"], "exclude": [{}]}}
+                ),
+                encoding="utf-8",
+            )
+            first = tmp / "first.yaml"
+            first.write_text(yaml.safe_dump(wrapper(nested, ["a"])), encoding="utf-8")
+            cases = write_json(tmp / "cases.json", {"cases": [{"id": "a", **LATENCY}]})
+            second = tmp / "second.yaml"
+            second.write_text(yaml.safe_dump(wrapper(cases, ["a"])), encoding="utf-8")
+            stderr = io.StringIO()
+            with contextlib.redirect_stderr(stderr):
+                self.assertFalse(validator.validate_suite(first), stderr.getvalue())
+                self.assertTrue(validator.validate_suite(second), stderr.getvalue())
+            self.assertIn("nested.yaml", stderr.getvalue())
+            self.assertIn("TypeError", stderr.getvalue())
+
+
 
 if __name__ == "__main__":
     unittest.main()
