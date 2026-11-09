@@ -183,11 +183,12 @@ An accepted run is a revision the ingestion driver recorded a receipt for: it
 commits `<suite>.provenance.json` together with the sidecar, holding the
 sidecar's sha256 (`result_ingestion.plan_updates`). A revision without that
 receipt is an edit, not a measurement: a receipt-free revision is the published
-history up to the first receipt in the history, and after that only a commit
-that publishes the run's report together with the sidecar (a receipt-free edit
-of both files is still taken as a publish; #431 removes that second acceptance
-path). A shallow clone, an unreadable repository, and a `--threshold` outside 1
-to 1000000 are errors (exit 2) and never read as "no baseline".
+history when no receipt exists at or before it — a property of its own ancestry,
+so merging another branch cannot reclassify it — and otherwise only a commit that
+publishes the run's report together with the sidecar (a receipt-free edit of both
+files is still taken as a publish; #431 removes that second acceptance path). A
+shallow clone, an unreadable repository, and a `--threshold` outside 1 to
+1000000 are errors (exit 2) and never read as "no baseline".
 
 It reads committed results and measures nothing, so it needs no GPU and no
 scheduler change.

@@ -13,6 +13,7 @@ for the revisions from before receipts existed.
 """
 import hashlib
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -185,9 +186,13 @@ class HistoryTests(unittest.TestCase):
         path.write_bytes(payload)
         return relative
 
-    def commit(self, message):
+    def commit(self, message, date=None):
         self.git('add', '-A')
-        self.git('commit', '-q', '-m', message)
+        environment = {**os.environ}
+        if date:
+            environment['GIT_AUTHOR_DATE'] = environment['GIT_COMMITTER_DATE'] = date
+        subprocess.run(['git', '-C', str(self.repo), 'commit', '-q', '-m', message], check=True,
+                       capture_output=True, env=environment)
 
     def sidecar(self, document):
         return f"result/{document['target_profile']}/{document['suite_id']}.summary.json"
@@ -196,12 +201,12 @@ class HistoryTests(unittest.TestCase):
         return self.write(relative.replace('.summary.json', '.provenance.json'),
                           json.dumps({'files': {relative: hashlib.sha256(payload).hexdigest()}}).encode())
 
-    def accept(self, document):
+    def accept(self, document, date=None):
         """What the ingestion driver commits: the sidecar plus the receipt for its bytes."""
         payload = json.dumps(document).encode()
         relative = self.write(self.sidecar(document), payload)
         self.receipt(relative, payload)
-        self.commit('Accept benchmark run 1 attempt 1')
+        self.commit('Accept benchmark run 1 attempt 1', date=date)
 
     def edit(self, document, message='Unaccepted experiment'):
         """A sidecar edit with no acceptance: the committed receipt keeps the old digest."""
@@ -337,6 +342,25 @@ class HistoryTests(unittest.TestCase):
         self.assertEqual(process.returncode, 0)
         self.assertIn('| baseline ms | candidate ms |', process.stdout)
         self.assertNotIn('no baseline', process.stdout)
+
+    def test_an_unrelated_merged_receipt_does_not_move_the_history_boundary(self):
+        # The boundary is whether *this* revision's own history carries a receipt.
+        # A receipt committed on another branch and merged later reclassified an
+        # already published run when the boundary was a single commit.
+        self.write('README.md', b'bench\n')
+        self.commit('Initial commit', date='2026-10-20T00:00:00+00:00')
+        self.git('checkout', '-q', '-b', 'other')
+        other = record(WEEK_43, COMMIT_A)
+        other['suite_id'] = 'gpu/other'
+        self.accept(other, date='2026-10-27T00:00:00+00:00')
+        self.git('checkout', '-q', 'main')
+        published = record(WEEK_44, COMMIT_B)
+        self.write(self.sidecar(published), json.dumps(published).encode())
+        self.commit('Write the report summary', date='2026-11-01T00:00:00+00:00')
+        self.accept(record(WEEK_45_LATE, COMMIT_B, scale=1.5), date='2026-11-08T00:00:00+00:00')
+        self.git('merge', '--no-ff', 'other', '-m', 'merge the other branch')
+        records = accepted_runs(self.repo, 'nvidia-gpu', 'gpu/dense')
+        self.assertEqual([item['timestamp'] for item in records], [WEEK_45_LATE, WEEK_44])
 
     def test_cli_rejects_a_non_finite_or_out_of_range_threshold(self):
         self.accept(record(WEEK_44, COMMIT_A))

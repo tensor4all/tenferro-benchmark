@@ -21,9 +21,9 @@ A run is accepted when the data says so: the ingestion driver commits the
 sidecar together with ``<suite>.provenance.json``, whose ``files`` map holds the
 sidecar's sha256 (``result_ingestion.plan_updates``).  A receipt that disagrees
 belongs to an edit, not to an accepted measurement; a revision without a receipt
-is history from before the receipts exist, and otherwise only a commit that
-publishes the report with the sidecar.  A committed receipt is a trusted marker
-of the driver's decision, not authentication.
+is history when no receipt exists at or before it, and otherwise only a commit
+that publishes the report with the sidecar.  A committed receipt is a trusted
+marker of the driver's decision, not authentication.
 
 Exit status: 0 a comparison table was printed, 1 refused or no baseline, 2 the
 history could not be read (git's message on stderr) or the threshold is invalid.
@@ -45,6 +45,7 @@ class GitError(RuntimeError):
 
 
 MAX_THRESHOLD = 1_000_000
+RECEIPTS = 'result/*/*/*.provenance.json'
 
 
 def git(repo: Path, *args: str) -> str:
@@ -73,14 +74,6 @@ def git_file(repo: Path, sha: str, relative: str) -> bytes | None:
     return done.stdout
 
 
-def is_ancestor(repo: Path, older: str, newer: str) -> bool:
-    done = subprocess.run(['git', '-C', str(repo), 'merge-base', '--is-ancestor', older, newer],
-                          capture_output=True, text=True)
-    if done.returncode in (0, 1):
-        return done.returncode == 0
-    raise GitError(done.stderr.strip() or 'git merge-base --is-ancestor failed')
-
-
 def require_full_history(repo: Path) -> None:
     """A shallow clone hides the week a baseline has to come from."""
     if git(repo, 'rev-parse', '--is-shallow-repository').strip() == 'true':
@@ -88,23 +81,33 @@ def require_full_history(repo: Path) -> None:
                        'fetch the full history first (git fetch --unshallow)')
 
 
-def first_receipt(repo: Path, *paths: str) -> str | None:
-    """The oldest commit that added one of ``paths``, if this history has one."""
-    shas = git(repo, 'log', '--full-history', '--reverse', '--format=%H', '--diff-filter=A', '--',
-               *paths).split()
-    return shas[0] if shas else None
+def records_receipts(repo: Path) -> bool:
+    """Whether the checked-out history records any acceptance receipt at all."""
+    return bool(git(repo, 'log', '-1', '--format=%H', '--', RECEIPTS).strip())
+
+
+def receipt_history(repo: Path, sha: str) -> bool:
+    """Whether an acceptance receipt exists at or before ``sha`` in its own history.
+
+    That is a property of the revision's ancestry, which never changes, so no
+    later merge can reclassify a revision that was already read.  A single
+    boundary commit picked from the history does move: merging an unrelated
+    branch that carries an earlier-dated receipt makes it the boundary and drops
+    the published runs that are not its ancestors.
+    """
+    return bool(git(repo, 'log', '-1', '--format=%H', sha, '--', RECEIPTS).strip())
 
 
 def accepted(repo: Path, sha: str, relative: str, receipt_path: str, content: bytes,
-             cutoff: str | None) -> bool:
+             receipts_exist: bool) -> bool:
     """Whether this sidecar revision is a published run rather than an edit."""
     receipt = git_file(repo, sha, receipt_path)
     if receipt is not None:
         return json.loads(receipt).get('files', {}).get(relative) == hashlib.sha256(content).hexdigest()
-    # No receipt in that commit: acceptance was not recorded there.  Up to the
-    # fixed boundary that is the published history, and afterwards only a commit
-    # that publishes the run's report with the sidecar.
-    if cutoff is not None and is_ancestor(repo, sha, cutoff):
+    # No receipt in that commit: the driver had not recorded one for this revision.
+    # A revision from before the driver recorded receipts at all is the published
+    # history; afterwards only a commit that publishes the report with the sidecar.
+    if receipts_exist and not receipt_history(repo, sha):
         return True
     # shortcut: a commit that rewrites the report as well is still taken as a
     # publish, so an edit of both files passes; the fix is for every publisher of
@@ -140,9 +143,7 @@ def accepted_runs(repo: Path, profile: str, suite: str) -> list[dict]:
     relative = f'result/{profile}/{suite}.summary.json'
     receipt_path = f'result/{profile}/{suite}.provenance.json'
     require_full_history(repo)
-    # The revisions from before acceptance receipts exist are the published
-    # history; the boundary is the first receipt in the history and never moves.
-    cutoff = first_receipt(repo, 'result/*/*/*.provenance.json')
+    receipts_exist = records_receipts(repo)
     records, seen = [], set()
     # --full-history: Git's default path simplification drops a commit whose
     # sidecar a merge did not keep, which would hide a real run and report
@@ -151,7 +152,7 @@ def accepted_runs(repo: Path, profile: str, suite: str) -> list[dict]:
     for sha in git(repo, 'log', '--full-history', '--format=%H', '--',
                    relative, receipt_path).split():
         content = git_file(repo, sha, relative)
-        if content is None or not accepted(repo, sha, relative, receipt_path, content, cutoff):
+        if content is None or not accepted(repo, sha, relative, receipt_path, content, receipts_exist):
             continue
         document = json.loads(content)
         if not (document.get('tenferro_commit') and host(document) and document.get('timestamp')):
