@@ -37,6 +37,22 @@ from __future__ import annotations
 
 import numpy as np
 
+
+def tolerance_value(name: str, value) -> float:
+    """A tolerance the comparison can use: a finite, non-negative number.
+
+    A ``.nan`` in a manifest used to pass every earlier guard: ``nan > 0`` is
+    False, so an exact match scored ``0`` and the row published ``passed`` with
+    ``rtol: NaN`` in a record no JSON reader accepts.
+    """
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError(f"{name} must be a number, got {value!r}")
+    value = float(value)
+    if not np.isfinite(value) or value < 0:
+        raise ValueError(f"{name} must be finite and non-negative, got {value!r}")
+    return value
+
+
 MODES = ("cpu_reference", "analytic", "finite_difference", "measure_only")
 DEFAULT_MODE = "cpu_reference"
 
@@ -77,7 +93,10 @@ def tolerances(problem: dict, defaults: dict | None = None) -> tuple[float, floa
                 return float(value)
         return fallback
 
-    return pick("rtol", DEFAULT_RTOL), pick("atol", DEFAULT_ATOL)
+    return (
+        tolerance_value("rtol", pick("rtol", DEFAULT_RTOL)),
+        tolerance_value("atol", pick("atol", DEFAULT_ATOL)),
+    )
 
 
 def mode_for(problem: dict, defaults: dict | None = None) -> str:
@@ -291,6 +310,8 @@ def directional_of_actual(phase: str, derivative, tangent) -> float:
 
 def elementwise_errors(actual, reference, rtol: float, atol: float):
     """``(max_abs, max_rel, worst_over_tolerance)`` for one pair of outputs."""
+    rtol = tolerance_value("rtol", rtol)
+    atol = tolerance_value("atol", atol)
     actual = np.asarray(actual)
     reference = np.asarray(reference)
     if actual.shape != reference.shape:
@@ -321,7 +342,16 @@ def elementwise_errors(actual, reference, rtol: float, atol: float):
     # (atol=0 and reference=0) can overflow, and it is clamped to the largest
     # finite double — still a failure, never a JSON token no reader accepts.
     largest = np.finfo(np.float64).max
-    tolerance = atol + rtol * np.abs(reference)
+    with np.errstate(over="ignore", invalid="ignore"):
+        tolerance = atol + rtol * np.abs(reference)
+    if not np.all(np.isfinite(tolerance)):
+        # `rtol * |reference|` left the range of f64: the manifest states a budget
+        # no double can express. Scoring it instead gives `inf/inf = nan`, and
+        # `max(0.0, nan)` is 0.0, which published a 2x miss as `passed 0.0`.
+        raise ValueError(
+            "tolerance overflows float64 for this reference "
+            f"(rtol={rtol!r}, atol={atol!r}); the check cannot be scored"
+        )
     # The verdict is the manifest's own comparison, `error <= tolerance`; the
     # guard below only keeps the reported ratio a finite number. With
     # rtol=atol=0 any nonzero error fails, even a subnormal one that a `tiny`
@@ -438,6 +468,17 @@ def compare(
     max_abs = max_rel = worst = 0.0
     for observed, expected in pairs:
         abs_error, rel_error, ratio = _worst(observed, expected, rtol, atol)
+        # `max(0.0, nan)` is 0.0, so a non-finite term would turn a failure into
+        # a pass. Refuse to score the row instead of guessing.
+        if not (
+            np.isfinite(abs_error)
+            and np.isfinite(rel_error)
+            and np.isfinite(ratio)
+        ):
+            raise ValueError(
+                f"{mode}: non-finite score (max_abs_error={abs_error!r}, "
+                f"max_rel_error={rel_error!r}, residual={ratio!r})"
+            )
         max_abs = max(max_abs, abs_error)
         max_rel = max(max_rel, rel_error)
         worst = max(worst, ratio)

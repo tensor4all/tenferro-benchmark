@@ -172,6 +172,27 @@ class CheckMustFailClosed(unittest.TestCase):
             modes._worst(np.asarray(-largest), np.asarray(largest), 1.0, 0.0)[2], 1.0
         )
 
+    def test_two_overflowing_values_cannot_score_a_pass(self):
+        # Both sides overflow: error is inf and `rtol * |reference|` is inf, so
+        # `inf/inf` is nan, `max(0.0, nan)` is 0.0, and compare() published a 2x
+        # miss as `passed 0.0` (#417 review repro).
+        prepared = ([np.asarray(1.7e308)], "ref", {})
+        with self.assertRaisesRegex(ValueError, "tolerance overflows"):
+            modes.compare(
+                "cpu_reference", "jvp", [np.asarray(-1.7e308)], prepared, None, 1.5, 0.0
+            )
+
+    def test_a_non_finite_score_is_refused_instead_of_scored(self):
+        # The same class, whatever produces it: a nan term must never reach
+        # `max(0.0, nan)`, which is 0.0 and reads as a pass.
+        import unittest.mock as mock
+
+        with mock.patch.object(modes, "_worst", return_value=(0.0, 0.0, float("nan"))):
+            with self.assertRaisesRegex(ValueError, "non-finite score"):
+                modes.compare(
+                    "cpu_reference", "jvp", [np.asarray(1.0)],
+                    ([np.asarray(1.0)], "ref", {}), None, 1e-5, 1e-8,
+                )
 
     def test_a_failed_check_keeps_its_residual_serializable(self):
         expected, matrix, tangent, rhs = cpu_outputs("grad_sum_qr", "jvp")
@@ -269,6 +290,26 @@ class TolerancesComeFromTheManifest(unittest.TestCase):
         )
 
     def test_the_fallback_is_only_for_a_manifest_that_states_nothing(self):
+        self.assertEqual(modes.tolerances({}), (modes.DEFAULT_RTOL, modes.DEFAULT_ATOL))
+
+    def test_a_tolerance_that_is_not_a_finite_non_negative_number_is_refused(self):
+        # `validate_suite()` cannot express "not NaN" in its schema, so a
+        # `verify.rtol: .nan` reaches the check. It must not reach the score:
+        # `nan > 0` is False, an exact match scored 0, and the row published
+        # `passed` with `rtol: NaN` in a record no JSON reader accepts.
+        for block in ({"rtol": float("nan"), "atol": 1e-8},
+                      {"rtol": 1e-5, "atol": float("nan")},
+                      {"rtol": float("inf"), "atol": 1e-8},
+                      {"rtol": 1e-5, "atol": float("inf")},
+                      {"rtol": -1e-5, "atol": 1e-8},
+                      {"rtol": 1e-5, "atol": -1e-8}):
+            with self.subTest(block=block):
+                with self.assertRaisesRegex(ValueError, "finite and non-negative"):
+                    modes.tolerances({"verify": block})
+        # The suite default is checked the same way, and a blank block still
+        # takes the fallback.
+        with self.assertRaisesRegex(ValueError, "finite and non-negative"):
+            modes.tolerances({}, {"verify": {"rtol": float("nan")}})
         self.assertEqual(modes.tolerances({}), (modes.DEFAULT_RTOL, modes.DEFAULT_ATOL))
 
 
