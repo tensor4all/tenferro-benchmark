@@ -1,4 +1,5 @@
 """The GPU AD gate must reject wrong gradients even with correct primals."""
+import json
 import sys
 import unittest
 from pathlib import Path
@@ -29,6 +30,54 @@ class NoDownloadWithoutACheck(unittest.TestCase):
                                  lambda value: value * 10)
         self.assertEqual(arrays, [10, 20])
         self.assertEqual(placed, [1, 2])
+
+
+class CollectorErrorBoundary(unittest.TestCase):
+    """A case the check refuses costs one row, not the whole collector run."""
+
+    SCHEMA = json.loads(
+        (Path(__file__).resolve().parents[1] / "schemas/benchmark-result.schema.json").read_text()
+    )
+
+    @staticmethod
+    def problem(verify):
+        return {"id": "case_a", "op": "vjp",
+                "linalg_ad": {"loss": "grad_sum_qr", "n": 4, "matrix_seed": 34},
+                "verify": dict(verify)}
+
+    def test_a_refused_manifest_becomes_one_stated_row(self):
+        # `run_one` is the collector's per-case entry point and nothing upstream
+        # catches what it raises, so resolution defects have to be contained
+        # here: at 560edec a `nan` tolerance raised straight out of it and ended
+        # the run. Both a refused tolerance and a refused mode go through the
+        # same boundary, and the row is a valid record either way.
+        import jsonschema
+
+        from benchmark_gpu_linalg_ad import run_one
+
+        cases = (
+            # A tolerance the check cannot use; the mode itself resolved.
+            ({"mode": "cpu_reference", "rtol": float("nan"), "atol": 1e-8}, "cpu_reference"),
+            ({"mode": "cpu_reference", "rtol": 1e-5, "atol": float("inf")}, "cpu_reference"),
+            # A mode the check cannot resolve; the row may not name one.
+            ({"mode": "measure_only"}, None),
+            ({"mode": "cpu_fp64", "rtol": 1e-5, "atol": 1e-8}, None),
+        )
+        for verify, resolved_mode in cases:
+            with self.subTest(verify=verify):
+                row = run_one("gpu/linalg_jvp_vjp", self.problem(verify), "pytorch-cuda", 0,
+                              ts="2026-01-01T00:00:00+00:00", bc=None, tc=None,
+                              verify_defaults={"verify": dict(verify)})
+                self.assertEqual(row["status"], "runtime_failed")
+                reason = row["execution"]["unsupported_reason"]
+                self.assertTrue(reason and reason.strip(), reason)
+                # No check ran: no verdict, no evidence, and no mode when the
+                # mode is itself what could not be resolved.
+                self.assertEqual(row["verification"]["status"], "skipped")
+                self.assertEqual(row["verification"].get("mode"), resolved_mode)
+                self.assertIsNone(row["verification"]["reference_backend"])
+                self.assertIsNone(row["verification"]["residual"])
+                jsonschema.validate(row, self.SCHEMA)
 
 
 class AdVerification(unittest.TestCase):

@@ -185,12 +185,16 @@ def run_framework(suite_id, problem, backend, device_ordinal, *, ts, bc, tc, ver
     n, loss_name, seed = ad["n"], ad["loss"], ad["matrix_seed"]
     warmups = int(os.environ.get("BENCH_WARMUPS", problem.get("run", {}).get("warmups", 3)))
     runs = int(os.environ.get("BENCH_RUNS", problem.get("run", {}).get("runs", 7)))
-    rtol, atol = verify_modes.tolerances(problem, verify_defaults)
     verify_only = os.environ.get("GPU_BENCH_VERIFY_ONLY") == "1"
     case_started = time.perf_counter()
-    # Which check backs this row is the manifest's decision, not the runner's.
-    mode = verify_modes.mode_for(problem, verify_defaults)
+    # Resolving the manifest belongs to this case, inside the error boundary: a
+    # mode or a tolerance the check refuses must cost one row that states why,
+    # not the whole collector run. `mode` stays None when resolution itself is
+    # what failed, so the stub row claims no check at all.
+    mode = None
     try:
+        mode = verify_modes.mode_for(problem, verify_defaults)
+        rtol, atol = verify_modes.tolerances(problem, verify_defaults)
         if warmups < 0 or runs < 1:
             raise ValueError("invalid AD sampling counts")
         matrix = matrix_for_linalg_ad(loss_name, n, seed)

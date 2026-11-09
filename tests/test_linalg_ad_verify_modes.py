@@ -297,20 +297,26 @@ class TolerancesComeFromTheManifest(unittest.TestCase):
         # `verify.rtol: .nan` reaches the check. It must not reach the score:
         # `nan > 0` is False, an exact match scored 0, and the row published
         # `passed` with `rtol: NaN` in a record no JSON reader accepts.
-        for block in ({"rtol": float("nan"), "atol": 1e-8},
-                      {"rtol": 1e-5, "atol": float("nan")},
-                      {"rtol": float("inf"), "atol": 1e-8},
-                      {"rtol": 1e-5, "atol": float("inf")},
-                      {"rtol": -1e-5, "atol": 1e-8},
-                      {"rtol": 1e-5, "atol": -1e-8}):
-            with self.subTest(block=block):
-                with self.assertRaisesRegex(ValueError, "finite and non-negative"):
-                    modes.tolerances({"verify": block})
-        # The suite default is checked the same way, and a blank block still
-        # takes the fallback.
-        with self.assertRaisesRegex(ValueError, "finite and non-negative"):
-            modes.tolerances({}, {"verify": {"rtol": float("nan")}})
-        self.assertEqual(modes.tolerances({}), (modes.DEFAULT_RTOL, modes.DEFAULT_ATOL))
+        cases = ({"rtol": float("nan"), "atol": 1e-8},
+                 {"rtol": 1e-5, "atol": float("nan")},
+                 {"rtol": float("inf"), "atol": 1e-8},
+                 {"rtol": 1e-5, "atol": float("inf")},
+                 {"rtol": -1e-5, "atol": 1e-8},
+                 {"rtol": 1e-5, "atol": -1e-8})
+        # Both places a tolerance can come from: the problem's own block and the
+        # suite defaults that fill in for it.
+        for block in cases:
+            for where in ("problem", "suite default"):
+                with self.subTest(block=block, where=where):
+                    problem, defaults = (
+                        ({"verify": block}, {}) if where == "problem"
+                        else ({}, {"verify": block})
+                    )
+                    with self.assertRaisesRegex(ValueError, "finite and non-negative"):
+                        modes.tolerances(problem, defaults)
+        # A manifest that states nothing still takes the fallback.
+        self.assertEqual(modes.tolerances({}, {"verify": {}}),
+                         (modes.DEFAULT_RTOL, modes.DEFAULT_ATOL))
 
 
 class FiniteDifferenceShape(unittest.TestCase):
