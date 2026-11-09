@@ -666,6 +666,31 @@ class SourceContractTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     suite_instances.resolve_suite_instance_ids(wrapper_file)
 
+    def test_a_nested_default_does_not_rename_the_synthesized_case(self):
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            nested = tmp / "nested.yaml"
+            nested.write_text(
+                yaml.safe_dump(
+                    {
+                        "defaults": {"id": "b", "regime": "latency"},
+                        "problems": {
+                            "source": str(tmp / "absent.json"),
+                            "include": ["a"],
+                            "missing_source": "skip",
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+            wrapper_file = tmp / "wrapper.yaml"
+            wrapper_file.write_text(yaml.safe_dump(wrapper(nested, ["b"])), encoding="utf-8")
+            stderr = io.StringIO()
+            with contextlib.redirect_stderr(stderr):
+                self.assertFalse(validator.validate_suite(wrapper_file), stderr.getvalue())
+            with self.assertRaises(ValueError):
+                suite_instances.resolve_suite_instance_ids(wrapper_file)
+
 
 if __name__ == "__main__":
     unittest.main()

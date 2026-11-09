@@ -444,29 +444,16 @@ def declared_cases(
             )
             if nested_skipped:
                 # The nested selector names a producer that may be absent
-                # (`missing_source: skip`): the resolver still returns its declared
-                # include ids, so the validator reads the same set instead of zero
-                # cases and then rejecting every include as unknown.
-                nested_include = (
-                    nested_problems.get("include") or []
-                    if isinstance(nested_problems, dict)
-                    else []
+                # (`missing_source: skip`): ask the resolver for the ids it returns,
+                # so the validator reads the same set -- entry types and exclusions
+                # included -- instead of zero cases that reject every include as
+                # unknown. `id` is written last because a nested `defaults` may
+                # carry an `id` of its own and must not rename the case.
+                nested_ids = suite_instances.resolve_suite_instance_ids(
+                    path, project_dir=project_dir
                 )
-                nested_excluded = set(
-                    nested_problems.get("exclude") or []
-                    if isinstance(nested_problems, dict)
-                    else []
-                )
-                for entry in nested_include:
-                    if not isinstance(entry, str):
-                        raise RegimeError(
-                            f"{suite_id}: "
-                            + suite_instances.include_missing_error(path, entry)
-                        )
                 nested_cases = [
-                    {"id": entry, **nested_defaults}
-                    for entry in nested_include
-                    if entry not in nested_excluded
+                    {**nested_defaults, "id": entry} for entry in nested_ids
                 ]
         except RegimeError:
             raise
