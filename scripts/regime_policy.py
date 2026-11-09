@@ -394,7 +394,9 @@ def declared_cases(
     include = problems.get("include") or []
     exclude = set(problems.get("exclude") or [])
     if not isinstance(source, str) or not source or not isinstance(include, list):
-        return defaults, []
+        # Callers unpack three values on every path; this one used to raise
+        # `ValueError: not enough values to unpack` instead of a diagnostic.
+        return defaults, [], False
 
     path = Path(source)
     if not path.is_absolute():

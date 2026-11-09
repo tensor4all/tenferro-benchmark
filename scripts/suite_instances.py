@@ -32,6 +32,10 @@ def _resolve_problems(
             problem_id = problem.get("id")
             if not isinstance(problem_id, str) or not problem_id:
                 raise ValueError("each inline problem must have a non-empty id")
+            if problem_id in ids:
+                # The validator and the JSON catalogue path reject duplicates;
+                # collecting them twice ran the same case twice.
+                raise ValueError(f"duplicate problem id {problem_id!r}")
             ids.append(problem_id)
         return ids
 

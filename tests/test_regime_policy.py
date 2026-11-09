@@ -698,6 +698,21 @@ class RegimePolicyUnitTests(unittest.TestCase):
                     project_dir=Path(tmp),
                 )
 
+    def test_the_collector_rejects_duplicate_ids_in_an_inline_yaml_suite(self):
+        # run_all.sh collects through the suite file itself, so a duplicate
+        # inline id reached the run twice while the validator rejected the same
+        # document (`duplicate problem id`).
+        import suite_instances
+
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp) / "inline.yaml"
+            base.write_text(
+                yaml.safe_dump(self._nested_suite([self._case("a"), self._case("a")])),
+                encoding="utf-8",
+            )
+            with self.assertRaises(ValueError):
+                suite_instances.resolve_suite_instance_ids(base, project_dir=Path(tmp))
+
     def test_the_collector_rejects_a_selection_cycle(self):
         import suite_instances
 
@@ -909,6 +924,35 @@ class RegimePolicyUnitTests(unittest.TestCase):
             errors = regime_policy.check_suite(document, Path(tmp))
         self.assertEqual(len(errors), 1)
         self.assertIn("missing_source", errors[0])
+
+    def test_a_selector_without_a_source_is_not_an_unpacking_crash(self):
+        # `declared_cases()` returns (defaults, cases, skipped) on every path;
+        # this one returned two values, so `check_suite()` and the dashboard
+        # loader raised `ValueError: not enough values to unpack` instead of
+        # reporting the malformed selector.
+        import generate_dashboard
+
+        document = {"suite_id": "gpu/structural", "problems": {"include": ["a"]}}
+        self.assertEqual(regime_policy.check_suite(document, Path(".")), [])
+        with tempfile.TemporaryDirectory() as tmp:
+            benchmarks = Path(tmp) / "benchmarks" / "gpu"
+            benchmarks.mkdir(parents=True)
+            (benchmarks / "struct.yaml").write_text(
+                yaml.safe_dump(
+                    {
+                        "schema_version": 1,
+                        "suite_id": "gpu/structural",
+                        "title": "t",
+                        "description": "d",
+                        "defaults": {"regime": "latency"},
+                        "backends": ["tenferro-cuda-trace"],
+                        "problems": {"include": ["a"]},
+                    }
+                ),
+                encoding="utf-8",
+            )
+            metadata = generate_dashboard.load_suite_metadata(benchmarks)
+        self.assertEqual(metadata["gpu/structural"]["problems"], {})
 
 
 class GeneratedSuiteTests(unittest.TestCase):
