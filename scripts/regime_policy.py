@@ -428,9 +428,31 @@ def declared_cases(
         # validator reads the same cases.  Each one keeps its own suite's
         # declaration rather than borrowing the wrapper's `defaults`.
         try:
-            nested_defaults, nested_cases, _nested_skipped = declared_cases(
-                records[0], project_dir
+            nested_problems = records[0].get("problems")
+            if isinstance(nested_problems, list) and any(
+                not isinstance(row, dict) for row in nested_problems
+            ):
+                # The resolver rejects a non-mapping inline entry ("problems list
+                # entries must be mappings"); the validator dropped it and accepted
+                # the wrapper, so the two paths disagreed about one document.
+                raise RegimeError(
+                    f"{suite_id}: include source {source!r} did not load: "
+                    "problems list entries must be mappings"
+                )
+            nested_defaults, nested_cases, nested_skipped = declared_cases(
+                records[0], project_dir, skips=skips
             )
+            if nested_skipped:
+                # The nested selector names a producer that may be absent
+                # (`missing_source: skip`): the resolver still returns its declared
+                # include ids, so the validator reads the same set instead of zero
+                # cases and then rejecting every include as unknown.
+                nested_include = (
+                    nested_problems.get("include") or []
+                    if isinstance(nested_problems, dict)
+                    else []
+                )
+                nested_cases = [{"id": i, **nested_defaults} for i in nested_include]
         except RegimeError:
             raise
         except Exception as error:  # noqa: BLE001 -- one source must not stop the rest

@@ -580,6 +580,50 @@ class SourceContractTests(unittest.TestCase):
             self.assertIn("TypeError", stderr.getvalue())
 
 
+    def test_a_nested_inline_problem_that_is_not_a_mapping_is_refused_by_both_paths(self):
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            nested = tmp / "nested.yaml"
+            nested.write_text(
+                yaml.safe_dump({"problems": [False, {"id": "a", **LATENCY}]}),
+                encoding="utf-8",
+            )
+            wrapper_file = tmp / "wrapper.yaml"
+            wrapper_file.write_text(yaml.safe_dump(wrapper(nested, ["a"])), encoding="utf-8")
+            stderr = io.StringIO()
+            with contextlib.redirect_stderr(stderr):
+                self.assertFalse(validator.validate_suite(wrapper_file), stderr.getvalue())
+            self.assertIn("problems list entries must be mappings", stderr.getvalue())
+            with self.assertRaises(ValueError) as raised:
+                suite_instances.resolve_suite_instance_ids(wrapper_file)
+            self.assertIn("problems list entries must be mappings", str(raised.exception))
+
+    def test_a_nested_selector_that_skips_its_source_reads_the_same_ids_in_both_paths(self):
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            nested = tmp / "nested.yaml"
+            nested.write_text(
+                yaml.safe_dump(
+                    {
+                        "problems": {
+                            "source": str(tmp / "absent.json"),
+                            "include": ["a"],
+                            "missing_source": "skip",
+                        }
+                    }
+                ),
+                encoding="utf-8",
+            )
+            wrapper_file = tmp / "wrapper.yaml"
+            wrapper_file.write_text(yaml.safe_dump(wrapper(nested, ["a"])), encoding="utf-8")
+            stderr = io.StringIO()
+            with contextlib.redirect_stderr(stderr):
+                self.assertTrue(validator.validate_suite(wrapper_file), stderr.getvalue())
+            self.assertIn("missing_source: skip", stderr.getvalue())
+            self.assertEqual(
+                suite_instances.resolve_suite_instance_ids(wrapper_file), ["a"]
+            )
+
 
 if __name__ == "__main__":
     unittest.main()
