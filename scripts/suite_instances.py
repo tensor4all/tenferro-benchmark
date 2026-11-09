@@ -49,7 +49,13 @@ def _resolve_problems(problems: Any, *, project_dir: Path) -> list[str]:
     if not source_path.is_absolute():
         source_path = project_dir / source_path
 
-    if source_path.is_dir() or source_path.suffix not in {".yaml", ".yml"}:
+    if not source_path.exists():
+        # The validator accepts an absent source only with the opt-in; the
+        # collector must keep doing the same instead of reading a phantom file.
+        if problems.get("missing_source") != "skip":
+            raise ValueError(f"{source_path}: include source did not load: no such file or directory")
+        ids = list(include)
+    elif source_path.is_dir() or source_path.suffix not in {".yaml", ".yml"}:
         # A JSON catalogue is read for its declared ids: copying `include`
         # unchecked was the same fail-open the validator rejected, and
         # run_all.sh collects through this resolver without validating.
@@ -98,7 +104,10 @@ def _catalogue_ids(source_path: Path) -> list[str]:
         for index, record in enumerate(records):
             if not isinstance(record, dict):
                 raise ValueError(f"{entry}: record {index} is not a mapping")
-            record_id = record.get("id") or record.get("name") or default_id
+            if source_path.is_dir():
+                record_id = record.get("id") or record.get("name") or default_id
+            else:
+                record_id = record.get("id")
             if not isinstance(record_id, str) or not record_id:
                 raise ValueError(f"{entry}: record {index} has no non-empty id")
             ids.append(record_id)

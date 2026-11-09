@@ -469,7 +469,7 @@ class RegimePolicyUnitTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             cases = Path(tmp) / "cases.json"
             cases.write_text(
-                json.dumps({"cases": [{"id": "a", "regime": "throughput", "n": 262144}]}),
+                json.dumps({"cases": [{"id": "a", "regime": "throughput", "n": 262144, "family": None}]}),
                 encoding="utf-8",
             )
             inner = self._nested_suite(
@@ -510,7 +510,7 @@ class RegimePolicyUnitTests(unittest.TestCase):
             )
             inner = self._nested_suite(
                 {"source": "cases.json", "include": ["good", "bad"]},
-                suite_id="gpu/structural",
+                suite_id="cpu/base",
             )
             (Path(tmp) / "inner.yaml").write_text(yaml.safe_dump(inner), encoding="utf-8")
             wrapper = {"suite_id": "gpu/structural",
@@ -531,6 +531,35 @@ class RegimePolicyUnitTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 suite_instances._resolve_problems(
                     {"source": str(directory), "include": ["known", "renamed"]},
+                    project_dir=Path(tmp),
+                )
+
+    def test_the_collector_skips_an_opted_out_missing_source(self):
+        # The five generated CPU suites validate with missing_source: skip;
+        # the collector used to read the phantom path and raise.
+        import suite_instances
+
+        with tempfile.TemporaryDirectory() as tmp:
+            ids = suite_instances._resolve_problems(
+                {"source": "generated", "include": ["a", "b"],
+                 "missing_source": "skip"},
+                project_dir=Path(tmp),
+            )
+        self.assertEqual(ids, ["a", "b"])
+
+    def test_the_collector_rejects_a_name_only_record_in_a_json_file(self):
+        # The directory branch may fall back to a file name; a standalone
+        # catalogue may not, because declared_cases() requires an id.
+        import suite_instances
+
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "cases.json").write_text(
+                json.dumps({"cases": [{"name": "invented", "regime": "latency"}]}),
+                encoding="utf-8",
+            )
+            with self.assertRaises(ValueError):
+                suite_instances._resolve_problems(
+                    {"source": "cases.json", "include": ["invented"]},
                     project_dir=Path(tmp),
                 )
 

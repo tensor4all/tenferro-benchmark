@@ -478,14 +478,16 @@ def declared_cases(
         # A wrapper must not accept what validating the nested suite rejects:
         # the nested suite's own defaults decide its cases, so the wrapper's
         # default cannot supply a regime or a floor the source never declared.
-        if is_policed(nested_suite_id):
-            for row in records:
-                regime, measure = resolve(nested_suite_id, nested_defaults, row)
-                if measure is not None and measure not in MEASURES:
-                    raise RegimeError(
-                        f"{nested_suite_id}: case {row.get('id')!r} declares unknown "
-                        f"measure {measure!r} (expected one of {', '.join(MEASURES)})"
-                    )
+        for row in records:
+            regime, measure = resolve(nested_suite_id, nested_defaults, row)
+            # Direct validation checks the measure for every suite, GPU or not;
+            # the wrapper must not accept a source its own validation rejects.
+            if measure is not None and measure not in MEASURES:
+                raise RegimeError(
+                    f"{nested_suite_id}: case {row.get('id')!r} declares unknown "
+                    f"measure {measure!r} (expected one of {', '.join(MEASURES)})"
+                )
+            if is_policed(nested_suite_id):
                 exempt = row.get("floor_exempt")
                 check_case(
                     nested_suite_id,
@@ -511,7 +513,7 @@ def declared_cases(
                 record["measure"] = measure
             elif "measure" in record:
                 record.pop("measure", None)
-            if nested_family is not None and "family" not in record:
+            if nested_family is not None and not record.get("family"):
                 record["family"] = nested_family
             merged.append(record)
         records = merged
