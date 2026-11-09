@@ -162,15 +162,18 @@ def unbacked_medians(run: Path) -> list[str]:
             continue
         try:
             notes = json.loads((row.get('execution') or {}).get('notes') or '{}')
-            samples = notes['sampling']['batch_ms']
+            sampling = notes['sampling']
         except (KeyError, TypeError, ValueError):
+            # No sampling inventory at all is the accounting's
+            # `raw_samples_unavailable` category, not a bad measurement.
             continue
-        if samples is None:
+        if not isinstance(sampling, dict) or 'batch_ms' not in sampling:
             continue
-        if not isinstance(samples, list):
+        samples = sampling['batch_ms']
+        if not isinstance(samples, list) or not samples:
+            # An explicit `null` or empty batch says the row has no samples;
+            # that is not the same statement as "this collector records none".
             unbacked.append(str(row.get('problem_id') or row.get('case') or '?'))
-            continue
-        if not samples:
             continue
         if any(not isinstance(value, (int, float)) or isinstance(value, bool)
                or not math.isfinite(value) or value <= 0 for value in samples):
@@ -183,6 +186,44 @@ def discard_gpu_suite(output: Path, suite: str, profile: str = 'nvidia-gpu') -> 
     shutil.rmtree(output / 'data/results' / profile / suite, ignore_errors=True)
     for suffix in ('.md', '.summary.json'):
         (output / f'result/{profile}/{suite}{suffix}').unlink(missing_ok=True)
+
+
+def drop_unpublishable_suites(manifest: dict, output: Path, profile: str, source: dict) -> None:
+    """Drop the suites the bundle contract rejects, one at a time.
+
+    A failure is attributed by retrying each suite alone, not by reading the
+    error text: a message that does not name its suite would otherwise withhold
+    every suite in the bundle. One suite is always left in place; the final
+    bundle validation decides whether it can publish at all.
+    """
+    while len(manifest['suites']) > 1:
+        before = len(manifest['suites'])
+        for entry in list(manifest['suites']):
+            if len(manifest['suites']) == 1:
+                return
+            suite = entry['suite_id']
+            try:
+                validate_bundle(output, profile, source, only_suite=suite)
+                continue
+            except Exception as error:
+                reason = str(error)
+                print(f'{suite}: not published: {reason}', file=sys.stderr)
+            manifest['suites'] = [item for item in manifest['suites']
+                                  if item['suite_id'] != suite]
+            manifest['missing_suites'] = sorted(set(manifest['missing_suites']) | {suite})
+            manifest.setdefault('missing_reasons', {})[suite] = reason
+            # The bundle-wide veto for a narrowed routine arm belongs to the
+            # suite that lost the arm: leaving it behind rejects the suites that
+            # are still published.
+            narrowed = manifest.get('narrowed_routine_arms')
+            if narrowed:
+                narrowed.pop(suite, None)
+                if not narrowed:
+                    del manifest['narrowed_routine_arms']
+            discard_gpu_suite(output, suite)
+            (output / 'publication.json').write_text(json.dumps(manifest, indent=2) + '\n')
+        if len(manifest['suites']) == before:
+            return
 
 
 def prepare_bundle(root: Path, profile: str, source: dict, output: Path,
@@ -244,30 +285,13 @@ def prepare_bundle(root: Path, profile: str, source: dict, output: Path,
         # the week the suites that pass it. A failure is attributed by retrying
         # each suite alone, not by reading the error text: a message that does not
         # name its suite would otherwise withhold every suite in the bundle.
-        for entry in list(manifest['suites']):
-            if len(manifest['suites']) == 1:
-                break
-            suite = entry['suite_id']
-            try:
-                validate_bundle(output, profile, source, only_suite=suite)
-                continue
-            except Exception as error:
-                reason = str(error)
-                print(f'{suite}: not published: {reason}', file=sys.stderr)
-            manifest['suites'] = [item for item in manifest['suites']
-                                  if item['suite_id'] != suite]
-            manifest['missing_suites'] = sorted(set(manifest['missing_suites']) | {suite})
-            manifest.setdefault('missing_reasons', {})[suite] = reason
-            # The bundle-wide veto for a narrowed routine arm belongs to the
-            # suite that lost the arm: leaving it behind rejects the suites that
-            # are still published.
-            narrowed = manifest.get('narrowed_routine_arms')
-            if narrowed:
-                narrowed.pop(suite, None)
-                if not narrowed:
-                    del manifest['narrowed_routine_arms']
-            discard_gpu_suite(output, suite)
-            (output / 'publication.json').write_text(json.dumps(manifest, indent=2) + '\n')
+        try:
+            drop_unpublishable_suites(manifest, output, profile, source)
+        except BaseException:
+            # Anything that escapes after the manifest exists -- a failed
+            # rewrite included -- leaves no file the upload step could accept.
+            (output / 'publication.json').unlink(missing_ok=True)
+            raise
     # No manifest from a failed validation may authorize a results upload.
     try:
         return validate_bundle(output, profile, source)

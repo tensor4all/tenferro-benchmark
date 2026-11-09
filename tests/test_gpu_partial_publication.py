@@ -296,6 +296,35 @@ class PartialPublicationTest(unittest.TestCase):
         publication = json.loads((self.root / 'bundle/publication.json').read_text())
         self.assertIn('matmul', publication['missing_reasons']['gpu/einsum'])
 
+    def test_an_explicitly_empty_sample_batch_does_not_publish(self):
+        # `null` or `[]` is the row saying it has no samples, which is a
+        # different statement from a collector that records none at all.
+        self.declaration('dense.yaml', SUITE, ['matmul'])
+        self.declaration('einsum.yaml', 'gpu/einsum', ['matmul'])
+        for empty in ([], None):
+            with self.subTest(batch_ms=empty):
+                shutil.rmtree(self.root / 'bundle', ignore_errors=True)
+                row = record('matmul')
+                notes = json.loads(row['execution']['notes'])
+                notes['sampling']['batch_ms'] = empty
+                row['execution']['notes'] = json.dumps(notes)
+                run = self.run_directory(problems=['matmul'], records=[row])
+                broken = self.root / f'data/results/nvidia-gpu/gpu/einsum/{STAMP}'
+                shutil.rmtree(broken, ignore_errors=True)
+                shutil.copytree(run, broken)
+                meta = yaml.safe_load((broken / 'run.yaml').read_text())
+                meta['suite_id'] = 'gpu/einsum'
+                (broken / 'run.yaml').write_text(yaml.safe_dump(meta))
+                self.run_directory(problems=['matmul'], records=[record('matmul')])
+
+                validated = packaging.prepare_bundle(self.root, 'nvidia-gpu', self.source,
+                                                     self.root / 'bundle',
+                                                     suites='dense.yaml,einsum.yaml',
+                                                     backends=BACKEND)
+                self.assertEqual([receipt['suite_id'] for receipt, _ in validated], [SUITE])
+                publication = json.loads((self.root / 'bundle/publication.json').read_text())
+                self.assertIn('gpu/einsum', publication['missing_reasons'])
+
     def test_a_row_without_a_sampling_inventory_still_publishes(self):
         # Several collectors record only the summary statistics; the accounting
         # files that as `raw_samples_unavailable`, not as a wrong measurement.
