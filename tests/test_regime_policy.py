@@ -483,6 +483,57 @@ class RegimePolicyUnitTests(unittest.TestCase):
             errors = regime_policy.check_suite(wrapper, Path(tmp))
         self.assertEqual(errors, [])
 
+    def test_a_null_nested_declaration_keeps_the_source_default(self):
+        # resolve() treats null as absent, so key presence must not decide
+        # which declaration the wrapper carries.
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "cases.json").write_text(
+                json.dumps({"cases": [{"id": "a", "regime": None, "n": 1048576}]}),
+                encoding="utf-8",
+            )
+            inner = self._nested_suite(
+                {"source": "cases.json", "include": ["a"]}, suite_id="gpu/structural"
+            )
+            (Path(tmp) / "inner.yaml").write_text(yaml.safe_dump(inner), encoding="utf-8")
+            wrapper = {"suite_id": "gpu/structural", "defaults": {"regime": "throughput"},
+                       "problems": {"source": "inner.yaml", "include": ["a"]}}
+            self.assertEqual(regime_policy.check_suite(wrapper, Path(tmp)), [])
+            rows = regime_policy.suite_cases(wrapper, Path(tmp))
+        self.assertEqual([row[1] for row in rows], ["latency"])
+
+    def test_a_nested_case_with_an_unknown_measure_is_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "cases.json").write_text(
+                json.dumps({"cases": [{"id": "good", "regime": "latency"},
+                                {"id": "bad", "regime": "latency", "measure": "invalid"}]}),
+                encoding="utf-8",
+            )
+            inner = self._nested_suite(
+                {"source": "cases.json", "include": ["good", "bad"]},
+                suite_id="gpu/structural",
+            )
+            (Path(tmp) / "inner.yaml").write_text(yaml.safe_dump(inner), encoding="utf-8")
+            wrapper = {"suite_id": "gpu/structural",
+                       "problems": {"source": "inner.yaml", "include": ["good"]}}
+            errors = regime_policy.check_suite(wrapper, Path(tmp))
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("unknown measure", errors[0])
+
+    def test_the_collector_rejects_an_unknown_id_in_a_directory(self):
+        import suite_instances
+
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp) / "catalogue"
+            directory.mkdir()
+            (directory / "known.json").write_text(
+                json.dumps({"name": "known"}), encoding="utf-8"
+            )
+            with self.assertRaises(ValueError):
+                suite_instances._resolve_problems(
+                    {"source": str(directory), "include": ["known", "renamed"]},
+                    project_dir=Path(tmp),
+                )
+
     def test_a_json_recursion_error_is_a_load_error(self):
         # The JSON parser raises RecursionError on a pathological nesting
         # depth; it must not escape the per-source boundary.

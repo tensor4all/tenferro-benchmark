@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
 from typing import Any
 
@@ -48,9 +49,16 @@ def _resolve_problems(problems: Any, *, project_dir: Path) -> list[str]:
     if not source_path.is_absolute():
         source_path = project_dir / source_path
 
-    if source_path.is_dir():
-        # A directory catalogue is resolved through its `include` ids, the same
-        # way the regime check reads it; the suffix must not decide first.
+    if source_path.is_dir() or source_path.suffix not in {".yaml", ".yml"}:
+        # A JSON catalogue is read for its declared ids: copying `include`
+        # unchecked was the same fail-open the validator rejected, and
+        # run_all.sh collects through this resolver without validating.
+        known = set(_catalogue_ids(source_path))
+        missing = [instance_id for instance_id in include if instance_id not in known]
+        if missing:
+            raise ValueError(
+                f"{source_path}: include id {missing[0]!r} is not in the source"
+            )
         ids = list(include)
     elif source_path.suffix in {".yaml", ".yml"}:
         base_ids = resolve_suite_instance_ids(source_path, project_dir=project_dir)
@@ -67,6 +75,34 @@ def _resolve_problems(problems: Any, *, project_dir: Path) -> list[str]:
         ids = list(include)
 
     return [instance_id for instance_id in ids if instance_id not in exclude]
+
+
+
+def _catalogue_ids(source_path: Path) -> list[str]:
+    """Every record id a JSON catalogue file or directory declares."""
+    ids: list[str] = []
+    files = sorted(source_path.glob("*.json")) if source_path.is_dir() else [source_path]
+    for entry in files:
+        data = json.loads(entry.read_text(encoding="utf-8"))
+        default_id = entry.stem if source_path.is_dir() else None
+        if isinstance(data, list):
+            records, default_id = data, None
+        elif isinstance(data, dict) and ("cases" in data or "patterns" in data):
+            records = data.get("cases")
+            if records is None:
+                records = data.get("patterns", [])
+        else:
+            records = [data]
+        if not isinstance(records, list):
+            raise ValueError(f"{entry}: `cases` must be a list of records")
+        for index, record in enumerate(records):
+            if not isinstance(record, dict):
+                raise ValueError(f"{entry}: record {index} is not a mapping")
+            record_id = record.get("id") or record.get("name") or default_id
+            if not isinstance(record_id, str) or not record_id:
+                raise ValueError(f"{entry}: record {index} has no non-empty id")
+            ids.append(record_id)
+    return ids
 
 
 def resolve_suite_instance_ids(

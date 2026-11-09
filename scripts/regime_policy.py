@@ -480,7 +480,12 @@ def declared_cases(
         # default cannot supply a regime or a floor the source never declared.
         if is_policed(nested_suite_id):
             for row in records:
-                regime, _measure = resolve(nested_suite_id, nested_defaults, row)
+                regime, measure = resolve(nested_suite_id, nested_defaults, row)
+                if measure is not None and measure not in MEASURES:
+                    raise RegimeError(
+                        f"{nested_suite_id}: case {row.get('id')!r} declares unknown "
+                        f"measure {measure!r} (expected one of {', '.join(MEASURES)})"
+                    )
                 exempt = row.get("floor_exempt")
                 check_case(
                     nested_suite_id,
@@ -493,12 +498,23 @@ def declared_cases(
         # The nested suite's own `defaults` are the case's effective declaration:
         # dropping them let the same case validate as `latency` directly and as
         # the wrapper's regime through a selector.
-        records = [
-            {**{key: nested_defaults[key] for key in ("regime", "measure") if key in nested_defaults and key not in row},
-             **({"family": nested_family} if nested_family is not None and "family" not in row else {}),
-             **row}
-            for row in records
-        ]
+        # Carry the *resolved* declarations, not key presence: `resolve()` treats
+        # null and empty values as absent, so a case with `regime: null` would
+        # otherwise inherit the wrapper default.
+        merged = []
+        for row in records:
+            regime, measure = resolve(nested_suite_id, nested_defaults, row)
+            record = dict(row)
+            if regime is not None:
+                record["regime"] = regime
+            if measure is not None:
+                record["measure"] = measure
+            elif "measure" in record:
+                record.pop("measure", None)
+            if nested_family is not None and "family" not in record:
+                record["family"] = nested_family
+            merged.append(record)
+        records = merged
     else:
         try:
             if path.is_dir():
