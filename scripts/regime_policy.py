@@ -400,6 +400,13 @@ def declared_cases(
             f"{suite_id}: include source {source!r} did not load: "
             f"{error.strerror or error}"
         ) from error
+    except ValueError as error:
+        # `schema` accepts any non-empty string, so a path with an embedded NUL
+        # reaches `stat()` and raises `ValueError` there; it must be reported
+        # against this file, not abort the remaining command-line inputs.
+        raise RegimeError(
+            f"{suite_id}: include source {source!r} did not load: {error}"
+        ) from error
     else:
         absent = False
     if absent:
@@ -431,6 +438,20 @@ def declared_cases(
             raise RegimeError(
                 f"{suite_id}: include source {source!r} did not load: "
                 "the suite root must be a mapping"
+            )
+        # A wrapper must not accept a nested suite that direct validation
+        # rejects: run the same schema over the nested document before any of
+        # its cases reach the regime checks (the dashboard reads those fields).
+        from validate_benchmark_suite import SUITE_SCHEMA, validator_for
+
+        nested_errors = [
+            f"{'/'.join(str(part) for part in error.absolute_path) or 'root'}: {error.message}"
+            for error in validator_for(SUITE_SCHEMA).iter_errors(document)
+        ]
+        if nested_errors:
+            raise RegimeError(
+                f"{suite_id}: include source {source!r} is not a valid suite: "
+                + "; ".join(nested_errors[:3])
             )
         _nested_defaults, records = declared_cases(
             document, project_dir, skips, seen | {resolved}

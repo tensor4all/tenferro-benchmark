@@ -336,6 +336,32 @@ class RegimePolicyUnitTests(unittest.TestCase):
         self.assertIn("did not load", errors[0])
         self.assertEqual(skips, [])
 
+    @staticmethod
+    def _case(case_id, **extra):
+        """A schema-valid problem: `problems` as a list requires these fields."""
+        return {
+            "id": case_id,
+            "family": "elementwise",
+            "op": "exp",
+            "dtype": {"x": "f64"},
+            "data": {"generator": "normal", "seed": 0, "n": 1},
+            "regime": "latency",
+            **extra,
+        }
+
+    @staticmethod
+    def _nested_suite(problems, suite_id="cpu/base"):
+        """A schema-valid nested suite: the wrapper must not accept less."""
+        return {
+            "schema_version": 1,
+            "suite_id": suite_id,
+            "title": "t",
+            "description": "d",
+            "defaults": {"regime": "latency"},
+            "backends": ["tenferro-eager"],
+            "problems": problems,
+        }
+
     def test_a_nested_yaml_selector_is_resolved_and_checked(self):
         # `scripts/suite_instances.py` supports a YAML source and resolves it
         # recursively; the regime check must follow the same rule instead of
@@ -346,17 +372,7 @@ class RegimePolicyUnitTests(unittest.TestCase):
             base = Path(tmp) / "data/cases.yaml"
             base.parent.mkdir(parents=True)
             base.write_text(
-                yaml.safe_dump(
-                    {
-                        "schema_version": 1,
-                        "suite_id": "cpu/base",
-                        "title": "t",
-                        "description": "d",
-                        "defaults": {"regime": "latency"},
-                        "backends": ["tenferro-eager"],
-                        "problems": [{"id": "known", "regime": "latency"}],
-                    }
-                ),
+                yaml.safe_dump(self._nested_suite([self._case("known")])),
                 encoding="utf-8",
             )
             document = {"suite_id": "gpu/structural",
@@ -394,27 +410,65 @@ class RegimePolicyUnitTests(unittest.TestCase):
         self.assertEqual(len(errors), 1, errors)
         self.assertIn("did not load", errors[0])
 
+    def test_a_source_with_an_embedded_nul_is_a_load_error(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            document = {"suite_id": "gpu/structural",
+                        "problems": {"source": "bad\0.json", "include": ["a"]}}
+            errors = regime_policy.check_suite(document, Path(tmp))
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("did not load", errors[0])
+
+    def test_a_nested_yaml_that_fails_the_suite_schema_is_rejected(self):
+        # The wrapper must not accept a nested suite that direct validation
+        # rejects: the dashboard reads those fields and used to crash on them.
+        import yaml
+
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp) / "invalid.yaml"
+            base.write_text(
+                yaml.safe_dump(
+                    self._nested_suite(
+                        [{"id": "a", "regime": "latency", "run": ["not", "a", "mapping"]}]
+                    )
+                ),
+                encoding="utf-8",
+            )
+            document = {"suite_id": "gpu/structural",
+                        "problems": {"source": "invalid.yaml", "include": ["a"]}}
+            errors = regime_policy.check_suite(document, Path(tmp))
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("is not a valid suite", errors[0])
+
     def test_a_nested_yaml_case_without_an_id_is_reported(self):
         import yaml
 
         with tempfile.TemporaryDirectory() as tmp:
             base = Path(tmp) / "noid.yaml"
             base.write_text(
-                yaml.safe_dump({"suite_id": "gpu/noid",
-                                "problems": [{"regime": "latency"}]}),
+                yaml.safe_dump(
+                    self._nested_suite(
+                        [{k: v for k, v in self._case("a").items() if k != "id"}]
+                    )
+                ),
                 encoding="utf-8",
             )
             document = {"suite_id": "gpu/structural",
                         "problems": {"source": "noid.yaml", "include": ["a"]}}
             errors = regime_policy.check_suite(document, Path(tmp))
         self.assertEqual(len(errors), 1, errors)
-        self.assertIn("without a non-empty id", errors[0])
+        self.assertIn("id", errors[0])
 
     def test_a_nested_yaml_cycle_is_reported_not_recurse(self):
+        import yaml
+
         with tempfile.TemporaryDirectory() as tmp:
             loop = Path(tmp) / "loop.yaml"
             loop.write_text(
-                "suite_id: gpu/loop\nproblems:\n  source: loop.yaml\n  include: [a]\n",
+                yaml.safe_dump(
+                    self._nested_suite(
+                        {"source": "loop.yaml", "include": ["a"]}, suite_id="gpu/loop"
+                    )
+                ),
                 encoding="utf-8",
             )
             document = {"suite_id": "gpu/structural",
@@ -432,13 +486,9 @@ class RegimePolicyUnitTests(unittest.TestCase):
             base = Path(tmp) / "dupes.yaml"
             base.write_text(
                 yaml.safe_dump(
-                    {
-                        "suite_id": "gpu/dupes",
-                        "problems": [
-                            {"id": "a", "regime": "latency"},
-                            {"id": "a", "regime": "latency"},
-                        ],
-                    }
+                    self._nested_suite(
+                        [self._case("a"), self._case("a")], suite_id="gpu/dupes"
+                    )
                 ),
                 encoding="utf-8",
             )
