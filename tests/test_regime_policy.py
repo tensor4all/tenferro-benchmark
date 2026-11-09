@@ -669,6 +669,48 @@ class RegimePolicyUnitTests(unittest.TestCase):
                     project_dir=Path(tmp),
                 )
 
+    def test_a_skipped_nested_source_still_checks_the_wrapper_ids(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            inner = self._nested_suite(
+                {"source": "generated", "include": ["a"],
+                 "missing_source": "skip"},
+                suite_id="cpu/base",
+            )
+            (Path(tmp) / "inner.yaml").write_text(yaml.safe_dump(inner), encoding="utf-8")
+            wrapper = {"suite_id": "cpu/base",
+                       "problems": {"source": "inner.yaml", "include": ["typo"]}}
+            errors = regime_policy.check_suite(wrapper, Path(tmp))
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("is not in", errors[0])
+
+    def test_the_collector_rejects_duplicate_ids_in_a_yaml_source(self):
+        import suite_instances
+
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp) / "base.yaml"
+            base.write_text(
+                yaml.safe_dump(self._nested_suite([self._case("a"), self._case("a")])),
+                encoding="utf-8",
+            )
+            with self.assertRaises(ValueError):
+                suite_instances._resolve_problems(
+                    {"source": str(base), "include": ["a"]},
+                    project_dir=Path(tmp),
+                )
+
+    def test_the_collector_rejects_a_selection_cycle(self):
+        import suite_instances
+
+        with tempfile.TemporaryDirectory() as tmp:
+            cycle = self._nested_suite(
+                {"source": "cycle.yaml", "include": ["a"]}, suite_id="cpu/cycle"
+            )
+            (Path(tmp) / "cycle.yaml").write_text(yaml.safe_dump(cycle), encoding="utf-8")
+            with self.assertRaises(ValueError):
+                suite_instances.resolve_suite_instance_ids(
+                    Path(tmp) / "cycle.yaml", project_dir=Path(tmp)
+                )
+
     def test_a_json_recursion_error_is_a_load_error(self):
         # The JSON parser raises RecursionError on a pathological nesting
         # depth; it must not escape the per-source boundary.

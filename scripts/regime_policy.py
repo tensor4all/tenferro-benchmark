@@ -478,7 +478,18 @@ def declared_cases(
         # A nested suite whose own source is absent by explicit opt-in resolves
         # to no cases; the state propagates through any number of wrappers, so
         # the outer include ids are not reported as unknown.
+        nested_problems = document.get("problems")
         if nested_skip:
+            # The skip resolves to no cases, but the wrapper may only name ids the
+            # nested selector itself declares.
+            nested_include = nested_problems.get("include") if isinstance(nested_problems, dict) else None
+            if isinstance(nested_include, list):
+                declared = set(nested_include)
+                unknown = [entry for entry in include if isinstance(entry, str) and entry not in declared]
+                if unknown:
+                    raise RegimeError(
+                        f"{suite_id}: include id {unknown[0]!r} is not in {source!r}"
+                    )
             return defaults, [], True
         # A wrapper must not accept what validating the nested suite rejects:
         # the nested suite's own defaults decide its cases, so the wrapper's
