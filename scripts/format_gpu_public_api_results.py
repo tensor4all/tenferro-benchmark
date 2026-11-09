@@ -117,9 +117,12 @@ def render(suite, paths, metadata, timestamp, run_path=None, allow_partial=False
             row.pop("samples_us", None)
     backends = suite["backends"]
     measured = sum(row["status"] == "ok" for row in rows.values())
+    unsupported = sum(row["status"] == "unsupported" for row in rows.values())
     excluded_verified = sum(row["status"] == "unsupported" and bool(row.get("cuda_implementation_verified")) for row in rows.values())
     not_measured = sorted((key, row) for key, row in rows.items()
                           if row["status"] not in {"ok", "unsupported"})
+    missing = sum(row["status"] == "missing" for _, row in not_measured)
+    failed = len(not_measured) - missing
     # The declared run is the one the page names, including a run collected under
     # an earlier suite-directory layout.
     raw_run = str(run_path or f'data/results/nvidia-gpu/{suite["suite_id"]}/{timestamp}').rstrip("/")
@@ -127,7 +130,9 @@ def render(suite, paths, metadata, timestamp, run_path=None, allow_partial=False
         raise ValueError("suite selection records no 'description'; the page note "
                          "that says what its shape class means cannot be written")
     text = [f'# {suite["suite_id"]}: CUDA public API benchmark', "",
-            f'Measured cells: **{measured}**. Unsupported cells: **{len(rows)-measured}**, including **{excluded_verified}** numerically verified but timing-excluded cells. Unsupported cells do not count as measured coverage.', ""]
+            f'Measured cells: **{measured}**. Unsupported cells: **{unsupported}**, including **{excluded_verified}** numerically verified but timing-excluded cells. Unsupported cells do not count as measured coverage.', ""]
+    if not_measured:
+        text += [f'Not measured cells: **{len(not_measured)}** ({failed} failed, {missing} never recorded). They carry no number and count as no coverage; the run reports failure.', ""]
     if calibration:
         text += [f'Logical traffic: this run measured a plain device copy of {calibration["buffer_bytes"]} bytes at **{calibration["bytes_per_second"] / GIGABYTE:.1f} GB/s** on this device. Every record carries the logical bytes the case must move per operation and the ratio of the case\'s implied rate to that copy rate, in the sampling table below. Logical bytes are the declared array sizes, not device DRAM traffic: a case whose operands stay in cache moves less DRAM than its arrays suggest, so a ratio above 1 is recorded, not rejected.', ""]
     else:
@@ -218,7 +223,8 @@ def main():
     suite = json.loads(args.suite.read_text())
     metadata = yaml.safe_load(args.run_metadata.read_text())
     if args.verify_only:
-        rows = load_rows(suite, args.inputs, verify_only=True)
+        rows = load_rows(suite, args.inputs, verify_only=True,
+                         allow_partial=args.allow_partial)
         summary = {"suite_id": suite["suite_id"], "gpu_assignment": metadata["gpu_assignment"],
                    "verified_rows": sum(r["status"] == "verification_only" for r in rows.values()),
                    "unsupported_rows": sum(r["status"] == "unsupported" for r in rows.values()),

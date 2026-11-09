@@ -158,7 +158,7 @@ def format_markdown(
         elif record["status"] != "unsupported":
             if not allow_partial:
                 raise ValueError(f"cannot publish AD status {record['status']}: {key}")
-            if not (record.get("reason") or "").strip():
+            if not (report_summary.recorded_reason(record) or "").strip():
                 raise ValueError(f"failed AD row without a reason: {key}")
     missing: list[tuple[str, str]] = []
     if run_metadata and run_metadata.get("suite_file"):
@@ -283,7 +283,8 @@ def format_markdown(
             "Rows with a failure status: "
             + "; ".join(
                 f"`{record['problem_id']}` on `{record['backend']}` "
-                f"({record['status']}: {str(record.get('reason') or '').replace('|', '/')})"
+                f"({record['status']}: "
+                f"{str(report_summary.recorded_reason(record) or '').replace('|', '/')})"
                 for record in sorted(failed, key=lambda r: (r["problem_id"], r["backend"]))
             )
             + "."
@@ -323,8 +324,9 @@ def format_markdown(
                 # Throughput rows declare their own batched scope.
                 scope = sample.get("scope", scope)
         else:
-            reason = (record["execution"].get("unsupported_reason")
-                      or record.get("reason") or "no reason recorded")
+            reason = (report_summary.recorded_reason(record)
+                      or record["execution"].get("unsupported_reason")
+                      or "no reason recorded")
             count, samples, scope = "—", "—", reason
         lines.append(f"| {record['problem_id']} | {record['backend']} | {count} | {samples} | {scope.replace('|', '/')} |")
     covered = sorted({benchmark.rsplit("_", 1)[0] for _, benchmark, _, _ in by_key})
@@ -348,6 +350,26 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def expected_case_keys(run_metadata: dict[str, Any] | None) -> list[str]:
+    """The planned ``suite:problem:backend`` keys, from the same plan as the page.
+
+    The routine driver stamps `collection.selected_case_ids`, but the standalone
+    linalg AD driver only names its suite file. The Markdown takes its matrix
+    from that file, so the sidecar has to take the same one: otherwise a cell the
+    page calls "not measured" is simply absent from the summary.
+    """
+    keys = report_summary.planned_case_ids(run_metadata)
+    if keys:
+        return keys
+    if not run_metadata or not run_metadata.get("suite_file"):
+        return []
+    suite = yaml.safe_load(Path(run_metadata["suite_file"]).read_text())
+    suite_id = run_metadata.get("suite_id") or suite.get("suite_id")
+    return [f'{suite_id}:{problem["id"]}:{backend}'
+            for problem in suite.get("problems") or []
+            for backend in suite.get("backends") or []]
+
+
 def build_summary(
     records: list[dict[str, Any]],
     run_metadata: dict[str, Any] | None = None,
@@ -365,7 +387,7 @@ def build_summary(
 
     rows = report_summary.rows_from_gpu_records(records, group=group)
     rows += report_summary.rows_for_unrecorded_cases(
-        rows, report_summary.planned_case_ids(run_metadata), suite_id=header["suite_id"]
+        rows, expected_case_keys(run_metadata), suite_id=header["suite_id"]
     )
     return report_summary.build_document(
         rows,

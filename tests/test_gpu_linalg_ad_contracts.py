@@ -114,11 +114,17 @@ class PartialPageTest(unittest.TestCase):
                               timed_runs=1, median_ms=1., iqr_ms=0.),
                   execution=dict(notes=json.dumps(dict(sampling=dict(
                       operations_per_sample=1, batch_ms=[1.])))))
-        failed = dict(suite_id="gpu/linalg_jvp_vjp",
-                      problem_id="linalg_ad_large_grad_sum_qr_jvp_f64_256",
-                      backend="tenferro-cuda-trace", status="runtime_failed",
-                      reason="arm exited 3",
-                      execution=dict(unsupported_reason=None))
+        # The collector's own failure shape: the cause is in verification.reason
+        # and execution.unsupported_reason, and there is no top-level `reason`.
+        from benchmark_gpu_linalg_ad import stub
+        failed = stub(
+            "gpu/linalg_jvp_vjp",
+            {"id": "linalg_ad_large_grad_sum_qr_jvp_f64_256", "op": "jvp"},
+            "tenferro-cuda-trace", 0,
+            status="runtime_failed", reason="arm exited 3",
+            path="prepared-jax-cuda-jit-linalg-ad",
+            ts="2026-01-01T00:00:00+00:00", bc=None, tc=None,
+        )
         return ok, failed
 
     def test_without_the_flag_a_failed_row_still_refuses_the_page(self):
@@ -127,6 +133,30 @@ class PartialPageTest(unittest.TestCase):
         ok, failed = self.rows()
         with self.assertRaisesRegex(ValueError, "cannot publish AD status"):
             format_markdown([ok, failed])
+
+    def test_the_sidecar_lists_the_cell_the_page_calls_not_measured(self):
+        # The Markdown takes its matrix from the suite file; the summary must
+        # take the same one, not the routine selection's optional stamp.
+        import json
+        import tempfile
+        from format_gpu_linalg_ad_results import build_summary, format_markdown
+        from pathlib import Path
+        ok, _failed = self.rows()
+        with tempfile.TemporaryDirectory() as tmp:
+            suite_file = Path(tmp) / "suite.yaml"
+            suite_file.write_text(json.dumps({
+                "suite_id": "gpu/linalg_jvp_vjp",
+                "backends": ["pytorch-cuda", "tenferro-cuda-trace"],
+                "problems": [{"id": "linalg_ad_large_grad_sum_qr_jvp_f64_256"}],
+            }))
+            metadata = {"suite_id": "gpu/linalg_jvp_vjp", "suite_file": str(suite_file)}
+            page = format_markdown([ok], metadata, allow_partial=True)
+            summary = build_summary([ok], metadata)
+        self.assertIn("Not measured", page)
+        cases = {row["case"] for row in summary["rows"]}
+        self.assertIn("linalg_ad_large_grad_sum_qr_jvp_f64_256", cases)
+        missing = [row for row in summary["rows"] if row["status"] == "missing"]
+        self.assertEqual([row["backend"] for row in missing], ["tenferro-cuda-trace"])
 
     def test_the_flag_publishes_the_measured_cell_and_names_the_failure(self):
         import json
