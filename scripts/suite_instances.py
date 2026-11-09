@@ -49,13 +49,19 @@ def _resolve_problems(problems: Any, *, project_dir: Path) -> list[str]:
     if not source_path.is_absolute():
         source_path = project_dir / source_path
 
-    if not source_path.exists():
-        # The validator accepts an absent source only with the opt-in; the
-        # collector must keep doing the same instead of reading a phantom file.
+    # `exists()` returns False for any OSError on Python 3.14, so a permission
+    # error read as absence and the opt-in swallowed it. Only a real absence is
+    # skippable -- the same rule the validator uses.
+    try:
+        source_path.stat()
+    except FileNotFoundError:
         if problems.get("missing_source") != "skip":
             raise ValueError(f"{source_path}: include source did not load: no such file or directory")
-        ids = list(include)
-    elif source_path.is_dir() or source_path.suffix not in {".yaml", ".yml"}:
+        return [instance_id for instance_id in include if instance_id not in exclude]
+    except OSError as error:
+        raise ValueError(f"{source_path}: include source did not load: {error}") from error
+
+    if source_path.is_dir() or source_path.suffix not in {".yaml", ".yml"}:
         # A JSON catalogue is read for its declared ids: copying `include`
         # unchecked was the same fail-open the validator rejected, and
         # run_all.sh collects through this resolver without validating.
@@ -87,6 +93,7 @@ def _resolve_problems(problems: Any, *, project_dir: Path) -> list[str]:
 def _catalogue_ids(source_path: Path) -> list[str]:
     """Every record id a JSON catalogue file or directory declares."""
     ids: list[str] = []
+    seen: set[str] = set()
     files = sorted(source_path.glob("*.json")) if source_path.is_dir() else [source_path]
     for entry in files:
         data = json.loads(entry.read_text(encoding="utf-8"))
@@ -110,6 +117,9 @@ def _catalogue_ids(source_path: Path) -> list[str]:
                 record_id = record.get("id")
             if not isinstance(record_id, str) or not record_id:
                 raise ValueError(f"{entry}: record {index} has no non-empty id")
+            if record_id in seen:
+                raise ValueError(f"{entry}: duplicate problem id {record_id!r}")
+            seen.add(record_id)
             ids.append(record_id)
     return ids
 

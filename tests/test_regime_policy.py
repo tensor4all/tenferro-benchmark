@@ -563,6 +563,57 @@ class RegimePolicyUnitTests(unittest.TestCase):
                     project_dir=Path(tmp),
                 )
 
+    def test_the_collector_does_not_skip_an_unreadable_catalogue(self):
+        import os
+        import suite_instances
+
+        if os.geteuid() == 0:
+            self.skipTest("permissions do not bind root")
+        with tempfile.TemporaryDirectory() as tmp:
+            locked = Path(tmp) / "locked"
+            locked.mkdir()
+            (locked / "a.json").write_text(json.dumps({"id": "a"}), encoding="utf-8")
+            locked.chmod(0o000)
+            try:
+                with self.assertRaises(ValueError):
+                    suite_instances._resolve_problems(
+                        {"source": "locked/a.json", "include": ["invented"],
+                         "missing_source": "skip"},
+                        project_dir=Path(tmp),
+                    )
+            finally:
+                locked.chmod(0o755)
+
+    def test_the_collector_rejects_duplicate_catalogue_ids(self):
+        import suite_instances
+
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "dupes.json").write_text(
+                json.dumps({"cases": [{"id": "a", "regime": "latency"},
+                                {"id": "a", "regime": "throughput", "n": 1}]}),
+                encoding="utf-8",
+            )
+            with self.assertRaises(ValueError):
+                suite_instances._resolve_problems(
+                    {"source": "dupes.json", "include": ["a"]},
+                    project_dir=Path(tmp),
+                )
+
+    def test_a_nested_opted_out_source_does_not_make_the_wrapper_fail(self):
+        # The nested suite declares its source may be absent; the wrapper
+        # selecting an id from it must resolve to no cases, not an error.
+        with tempfile.TemporaryDirectory() as tmp:
+            inner = self._nested_suite(
+                {"source": "generated", "include": ["a"],
+                 "missing_source": "skip"},
+                suite_id="cpu/base",
+            )
+            (Path(tmp) / "inner.yaml").write_text(yaml.safe_dump(inner), encoding="utf-8")
+            self.assertEqual(regime_policy.check_suite(inner, Path(tmp)), [])
+            wrapper = {"suite_id": "cpu/base",
+                       "problems": {"source": "inner.yaml", "include": ["a"]}}
+            self.assertEqual(regime_policy.check_suite(wrapper, Path(tmp)), [])
+
     def test_a_json_recursion_error_is_a_load_error(self):
         # The JSON parser raises RecursionError on a pathological nesting
         # depth; it must not escape the per-source boundary.

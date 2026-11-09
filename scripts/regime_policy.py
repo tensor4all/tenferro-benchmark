@@ -475,6 +475,25 @@ def declared_cases(
         nested_defaults, records = declared_cases(
             document, project_dir, skips, seen | {resolved}
         )
+        # A nested suite whose own source is absent by explicit opt-in resolves
+        # to no cases. Reporting the wrapper include ids as unknown would turn
+        # that declared skip into an error.
+        nested_problems = document.get("problems")
+        if (
+            isinstance(nested_problems, dict)
+            and nested_problems.get("missing_source") == "skip"
+        ):
+            nested_source = nested_problems.get("source")
+            if isinstance(nested_source, str) and nested_source:
+                nested_path = Path(nested_source)
+                if not nested_path.is_absolute():
+                    nested_path = project_dir / nested_path
+                try:
+                    nested_path.stat()
+                except FileNotFoundError:
+                    return defaults, []
+                except OSError:
+                    pass
         # A wrapper must not accept what validating the nested suite rejects:
         # the nested suite's own defaults decide its cases, so the wrapper's
         # default cannot supply a regime or a floor the source never declared.
