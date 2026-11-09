@@ -13,7 +13,9 @@ Two runs are only comparable when the ``tenferro_commit`` changed, both were
 collected on the same ``hardware.host``, they fall in different ISO weeks, and
 they record the same unit.  That gate is applied to the pair before any row is
 computed; when it fires, the report names the mechanisms, prints no table, and
-exits 1.  When the table is printed, the two runs' commit, host, week and arm
+exits 1.  A row enters a table only when the ingestion driver would accept it
+(status ``ok``, a finite non-negative median, ``verified: true``); an unverified
+row is named under the table instead.  When the table is printed, the two runs' commit, host, week and arm
 set are stated above it, so the reader never reconstructs which measurements
 were compared.
 
@@ -206,7 +208,7 @@ def refusals(candidate: dict, baseline: dict) -> list[str]:
 
 
 def slower_rows(baseline: dict, candidate: dict, threshold: float) -> dict:
-    """Slower rows, plus the rows whose ratio cannot be taken (a zero baseline)."""
+    """Slower rows, the rows whose ratio cannot be taken, and the unverified ones."""
     def measured(record: dict) -> dict:
         # The identity the ingestion driver enforces is (case, group, backend)
         # (``result_ingestion.validate_summary``): (case, backend) collides
@@ -216,25 +218,33 @@ def slower_rows(baseline: dict, candidate: dict, threshold: float) -> dict:
                 and math.isfinite(row['median']) and row['median'] >= 0}
 
     before, after = measured(baseline), measured(candidate)
-    rows, undefined = [], []
+    rows, undefined, unverified = [], [], []
     for key in sorted(before.keys() & after.keys()):
+        sides = [name for name, side in (('baseline', before), ('candidate', after))
+                 if side[key].get('verified') is not True]
         row = {'case': key[0], 'group': key[1], 'backend': key[2],
                'baseline': before[key]['median'], 'candidate': after[key]['median']}
-        if row['baseline'] == 0:
+        if sides:
+            # ``result_ingestion`` refuses a measurement whose ``verified`` is not
+            # true, so a receipt-free record can carry rows the driver rejected:
+            # they are named instead of being compared or dropped silently.
+            unverified.append(dict(row, sides=sides))
+        elif row['baseline'] == 0:
             # A zero baseline is a legal measurement, and 0 -> positive is not
             # "no change": report the pair instead of dropping it.
             undefined.append(row)
         elif row['candidate'] / row['baseline'] >= threshold:
             rows.append(dict(row, ratio=row['candidate'] / row['baseline']))
     return {'rows': sorted(rows, key=lambda row: row['ratio'], reverse=True),
-            'undefined': undefined}
+            'undefined': undefined, 'unverified': unverified}
 
 
 def compare(candidate: dict, baseline: dict | None, threshold: float) -> dict:
     """Gate the pair first: a refused pair never reaches the table."""
     fired = refusals(candidate, baseline) if baseline is not None else []
     computed = (slower_rows(baseline, candidate, threshold)
-                if baseline is not None and not fired else {'rows': [], 'undefined': []})
+                if baseline is not None and not fired
+                else {'rows': [], 'undefined': [], 'unverified': []})
     return {'candidate': candidate, 'baseline': baseline, 'refusals': fired, **computed,
             'threshold': threshold}
 
@@ -274,6 +284,12 @@ def render(result: dict) -> str:
         for row in result['undefined']:
             lines.append(f"| {row['case']} | {row['group']} | {row['backend']} "
                          f"| {row['baseline']:.4g} | {row['candidate']:.4g} |")
+    if result['unverified']:
+        named = '; '.join(f"{row['case']}/{row['group']}/{row['backend']} "
+                          f"({' and '.join(row['sides'])} unverified)"
+                          for row in result['unverified'])
+        lines += ['', f'Skipped {len(result["unverified"])} unverified row(s) (the ingestion driver '
+                      f'records only measurements whose `verified` is true): {named}.']
     return '\n'.join(lines) + '\n'
 
 

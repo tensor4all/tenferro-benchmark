@@ -42,7 +42,7 @@ def record(timestamp, commit, host=HOST, scale=1.0, unit='ms'):
         'timestamp': timestamp, 'unit': unit,
         'hardware': {'gpu': 'NVIDIA A100 80GB PCIe', 'host': host},
         'rows': [{'case': 'dense_matmul', 'group': 'matmul', 'backend': backend, 'median': scale,
-                  'status': 'ok'}
+                  'status': 'ok', 'verified': True}
                  for backend in ('tenferro-cuda-eager', 'pytorch-cuda')],
     }
 
@@ -365,6 +365,29 @@ class HistoryTests(unittest.TestCase):
         self.git('merge', '--no-ff', 'other', '-m', 'merge the other branch')
         records = accepted_runs(self.repo, 'nvidia-gpu', 'gpu/dense')
         self.assertEqual([item['timestamp'] for item in records], [WEEK_45_LATE, WEEK_44])
+
+    def test_unverified_rows_are_named_instead_of_compared(self):
+        # result_ingestion refuses a measurement whose `verified` is not true, so a
+        # record that reached the history through the receipt-free path can carry
+        # rows the driver rejected: they are not a 10x regression either.
+        baseline, candidate = record(WEEK_44, COMMIT_A), record(WEEK_45_LATE, COMMIT_B)
+        candidate['rows'][0].update(median=10.0, verified=False, verification='measure_only')
+        result = compare(candidate, baseline, 1.2)
+        text = render(result)
+        self.assertEqual(result['rows'], [])
+        self.assertNotIn('10.00x', text)
+        self.assertIn('Skipped 1 unverified row(s)', text)
+        self.assertIn('dense_matmul/matmul/tenferro-cuda-eager (candidate unverified)', text)
+
+    def test_a_verified_row_is_compared_alongside_a_skipped_one(self):
+        baseline, candidate = record(WEEK_44, COMMIT_A), record(WEEK_45_LATE, COMMIT_B)
+        candidate['rows'][0].update(median=10.0, verified=False)
+        baseline['rows'][1]['median'] = 2.0
+        candidate['rows'][1]['median'] = 10.0
+        result = compare(candidate, baseline, 1.2)
+        self.assertEqual([(row['backend'], row['ratio']) for row in result['rows']],
+                         [('pytorch-cuda', 5.0)])
+        self.assertIn('Skipped 1 unverified row(s)', render(result))
 
     def test_cli_rejects_a_non_finite_or_out_of_range_threshold(self):
         self.accept(record(WEEK_44, COMMIT_A))

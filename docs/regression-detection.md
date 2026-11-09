@@ -188,7 +188,10 @@ so merging another branch cannot reclassify it — and otherwise only a commit t
 publishes the run's report together with the sidecar (a receipt-free edit of both
 files is still taken as a publish; #431 removes that second acceptance path). In
 a repository that records no receipt at all, a sidecar revision is the published
-history by definition, because there is no acceptance signal to check. A shallow
+history by definition, because there is no acceptance signal to check. A row is
+compared only when the ingestion driver would accept it (status `ok`, a finite
+non-negative median, `verified: true`); a row without a verified measurement is
+named under the table instead of being compared or dropped silently. A shallow
 clone, an unreadable repository, and a `--threshold` outside 1 to 1000000 are
 errors (exit 2) and never read as "no baseline".
 
