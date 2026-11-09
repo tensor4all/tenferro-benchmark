@@ -142,15 +142,20 @@ where
 /// `base.T @ base + I`. It differs from the loop it replaced only in summation
 /// order (max |Δ| ≈ 9e-16 at n=512).
 pub fn spd_from_base(base: &[f64], n: usize) -> Vec<f64> {
-    assert_eq!(
-        base.len(),
-        n * n,
-        "the spd base must be a column-major {n}x{n} matrix"
-    );
-    let mut out = vec![0.0; n * n];
+    let cells = match n.checked_mul(n) {
+        Some(cells) if cells == base.len() => cells,
+        _ => panic!(
+            "the spd base must be a column-major n x n matrix: n={n} needs {} cells, the base has {}",
+            n.saturating_mul(n),
+            base.len()
+        ),
+    };
+    let mut out = vec![0.0; cells];
     {
         // Both views borrow the vectors directly: no second copy of an n²
-        // fixture (134 MB at n=4096) is made to take them.
+        // fixture (134 MB at n=4096) is made to take them. Peak memory still
+        // includes the GEMM's own packing scratch (about twice the detected L3)
+        // and its workers, which the scalar loop did not allocate.
         let a = faer::MatRef::from_column_major_slice(base, n, n);
         let dst = faer::MatMut::from_column_major_slice_mut(&mut out, n, n);
         faer::linalg::matmul::matmul(
@@ -248,6 +253,46 @@ mod spd_fixture_tests {
     #[should_panic(expected = "must be a column-major")]
     fn a_base_that_is_not_n_by_n_is_refused() {
         spd_from_base(&[1.0, 0.0, 0.0], 2);
+    }
+
+    #[test]
+    #[should_panic(expected = "must be a column-major")]
+    fn a_dimension_that_overflows_is_refused_by_name() {
+        // `n * n` wraps in release; the caller gets the named refusal instead
+        // of a slice length that happens to match a wrapped product.
+        spd_from_base(&[], usize::MAX);
+    }
+
+    #[test]
+    fn the_fixture_does_not_depend_on_the_worker_count() {
+        // The fixture is untimed, but a benchmark compares rows across thread
+        // counts: n=64 is past the small-matrix threshold, so the parallel
+        // path is what runs. `Par::rayon(0)` takes the pool's size at call
+        // time, so `install` is what changes it.
+        let n = 64;
+        let base = base(n, 13);
+        let mut reference: Option<Vec<f64>> = None;
+        for workers in [1usize, 4, 8] {
+            let pool = rayon::ThreadPoolBuilder::new()
+                .num_threads(workers)
+                .build()
+                .expect("test thread pool");
+            let fixture = pool.install(|| {
+                assert_eq!(rayon::current_num_threads(), workers);
+                spd_from_base(&base, n)
+            });
+            match &reference {
+                None => reference = Some(fixture),
+                Some(want) => {
+                    for (index, (got, expected)) in fixture.iter().zip(want).enumerate() {
+                        assert!(
+                            (got - expected).abs() <= 1e-12 * expected.abs().max(1.0),
+                            "workers={workers} element {index}: {got} vs {expected}"
+                        );
+                    }
+                }
+            }
+        }
     }
 }
 
