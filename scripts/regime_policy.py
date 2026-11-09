@@ -381,7 +381,22 @@ def declared_cases(
         path = project_dir / path
     # Absence of the declared source is the only thing the opt-in covers: a file
     # that disappears while its directory is read is a load failure, not a skip.
-    if not path.exists():
+    # `Path.exists()` is not the discriminator here: since Python 3.13 it
+    # suppresses every OSError, so an unreadable catalogue (a permission error on
+    # the file or on its directory) looked absent and the suite validated with
+    # zero cases.  `stat()` only swallows "not there".
+    try:
+        path.stat()
+    except FileNotFoundError:
+        absent = True
+    except OSError as error:
+        raise RegimeError(
+            f"{suite_id}: include source {source!r} did not load: "
+            f"{error.strerror or error}"
+        ) from error
+    else:
+        absent = False
+    if absent:
         if problems.get("missing_source") != "skip":
             raise RegimeError(f"{suite_id}: include source {source!r} did not load: no such file or directory")
         if skips is not None:

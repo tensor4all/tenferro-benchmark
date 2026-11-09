@@ -273,6 +273,69 @@ class RegimePolicyUnitTests(unittest.TestCase):
         self.assertIn("skipped include source", skips[0])
         self.assertIn("missing.json", skips[0])
 
+    def test_the_validator_prints_the_skip_on_every_run(self):
+        # The issue is about the *validator* output, not the helper's list: a
+        # skip that only exists in memory is the same silent hole as before.
+        # Deleting the print in `validate_benchmark_suite.py` must fail here.
+        import contextlib
+        import io
+
+        import yaml
+
+        import validate_benchmark_suite as validator
+
+        document = {
+            "schema_version": 1,
+            "suite_id": "gpu/structural",
+            "title": "fixture",
+            "description": "fixture",
+            "defaults": {"regime": "latency"},
+            "backends": ["tenferro-cuda-trace"],
+            "problems": {
+                "source": "data/instances/missing.json",
+                "include": ["a"],
+                "missing_source": "skip",
+            },
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "structural.yaml"
+            path.write_text(yaml.safe_dump(document), encoding="utf-8")
+            for attempt in (1, 2):
+                stderr = io.StringIO()
+                with contextlib.redirect_stderr(stderr):
+                    ok = validator.validate_suite(path)
+                self.assertTrue(ok, stderr.getvalue())
+                printed = stderr.getvalue()
+                self.assertIn(str(path), printed, attempt)
+                self.assertIn("skipped include source", printed, attempt)
+                self.assertIn("missing.json", printed, attempt)
+
+    def test_an_unreadable_catalogue_is_not_treated_as_absent(self):
+        # `Path.exists()` suppresses every OSError since 3.13, so a permission
+        # error on the catalogue's directory looked exactly like a missing file
+        # and `missing_source: skip` swallowed it.  Only a real absence is
+        # skippable.
+        import os
+
+        if os.geteuid() == 0:
+            self.skipTest("permissions do not bind root")
+        with tempfile.TemporaryDirectory() as tmp:
+            locked = Path(tmp) / "locked"
+            locked.mkdir()
+            (locked / "a.json").write_text(json.dumps({"cases": [{"id": "a"}]}), encoding="utf-8")
+            document = {"suite_id": "gpu/structural",
+                        "problems": {"source": "locked/a.json", "include": ["a"],
+                                     "missing_source": "skip"}}
+            locked.chmod(0o000)
+            try:
+                skips = []
+                errors = regime_policy.check_suite(document, Path(tmp), skips=skips)
+            finally:
+                locked.chmod(0o755)
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("did not load", errors[0])
+        self.assertEqual(skips, [])
+
     def test_an_unknown_missing_source_declaration_is_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
             document = {"suite_id": "gpu/structural",

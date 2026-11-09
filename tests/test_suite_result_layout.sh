@@ -291,20 +291,15 @@ assert_valid suite "$TMP/cpu_selector_suite.yaml" "valid CPU selector suite"
 assert_yaml_list_contains "$TMP/cpu_selector_suite.yaml" backends tenferro-eager
 assert_yaml_list_contains "$TMP/cpu_selector_suite.yaml" problems.include bin_matmul_256
 
-cat > "$TMP/legacy_suite_id.yaml" <<'YAML'
-schema_version: 1
-suite_id: gpu_einsum_contract_v1
-title: Legacy GPU einsum suite
-description: Legacy underscore suite IDs should be rejected.
-defaults:
-  run: {warmups: 1, runs: 1, timing_scope: steady_state_host_api_plus_device_sync}
-  verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10}
-backends: [pytorch-cuda]
-problems:
-  - id: einsum_bin_matmul_3072_f64
-    regime: latency
-YAML
+# The legacy-ID fixture is an otherwise-valid suite with only its `suite_id`
+# edited, so the suite-ID rule is the one thing that can make it fail: the same
+# bytes under a compliant ID must validate.
+sed 's|^suite_id: gpu/einsum$|suite_id: gpu_einsum_contract_v1|' \
+  benchmarks/gpu/einsum.yaml >"$TMP/legacy_suite_id.yaml"
 assert_invalid suite "$TMP/legacy_suite_id.yaml" "legacy underscore suite ID"
+sed 's|^suite_id: gpu/einsum$|suite_id: gpu/einsum-contract-v1|' \
+  benchmarks/gpu/einsum.yaml >"$TMP/renamed_suite_id.yaml"
+assert_valid suite "$TMP/renamed_suite_id.yaml" "renamed GPU einsum suite"
 
 cat > "$TMP/run.yaml" <<'YAML'
 schema_version: 1

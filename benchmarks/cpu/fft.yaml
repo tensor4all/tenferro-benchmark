@@ -17,9 +17,11 @@ backends:
   - pytorch-cpu
 problems:
   source: generated
-  # The catalogue is produced outside this checkout (a generator reads a
-  # generated manifest); absent here is expected, and the validator names
-  # the skip on every run.
+  # `generated` is a sentinel, not a path: `scripts/run_cpu_fft.sh` runs
+  # `src/bin/benchmark_cpu_fft.rs`, which enumerates its (op, dtype) pairs
+  # from `--lengths` at collection time, so this checkout ships no catalogue
+  # file.  Absence is the expected state, and the validator names the skip
+  # on every run.
   missing_source: skip
   include:
     - fft_c32_1d
