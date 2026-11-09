@@ -497,6 +497,53 @@ class RegimePolicyUnitTests(unittest.TestCase):
             suite["problems"] = {"source": "catalogue", "include": ["a"]}
             self.assertTrue(regime_policy.check_suite(suite, Path(tmp)))
 
+    def test_a_json_catalogue_named_yaml_validates_and_collects(self):
+        # The validator reads every non-directory source as JSON, so this file is a
+        # catalogue to it; the collector keyed on the suffix and sent the same file
+        # down the nested-suite path, where collection died on `KeyError: 'problems'`.
+        import suite_instances
+        import validate_benchmark_suite
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            (tmp / "cases.yaml").write_text(
+                json.dumps({"cases": [self._case("a")]}), encoding="utf-8"
+            )
+            suite_file = tmp / "suite.yaml"
+            suite_file.write_text(
+                yaml.safe_dump(
+                    self._nested_suite(
+                        {"source": str(tmp / "cases.yaml"), "include": ["a"]}
+                    )
+                ),
+                encoding="utf-8",
+            )
+            self.assertTrue(validate_benchmark_suite.validate_suite(suite_file))
+            ids = suite_instances.resolve_suite_instance_ids(suite_file)
+        self.assertEqual(ids, ["a"])
+
+    def test_the_collector_rejects_an_unsupported_missing_source_policy(self):
+        # The policy used to be read only inside the `FileNotFoundError` branch, so
+        # a present source made an unsupported value pass here while the validator
+        # rejected it. Same value, same verdict.
+        import suite_instances
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            (tmp / "cases.json").write_text(
+                json.dumps({"cases": [self._case("a")]}), encoding="utf-8"
+            )
+            problems = {"source": str(tmp / "cases.json"), "include": ["a"],
+                        "missing_source": "ignore"}
+            with self.assertRaises(ValueError) as raised:
+                suite_instances._resolve_problems(problems, project_dir=tmp)
+            errors = regime_policy.check_suite(
+                {"suite_id": "cpu/policy", "problems": problems}, tmp
+            )
+        self.assertIn("missing_source", str(raised.exception))
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("missing_source", errors[0])
+
     def test_the_collector_rejects_a_bare_record_catalogue(self):
         # A standalone JSON file must be a list or a cases mapping; a bare
         # record declares no id to the validator either.

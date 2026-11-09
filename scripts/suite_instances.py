@@ -55,19 +55,32 @@ def _resolve_problems(
     if not source_path.is_absolute():
         source_path = project_dir / source_path
 
+    # The same value the validator rejects, rejected here too: this used to be read
+    # only inside the `FileNotFoundError` branch, so an unsupported policy passed
+    # whenever the source happened to exist.
+    missing_source = problems.get("missing_source")
+    if missing_source is not None and missing_source != "skip":
+        raise ValueError(
+            f"{source_path}: missing_source {missing_source!r} is not supported (only skip)"
+        )
+
     # `exists()` returns False for any OSError on Python 3.14, so a permission
     # error read as absence and the opt-in swallowed it. Only a real absence is
     # skippable -- the same rule the validator uses.
     try:
         source_path.stat()
     except FileNotFoundError:
-        if problems.get("missing_source") != "skip":
+        if missing_source != "skip":
             raise ValueError(f"{source_path}: include source did not load: no such file or directory")
         return [instance_id for instance_id in include if instance_id not in exclude]
     except OSError as error:
         raise ValueError(f"{source_path}: include source did not load: {error}") from error
 
-    if source_path.is_dir() or source_path.suffix not in {".yaml", ".yml"}:
+    # Dispatch on the content, not on the file name: the validator reads every
+    # non-directory source as JSON, so a catalogue named `cases.yaml` validates.
+    # Keying on the suffix sent that same file down the nested-suite path here and
+    # collection died on `KeyError: 'problems'`.
+    if source_path.is_dir() or _is_json_document(source_path):
         # A JSON catalogue is read for its declared ids: copying `include`
         # unchecked was the same fail-open the validator rejected, and
         # run_all.sh collects through this resolver without validating.
@@ -84,9 +97,25 @@ def _resolve_problems(
         base_ids = resolve_suite_instance_ids(source_path, project_dir=project_dir)
         allowed = set(include)
         ids = [instance_id for instance_id in base_ids if instance_id in allowed]
+    else:
+        raise ValueError(
+            f"{source_path}: include source did not load: not a JSON catalogue"
+        )
 
     return [instance_id for instance_id in ids if instance_id not in exclude]
 
+
+def _is_json_document(source_path: Path) -> bool:
+    """Whether a file parses as JSON, which is how the validator reads a source."""
+    try:
+        json.loads(source_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return False
+    except (OSError, ValueError) as error:
+        # `ValueError` covers `UnicodeDecodeError`; the validator reports it as a
+        # load failure against this file, so the ids cannot be collected either.
+        raise ValueError(f"{source_path}: include source did not load: {error}") from error
+    return True
 
 
 def _catalogue_ids(source_path: Path) -> list[str]:
