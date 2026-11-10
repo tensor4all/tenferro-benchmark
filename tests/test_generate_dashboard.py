@@ -1311,7 +1311,7 @@ class RatioChartWithoutBaselineTest(unittest.TestCase):
         benchmarks.mkdir(parents=True)
         (benchmarks / "dense.yaml").write_text(
             "schema_version: 1\nsuite_id: gpu/dense\ndefaults:\n  regime: throughput\n"
-            "problems:\n  - {id: case_ok}\n"
+            "problems:\n  - {id: case_ok, size_elements: 1048576}\n"
         )
         suite_dir = result / "nvidia-gpu" / "gpu"
         suite_dir.mkdir(parents=True)
@@ -1369,7 +1369,11 @@ class ChartNotePerCaseTest(unittest.TestCase):
         stem = suite_id.split("/", 1)[1]
         (self.benchmarks / f"{stem}.yaml").write_text(
             f"schema_version: 1\nsuite_id: {suite_id}\ndefaults:\n  regime: {regime}\n"
-            "problems:\n" + "".join(f"  - {{id: {problem}}}\n" for problem in problems)
+            "problems:\n"
+            + "".join(
+                f"  - {{id: {problem}{', size_elements: 1048576' if regime == 'throughput' else ''}}}\n"
+                for problem in problems
+            )
         )
         suite_dir = self.result / "nvidia-gpu" / suite_id.split("/", 1)[0]
         suite_dir.mkdir(parents=True)
@@ -1509,7 +1513,8 @@ class ProfileHeaderScopeTest(unittest.TestCase):
         ):
             (self.benchmarks / f"{suite_id.split('/', 1)[1]}.yaml").write_text(
                 f"schema_version: 1\nsuite_id: {suite_id}\ndefaults:\n  regime: {regime}\n"
-                f"problems:\n  - {{id: {problem}}}\n"
+                # A throughput case declares the working set its floor is applied to.
+                f"problems:\n  - {{id: {problem}{', size_elements: 1048576' if regime == 'throughput' else ''}}}\n"
             )
 
     def write_suite(self, suite_id, timestamp, case):
