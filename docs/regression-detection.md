@@ -195,7 +195,10 @@ as a whole (a repeated identity, a median or IQR that is not finite and
 non-negative) is refused by name with no table and exit 1 instead of one of its
 rows being overwritten. A row without a verified measurement — or one whose
 counterpart the other run did not record as a measurement — is named under the
-table instead of being compared or dropped silently. A shallow
+table instead of being compared or dropped silently. A row only one of the two runs
+recorded at all is named the same way, so a case that vanished from a week cannot
+read as no regression, and a candidate the driver would reject is named even when
+that week has no accepted run to compare it with. A shallow
 clone, an unreadable repository, and a `--threshold` outside 1 to 1000000 are
 errors (exit 2) and never read as "no baseline".
 

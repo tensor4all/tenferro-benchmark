@@ -51,6 +51,7 @@ class RefusalTests(unittest.TestCase):
     def assertRefused(self, result, clause):
         text = render(result)
         self.assertEqual(status(result), 1)
+
         self.assertIn(clause, text)
         self.assertNotIn('| case |', text)
 
@@ -112,6 +113,7 @@ class BaselineTests(unittest.TestCase):
         self.assertNotIn('| case |', text)
         self.assertEqual(status(result), 1)
 
+
     def test_report_states_both_runs_identity(self):
         candidate = record(WEEK_45_LATE, COMMIT_B, scale=1.5)
         baseline = record(WEEK_44, COMMIT_A)
@@ -137,6 +139,7 @@ class BaselineTests(unittest.TestCase):
         result = compare(candidate, baseline, 1.2)
         text = render(result)
         self.assertEqual(status(result), 1)
+
         self.assertIn('different unit: ms vs ns/op', text)
         self.assertNotIn('| case |', text)
         self.assertNotIn('1000000.00x', text)
@@ -215,6 +218,39 @@ class BaselineTests(unittest.TestCase):
         text = render(result)
         self.assertEqual(result['rows'], [])
         self.assertIn('dense_matmul/matmul/tenferro-cuda-eager (candidate status skipped)', text)
+
+    def test_a_case_that_disappears_from_the_candidate_is_named(self):
+        # A baseline row the candidate run did not record at all used to leave
+        # the table empty with no diagnostic: lost coverage read as no change.
+        baseline, candidate = record(WEEK_44, COMMIT_A), record(WEEK_45_LATE, COMMIT_B)
+        candidate["rows"] = candidate["rows"][1:]
+        result = compare(candidate, baseline, 1.2)
+        text = render(result)
+        self.assertEqual([row["case"] for row in result["absent"]], ["dense_matmul"])
+        self.assertIn("| (none) |", text)
+        self.assertIn("Only one run recorded 1 row(s)", text)
+        self.assertIn("dense_matmul/matmul/tenferro-cuda-eager (baseline only, status ok)", text)
+
+    def test_a_row_only_the_candidate_recorded_is_named(self):
+        baseline, candidate = record(WEEK_44, COMMIT_A), record(WEEK_45_LATE, COMMIT_B)
+        candidate["rows"].append({"case": "new", "group": "matmul", "backend": "pytorch-cuda",
+                                  "median": 1.0, "status": "ok", "verified": True})
+        result = compare(candidate, baseline, 1.2)
+        self.assertEqual([row["case"] for row in result["absent"]], ["new"])
+        self.assertIn("new/matmul/pytorch-cuda (candidate only, status ok)", render(result))
+
+    def test_an_invalid_candidate_without_a_baseline_is_still_named(self):
+        # render() returned the missing-baseline message before reading the
+        # invalid findings, so an invalid row vanished when the week had none.
+        candidate = record(WEEK_45_LATE, COMMIT_B)
+        candidate["rows"][0]["median"] = -1.0
+        result = compare(candidate, None, 1.2)
+        text = render(result)
+        self.assertNotIn("| case |", text)
+        self.assertIn("candidate dense_matmul/matmul/tenferro-cuda-eager: median is not a finite "
+                      "non-negative number", text)
+        self.assertIn("no baseline either", text)
+        self.assertEqual(status(result), 1)
 
 
 class HistoryTests(unittest.TestCase):

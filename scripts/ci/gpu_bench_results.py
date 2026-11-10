@@ -16,7 +16,9 @@ computed; when it fires, the report names the mechanisms, prints no table, and
 exits 1.  A row enters a table only when the ingestion driver would accept it
 (status ``ok``, a finite non-negative median and IQR, ``verified: true``).  An
 unverified row is named under the table instead, and so is a row the other run
-did not record as a measurement.  A record the driver would reject as a whole (a
+did not record as a measurement.  A row that only one of the two runs recorded
+at all is named as well, so a case that vanished from a week is not read as no
+change.  A record the driver would reject as a whole (a
 repeated identity) refuses the comparison by name rather than overwriting one of
 the rows: keeping the last one hides a regression.  When the table is printed,
 the two runs' commit, host, week and arm set are stated above it, so the reader
@@ -258,7 +260,7 @@ def slower_rows(baseline: dict, candidate: dict, threshold: float) -> dict:
 
     before = {row_key(row): row for row in baseline['rows']}
     after = {row_key(row): row for row in candidate['rows']}
-    rows, undefined, unverified, not_ok = [], [], [], []
+    rows, undefined, unverified, not_ok, absent = [], [], [], [], []
     for key in sorted(before.keys() | after.keys()):
         left, right = before.get(key), after.get(key)
         # Rows are classified over both records' identities, not their
@@ -282,7 +284,16 @@ def slower_rows(baseline: dict, candidate: dict, threshold: float) -> dict:
             # other, so there is no ratio; naming it is the diagnostic.
             not_ok.append({'case': key[0], 'group': key[1], 'backend': key[2], 'notes': dropped})
             continue
-        if not (left is not None and right is not None and measured(left) and measured(right)):
+        if left is None or right is None:
+            # One run has no entry for this identity at all.  A case that an
+            # earlier week measured and this week's run did not record is lost
+            # coverage: it used to leave the table empty with no diagnostic.
+            side, row = ('baseline', left) if right is None else ('candidate', right)
+            absent.append({'case': key[0], 'group': key[1], 'backend': key[2],
+                           'side': side, 'status': row.get('status'),
+                           'median': row.get('median')})
+            continue
+        if not (measured(left) and measured(right)):
             continue
         row = {'case': key[0], 'group': key[1], 'backend': key[2],
                'baseline': left['median'], 'candidate': right['median']}
@@ -293,7 +304,7 @@ def slower_rows(baseline: dict, candidate: dict, threshold: float) -> dict:
         elif row['candidate'] / row['baseline'] >= threshold:
             rows.append(dict(row, ratio=row['candidate'] / row['baseline']))
     return {'rows': sorted(rows, key=lambda row: row['ratio'], reverse=True),
-            'undefined': undefined, 'unverified': unverified, 'not_ok': not_ok}
+            'undefined': undefined, 'unverified': unverified, 'not_ok': not_ok, 'absent': absent}
 
 
 def compare(candidate: dict, baseline: dict | None, threshold: float) -> dict:
@@ -303,7 +314,7 @@ def compare(candidate: dict, baseline: dict | None, threshold: float) -> dict:
                if record is not None for why in invalid_rows(record)]
     computed = (slower_rows(baseline, candidate, threshold)
                 if baseline is not None and not fired and not invalid
-                else {'rows': [], 'undefined': [], 'unverified': [], 'not_ok': []})
+                else {'rows': [], 'undefined': [], 'unverified': [], 'not_ok': [], 'absent': []})
     return {'candidate': candidate, 'baseline': baseline, 'refusals': fired, 'invalid': invalid,
             **computed, 'threshold': threshold}
 
@@ -319,12 +330,18 @@ def render(result: dict) -> str:
              f'- candidate: {identity(candidate)}']
     if baseline is not None:
         lines.append(f'- baseline: {identity(baseline)}')
-    if baseline is None:
+    # A refused record is named before the missing-baseline message: an invalid
+    # candidate is not "no baseline", and the old order let that message swallow
+    # the diagnostic when the week had no accepted run.
+    if baseline is None and not result['invalid']:
         lines += ['', f"no baseline: {candidate['suite_id']} has no accepted run in the previous ISO week "
                       f"{previous_iso_week(candidate)}; no neighbouring run is substituted."]
         return '\n'.join(lines) + '\n'
     if result['invalid']:
         lines += ['', 'invalid: ' + '; '.join(result['invalid']) + '.']
+        if baseline is None:
+            lines.append(f"no baseline either: no accepted run in the previous ISO week "
+                         f"{previous_iso_week(candidate)}.")
         return '\n'.join(lines) + '\n'
     if result['refusals']:
         lines += ['', 'refused: ' + '; '.join(result['refusals']) + '.']
@@ -358,6 +375,11 @@ def render(result: dict) -> str:
                           for row in result['not_ok'])
         lines += ['', f'Not compared: {len(result["not_ok"])} row(s) the other run did not record as '
                       f'a measurement: {named}.']
+    if result['absent']:
+        named = '; '.join(f"{row['case']}/{row['group']}/{row['backend']} ({row['side']} only, "
+                          f"status {row['status']})" for row in result['absent'])
+        lines += ['', f'Only one run recorded {len(result["absent"])} row(s), so there is nothing to '
+                      f'compare: {named}.']
     return '\n'.join(lines) + '\n'
 
 
