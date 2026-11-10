@@ -13,6 +13,7 @@ use std::time::{Duration, Instant};
 use serde_json::{json, Value};
 use tenferro_ad::{EagerRuntime, EagerSession, EagerTensor};
 use tenferro_cpu::CpuEngine;
+use tenferro_einsum_benchmark::spd_from_base;
 use tenferro_einsum_benchmark::verification_mode::{self, VerificationMode};
 use tenferro_einsum::{EagerSessionEinsumExt, TraceContextEinsumExt};
 use tenferro_einsum_benchmark::fingerprint::Fingerprint;
@@ -3114,19 +3115,13 @@ fn well_conditioned(m: usize, n: usize, seed: u64) -> Vec<f64> {
     d
 }
 
+/// The `spd` fixture: `BᵀB + I` for the well-conditioned `B`.
+///
+/// The product is one BLAS-shaped GEMM rather than a triple loop, because at
+/// n=4096 the fixture is 137 GFLOP and this case pays it once per arm and once
+/// more for its CPU reference. See `spd_from_base`.
 fn spd_data(n: usize, seed: u64) -> Vec<f64> {
-    let base = well_conditioned(n, n, seed);
-    let mut out = vec![0.0; n * n];
-    for j in 0..n {
-        for i in 0..n {
-            let mut s: f64 = (0..n).map(|k| base[k + n * i] * base[k + n * j]).sum();
-            if i == j {
-                s += 1.0;
-            }
-            out[i + n * j] = s;
-        }
-    }
-    out
+    spd_from_base(&well_conditioned(n, n, seed), n)
 }
 
 fn solve_matrix_data(n: usize, seed: u64, gen: &str) -> Vec<f64> {
