@@ -71,6 +71,17 @@ class LinalgAdBackendColumns(unittest.TestCase):
         table = fmt.format_table(path)
         self.assertIn("some-new-ref", table)
 
+    def test_the_eager_column_states_what_it_includes(self):
+        # The two tenferro arms time the same work but prepare differently: the
+        # eager API pays its own AD preparation inside the sample and the trace
+        # arm prepares before sampling. A reader who takes the two columns as
+        # the same measurement is wrong, so the page has to say so.
+        page = fmt.format_table(write_csv([row("tenferro-eager", "3.0"),
+                                           row("tenferro-trace", "11.0")]))
+        self.assertIn("Both tenferro arms time the same work", page)
+        self.assertIn("pays its", page)
+        self.assertIn("prepared-program steady state", page)
+
     def test_declared_order_is_kept_then_extras_sorted(self):
         self.assertEqual(
             fmt.backend_order({"jax-cpu", "tenferro-trace", "zeta-ref", "alpha-ref"}),

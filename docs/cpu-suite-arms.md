@@ -52,6 +52,8 @@ The eager call also carries the AD preparation it performs itself (the eager VJP
 derivative, the eager JVP re-prepares per call), because the public eager API exposes no separate
 prepare step to move outside the clock; the trace arm compiles and prepares outside it. Read the
 eager number as what a program pays per `jvp`/`vjp` call, not as a prepared-program steady state.
+`scripts/format_linalg_ad_results.py` states both facts beside the table, so the two columns are
+not read as the same measurement; `scripts/ci/tests/test_linalg_ad_backends.py` keeps that note.
 
 The committed summaries still show **0 eager JVP/VJP rows** because they were collected before the
 registration. The next collection fills the eager column; this page states no eager-vs-trace

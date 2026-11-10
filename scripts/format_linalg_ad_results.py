@@ -73,6 +73,14 @@ def format_table(path: Path) -> str:
         "tenferro-rs measures both arms: eager `EagerRuntime::jvp` / `vjp`, and trace-mode",
         "`AdContext`. PyTorch uses `torch.func.jvp` / `vjp`; JAX uses `jax.jvp` / `jax.vjp`.",
         "",
+        "Both tenferro arms time the same work -- one forward pass and the derivative",
+        "call -- with fixtures and wrapping outside the clock. They do not prepare the",
+        "same way: the eager API exposes no separate prepare step, so its sample pays its",
+        "own AD preparation (the eager VJP caches the prepared derivative, the eager JVP",
+        "re-prepares per call), while the trace arm compiles and prepares before",
+        "sampling. Read the eager column as the per-call cost of that public API, not as",
+        "a prepared-program steady state.",
+        "",
         "| suite | benchmark | dtype | threads | shape | "
         + " | ".join(BACKEND_LABELS.get(b, b) for b in order)
         + " |",
