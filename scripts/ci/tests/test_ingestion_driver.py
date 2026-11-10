@@ -182,5 +182,64 @@ class PullRequestMergeTest(unittest.TestCase):
             self.assertIsNone(merge_through_pull_request('b', 'abc', 'Accept'))
 
 
+class MergeRaceTest(unittest.TestCase):
+    """A 405 from the required-checks auto-merge winning the race is the success path."""
+
+    pr = 'repos/tensor4all/tenferro-benchmark/pulls/7'
+
+    def setUp(self):
+        self.calls = []
+        self.states = [{'merged': True, 'merge_commit_sha': 'squashed'}]
+        self.merge_stderr = 'gh: Merge already in progress (HTTP 405)'
+        def fake(*args, check=True):
+            self.calls.append(args)
+            if args[0] == '--method':
+                return subprocess.CompletedProcess(args, 1, '', self.merge_stderr)
+            if '?' in args[0]:
+                return subprocess.CompletedProcess(args, 0, json.dumps([{'number': 7}]), '')
+            return subprocess.CompletedProcess(args, 0, json.dumps(self.states.pop(0)), '')
+        for target, replacement in (('gh_pull_request', fake), ('required_checks', lambda: set()),
+                                    ('gh_json', lambda endpoint: {'check_runs': []})):
+            patcher = patch(f'scripts.ci.ingest_benchmark_results.{target}', replacement)
+            patcher.start()
+            self.addCleanup(patcher.stop)
+        sleep = patch('scripts.ci.ingest_benchmark_results.time.sleep')
+        self.sleep = sleep.start()
+        self.addCleanup(sleep.stop)
+
+    def merge(self):
+        from scripts.ci.ingest_benchmark_results import merge_through_pull_request
+        return merge_through_pull_request('b', 'abc', 'Accept')
+
+    def state_reads(self):
+        return [call for call in self.calls if call == (self.pr,)]
+
+    def test_405_that_becomes_merged_is_a_success(self):
+        self.assertEqual(self.merge(), 'squashed')
+        self.assertEqual(len(self.state_reads()), 1)
+        self.sleep.assert_not_called()
+
+    def test_405_that_merges_after_the_first_read_is_a_success(self):
+        # The observed race: the read right after the 405 still says merged=false.
+        self.states = [{'merged': False, 'mergeable': True}, {'merged': True, 'merge_commit_sha': 'squashed'}]
+        self.assertEqual(self.merge(), 'squashed')
+        self.assertEqual(len(self.state_reads()), 2)
+
+    def test_405_that_never_merges_still_fails(self):
+        self.states = [{'merged': False, 'mergeable': True}] * 5
+        with self.assertRaisesRegex(RuntimeError, 'Merge already in progress'):
+            self.merge()
+        self.assertEqual(len(self.state_reads()), 5)
+        self.assertEqual(self.sleep.call_count, 4)
+
+    def test_other_merge_errors_fail_immediately_without_polling(self):
+        self.merge_stderr = 'gh: Protected branch update failed (HTTP 422)'
+        self.states = [{'merged': False, 'mergeable': True}]
+        with self.assertRaisesRegex(RuntimeError, 'Protected branch'):
+            self.merge()
+        self.assertEqual(len(self.state_reads()), 1)
+        self.sleep.assert_not_called()
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -177,11 +177,18 @@ def merge_through_pull_request(branch: str, commit: str, title: str):
                              '-f', f'commit_title={title}', '-f', 'commit_message=', check=False)
     if merged.returncode == 0:
         return json.loads(merged.stdout)['sha']
-    state = json.loads(gh_pull_request(f'repos/{REPOSITORY}/pulls/{number}').stdout)
-    if state.get('merged'):
-        return state['merge_commit_sha']
-    if not state.get('mergeable'):
-        return None
+    # A 405 "Merge already in progress" means the required-checks auto-merge won
+    # the race against this call. It can report before the merge is visible on
+    # the pull request, so re-read the state a few times before giving up.
+    racing = 'Merge already in progress' in merged.stderr
+    for attempt in range(5 if racing else 1):
+        if attempt:
+            time.sleep(2)
+        state = json.loads(gh_pull_request(f'repos/{REPOSITORY}/pulls/{number}').stdout)
+        if state.get('merged'):
+            return state['merge_commit_sha']
+        if not racing and not state.get('mergeable'):
+            return None
     raise RuntimeError(f'Could not merge result pull request #{number}: {merged.stderr.strip()}')
 
 
