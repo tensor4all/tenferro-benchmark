@@ -269,6 +269,31 @@ class BaselineTests(unittest.TestCase):
         self.assertIn("verification None is not a recorded mode", text)
         self.assertEqual(status(result), 1)
 
+    def test_a_status_the_driver_does_not_record_is_refused(self):
+        # The non-ok branch accepted any nonempty status, so a typo status read
+        # as a skipped row instead of the record the driver rejects.
+        baseline, candidate = record(WEEK_44, COMMIT_A), record(WEEK_45_LATE, COMMIT_B)
+        candidate["rows"][0] = {"case": "dense_matmul", "group": "matmul",
+                                "backend": "tenferro-cuda-eager", "status": "typo",
+                                "median": None, "verified": False}
+        result = compare(candidate, baseline, 1.2)
+        text = render(result)
+        self.assertNotIn("| case |", text)
+        self.assertIn("status typo is not a status the driver records", text)
+        self.assertEqual(status(result), 1)
+
+    def test_a_skipped_row_still_obeys_the_schema_fields(self):
+        baseline, candidate = record(WEEK_44, COMMIT_A), record(WEEK_45_LATE, COMMIT_B)
+        candidate["rows"][0] = {"case": "dense_matmul", "group": "matmul",
+                                "backend": "tenferro-cuda-eager", "status": "skipped",
+                                "reason": "no kernel", "median": None, "iqr": None,
+                                "verified": "yes", "verification": "made_up"}
+        result = compare(candidate, baseline, 1.2)
+        text = render(result)
+        self.assertIn("verified is not a boolean", text)
+        self.assertIn("verification made_up is not a recorded mode", text)
+        self.assertEqual(status(result), 1)
+
     def test_a_measure_only_row_cannot_be_verified(self):
         # The schema requires verified=false for measure_only and the driver
         # validates that schema, so this row is refused instead of compared.
@@ -559,7 +584,8 @@ class HistoryTests(unittest.TestCase):
         # record that reached the history through the receipt-free path can carry
         # rows the driver rejected: they are not a 10x regression either.
         baseline, candidate = record(WEEK_44, COMMIT_A), record(WEEK_45_LATE, COMMIT_B)
-        candidate['rows'][0].update(median=10.0, verified=False, verification='measure_only')
+        candidate['rows'][0].update(median=10.0, verified=False, verification='measure_only',
+                                    reason='measured without a check')
         result = compare(candidate, baseline, 1.2)
         text = render(result)
         self.assertEqual(result['rows'], [])

@@ -225,8 +225,13 @@ def row_key(row: dict) -> tuple[str, str, str]:
     return (row.get('case'), row.get('group', ''), row.get('backend'))
 
 
+
 def name(key: tuple[str, str, str]) -> str:
     return '/'.join(str(part) for part in key)
+
+# The failure statuses result_ingestion.validate_summary accepts (scripts/result_status.py).
+FAILED_STATUSES = frozenset({'failed', 'compile_failed', 'runtime_failed',
+                             'verification_failed', 'oom', 'not_configured', 'missing'})
 
 
 def finite_non_negative(value) -> bool:
@@ -261,27 +266,32 @@ def row_problems(row: dict) -> list[str]:
     if not isinstance(row.get('status'), str) or not row.get('status'):
         out.append('status is not a non-empty string')
         return out
-    if row['status'] != 'ok':
-        status = row['status']
+    status = row['status']
+    # The fields the schema requires on every row, whatever its status.
+    if 'verified' in row and type(row['verified']) is not bool:
+        out.append('verified is not a boolean')
+    mode = row.get('verification')
+    modes = ('cpu_reference', 'analytic', 'finite_difference', 'measure_only')
+    if 'verification' in row and mode not in modes:
+        out.append(f'verification {mode} is not a recorded mode')
+    if mode == 'measure_only':
+        if row.get('verified') is not False:
+            out.append('measure_only row marked verified')
+        if not str(row.get('reason') or '').strip():
+            out.append('measure_only row without a reason')
+    if status != 'ok':
         explained = status in ('unsupported', 'skipped') or status.startswith('unsupported:')
+        if not explained and status not in FAILED_STATUSES:
+            out.append(f'status {status} is not a status the driver records')
         if explained and not str(row.get('reason') or '').strip():
             out.append(f'status {status} without a reason')
         if row.get('median') is not None or row.get('iqr') is not None:
             out.append(f'status {status} carrying a median or IQR')
         return out
-    if type(row.get('verified')) is not bool:
-        out.append('verified is not a boolean')
     if not finite_non_negative(row.get('median')):
         out.append('median is not a finite non-negative number')
     if row.get('iqr') is not None and not finite_non_negative(row['iqr']):
         out.append('IQR is not finite and non-negative')
-    mode = row.get('verification')
-    modes = ('cpu_reference', 'analytic', 'finite_difference', 'measure_only')
-    if 'verification' in row and mode not in modes:
-        out.append(f'verification {mode} is not a recorded mode')
-    if row.get('verification') == 'measure_only':
-        if row.get('verified') is not False:
-            out.append('measure_only row marked verified')
     return out
 
 
