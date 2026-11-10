@@ -1454,8 +1454,9 @@ class ChartNotePerCaseTest(unittest.TestCase):
 
     def test_a_note_with_several_medians_stays_inside_the_chart(self):
         # cpu/public_api declares the eager and trace arms while this row set is measured
-        # on four other backends: no arm matches, so the case has no bar and a note that
-        # has to name all four medians.
+        # on five other backends: no arm matches, so the case has no bar and a note that
+        # has to name every median.  1e150 is the width bound: `%.1f` would print 152
+        # integer digits into a `<text>` that cannot wrap.
         self.write_suite(
             "cpu/public_api",
             "throughput",
@@ -1465,6 +1466,7 @@ class ChartNotePerCaseTest(unittest.TestCase):
                 row("add_into_f64_32x32", "pytorch-cpu", 21.431),
                 row("add_into_f64_32x32", "strided-jl", 67.0),
                 row("add_into_f64_32x32", "tenferro-direct", 21.511),
+                row("add_into_f64_32x32", "tenferro-rs", 1e150),
                 # A neighbour with a ratio, so this suite draws a chart (not a paragraph).
                 row("case_comparable", "tenferro-eager", 30.0),
                 row("case_comparable", "pytorch-cpu", 10.0),
@@ -1476,10 +1478,20 @@ class ChartNotePerCaseTest(unittest.TestCase):
         for text in re.findall(r'class="chart-(?:value|fail)">([^<]*)</text>', chart):
             right = CHART_TEXT_START + CHART_PX_PER_CHAR * len(text)
             self.assertLessEqual(right, CHART_TEXT_END, text)
-        # And it still names every median it was drawn from.
-        for backend in ("julia-base", "pytorch-cpu", "strided-jl", "tenferro-direct"):
-            self.assertIn(backend, chart)
-        self.assertIn("but no arm of it had a ratio against that baseline", chart)
+        # And the note names each arm with the median it was drawn from, one per line,
+        # then why there is no ratio (anything with `x · ` is a bar's ratio label).
+        self.assertEqual(
+            [text for text in re.findall(r'<text [^>]*class="chart-value">([^<]*)</text>', chart)
+             if "x · " not in text],
+            [
+                "measured julia-base 21.347 ms",
+                "pytorch-cpu 21.431 ms",
+                "strided-jl 67.000 ms",
+                "tenferro-direct 21.511 ms",
+                "tenferro-rs 1e+150 ms",
+                "but no arm of it had a ratio against that baseline",
+            ],
+        )
 
     def test_a_case_whose_declared_references_both_failed_keeps_its_row(self):
         (self.instances / "gpu_perf_issues.json").write_text(

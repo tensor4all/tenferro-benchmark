@@ -1104,10 +1104,16 @@ def fmt_median(value: float | None, unit: str) -> str:
     if value is None:
         return "-"
     if value >= 1000:
-        return f"{value:.1f} {unit}"
-    if value >= 1:
-        return f"{value:.3f} {unit}"
-    return f"{value:.4g} {unit}"
+        text = f"{value:.1f}"
+    elif value >= 1:
+        text = f"{value:.3f}"
+    else:
+        text = f"{value:.4g}"
+    if len(text) > 12:
+        # %.1f of 1e150 is 152 integer digits, and a chart row cannot wrap: keep the
+        # text bounded (`1e+150 ms`).  No median in the committed results reaches this.
+        text = f"{value:.3g}"
+    return f"{text} {unit}"
 
 
 def esc(value: Any) -> str:
