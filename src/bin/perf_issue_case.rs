@@ -284,8 +284,9 @@ fn rel_error(actual: f64, expected: f64) -> f64 {
 /// magnitude of either)` before taking norms, which leaves the ratio unchanged
 /// (`1 / s` takes the place of the floor `1`) and keeps both norms finite. The
 /// subtraction happens before the scaling, so a small miss loses no precision;
-/// with every component in `[-1, 1]`, `s = 1` and this is the unscaled
-/// expression exactly. A difference that itself overflows is a miss of order
+/// when every component of `actual`, `expected` and their difference lies in
+/// `[-1, 1]`, `s = 1` and this is the unscaled expression exactly.
+/// A difference that itself overflows is a miss of order
 /// `‖expected‖` or larger and is reported as `INFINITY`.
 fn rel_error_c64(actual: Complex64, expected: Complex64) -> f64 {
     let diff = actual - expected;
