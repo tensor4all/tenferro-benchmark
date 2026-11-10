@@ -179,9 +179,13 @@ week without an accepted run says `no baseline` rather than borrowing a
 neighbouring run. The report states both runs' commit, host, week and arm set
 above any row. Run metadata is read by type before the pair is gated: a revision
 whose `suite_id`, `tenferro_commit`, `hardware` or collection timestamp is
-missing or of another type (`hardware: ["h"]`, a numeric `timestamp`) is not a
-run this tool can compare, so the report states the metadata an accepted run has
-to record instead of tracing back on the field.
+missing or of another type (`hardware: ["h"]`, a non-string `host`, a numeric
+`timestamp`, an instant whose previous ISO week does not exist) is not a run this
+tool can compare, so the report states the metadata an accepted run has to record
+instead of tracing back on the field. A record that is shaped fine but whose
+`suite_id` or `target_profile` is not the one the report was asked for is refused
+by name with no table and exit 1, because comparing it means reading another
+suite's run against this suite's baseline under that other suite's title.
 
 An accepted run is a revision the ingestion driver recorded a receipt for: it
 commits `<suite>.provenance.json` together with the sidecar, holding the
@@ -192,7 +196,11 @@ so merging another branch cannot reclassify it — and otherwise only a commit t
 publishes the run's report together with the sidecar (a receipt-free edit of both
 files is still taken as a publish; #431 removes that second acceptance path). In
 a repository that records no receipt at all, a sidecar revision is the published
-history by definition, because there is no acceptance signal to check. A row is
+history by definition, because there is no acceptance signal to check. A receipt
+the tool cannot read (not JSON, `files` not a map) accepts nothing: that revision
+is skipped and named on stderr, so one corrupt receipt does not replace the
+report of the runs that do have a readable one, and neither does a committed
+sidecar that is not a JSON object. A row is
 compared only when the ingestion driver would accept it (status `ok`, a finite
 non-negative median and IQR, `verified: true`); a record the driver would reject
 as a whole (a repeated identity, an identity field that is not a string, a median

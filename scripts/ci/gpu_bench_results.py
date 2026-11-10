@@ -22,7 +22,10 @@ change; when the run that recorded it measured it, that lost coverage exits 1.
 A record the driver would reject as a whole (a repeated identity, an
 identity field that is not a string, a median that is not a finite non-negative
 number, a measure_only row marked verified) refuses the comparison by name rather
-than overwriting one of its rows: keeping the last one hides a regression.  When
+than overwriting one of its rows: keeping the last one hides a regression.  So
+does a record whose ``suite_id`` or ``target_profile`` is not the one the report
+was asked for, which otherwise compares another suite's title against this
+suite's baseline.  When
 the table is printed, the two runs' commit, host, week and arm set are stated
 above it, so the reader never reconstructs which measurements were compared.
 
@@ -32,7 +35,10 @@ sidecar's sha256 (``result_ingestion.plan_updates``).  A receipt that disagrees
 belongs to an edit, not to an accepted measurement; a revision without a receipt
 is history when no receipt exists at or before it, and otherwise only a commit
 that publishes the report with the sidecar.  A committed receipt is a trusted
-marker of the driver's decision, not authentication.  A revision whose run
+marker of the driver's decision, not authentication.  A receipt this tool cannot
+read (not JSON, ``files`` not a map) accepts nothing: that revision is skipped and
+named on stderr, because one unreadable receipt must not stop the report of the
+runs that do have one.  A revision whose run
 metadata is not shaped the way this tool reads it (a suite id, a commit, a host
 and a collection timestamp) is not a run it can compare, and the report says so
 instead of tracing back on the field.
@@ -60,6 +66,9 @@ class GitError(RuntimeError):
 
 MAX_THRESHOLD = 1_000_000
 RECEIPTS = 'result/*/*/*.provenance.json'
+# The earliest instant whose previous ISO week is still a date: the week
+# arithmetic subtracts seven days, and 0001-01-01 minus seven is out of range.
+EARLIEST_WEEK = datetime.min.replace(tzinfo=timezone.utc) + timedelta(days=7)
 
 
 def git(repo: Path, *args: str) -> str:
@@ -109,11 +118,36 @@ def receipt_history(repo: Path, sha: str) -> bool:
                     RECEIPTS).strip())
 
 
+def receipt_files(receipt: bytes) -> dict:
+    """The ``files`` map of a committed acceptance receipt, or ValueError.
+
+    The driver writes ``{"files": {<sidecar>: <sha256>}}``.  ``.get`` off another
+    shape (``{"files": null}``, a JSON list, not JSON at all) raised out of the
+    history walk, so one unreadable receipt stopped the report of every run.
+    """
+    try:
+        document = json.loads(receipt)
+    except ValueError as error:
+        raise ValueError(f'it is not JSON ({error})') from None
+    files = document.get('files') if isinstance(document, dict) else None
+    if not isinstance(files, dict):
+        raise ValueError('it is not a receipt with a files map')
+    return files
+
+
 def accepted(repo: Path, sha: str, relative: str, receipt_path: str, content: bytes) -> bool:
     """Whether this sidecar revision is a published run rather than an edit."""
     receipt = git_file(repo, sha, receipt_path)
     if receipt is not None:
-        return json.loads(receipt).get('files', {}).get(relative) == hashlib.sha256(content).hexdigest()
+        try:
+            return receipt_files(receipt).get(relative) == hashlib.sha256(content).hexdigest()
+        except ValueError as error:
+            # An unreadable receipt cannot rule on the sidecar, so it accepts
+            # nothing; the revision is skipped and named instead of stopping the
+            # walk over the revisions that do have a readable one.
+            print(f'gpu_bench_results: {receipt_path} at {sha[:7]}: {error}, so that revision is not '
+                  f'read as an accepted run', file=sys.stderr)
+            return False
     # No receipt in that commit.  A revision whose own history records no receipt
     # at all predates the driver's bookkeeping and is the published history;
     # afterwards only a commit that publishes the report with the sidecar.
@@ -133,7 +167,10 @@ def collected(record: dict) -> datetime:
     because that module requires jsonschema for a timestamp: upgrade this to the
     shared helper once the contract lives where a reporting tool can reach it.
     A timestamp of another type records no time: ``.replace`` raised
-    AttributeError before any refusal could name the revision.
+    AttributeError before any refusal could name the revision.  So does one
+    outside the calendar once its offset is applied, and one so early that the
+    previous ISO week does not exist: the subtraction raised OverflowError after
+    the gate had accepted the revision.
     """
     timestamp = record.get('timestamp')
     if not isinstance(timestamp, str):
@@ -141,17 +178,46 @@ def collected(record: dict) -> datetime:
     parsed = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
     if parsed.tzinfo is None:
         raise ValueError('collection timestamp must include a timezone')
-    return parsed.astimezone(timezone.utc)
+    try:
+        utc = parsed.astimezone(timezone.utc)
+    except OverflowError:
+        raise ValueError(f'collection timestamp {timestamp} is outside the calendar') from None
+    if utc < EARLIEST_WEEK:
+        raise ValueError(f'collection timestamp {timestamp} has no previous ISO week')
+    return utc
 
 
 def host(record: dict) -> str | None:
-    """The recorded ``hardware.host``, or None when ``hardware`` is not an object.
+    """The recorded ``hardware.host`` when it is a string, else None.
 
-    A list or a string there records no host: ``.get`` off it raised
-    AttributeError while the history was read, before the refusal gate ran.
+    A list or a string in ``hardware`` itself records no host: ``.get`` raised
+    AttributeError while the history was read, before the refusal gate ran.  A
+    non-string ``host`` records none either: a truthy one passed that gate and
+    then broke the duplicate-identity set with ``unhashable type``.
     """
     hardware = record.get('hardware')
-    return hardware.get('host') if isinstance(hardware, dict) else None
+    value = hardware.get('host') if isinstance(hardware, dict) else None
+    return value if isinstance(value, str) else None
+
+
+def sidecar_document(content: bytes, relative: str, sha: str) -> dict | None:
+    """The record a committed sidecar holds, or None when it holds no record.
+
+    A sidecar that is not a JSON object raised out of the history walk (``.get``
+    off a list, a JSON error), so one unreadable revision stopped the report of
+    every run.  It is skipped and named instead.
+    """
+    try:
+        document = json.loads(content)
+    except ValueError as error:
+        problem = f'is not JSON ({error})'
+    else:
+        if isinstance(document, dict):
+            return document
+        problem = 'is not a JSON object'
+    print(f'gpu_bench_results: {relative} at {sha[:7]} {problem}, so that revision is not read as '
+          f'an accepted run', file=sys.stderr)
+    return None
 
 
 def accepted_runs(repo: Path, profile: str, suite: str) -> list[dict]:
@@ -160,7 +226,8 @@ def accepted_runs(repo: Path, profile: str, suite: str) -> list[dict]:
     Acceptance is the driver's receipt for that revision, not the commit
     message.  A revision that records no suite id, commit, host or collection
     time cannot be placed in a week or gated, so it is not a run this tool can
-    compare.
+    compare.  A revision whose suite id or profile is not the requested one is
+    kept: ``compare`` refuses the pair by name instead of dropping it silently.
     """
     relative = f'result/{profile}/{suite}.summary.json'
     receipt_path = f'result/{profile}/{suite}.provenance.json'
@@ -175,7 +242,9 @@ def accepted_runs(repo: Path, profile: str, suite: str) -> list[dict]:
         content = git_file(repo, sha, relative)
         if content is None or not accepted(repo, sha, relative, receipt_path, content):
             continue
-        document = json.loads(content)
+        document = sidecar_document(content, relative, sha)
+        if document is None:
+            continue
         # Every field is read by type: this gate is the diagnostic, so a broken
         # revision must fail it here instead of raising on the way through.
         suite_id = document.get('suite_id')
@@ -406,11 +475,35 @@ def slower_rows(baseline: dict, candidate: dict, threshold: float) -> dict:
             'undefined': undefined, 'unverified': unverified, 'not_ok': not_ok, 'absent': absent}
 
 
-def compare(candidate: dict, baseline: dict | None, threshold: float) -> dict:
-    """Gate the pair first: a refused or invalid pair never reaches the table."""
+def request_problems(record: dict, request: tuple[str, str] | None) -> list[str]:
+    """Why this record is not the run that was asked for, and not a comparable one.
+
+    The sidecar's path is the request; a record whose ``suite_id`` or
+    ``target_profile`` disagrees with it was compared against this suite's
+    baseline under another suite's title, which reads as a week-over-week change
+    of a suite that never ran.
+    """
+    out = []
+    if request is not None:
+        profile, suite = request
+        if record.get('suite_id') != suite:
+            out.append(f"suite_id is {record.get('suite_id')!r}, not the requested {suite!r}")
+        if record.get('target_profile') != profile:
+            out.append(f"target_profile is {record.get('target_profile')!r}, "
+                       f"not the requested {profile!r}")
+    return out + invalid_rows(record)
+
+
+def compare(candidate: dict, baseline: dict | None, threshold: float,
+            request: tuple[str, str] | None = None) -> dict:
+    """Gate the pair first: a refused or invalid pair never reaches the table.
+
+    ``request`` is the ``(profile, suite)`` the report was asked for; without it
+    a record is only checked against its own schema.
+    """
     fired = refusals(candidate, baseline) if baseline is not None else []
     invalid = [f'{side} {why}' for side, record in (('baseline', baseline), ('candidate', candidate))
-               if record is not None for why in invalid_rows(record)]
+               if record is not None for why in request_problems(record, request)]
     computed = (slower_rows(baseline, candidate, threshold)
                 if baseline is not None and not fired and not invalid
                 else {'rows': [], 'undefined': [], 'unverified': [], 'not_ok': [], 'absent': []})
@@ -527,7 +620,8 @@ def main() -> int:
               f'a host and a collection time; nothing to compare')
         return 1
     candidate = records[0]
-    result = compare(candidate, baseline_for(records, candidate), args.threshold)
+    result = compare(candidate, baseline_for(records, candidate), args.threshold,
+                     request=(args.profile, args.suite))
     print(render(result), end='')
     return status(result)
 

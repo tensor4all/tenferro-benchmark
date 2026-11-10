@@ -11,7 +11,9 @@ map holds the sidecar's sha256 (``result_ingestion.plan_updates``). A sidecar
 revision without that receipt is an edit, not an accepted measurement, except
 for the revisions from before receipts existed.
 """
+import contextlib
 import hashlib
+import io
 import json
 import os
 import subprocess
@@ -477,6 +479,23 @@ class HistoryTests(unittest.TestCase):
                               process.stdout)
                 self.assertEqual(process.stderr, '')
 
+    def test_a_record_whose_host_is_not_a_string_is_not_a_run(self):
+        # The gate asked whether a host was recorded, not whether it is the string
+        # the identity line and the duplicate set read: a truthy list passed the
+        # gate and then raised TypeError: unhashable type: 'list'.
+        for host in (['h'], {'name': 'h'}, 7, True):
+            with self.subTest(host=host):
+                self.setUp()
+                document = record(WEEK_45_LATE, COMMIT_B)
+                document['hardware']['host'] = host
+                self.accept(document)
+                self.assertEqual(accepted_runs(self.repo, 'nvidia-gpu', 'gpu/dense'), [])
+                process = self.run_tool()
+                self.assertEqual(process.returncode, 1)
+                self.assertIn('records a suite id, a commit, a host and a collection time',
+                              process.stdout)
+                self.assertEqual(process.stderr, '')
+
     def test_a_record_whose_timestamp_is_a_number_is_not_a_run(self):
         # collected() called `.replace` on the timestamp, so a JSON number raised
         # AttributeError before the refusal gate could name the revision.
@@ -492,6 +511,32 @@ class HistoryTests(unittest.TestCase):
                 self.assertIn('records a suite id, a commit, a host and a collection time',
                               process.stdout)
                 self.assertEqual(process.stderr, '')
+
+    def test_a_timestamp_without_a_previous_iso_week_is_not_a_run(self):
+        # The earliest accepted instant was handed to the week arithmetic, which
+        # subtracts seven days: 0001-01-01 raised OverflowError outside every
+        # handler, and the +01:00 form raised in the UTC conversion itself.
+        for timestamp in ('0001-01-01T00:00:00+00:00', '0001-01-01T00:00:00+01:00',
+                          '9999-12-31T23:59:59-14:00'):
+            with self.subTest(timestamp=timestamp):
+                self.setUp()
+                self.accept(record(WEEK_44, COMMIT_A))
+                self.accept(record(timestamp, COMMIT_B, scale=1.5))
+                records = accepted_runs(self.repo, 'nvidia-gpu', 'gpu/dense')
+                self.assertEqual([item['timestamp'] for item in records], [WEEK_44])
+                process = self.run_tool()
+                self.assertEqual(process.returncode, 1)
+                self.assertIn('no baseline: gpu/dense has no accepted run in the previous ISO week',
+                              process.stdout)
+                self.assertEqual(process.stderr, '')
+        # As the only run it reached baseline_for, which subtracted seven days from
+        # it and traced back outside every handler.
+        self.setUp()
+        self.accept(record('0001-01-01T00:00:00+00:00', COMMIT_B))
+        process = self.run_tool()
+        self.assertEqual(process.returncode, 1)
+        self.assertIn('records a suite id, a commit, a host and a collection time', process.stdout)
+        self.assertEqual(process.stderr, '')
 
     def test_a_record_without_a_suite_id_is_not_a_run(self):
         # render() titles the report with the record's suite id, so a missing one
@@ -565,6 +610,30 @@ class HistoryTests(unittest.TestCase):
         records = accepted_runs(self.repo, 'nvidia-gpu', 'gpu/dense')
         self.assertEqual([item['timestamp'] for item in records], [WEEK_45_EARLY, WEEK_44])
 
+    def test_a_record_of_another_suite_is_refused_instead_of_compared(self):
+        # The title comes from the record and the rows from the path, so a sidecar
+        # whose suite_id was rewritten was compared against this suite's baseline
+        # under its own title and exited 0.
+        for field, value, clause in (
+                ('suite_id', 'gpu/sparse',
+                 "candidate suite_id is 'gpu/sparse', not the requested 'gpu/dense'"),
+                ('target_profile', 'zen5-cpu',
+                 "candidate target_profile is 'zen5-cpu', not the requested 'nvidia-gpu'")):
+            with self.subTest(field=field):
+                self.setUp()
+                self.accept(record(WEEK_44, COMMIT_A))
+                document = record(WEEK_45_LATE, COMMIT_B, scale=1.5)
+                document[field] = value
+                payload = json.dumps(document).encode()
+                relative = self.write('result/nvidia-gpu/gpu/dense.summary.json', payload)
+                self.receipt(relative, payload)
+                self.commit('Accept benchmark run 2 attempt 1')
+                process = self.run_tool()
+                self.assertEqual(process.returncode, 1)
+                self.assertIn(f'invalid: {clause}', process.stdout)
+                self.assertNotIn('| case |', process.stdout)
+                self.assertEqual(process.stderr, '')
+
     def test_a_later_receipt_accepts_an_already_edited_summary(self):
         # The driver may accept bytes that are already committed, changing only
         # the receipt, so the walk cannot stop at commits that touch the sidecar.
@@ -583,6 +652,48 @@ class HistoryTests(unittest.TestCase):
         self.edit(record(WEEK_45_LATE, COMMIT_B, scale=9.0), message='Unaccepted experiment')
         records = accepted_runs(self.repo, 'nvidia-gpu', 'gpu/dense')
         self.assertEqual([item['timestamp'] for item in records], [WEEK_45_EARLY, WEEK_44])
+
+    def test_a_receipt_that_is_not_a_receipt_does_not_stop_the_history(self):
+        # {"files": null} raised AttributeError out of the history walk with the
+        # accepted runs of that suite unread, so one corrupt receipt replaced the
+        # report.
+        for receipt in (b'{"files": null}', b'[]', b'not json'):
+            with self.subTest(receipt=receipt):
+                self.setUp()
+                self.accept(record(WEEK_44, COMMIT_A))
+                self.accept(record(WEEK_45_EARLY, COMMIT_B))
+                broken = record(WEEK_45_LATE, COMMIT_B, scale=9.0)
+                self.write('result/nvidia-gpu/gpu/dense.summary.json', json.dumps(broken).encode())
+                self.write('result/nvidia-gpu/gpu/dense.provenance.json', receipt)
+                self.commit('Accept benchmark run 2 attempt 1')
+                with contextlib.redirect_stderr(io.StringIO()) as diagnostic:
+                    records = accepted_runs(self.repo, 'nvidia-gpu', 'gpu/dense')
+                self.assertEqual([item['timestamp'] for item in records], [WEEK_45_EARLY, WEEK_44])
+                self.assertIn('gpu/dense.provenance.json', diagnostic.getvalue())
+                process = self.run_tool()
+                self.assertEqual(process.returncode, 0)
+                self.assertIn('| case |', process.stdout)
+                self.assertNotIn('9.00x', process.stdout)
+                self.assertIn('gpu/dense.provenance.json', process.stderr)
+
+    def test_a_sidecar_that_is_not_a_record_does_not_stop_the_history(self):
+        # The same hole one path further: a committed sidecar that is not a JSON
+        # object raised `AttributeError: 'list' object has no attribute 'get'`.
+        for payload in (b'[]', b'not json'):
+            with self.subTest(payload=payload):
+                self.setUp()
+                self.accept(record(WEEK_44, COMMIT_A))
+                self.accept(record(WEEK_45_EARLY, COMMIT_B))
+                relative = self.write('result/nvidia-gpu/gpu/dense.summary.json', payload)
+                self.receipt(relative, payload)
+                self.commit('Accept benchmark run 2 attempt 1')
+                with contextlib.redirect_stderr(io.StringIO()) as diagnostic:
+                    records = accepted_runs(self.repo, 'nvidia-gpu', 'gpu/dense')
+                self.assertEqual([item['timestamp'] for item in records], [WEEK_45_EARLY, WEEK_44])
+                self.assertIn('gpu/dense.summary.json', diagnostic.getvalue())
+                process = self.run_tool()
+                self.assertEqual(process.returncode, 0)
+                self.assertIn('| case |', process.stdout)
 
     def test_a_receipt_free_suite_accepts_only_its_published_report_revisions(self):
         # A suite the driver never ingested, in a repository that does record
