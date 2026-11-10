@@ -193,6 +193,12 @@ class PublishStepFailureTest(unittest.TestCase):
         self.assertTrue(coverage.is_file(), "the unfiltered run did not reach the maintained copy")
         coverage.chmod(0o444)
         self.addCleanup(coverage.chmod, 0o644)
+        # Both runs share the fixture timestamp, so delete run 1's accounting:
+        # the assertions below have to see this run write them.
+        for name in ("case_status.json", "wall_command_complete.json", "wall_report.md"):
+            stale = self.selection / name
+            if stale.exists():
+                stale.unlink()
         second = self.run_collection()
         self.assertEqual(second.returncode, 1, second.stdout + second.stderr)
         self.assertIn("PUBLISH FAILED: the coverage report", second.stderr)
