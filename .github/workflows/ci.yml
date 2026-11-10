@@ -244,6 +244,15 @@ jobs:
       - name: Check overhead-smoke runtime timing scope
         run: cargo test --locked --bin perf_issue_case umbrella::alloc_counter::tests -- --test-threads=1
 
+      - name: Check relative errors fail closed (NaN in a max fold, complex norm overflow)
+        # Same guard as above: an emptied or renamed module still exits 0 with
+        # `0 passed`, so require the expected number of passing tests.
+        run: |
+          cargo test --locked --bin perf_issue_case rel_error_tests 2>&1 | tee /tmp/rel-error.log
+          grep -qE 'test result: ok\. ([3-9]|[1-9][0-9]+) passed' /tmp/rel-error.log
+          cargo test --locked --features cuda --bin benchmark_gpu_perf_issues eigh_residual_tests 2>&1 | tee /tmp/eigh-residual.log
+          grep -qE 'test result: ok\. ([2-9]|[1-9][0-9]+) passed' /tmp/eigh-residual.log
+
   followup-mwe:
     if: github.repository == 'tensor4all/tenferro-benchmark'
     runs-on: ubuntu-latest

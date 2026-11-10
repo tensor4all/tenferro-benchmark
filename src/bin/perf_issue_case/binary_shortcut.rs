@@ -40,13 +40,11 @@ pub(super) fn run(p: &Value, timing: &Timing, threads: usize) -> Result<CaseOutc
         if actual.len() != expected.len() {
             return Err("wrong product length".into());
         }
-        let worst = actual.iter().zip(&expected).fold(0_f64, |acc, (a, b)| {
-            if !a.re.is_finite() || !a.im.is_finite() {
-                f64::INFINITY
-            } else {
-                acc.max((*a - *b).norm() / b.norm().max(1.))
-            }
-        });
+        let worst = actual
+            .iter()
+            .zip(&expected)
+            .map(|(a, b)| rel_error_c64(*a, *b))
+            .fold(0_f64, f64::max);
         check_tol(worst, 1e-10, "binary product scalar reference")
     };
     let elem = if complex { 16 } else { 8 };
