@@ -615,15 +615,30 @@ def non_ok_label(row: dict[str, Any]) -> str:
     return status if status in ("unsupported", "skipped") else "fail"
 
 
-def non_ok_badge(row: dict[str, Any], *, with_backend: bool = True) -> str:
-    """One ``fail`` (or status) badge with the backend and the recorded reason."""
-    label = non_ok_label(row)
+def non_ok_explanation(row: dict[str, Any]) -> str:
+    """Why a non-ok row carries no number: its reason, or its recorded status.
+
+    A row without a ``reason`` still says something: ``runtime_failed``,
+    ``missing``, ``timeout`` name the cause, and the badge's ``fail`` does not.
+    A status the badge already spells out (``failed`` for ``fail``, or the
+    ``skipped`` and ``unsupported`` the label itself shows) adds nothing.
+    """
     reason = str(row.get("reason") or "").strip()
+    if reason:
+        return reason
+    status = row_status(row)
+    return "" if status in ("ok", "failed") or status == non_ok_label(row) else status
+
+
+def non_ok_badge(row: dict[str, Any], *, with_backend: bool = True) -> str:
+    """One ``fail`` (or status) badge with the backend and what it recorded."""
+    label = non_ok_label(row)
     text = f'<span class="fail">{esc(label)}</span>'
     if with_backend:
         text += f' <code>{esc(row.get("backend"))}</code>'
-    if reason:
-        text += f' <span class="muted">{esc(reason)}</span>'
+    explanation = non_ok_explanation(row)
+    if explanation:
+        text += f' <span class="muted">{esc(explanation)}</span>'
     return text
 
 
@@ -1448,14 +1463,15 @@ def svg_case_chart(
     top = 24 + (len(note_lines) - 1) * CHART_NOTE_LINE
     # A failed arm's reason is free text: a long one takes more lines of its row
     # instead of running past the chart's right edge, where the browser cuts it.
-    fail_lines = [
-        wrap_line(
-            non_ok_label(row)
-            + (f" · {str(row.get('reason')).strip()}" if row.get("reason") else ""),
-            BAR_CHART_WIDTH - BAR_LABEL_WIDTH - LABEL_GAP,
+    fail_lines = []
+    for row in failed:
+        explanation = non_ok_explanation(row)
+        fail_lines.append(
+            wrap_line(
+                non_ok_label(row) + (f" · {explanation}" if explanation else ""),
+                BAR_CHART_WIDTH - BAR_LABEL_WIDTH - LABEL_GAP,
+            )
         )
-        for row in failed
-    ]
     rows_count = len(points) + sum(len(lines) for lines in fail_lines)
     height = rows_count * (BAR_HEIGHT + BAR_GAP) + top + 8
     parts = [
@@ -2342,7 +2358,7 @@ def case_ratio_row(
                 "backend": str(row.get("backend")),
                 "status": row_status(row),
                 "label": non_ok_label(row),
-                "reason": str(row.get("reason") or "").strip(),
+                "reason": non_ok_explanation(row),
             }
             for row in non_ok_rows(case.rows)
         ],

@@ -218,8 +218,12 @@ No case is dropped for an arm that failed. Every row whose `status` is not `ok`
 stays in the table's `not ok` column as a `fail` badge (or the recorded status name
 such as `unsupported`) with the backend and the reason, and the arms that did run
 keep their numbers and bars; the case is drawn in the chart with a `fail` line
-instead of a bar. `non-ok cases` counts are a summary of those rows, never a
-replacement for them.
+instead of a bar. A row whose record carries no `reason` shows its recorded
+`status` when that word says more than the badge (`runtime_failed`, `missing`,
+`timeout`; a plain `failed` adds nothing to `fail`), because that word is the
+explanation the record has: `fail` alone cannot tell a crash from a wrong number,
+and the page never invents a reason of its own. `non-ok cases` counts are a
+summary of those rows, never a replacement for them.
 
 Anomaly flags are `eager/torch >= 1.5`, `eager/jax >= 3`, `trace/eager >= 1.3`,
 a genuine tenferro status anomaly (failed/error/verification failure/missing or

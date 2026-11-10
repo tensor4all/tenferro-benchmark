@@ -1902,5 +1902,81 @@ class ProfileHeaderScopeTest(unittest.TestCase):
         self.assertNotIn("no suite from this profile is rendered on this page", latency)
 
 
+class NonOkStatusTest(unittest.TestCase):
+    """A non-ok row that carries no ``reason`` still says why it has no number.
+
+    The rows are the issue's own artefact, copied verbatim from
+    ``result/nvidia-gpu/gpu/tensornetwork.summary.json`` at commit ``a0792c4``
+    (run 41237278524, tenferro ``c15dfcf0ea52``).  The trace arm recorded
+    ``status: runtime_failed``, ``median: null`` and no ``reason`` at all, so the
+    status name is the only explanation in the record: a page that prints ``fail``
+    and stops throws it away, and a reader cannot tell a crash from a wrong
+    number.
+    """
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.result = self.root / "result"
+        benchmark = self.root / "benchmarks" / "gpu" / "tensornetwork.yaml"
+        benchmark.parent.mkdir(parents=True)
+        benchmark.write_text(
+            "schema_version: 1\nsuite_id: gpu/tensornetwork\n"
+            "defaults:\n  regime: throughput\n"
+            "problems:\n  - {id: tensornetwork_permutation_optimized_f32, size_elements: 1048576}\n"
+        )
+        suite_dir = self.result / "nvidia-gpu" / "gpu"
+        suite_dir.mkdir(parents=True)
+        report = suite_dir / "tensornetwork.md"
+        report.write_text("# gpu/tensornetwork\n\nbody\n")
+        document = summary_document(
+            [
+                {"case": "tensornetwork_permutation_optimized_f32",
+                 "group": "tensor_network_contract", "backend": "pytorch-cuda",
+                 "median": 107.9337315, "iqr": 0.5981489999999923,
+                 "status": "ok", "verified": True},
+                {"case": "tensornetwork_permutation_optimized_f32",
+                 "group": "tensor_network_contract", "backend": "tenferro-cuda-eager",
+                 "median": 305.9101845, "iqr": 64.00893299999996,
+                 "status": "ok", "verified": True},
+                {"case": "tensornetwork_permutation_optimized_f32",
+                 "group": "tensor_network_contract", "backend": "tenferro-cuda-trace",
+                 "median": None, "status": "runtime_failed", "verified": False},
+            ],
+            suite_id="gpu/tensornetwork",
+            timestamp="2026-10-31T20:18:08.642468+00:00",
+        )
+        report.with_suffix(".summary.json").write_text(json.dumps(document))
+        output = self.root / "site"
+        dashboard.generate(
+            self.result,
+            output,
+            baseline_dir=self.root / "baseline",
+            git_repo=None,
+            instances_dir=self.root / "instances",
+            benchmarks_dir=self.root / "benchmarks",
+            latest_profiles=None,
+        )
+        self.suite_page = (output / "nvidia-gpu/gpu/tensornetwork.html").read_text()
+        self.family_page = (output / "gpu/index.html").read_text()
+
+    def test_the_failed_arm_names_its_recorded_status_and_the_other_arms_keep_their_bars(self):
+        # The arm that ran keeps its number: 305.9101845 / 107.9337315 = 2.83x.
+        self.assertIn('<span class="ratio ratio-much-slower">eager 2.83x</span>', self.suite_page)
+        self.assertIn('class="bar-tenferro"', self.family_page)
+        # The failed arm is a `fail` row that still says why: runtime_failed.
+        self.assertIn(
+            '<span class="fail">fail</span> <code>tenferro-cuda-trace</code> '
+            '<span class="muted">runtime_failed</span>',
+            self.suite_page,
+        )
+        # And the chart carries the same words under the case, not a bare `fail`.
+        self.assertIn(
+            'class="chart-fail">fail · tenferro-cuda-trace · runtime_failed',
+            self.family_page,
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
