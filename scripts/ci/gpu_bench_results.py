@@ -195,7 +195,7 @@ def unit(record: dict) -> str:
 
 
 def arm_set(record: dict) -> list[str]:
-    return sorted({row['backend'] for row in record['rows']})
+    return sorted({str(row.get('backend')) for row in record['rows'] if isinstance(row, dict)})
 
 
 def refusals(candidate: dict, baseline: dict) -> list[str]:
@@ -272,6 +272,10 @@ def row_problems(row: dict) -> list[str]:
         out.append('median is not a finite non-negative number')
     if row.get('iqr') is not None and not finite_non_negative(row['iqr']):
         out.append('IQR is not finite and non-negative')
+    mode = row.get('verification')
+    if mode is not None and mode not in ('cpu_reference', 'analytic', 'finite_difference',
+                                         'measure_only'):
+        out.append(f'verification {mode} is not a recorded mode')
     if row.get('verification') == 'measure_only':
         if row.get('verified') is not False:
             out.append('measure_only row marked verified')
@@ -292,7 +296,7 @@ def invalid_rows(record: dict) -> list[str]:
         if not isinstance(row, dict):
             out.append(f'row {position}: not an object')
             continue
-        key = row_key(row)
+        key = (str(row.get('case')), str(row.get('group', '')), str(row.get('backend')))
         if key in seen:
             out.append(f'{name(key)}: duplicate identity')
             continue

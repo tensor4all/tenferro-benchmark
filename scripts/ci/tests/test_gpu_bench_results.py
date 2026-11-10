@@ -219,6 +219,37 @@ class BaselineTests(unittest.TestCase):
         self.assertEqual(result['rows'], [])
         self.assertIn('dense_matmul/matmul/tenferro-cuda-eager (candidate status skipped)', text)
 
+    def test_an_unhashable_group_is_refused_without_crashing(self):
+        # The identity was hashed before its type was checked, so a list group
+        # raised TypeError instead of naming the row.
+        baseline, candidate = record(WEEK_44, COMMIT_A), record(WEEK_45_LATE, COMMIT_B)
+        candidate["rows"][0]["group"] = []
+        result = compare(candidate, baseline, 1.2)
+        text = render(result)
+        self.assertEqual(result["rows"], [])
+        self.assertIn("group is not a string", text)
+        self.assertEqual(status(result), 1)
+
+    def test_a_backend_the_renderer_cannot_sort_is_still_named(self):
+        # The refusal is computed, but the arm set was sorted before it printed.
+        baseline, candidate = record(WEEK_44, COMMIT_A), record(WEEK_45_LATE, COMMIT_B)
+        candidate["rows"][0]["backend"] = None
+        text = render(compare(candidate, baseline, 1.2))
+        self.assertIn("backend is not a non-empty string", text)
+        self.assertIn("invalid: candidate", text)
+
+    def test_a_verification_mode_outside_the_schema_is_refused(self):
+        # The schema enumerates the modes; anything else is a row the driver
+        # never accepted, so it cannot be a regression to report.
+        baseline, candidate = record(WEEK_44, COMMIT_A), record(WEEK_45_LATE, COMMIT_B)
+        candidate["rows"][0].update(median=10.0, verification="made_up")
+        result = compare(candidate, baseline, 1.2)
+        text = render(result)
+        self.assertEqual(result["rows"], [])
+        self.assertNotIn("10.00x", text)
+        self.assertIn("verification made_up is not a recorded mode", text)
+        self.assertEqual(status(result), 1)
+
     def test_a_measure_only_row_cannot_be_verified(self):
         # The schema requires verified=false for measure_only and the driver
         # validates that schema, so this row is refused instead of compared.
