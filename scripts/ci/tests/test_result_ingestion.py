@@ -136,6 +136,30 @@ class IngestionTest(unittest.TestCase):
         self.assertEqual(again['campaign'], receipt['campaign'])
         self.assertEqual(again['files']['result/amd-cpu/cpu/cpu_ops.md'], digest(report))
 
+    def test_republishing_the_same_bytes_keeps_the_run_that_produced_them(self):
+        # Writing the same page again is not a new measurement. Demoting the receipt
+        # to a carried campaign would drop the recorded workflow failure, and the
+        # dashboard would stop calling this a partial run.
+        path = self.repo / 'result/amd-cpu/cpu/cpu_ops.provenance.json'
+        path.parent.mkdir(parents=True)
+        report = self.repo / 'result/amd-cpu/cpu/cpu_ops.md'
+        report.write_bytes(b'report')
+        summary = report.with_suffix('.summary.json')
+        summary.write_text(json.dumps(self.summary))
+        files = {'result/amd-cpu/cpu/cpu_ops.md': digest(report),
+                 'result/amd-cpu/cpu/cpu_ops.summary.json': digest(summary)}
+        campaign = {'schema_version': 1, 'target_profile': 'amd-cpu', 'suite_id': 'cpu/cpu_ops',
+                    'collected_at': '2026-10-17T00:00:00Z', 'status': 'partial',
+                    'source': {'run_id': 9, 'run_attempt': 1, 'artifact_id': 10,
+                               'conclusion': 'failure'},
+                    'case_outcomes': {'ok': 1}, 'missing_suites': ['cpu/einsum'], 'files': files}
+        path.write_text(json.dumps(campaign))
+        receipt = json.loads(publish_receipt(report, self.repo).read_text())
+        self.assertEqual(receipt['source'], campaign['source'])
+        self.assertEqual(receipt['status'], 'partial')
+        self.assertEqual(receipt['missing_suites'], ['cpu/einsum'])
+        self.assertNotIn('campaign', receipt)
+
     def test_a_publisher_receipt_orders_by_collection_time(self):
         # A receipt without a source run records no ingestion order, so the
         # candidate is newer only when its collection time is.

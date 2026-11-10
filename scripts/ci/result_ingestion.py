@@ -116,8 +116,16 @@ def publish_receipt(report: Path, root: Path = REPOSITORY_ROOT) -> Path:
         except json.JSONDecodeError:
             previous = {}
         if isinstance(previous, dict) and previous.get('source'):
-            receipt['campaign'] = {key: value for key, value in previous.items()
-                                   if key in CAMPAIGN_RECEIPT_KEYS}
+            if previous.get('files') == files:
+                # The same bytes, published again: the receipt already describes this
+                # page, so rewriting it must not demote the run it came from. Its
+                # source, its recorded failure and its coverage stay where the
+                # dashboard reads them.
+                receipt.update({key: previous[key] for key in CAMPAIGN_RECEIPT_KEYS
+                                if key in previous and key != 'schema_version'})
+            else:
+                receipt['campaign'] = {key: value for key, value in previous.items()
+                                       if key in CAMPAIGN_RECEIPT_KEYS}
         elif isinstance(previous, dict) and isinstance(previous.get('campaign'), dict):
             # The second publish over the same page sees the carried campaign, not
             # the campaign's own receipt: keep carrying it, or it dies with the page.
