@@ -11,9 +11,11 @@ description: >-
   document per-call framework overhead; they are never comparable with, or
   averaged together with, the per-call latency rows of `gpu/linalg_jvp_vjp` and
   `gpu/linalg_ad_latency`, which pay one retirement per call (tenferro-rs #2087).
-  The n=4096 JVP case is 16,777,216 elements, over that floor, so it is the
-  suite's throughput row: the same amortization measured where the work, not the
-  retirement, dominates. Its output set is two f64 scalars, so K stays at 64.
+  The n=4096 JVP case is 16,777,216 elements, over that floor, so it is declared
+  a throughput row: the same amortization at a size where the work is meant to
+  dominate the retirement. Clearing a declared floor is not evidence that it
+  does; the row is what will show the fixed term shrinking. Its output set is
+  two f64 scalars, so K stays at 64.
   The matching 4096 VJP is deliberately absent: it retains a 128 MiB gradient
   per run, the 256 MiB retention budget pins its K to 1, and a K=1 row is the
   per-call measurement that already exists in `gpu/linalg_jvp_vjp` -- where that
@@ -112,7 +114,8 @@ problems:
   intent: >-
     QR JVP at n=4096 (16,777,216 elements, over the linalg_ad floor) when K
     deferred prepared runs share one retirement: the throughput counterpart of
-    the n=256 row above, with the work rather than the retirement dominating.
+    the n=256 row above. Declared throughput by size; the row is what will show
+    how much of it is still fixed cost.
     A JVP row retains two f64 scalars (16 bytes), so the 256 MiB retention
     budget leaves K at the default 64; the row records its own effective K and
     must not be compared with an n=256 row.

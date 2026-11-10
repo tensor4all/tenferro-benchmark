@@ -192,12 +192,13 @@ SUITES = {
             "retirement per call. The n=256 rows are 65,536 elements, below the "
             "linalg_ad floor, so they are per-call latency rows: even a 256x256 QR "
             "JVP there is dominated by the trace runtime's per-call cost. The n=4096 "
-            "rows are 16,777,216 elements, over that floor, so they are throughput "
-            "rows; the two sizes are published in separate sections and are never "
-            "compared or averaged together. The n=4096 rows cannot afford a second "
+            "rows are 16,777,216 elements, over that floor, so they are declared "
+            "throughput rows: the first run is what will show how much of each row is "
+            "still fixed cost. The two sizes are published in separate sections and are "
+            "never compared or averaged together. The n=4096 rows cannot afford a second "
             "CPU AD pass, so they state the check that backs them (analytic, or a "
-            "central difference) instead of the default cpu_reference. The same "
-            "cases measured with one retirement per K calls live in "
+            "central difference) instead of the default cpu_reference. The QR cases "
+            "measured with one retirement per K calls live in "
             "`gpu/linalg_ad_throughput`."
         ),
         "large",

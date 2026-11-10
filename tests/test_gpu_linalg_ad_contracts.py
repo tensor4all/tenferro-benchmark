@@ -147,7 +147,8 @@ class PartialPageTest(unittest.TestCase):
             suite_file.write_text(json.dumps({
                 "suite_id": "gpu/linalg_jvp_vjp",
                 "backends": ["pytorch-cuda", "tenferro-cuda-trace"],
-                "problems": [{"id": "linalg_ad_large_grad_sum_qr_jvp_f64_256"}],
+                "problems": [{"id": "linalg_ad_large_grad_sum_qr_jvp_f64_256",
+                              "regime": "latency"}],
             }))
             metadata = {"suite_id": "gpu/linalg_jvp_vjp", "suite_file": str(suite_file)}
             page = format_markdown([ok], metadata, allow_partial=True)
@@ -240,6 +241,27 @@ class RegimeSectionTest(unittest.TestCase):
             metadata = {"suite_id": "gpu/linalg_jvp_vjp", "suite_file": str(suite_file)}
             with self.assertRaisesRegex(ValueError, "cannot place these AD cases"):
                 format_markdown([self.record(latency), self.record(throughput)], metadata)
+
+    def test_a_suite_that_declares_no_regime_at_all_is_refused(self):
+        # The check must not depend on some case declaring a regime: a file that
+        # declares none is as broken as one that declares half, and both would
+        # otherwise file every row under latency.
+        import json
+        import tempfile
+        from pathlib import Path
+        from format_gpu_linalg_ad_results import format_markdown
+
+        case = "linalg_ad_large_grad_sum_qr_jvp_f64_256"
+        with tempfile.TemporaryDirectory() as tmp:
+            suite_file = Path(tmp) / "suite.yaml"
+            suite_file.write_text(json.dumps({
+                "suite_id": "gpu/linalg_jvp_vjp",
+                "backends": ["pytorch-cuda"],
+                "problems": [{"id": case}],
+            }))
+            metadata = {"suite_id": "gpu/linalg_jvp_vjp", "suite_file": str(suite_file)}
+            with self.assertRaisesRegex(ValueError, "cannot place these AD cases"):
+                format_markdown([self.record(case)], metadata)
 
     def test_a_single_regime_suite_keeps_its_single_table(self):
         import json

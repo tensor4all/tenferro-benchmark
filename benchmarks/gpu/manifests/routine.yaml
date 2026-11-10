@@ -435,9 +435,10 @@ suites:
     vendor_backends:
     - jax-cuda-jit
 # Suites this manifest does not collect:
-#   gpu/dense_throughput, gpu/linalg_ad_throughput - separate regime
+#   gpu/dense_throughput, gpu/linalg_ad_throughput - separate timing mode
 #     (tenferro-cuda-trace-deferred-batch) with their own driver and reports;
-#     mixing them into one weekly matrix would mix regimes.
+#     each holds rows of both regimes, so mixing them into one weekly matrix
+#     would mix a deferred-batch row with a per-call one.
 #   gpu/linalg_public_api_latency - per-call overhead regime (largest dimension
 #     <= 128). Every curated routine case of the public linalg surface is the
 #     largest shape class, so this suite has no weekly representative; its page

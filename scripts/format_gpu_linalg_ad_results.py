@@ -320,15 +320,17 @@ def format_markdown(
     regimes = suite_regimes(run_metadata)
     keys = sorted(by_key)
     sections: list[tuple[str | None, list[tuple[str, str, str, str]]]] = [(None, keys)]
-    if regimes:
-        # Fail closed: a case the suite file does not place in a regime is a
-        # broken manifest, not a latency row. Classifying it by omission would
-        # put a compute-bound number in the latency table.
+    if run_metadata and run_metadata.get("suite_file"):
+        # Fail closed, including when the file declares no regime at all: a case
+        # the suite does not place in a regime is a broken manifest, not a
+        # latency row. Classifying it by omission would put a compute-bound
+        # number in the latency table.
         undeclared = sorted({case_of[key] for key in keys if case_of[key] not in regimes})
         if undeclared:
             raise ValueError(
                 "cannot place these AD cases in a regime: " + ", ".join(undeclared)
             )
+    if regimes:
         throughput = [key for key in keys if regimes[case_of[key]] == "throughput"]
         latency = [key for key in keys if regimes[case_of[key]] != "throughput"]
         if throughput and latency:

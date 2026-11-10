@@ -104,8 +104,8 @@ ids are current, and read the `{256,512}` row as history.)
 (`defaults.measure: deferred_batch`) for trend continuity: the suite id names the
 collection, `regime` names the workload class, and the AD runner selects its
 route from `measure` (falling back to `regime` for suites that do not declare
-one). Its n=256 cases are latency rows and its n=4096 cases are throughput rows,
-and the page shows the two in separate sections.
+one). Its two n=256 cases are latency rows and its n=4096 JVP case is a
+throughput row, and the page shows the two in separate sections.
 
 ## Timing mode is not regime
 
