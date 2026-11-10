@@ -849,11 +849,7 @@ def report(run_dir, target, suite_key="cpu"):
         print(run_dir / "report.md")
         return
     latest = ROOT / "result" / safe_target_profile(target) / f"{suite_id}.md"
-    latest.parent.mkdir(parents=True, exist_ok=True)
-    latest.write_text(text)
-    report_summary.write_document(
-        report_summary.summary_path_for_report(latest), document
-    )
+    report_summary.publish_page(latest, text, document, ROOT)
     if suite_key != "gpu":
         report_summary.write_document(run_dir / f"{suite_id.split('/')[-1]}.summary.json", document)
     print(latest)

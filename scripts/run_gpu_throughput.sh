@@ -124,6 +124,7 @@ publish_report() {
     cp "$markdown" "$report"
     if [[ -f "${markdown%.md}.summary.json" ]]; then
         cp "${markdown%.md}.summary.json" "${report%.md}.summary.json"
+        "${PYTHON[@]}" "$SCRIPT_DIR/ci/result_ingestion.py" "$report"
     fi
 }
 

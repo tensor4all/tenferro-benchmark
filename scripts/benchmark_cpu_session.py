@@ -385,9 +385,7 @@ def report(run_dir, target, latest=True):
     report_summary.write_document(run_dir / 'session_matrix.summary.json', document)
     if latest:
         path = ROOT / 'result' / target / 'cpu/session_matrix.md'
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(text)
-        report_summary.write_document(report_summary.summary_path_for_report(path), document)
+        report_summary.publish_page(path, text, document, ROOT)
         print(path)
 
 

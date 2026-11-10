@@ -32,13 +32,13 @@ suite's baseline.  When
 the table is printed, the two runs' commit, host, week and arm set are stated
 above it, so the reader never reconstructs which measurements were compared.
 
-A run is accepted when the data says so: the ingestion driver commits the
-sidecar together with ``<suite>.provenance.json``, whose ``files`` map holds the
-sidecar's sha256 (``result_ingestion.plan_updates``).  A receipt that disagrees
-belongs to an edit, not to an accepted measurement; a revision without a receipt
-is history when no receipt exists at or before it, and otherwise only a commit
-that publishes the report with the sidecar.  A committed receipt is a trusted
-marker of the driver's decision, not authentication.  A receipt this tool cannot
+A run is accepted when the data says so: the sidecar was published with an
+``<suite>.provenance.json`` receipt whose ``files`` map holds its sha256
+(``result_ingestion.acceptance_receipt``), and every path that writes the sidecar
+writes that receipt (#431).  A receipt that disagrees, and a revision with no
+receipt at all, belong to an edit rather than to an accepted measurement.  A
+committed receipt is a trusted marker of the publish decision, not
+authentication.  A receipt this tool cannot
 read (not JSON, ``files`` not a map) accepts nothing: that revision is skipped and
 named on stderr, because one unreadable receipt must not stop the report of the
 runs that do have one.  A revision whose run
@@ -68,7 +68,6 @@ class GitError(RuntimeError):
 
 
 MAX_THRESHOLD = 1_000_000
-RECEIPTS = 'result/*/*/*.provenance.json'
 # The earliest instant whose previous ISO week is still a date: the week
 # arithmetic subtracts seven days, and 0001-01-01 minus seven is out of range.
 EARLIEST_WEEK = datetime.min.replace(tzinfo=timezone.utc) + timedelta(days=7)
@@ -107,20 +106,6 @@ def require_full_history(repo: Path) -> None:
                        'fetch the full history first (git fetch --unshallow)')
 
 
-def receipt_history(repo: Path, sha: str) -> bool:
-    """Whether an acceptance receipt exists at or before ``sha`` in its own history.
-
-    That is a property of the revision's ancestry, which never changes, so no
-    later merge can reclassify a revision that was already read.  A single
-    boundary commit picked from the history does move: merging an unrelated
-    branch that carries an earlier-dated receipt makes it the boundary and drops
-    the published runs that are not its ancestors.  ``--full-history`` because
-    the default path simplification can hide a receipt a merge did not keep.
-    """
-    return bool(git(repo, 'log', '-1', '--full-history', '--format=%H', sha, '--',
-                    RECEIPTS).strip())
-
-
 def receipt_files(receipt: bytes) -> dict:
     """The ``files`` map of a committed acceptance receipt, or ValueError.
 
@@ -139,28 +124,24 @@ def receipt_files(receipt: bytes) -> dict:
 
 
 def accepted(repo: Path, sha: str, relative: str, receipt_path: str, content: bytes) -> bool:
-    """Whether this sidecar revision is a published run rather than an edit."""
+    """Whether this sidecar revision is a published run rather than an edit.
+
+    One rule: the receipt committed with the revision holds the sidecar's sha256.
+    Every publisher of the sidecar writes that receipt, so a revision without one
+    is an edit however many files it rewrites.
+    """
     receipt = git_file(repo, sha, receipt_path)
-    if receipt is not None:
-        try:
-            return receipt_files(receipt).get(relative) == hashlib.sha256(content).hexdigest()
-        except ValueError as error:
-            # An unreadable receipt cannot rule on the sidecar, so it accepts
-            # nothing; the revision is skipped and named instead of stopping the
-            # walk over the revisions that do have a readable one.
-            print(f'gpu_bench_results: {receipt_path} at {sha[:7]}: {error}, so that revision is not '
-                  f'read as an accepted run', file=sys.stderr)
-            return False
-    # No receipt in that commit.  A revision whose own history records no receipt
-    # at all predates the driver's bookkeeping and is the published history;
-    # afterwards only a commit that publishes the report with the sidecar.
-    if not receipt_history(repo, sha):
-        return True
-    # shortcut: a commit that rewrites the report as well is still taken as a
-    # publish, so an edit of both files passes; the fix is for every publisher of
-    # this sidecar to write the ingestion receipt (#431).
-    return bool(git(repo, 'diff-tree', '--root', '--no-commit-id', '--name-only', '-r', '-m', sha, '--',
-                    relative.replace('.summary.json', '.md')).strip())
+    if receipt is None:
+        return False
+    try:
+        return receipt_files(receipt).get(relative) == hashlib.sha256(content).hexdigest()
+    except ValueError as error:
+        # An unreadable receipt cannot rule on the sidecar, so it accepts
+        # nothing; the revision is skipped and named instead of stopping the
+        # walk over the revisions that do have a readable one.
+        print(f'gpu_bench_results: {receipt_path} at {sha[:7]}: {error}, so that revision is not '
+              f'read as an accepted run', file=sys.stderr)
+        return False
 
 
 def collected(record: dict) -> datetime:

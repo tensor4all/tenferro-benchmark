@@ -218,6 +218,7 @@ if [[ "${GPU_BENCH_SKIP_LATEST:-0}" != 1 ]]; then
     mkdir -p result/nvidia-gpu/gpu
     cp "$run_dir/report.md" "result/nvidia-gpu/gpu/$family.md"
     cp "$run_dir/report.summary.json" "result/nvidia-gpu/gpu/$family.summary.json"
+    uv run python scripts/ci/result_ingestion.py "result/nvidia-gpu/gpu/$family.md"
 fi
 if [[ "$ARM_FAILED" != 0 ]]; then
     echo "SUITE INCOMPLETE: at least one arm failed; the rows that did run are published" >&2

@@ -187,16 +187,12 @@ instead of tracing back on the field. A record that is shaped fine but whose
 by name with no table and exit 1, because comparing it means reading another
 suite's run against this suite's baseline under that other suite's title.
 
-An accepted run is a revision the ingestion driver recorded a receipt for: it
-commits `<suite>.provenance.json` together with the sidecar, holding the
-sidecar's sha256 (`result_ingestion.plan_updates`). A revision without that
-receipt is an edit, not a measurement: a receipt-free revision is the published
-history when no receipt exists at or before it — a property of its own ancestry,
-so merging another branch cannot reclassify it — and otherwise only a commit that
-publishes the run's report together with the sidecar (a receipt-free edit of both
-files is still taken as a publish; #431 removes that second acceptance path). In
-a repository that records no receipt at all, a sidecar revision is the published
-history by definition, because there is no acceptance signal to check. A receipt
+An accepted run is a revision whose committed receipt holds the sidecar's
+sha256: `<suite>.provenance.json` is written next to the sidecar by every path
+that publishes it (`result_ingestion.publish_receipt`) — the ingestion driver
+from a validated bundle, and a runner or page republish from the page it
+rendered. A revision whose receipt disagrees, and a revision with no receipt at
+all, is an edit, not a measurement, however many files it rewrites. A receipt
 the tool cannot read (not JSON, `files` not a map) accepts nothing: that revision
 is skipped and named on stderr, so one corrupt receipt does not replace the
 report of the runs that do have a readable one, and neither does a committed

@@ -129,13 +129,32 @@ A workflow failure outside case collection does not invent failed cases.
 
 Pages shows nonzero outcome counts and collapsible case names, and explicitly
 labels source-workflow failure and unproduced suites. Zero-count notes are
-omitted. An old report retained for an unproduced suite is labelled against the
+omitted. A publisher's receipt is not a campaign: it has no run identity and no
+`missing_suites`, so Pages keeps the last receipt that has a `source` as the
+campaign that defines current coverage, and a newer runner publish never hides
+the suites that campaign did not collect. An old report retained for an
+unproduced suite is labelled against the
 latest accepted collection's coverage. The `updated` line keeps its original
 revision/time meaning; timing values, ratios and raw reports are unchanged.
 
 Illustrative accepted CPU and GPU receipts are in
 `docs/examples/result-provenance/`. Their IDs and digests are placeholders,
 not measurement evidence.
+
+Every path that writes a `result/<profile>/<suite>.summary.json` writes this
+receipt next to it (`result_ingestion.publish_receipt`): the driver from the
+validated bundle, `regenerate_report_summaries.py` (default and `--publish`), the
+runners that write the newest summary, and the GPU runners that copy their page
+into `result/`. A formatter run by hand with `--output` pointing into `result/`
+is a hand edit, not a publication, and the acceptance check refuses it until the
+page is published through one of those paths. A receipt without `source` is a
+publisher's receipt: it records the published files, the suite identity and the
+collection time, not a source run, because a
+runner has no run identity to record. Acceptance is one rule for both — the
+receipt's `files` map holds the sidecar's sha256 — so a revision published
+without a receipt is an edit. Committed sidecars from before a suite's first
+receipt were stamped once by
+the same function, in its own commit, and are not rewritten afterwards.
 
 ## Ordering, partial bundles and atomicity
 
@@ -156,7 +175,9 @@ An identical source key and digest map is a duplicate no-op. The same source
 key with different content is an error. Older valid entries are stale no-ops.
 A legacy committed summary without provenance supplies a timestamp floor:
 a candidate must be strictly newer; equal timestamps preserve the legacy
-report. A malformed legacy summary fails explicitly rather than allowing an
+report. A publisher's receipt (no `source`) has no ingestion order, so it uses
+the same floor: its `collected_at` must be older than the candidate. A
+malformed legacy summary fails explicitly rather than allowing an
 unchecked overwrite. Reports without summaries remain until a validated
 candidate replaces them.
 

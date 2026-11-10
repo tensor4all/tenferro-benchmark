@@ -506,6 +506,7 @@ for index in "${!SUITES[@]}"; do
         # condition so the dashboard never shows a stale summary.
         if [[ -f "${MARKDOWN_OUT%.md}.summary.json" ]]; then
             cp "${MARKDOWN_OUT%.md}.summary.json" "${REPORT_OUT%.md}.summary.json"
+            "${PYTHON[@]}" "$SCRIPT_DIR/ci/result_ingestion.py" "$REPORT_OUT"
         fi
     fi
     write_suite_wall_record "$RUN_DIR" "$COLLECTION_START_NS" "$COLLECTION_END_NS" "$REPORT_START_NS"

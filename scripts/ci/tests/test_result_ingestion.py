@@ -5,8 +5,9 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from scripts.ci.result_ingestion import (digest, instant, plan_updates, safe_file,
-                                         source_from_api, validate_bundle, validate_summary)
+from scripts.ci.result_ingestion import (digest, instant, plan_updates, publish_receipt,
+                                         safe_file, source_from_api, validate_bundle,
+                                         validate_summary)
 
 
 class IngestionTest(unittest.TestCase):
@@ -86,6 +87,40 @@ class IngestionTest(unittest.TestCase):
         conflicting[0][0]['files']['result/amd-cpu/cpu/einsum.md'] = 'f'*64
         with self.assertRaisesRegex(ValueError, 'conflicting'):
             plan_updates(self.repo, conflicting)
+
+    def test_a_publisher_receipt_records_the_published_files(self):
+        # Every path that writes a sidecar writes this receipt (#431), so the
+        # acceptance check reads the same digest map whether the driver or a
+        # runner published the page.
+        report = self.repo / 'result/amd-cpu/cpu/cpu_ops.md'
+        summary = report.with_suffix('.summary.json')
+        report.parent.mkdir(parents=True)
+        report.write_bytes(b'report')
+        # The sidecar still says cpu/einsum: an einsum run publishes the cpu_ops
+        # page, and the receipt has to name the page, not the run's suite.
+        summary.write_text(json.dumps(self.summary))
+        receipt = json.loads(publish_receipt(report, self.repo).read_text())
+        self.assertEqual(receipt['schema_version'], 1)
+        self.assertEqual((receipt['target_profile'], receipt['suite_id']),
+                         ('amd-cpu', 'cpu/cpu_ops'))
+        self.assertEqual(receipt['collected_at'], self.summary['timestamp'])
+        self.assertEqual(receipt['files'], {
+            'result/amd-cpu/cpu/cpu_ops.md': digest(report),
+            'result/amd-cpu/cpu/cpu_ops.summary.json': digest(summary)})
+        self.assertNotIn('source', receipt)
+
+    def test_a_publisher_receipt_orders_by_collection_time(self):
+        # A receipt without a source run records no ingestion order, so the
+        # candidate is newer only when its collection time is.
+        path = self.repo / 'result/amd-cpu/cpu/einsum.provenance.json'
+        path.parent.mkdir(parents=True)
+        published = {'schema_version': 1, 'target_profile': 'amd-cpu', 'suite_id': 'cpu/einsum',
+                     'collected_at': self.summary['timestamp'], 'files': {}}
+        path.write_text(json.dumps(published))
+        self.assertEqual(plan_updates(self.repo, self.validate())[1]['cpu/einsum'], 'stale')
+        published['collected_at'] = '2026-10-17T00:00:00+00:00'
+        path.write_text(json.dumps(published))
+        self.assertEqual(plan_updates(self.repo, self.validate())[1]['cpu/einsum'], 'accepted')
 
     def test_retired_profile_rejected(self):
         self.manifest['target_profile'] = 'linux-cpu'

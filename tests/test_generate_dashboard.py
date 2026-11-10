@@ -771,6 +771,35 @@ class PartialReceiptDashboardTests(unittest.TestCase):
             "problems:\n  - {id: case_ok, size_elements: 1048576}\n  - {id: case_bad, size_elements: 1048576}\n"
         )
 
+    def test_a_publisher_receipt_has_no_source_run_to_link(self):
+        # A runner publishes a page without a source run (#431): the receipt still
+        # carries the digests, and the page says so instead of inventing a run.
+        report = self.write_suite()
+        summary = report.with_suffix(".summary.json")
+        receipt = receipt_document(report, summary)
+        del receipt["source"]
+        report.with_suffix(".provenance.json").write_text(
+            json.dumps(receipt, indent=2, sort_keys=True)
+        )
+        page = (self.generate() / "nvidia-gpu/gpu/dense.html").read_text()
+        self.assertIn("Published result", page)
+        self.assertNotIn("Source run", page)
+        # The digest map is what the receipt is read for, so it is still enforced.
+        summary.write_text(summary.read_text().replace("10.0", "11.0"))
+        with self.assertRaisesRegex(ValueError, "differs from provenance"):
+            self.generate("site-b")
+
+    def test_a_publisher_receipt_does_not_hide_the_campaign_gap(self):
+        # A runner publish is newer than the last campaign but is not one: it has
+        # no missing-suite inventory, so counting it would drop the coverage gap.
+        campaign = {'collected_at': '2026-10-17T00:00:00Z', 'status': 'partial',
+                    'source': {'run_id': 1, 'run_attempt': 1, 'artifact_id': 1},
+                    'missing_suites': ['gpu/sparse']}
+        published = {'collected_at': '2026-10-18T00:00:00Z', 'files': {}}
+        views = [dashboard.SuiteView('nvidia-gpu', 'gpu/dense', Path('dense.md'), None, [], campaign),
+                 dashboard.SuiteView('nvidia-gpu', 'gpu/sparse', Path('sparse.md'), None, [], published)]
+        self.assertEqual(dashboard.latest_campaigns(views)['nvidia-gpu'], campaign)
+
     def test_campaign_order_uses_utc_and_counts_one_run_across_suites(self):
         first = {'collected_at':'2026-10-18T09:00:00+09:00', 'status':'partial',
                  'source':{'run_id':123,'run_attempt':1,'artifact_id':456}, 'missing_suites':['gpu/sparse']}

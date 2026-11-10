@@ -9,6 +9,7 @@ Publishing it must reproduce the committed page and summary byte for byte, so
 
 from __future__ import annotations
 
+import hashlib
 import json
 import shutil
 import sys
@@ -96,6 +97,17 @@ class PublishGpuPageTest(unittest.TestCase):
         )
         self.assertEqual(written, [self.root / SUMMARY])
         self.assertTrue((self.root / SUMMARY).is_file())
+        # #431: the regenerated sidecar is published with the receipt that accepts it.
+        receipt = json.loads(
+            (self.root / PAGE).with_suffix(".provenance.json").read_text()
+        )
+        self.assertEqual(
+            receipt["files"],
+            {
+                relative: hashlib.sha256((self.root / relative).read_bytes()).hexdigest()
+                for relative in (PAGE, SUMMARY)
+            },
+        )
 
     def test_the_page_states_that_its_shape_class_is_not_a_measured_classification(self):
         regenerate.publish([self.root / GPU_RUN], self.root / "result", self.root)

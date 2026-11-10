@@ -9,6 +9,7 @@ fail, and a source run that is not tracked is an error.
 from __future__ import annotations
 
 import contextlib
+import hashlib
 import io
 import json
 import os
@@ -127,6 +128,24 @@ class PublishRunsTest(unittest.TestCase):
             [entry["run"] for entry in document["source_runs"]], list(EINSUM_RUNS)
         )
         self.assertEqual([entry["threads"] for entry in document["source_runs"]], [[1], [4]])
+
+    def test_a_published_page_carries_the_receipt_that_accepts_it(self):
+        # #431: the acceptance check reads only the receipt's digest map, so the
+        # publish writes one next to every page and sidecar it writes.
+        self.publish_all()
+        pages = sorted((self.root / "result").glob("*/*/*.md"))
+        self.assertEqual(len(pages), 4, pages)
+        for report in pages:
+            receipt = json.loads(report.with_suffix(".provenance.json").read_text())
+            self.assertEqual(
+                receipt["files"],
+                {
+                    path.relative_to(self.root).as_posix(): hashlib.sha256(
+                        path.read_bytes()
+                    ).hexdigest()
+                    for path in (report, report.with_suffix(".summary.json"))
+                },
+            )
 
     def test_retired_profile_cannot_publish(self):
         run = self.root / EINSUM_RUNS[0]
