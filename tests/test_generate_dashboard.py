@@ -800,6 +800,18 @@ class PartialReceiptDashboardTests(unittest.TestCase):
                  dashboard.SuiteView('nvidia-gpu', 'gpu/sparse', Path('sparse.md'), None, [], published)]
         self.assertEqual(dashboard.latest_campaigns(views)['nvidia-gpu'], campaign)
 
+    def test_a_published_page_that_replaced_a_campaign_receipt_still_reports_the_gap(self):
+        # result_ingestion.publish_receipt copies the campaign it overwrote into the
+        # new receipt under "campaign". The coverage inventory must survive a
+        # republish, or the warning disappears with the page it described.
+        campaign = {'collected_at': '2026-10-17T00:00:00Z', 'status': 'partial',
+                    'source': {'run_id': 1, 'run_attempt': 1, 'artifact_id': 1},
+                    'missing_suites': ['gpu/sparse']}
+        published = {'collected_at': '2026-10-18T00:00:00Z', 'files': {}, 'campaign': campaign}
+        views = [dashboard.SuiteView('nvidia-gpu', 'gpu/dense', Path('dense.md'), None, [], published)]
+        self.assertEqual(dashboard.latest_campaigns(views)['nvidia-gpu'], campaign)
+        self.assertEqual(dashboard.campaign_missing_suites(views), {'nvidia-gpu': ['gpu/sparse']})
+
     def test_campaign_order_uses_utc_and_counts_one_run_across_suites(self):
         first = {'collected_at':'2026-10-18T09:00:00+09:00', 'status':'partial',
                  'source':{'run_id':123,'run_attempt':1,'artifact_id':456}, 'missing_suites':['gpu/sparse']}

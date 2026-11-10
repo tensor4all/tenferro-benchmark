@@ -66,6 +66,10 @@ def safe_file(root: Path, relative: str) -> Path:
     return current
 
 
+CAMPAIGN_RECEIPT_KEYS = ('schema_version', 'target_profile', 'suite_id', 'collected_at',
+                         'source', 'status', 'case_outcomes', 'missing_suites')
+
+
 def acceptance_receipt(profile: str, suite: str, collected_at: str, tenferro_commit: str,
                        hardware: dict, files: dict[str, str]) -> dict:
     """The receipt of one published suite: ``files`` maps every published path to its sha256.
@@ -96,6 +100,19 @@ def publish_receipt(report: Path, root: Path = REPOSITORY_ROOT) -> Path:
                                  document['timestamp'], document['tenferro_commit'],
                                  document['hardware'], files)
     path = report.with_suffix('.provenance.json')
+    # A runner publish replaces the page, and with it the receipt that recorded the
+    # campaign which produced the previous page. The campaign's coverage inventory is
+    # the only record of the suites it did not collect, so carry it forward: without
+    # it the dashboard's coverage warning disappears the moment anything is
+    # republished. The nested receipt describes the campaign, not this page.
+    if path.is_file():
+        try:
+            previous = json.loads(path.read_text())
+        except json.JSONDecodeError:
+            previous = {}
+        if isinstance(previous, dict) and previous.get('source'):
+            receipt['campaign'] = {key: value for key, value in previous.items()
+                                   if key in CAMPAIGN_RECEIPT_KEYS}
     path.write_text(json.dumps(receipt, indent=2, sort_keys=True) + '\n')
     return path
 

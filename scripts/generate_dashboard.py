@@ -1942,15 +1942,21 @@ def latest_campaigns(views: Iterable[SuiteView]) -> dict[str, dict[str, Any]]:
 
     A receipt without ``source`` records a runner's publish, not a campaign: it has
     no run identity and no ``missing_suites``, so counting it would hide the suites
-    the last real campaign did not collect.
+    the last real campaign did not collect. A publish that overwrote a campaign's
+    receipt carries that campaign under ``campaign`` (``result_ingestion`` copies it
+    before replacing the page), so the coverage inventory outlives the page.
     """
     latest: dict[str, tuple[tuple, dict[str, Any]]] = {}
     for view in views:
-        if not view.provenance or not view.provenance.get("source"):
-            continue
-        key = receipt_order_key(view.provenance)
+        receipt = view.provenance or {}
+        if not receipt.get("source"):
+            carried = receipt.get("campaign")
+            if not isinstance(carried, dict) or not carried.get("source"):
+                continue
+            receipt = carried
+        key = receipt_order_key(receipt)
         if view.profile not in latest or key > latest[view.profile][0]:
-            latest[view.profile] = (key, view.provenance)
+            latest[view.profile] = (key, receipt)
     return {profile: receipt for profile, (_key, receipt) in latest.items()}
 
 

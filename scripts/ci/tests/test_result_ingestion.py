@@ -109,6 +109,27 @@ class IngestionTest(unittest.TestCase):
             'result/amd-cpu/cpu/cpu_ops.summary.json': digest(summary)})
         self.assertNotIn('source', receipt)
 
+    def test_a_publish_over_a_campaign_receipt_keeps_its_coverage(self):
+        # A campaign that collected only cpu/einsum left its receipt here, naming
+        # cpu/cpu_ops as missing. A runner that republishes the page replaces that
+        # file, and with it the only record of what the campaign did not collect.
+        path = self.repo / 'result/amd-cpu/cpu/cpu_ops.provenance.json'
+        path.parent.mkdir(parents=True)
+        campaign = {'schema_version': 1, 'target_profile': 'amd-cpu', 'suite_id': 'cpu/cpu_ops',
+                    'collected_at': '2026-10-17T00:00:00Z', 'status': 'partial',
+                    'source': {'run_id': 9, 'run_attempt': 1, 'artifact_id': 10},
+                    'case_outcomes': {'ok': 1}, 'missing_suites': ['cpu/einsum'], 'files': {}}
+        path.write_text(json.dumps(campaign))
+        report = self.repo / 'result/amd-cpu/cpu/cpu_ops.md'
+        report.write_bytes(b'republished')
+        report.with_suffix('.summary.json').write_text(json.dumps(self.summary))
+        receipt = json.loads(publish_receipt(report, self.repo).read_text())
+        self.assertNotIn('source', receipt)
+        # The carried receipt is the campaign's, minus its digest map: those
+        # hashes describe the page this publish just replaced.
+        self.assertEqual(receipt['campaign'], {k: v for k, v in campaign.items() if k != 'files'})
+        self.assertEqual(receipt['files']['result/amd-cpu/cpu/cpu_ops.md'], digest(report))
+
     def test_a_publisher_receipt_orders_by_collection_time(self):
         # A receipt without a source run records no ingestion order, so the
         # candidate is newer only when its collection time is.
