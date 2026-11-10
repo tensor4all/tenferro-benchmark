@@ -344,9 +344,7 @@ def report(run_dir, target):
     (run_dir / "report.md").write_text(text)
     report_summary.write_document(run_dir / "small_work.summary.json", document)
     latest = ROOT / "result" / safe_target_profile(target) / "cpu/small_work.md"
-    latest.parent.mkdir(parents=True, exist_ok=True)
-    latest.write_text(text)
-    report_summary.write_document(report_summary.summary_path_for_report(latest), document)
+    report_summary.publish_page(latest, text, document, ROOT)
     print(latest)
 
 

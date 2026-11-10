@@ -2,14 +2,17 @@
 
 Network/run identity acquisition belongs to the driver. This module never
 executes artifact contents and validates the complete bundle before writes.
+
+The acceptance receipt is also written here, because every path that publishes
+``result/<profile>/<suite>.summary.json`` writes one: the driver from a validated
+bundle, and a runner or republish from the page it rendered.
 """
 from __future__ import annotations
 
+import argparse
 import json
 import math
 import re
-
-import jsonschema
 
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
@@ -29,6 +32,8 @@ WORKFLOWS = {
     '.github/workflows/benchmark-nightly-linux-cpu.yml': ('amd-cpu', 'linux-cpu-benchmark-results'),
     '.github/workflows/benchmark-runpod-gpu.yml': ('nvidia-gpu', 'runpod-gpu-benchmark'),
 }
+
+REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 
 # Retired profiles keep their committed reports as history but may never
 # publish again, not even through a bundle replayed from an older run.
@@ -64,6 +69,70 @@ def safe_file(root: Path, relative: str) -> Path:
     if not current.resolve().is_relative_to(root.resolve()) or not current.is_file():
         raise ValueError(f'Missing or unsafe file: {relative}')
     return current
+
+
+CAMPAIGN_RECEIPT_KEYS = ('schema_version', 'target_profile', 'suite_id', 'collected_at',
+                         'source', 'status', 'case_outcomes', 'missing_suites')
+
+
+def acceptance_receipt(profile: str, suite: str, collected_at: str, tenferro_commit: str,
+                       hardware: dict, files: dict[str, str]) -> dict:
+    """The receipt of one published suite: ``files`` maps every published path to its sha256.
+
+    The driver adds the run it accepted (``harness_commit``, ``source``, coverage);
+    a runner that publishes a page from its own run record records the decision only.
+    """
+    return {'schema_version': 1, 'target_profile': profile, 'suite_id': suite,
+            'collected_at': collected_at, 'tenferro_commit': tenferro_commit,
+            'hardware': hardware, 'files': files}
+
+
+def publish_receipt(report: Path, root: Path = REPOSITORY_ROOT) -> Path:
+    """Write the acceptance receipt of a published page and return its path.
+
+    Called by every path that writes ``result/<profile>/<suite>.summary.json``, which
+    is why ``scripts/ci/gpu_bench_results.py`` needs one rule: a revision is a
+    publish when the receipt committed with it holds the sidecar's sha256.  The
+    suite is the page's own path, which is the identity the driver records too.
+    """
+    report = Path(report)
+    summary = report.with_suffix('.summary.json')
+    document = json.loads(summary.read_text())
+    parts = report.resolve().relative_to(Path(root).resolve()).parts
+    files = {path.resolve().relative_to(Path(root).resolve()).as_posix(): digest(path)
+             for path in (report, summary)}
+    receipt = acceptance_receipt(parts[1], f'{parts[2]}/{Path(parts[3]).stem}',
+                                 document['timestamp'], document['tenferro_commit'],
+                                 document['hardware'], files)
+    path = report.with_suffix('.provenance.json')
+    # A runner publish replaces the page, and with it the receipt that recorded the
+    # campaign which produced the previous page. The campaign's coverage inventory is
+    # the only record of the suites it did not collect, so carry it forward: without
+    # it the dashboard's coverage warning disappears the moment anything is
+    # republished. The nested receipt describes the campaign, not this page.
+    if path.is_file():
+        try:
+            previous = json.loads(path.read_text())
+        except json.JSONDecodeError:
+            previous = {}
+        if isinstance(previous, dict) and previous.get('source'):
+            sidecar = next((name for name in files if name.endswith('.summary.json')), None)
+            if sidecar and (previous.get('files') or {}).get(sidecar) == files[sidecar]:
+                # The same sidecar, published again: these are the same measurements,
+                # and only the rendering may have changed. Rewriting the receipt must
+                # not demote the run that produced them — its source, its recorded
+                # failure and its coverage stay where the dashboard reads them.
+                receipt.update({key: previous[key] for key in CAMPAIGN_RECEIPT_KEYS
+                                if key in previous and key != 'schema_version'})
+            else:
+                receipt['campaign'] = {key: value for key, value in previous.items()
+                                       if key in CAMPAIGN_RECEIPT_KEYS}
+        elif isinstance(previous, dict) and isinstance(previous.get('campaign'), dict):
+            # The second publish over the same page sees the carried campaign, not
+            # the campaign's own receipt: keep carrying it, or it dies with the page.
+            receipt['campaign'] = previous['campaign']
+    path.write_text(json.dumps(receipt, indent=2, sort_keys=True) + '\n')
+    return path
 
 
 def validate_source_run(run: dict) -> None:
@@ -163,6 +232,10 @@ def validate_summary(document: dict, profile: str, entry: dict) -> None:
     if seen != set(expected):
         raise ValueError('Missing/unexpected rows')
     schema = Path(__file__).resolve().parents[2] / 'schemas/report-summary.schema.json'
+    # Imported here so a publisher can write a receipt without the validator's
+    # schema dependency being installed (the runners only need this module).
+    import jsonschema
+
     try:
         jsonschema.validate(document, json.loads(schema.read_text()))
     except jsonschema.ValidationError as error:
@@ -243,10 +316,9 @@ def validate_bundle(bundle: Path, profile: str, source: dict,
         if 'run_started_at' in source and not (instant(source['run_started_at']) <= instant(entry['timestamp']) <= instant(source['created_at'])):
             raise ValueError('Collection timestamp is outside the source run attempt')
         validate_summary(document, profile, entry)
-        receipt = {'schema_version': 1, 'target_profile': profile, 'suite_id': suite,
-                   'collected_at': entry['timestamp'], 'harness_commit': manifest['harness_commit'],
-                   'tenferro_commit': entry['tenferro_commit'], 'hardware': entry['hardware'],
-                   'source': source, 'files': files}
+        receipt = acceptance_receipt(profile, suite, entry['timestamp'],
+                                     entry['tenferro_commit'], entry['hardware'], files)
+        receipt.update(harness_commit=manifest['harness_commit'], source=source)
         outcomes = case_outcomes(document['rows'])
         missing = manifest.get('missing_suites', [])
         receipt.update(status='partial' if (any(item['count'] for item in outcomes.values())
@@ -271,17 +343,23 @@ def plan_updates(root: Path, validated: list[tuple[dict, dict[str, bytes]]]) -> 
         decision = 'accepted'
         if path.exists():
             previous = json.loads(path.read_text())
-            old, new = order_key(previous), order_key(receipt)
-            if old == new:
-                immutable = ('schema_version', 'target_profile', 'suite_id', 'collected_at', 'harness_commit', 'tenferro_commit', 'hardware', 'files')
-                if any(previous.get(key) != receipt.get(key) for key in immutable) or previous['source'].get('head_sha') != receipt['source'].get('head_sha'):
-                    raise ValueError('Identical source key has conflicting content')
-                # Detect manual divergence instead of claiming a false duplicate.
-                if any(not (root / name).exists() or (root / name).read_bytes() != value for name, value in payload.items()):
-                    raise ValueError('Committed result diverges from accepted provenance')
-                decision = 'duplicate'
-            elif old > new:
-                decision = 'stale'
+            if 'source' not in previous:
+                # A receipt a runner wrote records the published page, not a run, so
+                # it orders by collection time alone; a candidate older than it is stale.
+                if instant(previous['collected_at']) >= instant(receipt['collected_at']):
+                    decision = 'stale'
+            else:
+                old, new = order_key(previous), order_key(receipt)
+                if old == new:
+                    immutable = ('schema_version', 'target_profile', 'suite_id', 'collected_at', 'harness_commit', 'tenferro_commit', 'hardware', 'files')
+                    if any(previous.get(key) != receipt.get(key) for key in immutable) or previous['source'].get('head_sha') != receipt['source'].get('head_sha'):
+                        raise ValueError('Identical source key has conflicting content')
+                    # Detect manual divergence instead of claiming a false duplicate.
+                    if any(not (root / name).exists() or (root / name).read_bytes() != value for name, value in payload.items()):
+                        raise ValueError('Committed result diverges from accepted provenance')
+                    decision = 'duplicate'
+                elif old > new:
+                    decision = 'stale'
         elif (root / (base + '.summary.json')).exists():
             legacy = json.loads((root / (base + '.summary.json')).read_text())
             if instant(legacy['timestamp']) >= instant(receipt['collected_at']):
@@ -291,3 +369,20 @@ def plan_updates(root: Path, validated: list[tuple[dict, dict[str, bytes]]]) -> 
             updates.update(payload)
             updates[relative] = (json.dumps(receipt, indent=2, sort_keys=True) + '\n').encode()
     return updates, decisions
+
+
+def main(argv=None) -> int:
+    """Write the acceptance receipt for each published page named on the command line."""
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument('report', type=Path, nargs='+',
+                        help='published report; its .summary.json sibling is the sidecar')
+    parser.add_argument('--root', type=Path, default=REPOSITORY_ROOT,
+                        help='repository root the receipt paths are relative to')
+    args = parser.parse_args(argv)
+    for report in args.report:
+        print(publish_receipt(report, args.root))
+    return 0
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

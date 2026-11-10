@@ -1,0 +1,15 @@
+{
+  "collected_at": "2026-10-19T09:28:49.176769+00:00",
+  "files": {
+    "result/nvidia-gpu/gpu/linalg_ad_throughput.md": "66a175a30b37d63d16b808b281d4afa35aa7e564e438ecb8e8f809531f02535d",
+    "result/nvidia-gpu/gpu/linalg_ad_throughput.summary.json": "936a2d74213136f76f0b6cc7ab4813158b2b81f30517264cfcf1c11ac1396e94"
+  },
+  "hardware": {
+    "gpu": "NVIDIA A100 80GB PCIe",
+    "host": "8b14bb26e819"
+  },
+  "schema_version": 1,
+  "suite_id": "gpu/linalg_ad_throughput",
+  "target_profile": "nvidia-gpu",
+  "tenferro_commit": "e921b059a5e3c41ea76002553cbb9415d4b5e58d"
+}

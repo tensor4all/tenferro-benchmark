@@ -1968,12 +1968,15 @@ def load_provenance(report: Path, profile: str, suite_id: str) -> dict[str, Any]
     if (document.get("schema_version") != 1 or document.get("target_profile") != profile
             or document.get("suite_id") != suite_id):
         raise ValueError(f"Invalid accepted-result provenance: {path}")
-    source = document["source"]
-    if source["repository"] != "tensor4all/tenferro-benchmark":
-        raise ValueError(f"Unexpected provenance repository: {path}")
-    for key in ("run_id", "run_attempt", "artifact_id"):
-        if type(source[key]) is not int or source[key] < 1:
-            raise ValueError(f"Invalid provenance source identity: {path}")
+    # A receipt a runner wrote records the published page, not a source run, so
+    # only the driver's receipts carry the run identity that is checked here.
+    source = document.get("source")
+    if source is not None:
+        if not isinstance(source, dict) or source.get("repository") != "tensor4all/tenferro-benchmark":
+            raise ValueError(f"Unexpected provenance repository: {path}")
+        for key in ("run_id", "run_attempt", "artifact_id"):
+            if type(source.get(key)) is not int or source[key] < 1:
+                raise ValueError(f"Invalid provenance source identity: {path}")
     for candidate in (report, report.with_suffix(".summary.json")):
         relative = f"result/{profile}/{candidate.parent.name}/{candidate.name}"
         expected = document["files"].get(relative)
@@ -1993,10 +1996,16 @@ def is_hosted(view: SuiteView) -> bool:
 def render_provenance(view: SuiteView) -> str:
     if not view.provenance:
         return '<p class="muted">Legacy report: ingestion provenance is unrecorded; no raw artifact is inferred.</p>'
-    source = view.provenance["source"]
+    receipt = view.report.with_suffix(".provenance.json").name
+    source = view.provenance.get("source")
+    if not source:
+        return (
+            '<div class="notice"><strong>Published result.</strong> '
+            'Rendered from the committed run record; no source run identity is recorded. '
+            f'<a href="{esc(receipt)}">provenance and SHA-256 digests</a>.</div>'
+        )
     run_url = f"https://github.com/tensor4all/tenferro-benchmark/actions/runs/{source['run_id']}"
     artifact_url = f"{run_url}/artifacts/{source['artifact_id']}"
-    receipt = view.report.with_suffix(".provenance.json").name
     return (
         '<div class="notice"><strong>Accepted result provenance.</strong> '
         f'<a href="{run_url}">Source run {source["run_id"]}, attempt {source["run_attempt"]}</a> · '
@@ -2129,14 +2138,25 @@ def receipt_order_key(receipt: dict[str, Any]) -> tuple:
 
 
 def latest_campaigns(views: Iterable[SuiteView]) -> dict[str, dict[str, Any]]:
-    """The latest accepted receipt per profile: the campaign that defines current coverage."""
+    """The latest accepted receipt per profile: the campaign that defines current coverage.
+
+    A receipt without ``source`` records a runner's publish, not a campaign: it has
+    no run identity and no ``missing_suites``, so counting it would hide the suites
+    the last real campaign did not collect. A publish that overwrote a campaign's
+    receipt carries that campaign under ``campaign`` (``result_ingestion`` copies it
+    before replacing the page), so the coverage inventory outlives the page.
+    """
     latest: dict[str, tuple[tuple, dict[str, Any]]] = {}
     for view in views:
-        if not view.provenance:
-            continue
-        key = receipt_order_key(view.provenance)
+        receipt = view.provenance or {}
+        if not receipt.get("source"):
+            carried = receipt.get("campaign")
+            if not isinstance(carried, dict) or not carried.get("source"):
+                continue
+            receipt = carried
+        key = receipt_order_key(receipt)
         if view.profile not in latest or key > latest[view.profile][0]:
-            latest[view.profile] = (key, view.provenance)
+            latest[view.profile] = (key, receipt)
     return {profile: receipt for profile, (_key, receipt) in latest.items()}
 
 

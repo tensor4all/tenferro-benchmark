@@ -52,6 +52,7 @@ if str(SCRIPT_DIR) not in sys.path:
 
 import report_summary  # noqa: E402
 from benchmark_layout import safe_target_profile  # noqa: E402
+from ci.result_ingestion import publish_receipt  # noqa: E402
 
 ROOT = SCRIPT_DIR.parent
 RUN_DIR_RE = re.compile(r"\d{8}_\d{6}")
@@ -278,6 +279,7 @@ def regenerate(
             print(f"would write {out} from {run_dir}")
             continue
         report_summary.write_document(out, document)
+        publish_receipt(report, Path(result_dir).resolve().parent)
         print(f"wrote {out} from {run_dir} ({len(document['rows'])} rows)")
         written.append(out)
     return written
@@ -456,6 +458,7 @@ def publish(
             markdown.write_bytes(page.markdown)
             summary = report_summary.summary_path_for_report(markdown)
             summary.write_bytes(page.summary)
+            publish_receipt(markdown, root)
             written += [markdown, summary]
     return written
 

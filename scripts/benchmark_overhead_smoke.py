@@ -329,9 +329,7 @@ def report(run_dir, target):
     report_summary.write_document(run_dir / "report.summary.json", document)
     report_summary.write_document(run_dir / f"{Path(SUITE_ID).name}.summary.json", document)
     latest = ROOT / "result" / safe_target_profile(target) / "cpu" / "overhead_smoke.md"
-    latest.parent.mkdir(parents=True, exist_ok=True)
-    latest.write_text(text)
-    report_summary.write_document(latest.with_suffix(".summary.json"), document)
+    report_summary.publish_page(latest, text, document, ROOT)
     print(latest)
 
 

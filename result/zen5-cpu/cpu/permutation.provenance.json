@@ -1,0 +1,20 @@
+{
+  "collected_at": "2026-10-28T01:14:23.435274+00:00",
+  "files": {
+    "result/zen5-cpu/cpu/permutation.md": "0832732138c56d7f7d902ef74bf74e39529fc8ba3bb483aaac2b6b7f5ffd9c4c",
+    "result/zen5-cpu/cpu/permutation.summary.json": "82432ff655b064904fae89860aa1e97a20394e0d66aef5af5892a01aa626f8e0"
+  },
+  "hardware": {
+    "cpu": "AMD Ryzen AI 9 HX 470 w/ Radeon 890M",
+    "host": "bcfefbe95606",
+    "threads": [
+      1,
+      4,
+      8
+    ]
+  },
+  "schema_version": 1,
+  "suite_id": "cpu/permutation",
+  "target_profile": "zen5-cpu",
+  "tenferro_commit": "8fec1ca70852b930c092e7177c30bb8af7594a57"
+}

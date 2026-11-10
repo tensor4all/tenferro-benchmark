@@ -1,0 +1,15 @@
+{
+  "collected_at": "2026-10-19T09:28:49.176769+00:00",
+  "files": {
+    "result/nvidia-gpu/gpu/dense_throughput.md": "45f502a8d54fc3e0946ca423f19a2e66ec8cddf69d1c05c0901f07f2c756047a",
+    "result/nvidia-gpu/gpu/dense_throughput.summary.json": "3ab49810e8904612873616e18e1bdb3118fc46d5448b679fd1ce5ef363081d27"
+  },
+  "hardware": {
+    "gpu": "NVIDIA A100 80GB PCIe",
+    "host": "8b14bb26e819"
+  },
+  "schema_version": 1,
+  "suite_id": "gpu/dense_throughput",
+  "target_profile": "nvidia-gpu",
+  "tenferro_commit": "e921b059a5e3c41ea76002553cbb9415d4b5e58d"
+}

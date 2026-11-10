@@ -1,5 +1,6 @@
 """Timing-scope regressions for the overhead smoke trend and legacy raw runs."""
 
+import hashlib
 import json
 from pathlib import Path
 import sys
@@ -94,6 +95,20 @@ class OverheadSmokeTests(unittest.TestCase):
             self.assertEqual(metadata.read_bytes(), original_metadata)
             self.assertEqual(
                 text, (root / 'result/amd-cpu/cpu/overhead_smoke.md').read_text()
+            )
+            # #431: the newest summary is published with the receipt that accepts it.
+            receipt = json.loads(
+                (root / 'result/amd-cpu/cpu/overhead_smoke.provenance.json').read_text()
+            )
+            self.assertEqual(
+                receipt['files'],
+                {
+                    relative: hashlib.sha256((root / relative).read_bytes()).hexdigest()
+                    for relative in (
+                        'result/amd-cpu/cpu/overhead_smoke.md',
+                        'result/amd-cpu/cpu/overhead_smoke.summary.json',
+                    )
+                },
             )
 
 

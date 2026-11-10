@@ -243,6 +243,7 @@ if [[ "${GPU_BENCH_SKIP_LATEST:-0}" != 1 ]]; then
     cp "$MARKDOWN_OUT" "$REPORT_OUT"
     if [[ -f "${MARKDOWN_OUT%.md}.summary.json" ]]; then
         cp "${MARKDOWN_OUT%.md}.summary.json" "${REPORT_OUT%.md}.summary.json"
+        "${PYTHON[@]}" "$SCRIPT_DIR/ci/result_ingestion.py" "$REPORT_OUT"
     fi
 fi
 

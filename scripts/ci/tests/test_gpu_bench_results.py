@@ -5,11 +5,11 @@ A record is what an accepted run leaves behind: the summary document from
 ``hardware.host``, ``timestamp``, measured rows). Two records that differ only
 in one identity field must be refused by name and must not print a table.
 
-Acceptance is a mark in the data, not the commit message: the ingestion driver
-commits the sidecar together with ``<suite>.provenance.json``, whose ``files``
-map holds the sidecar's sha256 (``result_ingestion.plan_updates``). A sidecar
-revision without that receipt is an edit, not an accepted measurement, except
-for the revisions from before receipts existed.
+Acceptance is a mark in the data, not the commit message: the sidecar is
+committed together with ``<suite>.provenance.json``, whose ``files`` map holds
+its sha256 (``result_ingestion.acceptance_receipt``).  Every path that publishes
+the sidecar writes that receipt, so a revision without one is an edit, not an
+accepted measurement, however many files it rewrites (#431).
 """
 import contextlib
 import hashlib
@@ -27,6 +27,7 @@ sys.path.insert(0, str(ROOT))
 
 from scripts.ci.gpu_bench_results import (  # noqa: E402
     accepted_runs, baseline_for, compare, render, status)
+from scripts.ci.result_ingestion import publish_receipt  # noqa: E402
 
 COMMIT_A = 'a' * 40
 COMMIT_B = 'b' * 40
@@ -643,14 +644,15 @@ class HistoryTests(unittest.TestCase):
         records = accepted_runs(self.repo, 'nvidia-gpu', 'gpu/never_ingested')
         self.assertEqual([item['timestamp'] for item in records], [WEEK_45_LATE])
 
-    def test_a_sidecar_from_before_the_receipts_is_still_history(self):
-        # Published before the driver recorded receipts: no receipt can exist.
-        legacy = record(WEEK_44, COMMIT_A)
-        self.write(self.sidecar(legacy), json.dumps(legacy).encode())
-        self.commit('Write machine-readable report summaries')
-        self.accept(record(WEEK_45_EARLY, COMMIT_B))
-        records = accepted_runs(self.repo, 'nvidia-gpu', 'gpu/dense')
-        self.assertEqual([item['timestamp'] for item in records], [WEEK_45_EARLY, WEEK_44])
+    def test_a_sidecar_published_without_a_receipt_is_not_an_accepted_run(self):
+        # #431: a commit that published the report together with the sidecar used
+        # to pass on the `.md` rule, so an edit of both files was a publish. The
+        # report is part of the publish, not evidence of it.
+        document = record(WEEK_44, COMMIT_A)
+        relative = self.write(self.sidecar(document), json.dumps(document).encode())
+        self.write(relative.replace('.summary.json', '.md'), b'published report\n')
+        self.commit('Publish the GPU page without a receipt')
+        self.assertEqual(accepted_runs(self.repo, 'nvidia-gpu', 'gpu/dense'), [])
 
     def test_a_record_of_another_suite_is_refused_instead_of_compared(self):
         # The title comes from the record and the rows from the path, so a sidecar
@@ -737,21 +739,36 @@ class HistoryTests(unittest.TestCase):
                 self.assertEqual(process.returncode, 0)
                 self.assertIn('| case |', process.stdout)
 
-    def test_a_receipt_free_suite_accepts_only_its_published_report_revisions(self):
-        # A suite the driver never ingested, in a repository that does record
-        # receipts: the run's report is published with the sidecar, so a
-        # sidecar-only revision is an edit, not a run.
+    def test_a_receipt_free_suite_accepts_only_its_receipted_revisions(self):
+        # A suite the driver never ingested, in a repository that records receipts:
+        # its runner publish writes the receipt (#431), so that revision is a run
+        # and a later edit of the same page is not. Without the publish receipt the
+        # old `.md` rule accepted both.
         ingested = record(WEEK_43, COMMIT_A)
         ingested['suite_id'] = 'gpu/ingested'
         self.accept(ingested)
         for document in (record(WEEK_44, COMMIT_A), record(WEEK_45_EARLY, COMMIT_B)):
-            relative = self.write(self.sidecar(document), json.dumps(document).encode())
+            payload = json.dumps(document).encode()
+            relative = self.write(self.sidecar(document), payload)
             self.write(relative.replace('.summary.json', '.md'),
                        f"report of {document['timestamp']}\n".encode())
+            self.receipt(relative, payload)
             self.commit('Publish the GPU page')
-        self.edit(record(WEEK_45_LATE, COMMIT_B, scale=9.0))
+        self.edit(record(WEEK_45_LATE, COMMIT_B, scale=9.0), message='Manual page edit')
         records = accepted_runs(self.repo, 'nvidia-gpu', 'gpu/dense')
         self.assertEqual([item['timestamp'] for item in records], [WEEK_45_EARLY, WEEK_44])
+
+    def test_the_publisher_writes_the_receipt_this_tool_reads(self):
+        # The contract with `result_ingestion.publish_receipt`, which every path
+        # that writes a sidecar calls: the receipt it writes is what accepts the
+        # sidecar, and the digest it records is of the bytes committed here.
+        document = record(WEEK_44, COMMIT_A)
+        report = self.write(self.sidecar(document).replace('.summary.json', '.md'), b'page\n')
+        self.write(self.sidecar(document), json.dumps(document, indent=2).encode())
+        publish_receipt(self.repo / report, self.repo)
+        self.commit('Publish the GPU page')
+        self.assertEqual([item['timestamp'] for item in
+                          accepted_runs(self.repo, 'nvidia-gpu', 'gpu/dense')], [WEEK_44])
 
     def test_a_run_merged_from_a_branch_is_still_accepted(self):
         # Git's default path history simplification drops a commit whose sidecar
@@ -769,25 +786,6 @@ class HistoryTests(unittest.TestCase):
         self.assertEqual(process.returncode, 0)
         self.assertIn('| baseline ms | candidate ms |', process.stdout)
         self.assertNotIn('no baseline', process.stdout)
-
-    def test_an_unrelated_merged_receipt_does_not_move_the_history_boundary(self):
-        # The boundary is whether *this* revision's own history carries a receipt.
-        # A receipt committed on another branch and merged later reclassified an
-        # already published run when the boundary was a single commit.
-        self.write('README.md', b'bench\n')
-        self.commit('Initial commit', date='2026-10-20T00:00:00+00:00')
-        self.git('checkout', '-q', '-b', 'other')
-        other = record(WEEK_43, COMMIT_A)
-        other['suite_id'] = 'gpu/other'
-        self.accept(other, date='2026-10-27T00:00:00+00:00')
-        self.git('checkout', '-q', 'main')
-        published = record(WEEK_44, COMMIT_B)
-        self.write(self.sidecar(published), json.dumps(published).encode())
-        self.commit('Write the report summary', date='2026-11-01T00:00:00+00:00')
-        self.accept(record(WEEK_45_LATE, COMMIT_B, scale=1.5), date='2026-11-08T00:00:00+00:00')
-        self.git('merge', '--no-ff', 'other', '-m', 'merge the other branch')
-        records = accepted_runs(self.repo, 'nvidia-gpu', 'gpu/dense')
-        self.assertEqual([item['timestamp'] for item in records], [WEEK_45_LATE, WEEK_44])
 
     def test_unverified_rows_are_named_instead_of_compared(self):
         # result_ingestion refuses a measurement whose `verified` is not true, so a

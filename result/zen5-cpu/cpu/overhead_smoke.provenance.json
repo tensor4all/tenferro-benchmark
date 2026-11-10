@@ -1,0 +1,17 @@
+{
+  "collected_at": "2026-10-28T01:14:19Z",
+  "files": {
+    "result/zen5-cpu/cpu/overhead_smoke.md": "4a9c13101141ef091d01644e9d7ecf8996f3c97942c9ff4d51cac0a406d22cf8",
+    "result/zen5-cpu/cpu/overhead_smoke.summary.json": "5ad05cb877e6f70a295c1f35930ea4b1ecc5fbf0c31bc6276094f4fc56446ca8"
+  },
+  "hardware": {
+    "host": "bcfefbe95606",
+    "threads": [
+      1
+    ]
+  },
+  "schema_version": 1,
+  "suite_id": "cpu/overhead_smoke",
+  "target_profile": "zen5-cpu",
+  "tenferro_commit": "8fec1ca70852b930c092e7177c30bb8af7594a57"
+}

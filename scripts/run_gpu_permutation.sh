@@ -209,11 +209,9 @@ echo "Formatting gpu/permutation results as markdown..."
     --summary "$RUN_DIR/report.summary.json" --run-metadata "$RUN_YAML" "${INPUTS[@]}"
 if [[ "${GPU_BENCH_SKIP_LATEST:-0}" != 1 ]]; then
     cp "$RUN_DIR/report.md" "$LATEST_REPORT"
-    cp "$RUN_DIR/report.summary.json" "${LATEST_REPORT%.md}.summary.json"
-fi
-
-# Record the correctness-gate mode in the maintained report text too.
-"${PYTHON[@]}" - "$LATEST_REPORT" "$PERMUTATION_VERIFICATION_MODE" <<'PY'
+    # Record the correctness-gate mode in the maintained report text, before the
+    # receipt is written: the receipt holds the digest of the page as published.
+    "${PYTHON[@]}" - "$LATEST_REPORT" "$PERMUTATION_VERIFICATION_MODE" <<'PY'
 import sys
 from pathlib import Path
 path = Path(sys.argv[1])
@@ -226,6 +224,9 @@ text += (
 ) % sys.argv[2]
 path.write_text(text)
 PY
+    cp "$RUN_DIR/report.summary.json" "${LATEST_REPORT%.md}.summary.json"
+    "${PYTHON[@]}" "$SCRIPT_DIR/ci/result_ingestion.py" "$LATEST_REPORT"
+fi
 
 echo ""
 echo "GPU permutation benchmark suite complete: $SUITE_ID"

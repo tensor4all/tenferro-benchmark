@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Focused checks for ordinary small-work selection, failures and reporting."""
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -110,6 +111,18 @@ class SmallWorkSuiteTest(unittest.TestCase):
             self.assertIn('FAILED', report)
             self.assertIn('numerical mismatch', report)
             self.assertEqual(report, (Path(tmp)/'result/amd-cpu/cpu/small_work.md').read_text())
+            # #431: the newest summary is published with the receipt that accepts it.
+            receipt = json.loads(
+                (Path(tmp)/'result/amd-cpu/cpu/small_work.provenance.json').read_text()
+            )
+            self.assertEqual(
+                receipt['files'],
+                {
+                    relative: hashlib.sha256((Path(tmp)/relative).read_bytes()).hexdigest()
+                    for relative in ('result/amd-cpu/cpu/small_work.md',
+                                     'result/amd-cpu/cpu/small_work.summary.json')
+                },
+            )
 
     def test_execution_failure_is_not_a_latency(self):
         with tempfile.TemporaryDirectory() as tmp:

@@ -1,0 +1,20 @@
+{
+  "collected_at": "2026-10-28T00:16:12.734135+00:00",
+  "files": {
+    "result/zen5-cpu/cpu/einsum.md": "816a68396ee4a446828cce905b4622ce99813e92f7a1e63872c0627fa2277d7e",
+    "result/zen5-cpu/cpu/einsum.summary.json": "7f1ba53aaba23c0d5714ce05173be8b7d4ffea4876e42c2ffa66abf6df5972eb"
+  },
+  "hardware": {
+    "cpu": "x86_64",
+    "host": "bcfefbe95606",
+    "threads": [
+      1,
+      4,
+      8
+    ]
+  },
+  "schema_version": 1,
+  "suite_id": "cpu/einsum",
+  "target_profile": "zen5-cpu",
+  "tenferro_commit": "8fec1ca70852b930c092e7177c30bb8af7594a57"
+}

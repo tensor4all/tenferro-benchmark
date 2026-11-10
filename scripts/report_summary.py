@@ -280,6 +280,23 @@ def write_document(path: Path, document: dict[str, Any]) -> Path:
     return path
 
 
+def publish_page(report_path: Path, text: str, document: dict[str, Any],
+                 root: Path = REPO_ROOT) -> Path:
+    """Write a maintained page, its sidecar and the receipt that marks the publish.
+
+    The runners that write the newest summary directly all publish through here,
+    so none of them can leave a sidecar the acceptance check cannot read.
+    """
+    report_path = Path(report_path)
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text(text)
+    write_document(summary_path_for_report(report_path), document)
+    from ci.result_ingestion import publish_receipt
+
+    publish_receipt(report_path, root)
+    return report_path
+
+
 def metadata_from_run_metadata(run_metadata: dict[str, Any] | None) -> dict[str, Any]:
     """Extract the summary header fields shared by all formatters."""
     run_metadata = run_metadata or {}

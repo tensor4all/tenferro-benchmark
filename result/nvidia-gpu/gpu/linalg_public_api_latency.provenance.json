@@ -1,0 +1,16 @@
+{
+  "collected_at": "2026-11-05T03:43:18Z",
+  "files": {
+    "result/nvidia-gpu/gpu/linalg_public_api_latency.md": "187d0a1b81e73ca695282565bb1fdd96e712718e6d3e287ba185a39272823336",
+    "result/nvidia-gpu/gpu/linalg_public_api_latency.summary.json": "836796eeb5b2bd2716d2473bd0006429d66fbddcfe46b73f3651d04efb65d2ce"
+  },
+  "hardware": {
+    "cpu": "AMD EPYC 7713P 64-Core Processor",
+    "gpu": "NVIDIA A100 80GB PCIe",
+    "host": "bd7fc8e76a87"
+  },
+  "schema_version": 1,
+  "suite_id": "gpu/linalg_public_api_latency",
+  "target_profile": "nvidia-gpu",
+  "tenferro_commit": "a000e5c4929d5bebb91e783c329b27106baed12e"
+}

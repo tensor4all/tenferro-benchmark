@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Checks for the cpu/perf_issues and gpu/perf_issues case files and runner."""
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -112,6 +113,18 @@ class PerfIssueSuiteTest(unittest.TestCase):
             self.assertIn('UNSUPPORTED: no public plan-build observer', text)
             self.assertIn('binary_plan_builds_per_call: `null`', text)
             self.assertIn('| metadata | 0 | 0.00 | 0 | — |', text)
+            # #431: the newest summary is published with the receipt that accepts it.
+            receipt = json.loads(
+                (root/'result/amd-cpu/cpu/perf_issues.provenance.json').read_text()
+            )
+            self.assertEqual(
+                receipt['files'],
+                {
+                    relative: hashlib.sha256((root/relative).read_bytes()).hexdigest()
+                    for relative in ('result/amd-cpu/cpu/perf_issues.md',
+                                     'result/amd-cpu/cpu/perf_issues.summary.json')
+                },
+            )
 
     def test_filtered_gpu_diagnostic_can_preserve_latest_report(self):
         with tempfile.TemporaryDirectory() as tmp:
