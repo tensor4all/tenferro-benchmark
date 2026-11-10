@@ -437,6 +437,21 @@ def slower_rows(baseline: dict, candidate: dict, threshold: float) -> dict:
         # Rows are classified over both records' identities, not their
         # intersection: intersecting first is what let an unverified row with no
         # counterpart vanish without the diagnostic the table owes the reader.
+        dropped = [(side, (row or {}).get('status'))
+                   for side, row, other in (('baseline', left, right), ('candidate', right, left))
+                   if row is not None and other is not None and not measured(row)]
+        failed = [(side, status) for side, status in dropped if status in FAILED_STATUSES]
+        if failed:
+            # A run failure, unlike a recorded skip, is a measurement the pair does
+            # not cover - named here whether the other side measured it, failed it
+            # as well, or is absent (the branch below).  It is classified before
+            # the unverified short-circuit on purpose: an unverified row on the
+            # other side has no comparable counterpart, and skipping it must not
+            # report a run that crashed as a passing week.
+            not_ok.append({'case': key[0], 'group': key[1], 'backend': key[2],
+                           'notes': [f'{side} status {status}' for side, status in dropped],
+                           'failed': True})
+            continue
         sides = [side for side, row in (('baseline', left), ('candidate', right))
                  if row is not None and measured(row) and row.get('verified') is not True]
         if sides:
@@ -447,18 +462,13 @@ def slower_rows(baseline: dict, candidate: dict, threshold: float) -> dict:
                                'baseline': (left or {}).get('median'),
                                'candidate': (right or {}).get('median'), 'sides': sides})
             continue
-        dropped = [(side, (row or {}).get('status'))
-                   for side, row, other in (('baseline', left, right), ('candidate', right, left))
-                   if row is not None and other is not None and not measured(row)]
         if dropped:
             # Both runs recorded the identity and at least one of them recorded no
-            # measurement, so there is no ratio; naming it is the diagnostic.  A
-            # run failure, unlike a recorded skip, is a measurement the pair does
-            # not cover - named here whether the other side measured it, failed it
-            # as well, or is absent (the branch below).
+            # measurement (a recorded skip: a failure is taken above), so there is
+            # no ratio; naming it is the diagnostic.
             not_ok.append({'case': key[0], 'group': key[1], 'backend': key[2],
                            'notes': [f'{side} status {status}' for side, status in dropped],
-                           'failed': any(status in FAILED_STATUSES for _, status in dropped)})
+                           'failed': False})
             continue
         if left is None or right is None:
             # One run has no entry for this identity at all.  A case that an

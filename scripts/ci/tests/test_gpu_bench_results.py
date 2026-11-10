@@ -227,13 +227,25 @@ class BaselineTests(unittest.TestCase):
         failure = {'case': 'dense_matmul', 'group': 'matmul', 'backend': 'tenferro-cuda-eager',
                    'status': 'runtime_failed', 'reason': 'kernel crashed', 'median': None,
                    'iqr': None, 'verified': False}
+        # A measurement the ingestion driver would refuse (``verified`` is not
+        # true), which is a pair member that cannot be compared either.
+        unverified = {'case': 'dense_matmul', 'group': 'matmul', 'backend': 'tenferro-cuda-eager',
+                      'status': 'ok', 'median': 1.0, 'iqr': 0.1, 'verified': False,
+                      'verification': 'measure_only', 'reason': 'measured without a check'}
         for case, baseline_row, candidate_row, clause in (
                 ('candidate failed', 'measured', failure,
                  '(candidate status runtime_failed)'),
                 ('both failed', failure, dict(failure, status='oom'),
                  '(baseline status runtime_failed and candidate status oom)'),
                 ('candidate only', None, failure,
-                 '(candidate only, status runtime_failed)')):
+                 '(candidate only, status runtime_failed)'),
+                ('candidate unverified, baseline failed', failure, unverified,
+                 '(baseline status runtime_failed)'),
+                ('baseline unverified, candidate failed', unverified, failure,
+                 '(candidate status runtime_failed)'),
+                ('both failed and unverified', dict(failure, verified=False),
+                 dict(failure, verified=False),
+                 '(baseline status runtime_failed and candidate status runtime_failed)')):
             with self.subTest(case=case):
                 baseline, candidate = record(WEEK_44, COMMIT_A), record(WEEK_45_LATE, COMMIT_B)
                 if baseline_row is None:
