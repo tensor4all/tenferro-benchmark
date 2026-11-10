@@ -152,7 +152,9 @@ validation failures are deferred until accounting is written and still force
 a nonzero exit, even if the case status itself is benign. The page, its summary
 sidecar and their ingestion receipt are published inside the collection loop and
 are deferred the same way: a refused receipt sets the run red without skipping
-the next suite, the accounting or the coverage report. Its exit
+the next suite, the accounting or the coverage report. The maintained routine
+coverage page copied to `result/` after the loop is deferred the same way, so an
+unwritable page still leaves the wall records on disk. Its exit
 code is nonzero for any failed, missing, duplicate or unexpected case, and zero
 for skipped/unsupported-only collections. A reasonless skipped/unsupported row
 fails. The existing weekly success gate can therefore skip later slots after a

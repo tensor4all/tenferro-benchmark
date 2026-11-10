@@ -5,7 +5,9 @@ ingestion receipt inside the collection loop, then writes `case_status.json` and
 the coverage report once the loop is done, and exits 1 last. A receipt that
 refuses a page therefore has to be recorded and skipped like every other step:
 ending the script there would leave the run red *before* the accounting that
-says which cases were measured, which is the loss #374 forbids.
+says which cases were measured, which is the loss #374 forbids. The maintained
+coverage page copied after the loop sits between the same two writes and is
+guarded the same way.
 
 The collection runs against a fixture root, so no GPU and no network are used.
 """
@@ -24,6 +26,11 @@ STAMP = "20000101_000000"
 SUITE_FILE = "benchmarks/gpu/dense.yaml"
 PROBLEM = "dense_matmul_f64_3072"
 BACKENDS = ("jax-cuda", "pytorch-cuda")
+# The routine refresh collects the manifest's own set, so a fixture manifest of
+# two suites is what a two-suite collection looks like without a filter.
+TWO_SUITES = {"gpu/dense": "dense_matmul_f64_3072",
+              "gpu/einsum": "einsum_bin_matmul_3072_f64"}
+FILTER_VARS = ("GPU_BENCH_SUITE", "GPU_BENCH_BACKENDS", "GPU_BENCH_PROBLEM")
 
 
 def row(suite_id, problem, backend):
@@ -63,29 +70,37 @@ class PublishStepFailureTest(unittest.TestCase):
             target = self.root / spec["file"]
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy(ROOT / spec["file"], target)
-        # A runner that measures both arms: this suite is not what fails.
+        # A runner that measures every case of the suite it is handed, so this
+        # runner is never what fails.
         record = json.dumps(row("gpu/dense", PROBLEM, "placeholder"))
         (self.root / "scripts/benchmark_gpu_python.py").write_text(
-            "import json, sys\nfrom pathlib import Path\n"
-            f"record = json.loads({record!r})\n"
-            "record['backend'] = sys.argv[4]\n"
-            "Path(sys.argv[1]).write_text(json.dumps(record) + '\\n')\n"
+            "import json, sys, yaml\nfrom pathlib import Path\n"
+            f"template = json.loads({record!r})\n"
+            "suite = yaml.safe_load(Path(sys.argv[-1]).read_text())\n"
+            "rows = [dict(template, suite_id=suite['suite_id'], problem_id=problem['id'],\n"
+            "             backend=sys.argv[4]) for problem in suite['problems']]\n"
+            "Path(sys.argv[1]).write_text(''.join(json.dumps(row) + '\\n' for row in rows))\n"
             "sys.exit(0)\n")
         # The wall report reads `harness` and `cuda`, so the fixture supplies them:
         # without them the run would be red for a reason that has nothing to do
         # with the publish steps, and a missing failure flag would go unnoticed.
-        metadata = dict(schema_version=1, target_profile="nvidia-gpu", suite_id="gpu/dense",
-                        suite_file=SUITE_FILE, timestamp="2000-01-01T00:00:00Z",
+        metadata = dict(schema_version=1,
                         tenferro_rs=dict(path="extern/tenferro-rs", commit="abcdef0", dirty=False,
                                          features=["cuda"]),
                         harness=dict(commit="abcdef0", dirty=False),
                         cuda=dict(device_ordinal=0, device_name="GPU-contract-test",
                                   device_uuid="GPU-0000"),
                         environment={})
+        # The identity is the suite's own, so one fixture can collect two suites.
         (self.root / "scripts/collect_run_metadata.py").write_text(
-            "import sys,yaml\nfrom pathlib import Path\n"
-            "Path(sys.argv[sys.argv.index('--output')+1]).write_text(yaml.safe_dump("
-            + repr(metadata) + "))\n")
+            "import sys, yaml\nfrom pathlib import Path\n"
+            "args = sys.argv[1:]\n"
+            "def opt(name):\n"
+            "    return args[args.index(name)+1]\n"
+            "metadata = dict(" + repr(metadata) + ")\n"
+            "metadata.update(target_profile=opt('--target-profile'), suite_id=opt('--suite-id'),\n"
+            "                suite_file=opt('--suite-file'), timestamp=opt('--timestamp'))\n"
+            "Path(opt('--output')).write_text(yaml.safe_dump(metadata))\n")
         # The ingestion receipt is the publish step under test: `write_receipt`
         # makes it refuse the page, `publish_ok` leaves the real writer in place.
         self.receipt = self.root / "scripts/ci/result_ingestion.py"
@@ -112,9 +127,38 @@ class PublishStepFailureTest(unittest.TestCase):
         self.selection = self.root / f"data/results/nvidia-gpu/gpu/routine_selection/{STAMP}"
         self.run_dir = self.root / f"data/results/nvidia-gpu/gpu/dense/{STAMP}"
 
-    def run_collection(self):
+    def run_collection(self, env=None):
         return subprocess.run(["bash", str(self.root / "scripts/run_gpu_suite.sh")],
-                              env=self.env, capture_output=True, text=True, timeout=120)
+                              env=env or self.env, capture_output=True, text=True, timeout=120)
+
+    def routine_refresh_env(self):
+        """The environment of a routine refresh: no suite, backend or problem filter."""
+        return {name: value for name, value in self.env.items() if name not in FILTER_VARS}
+
+    def install_manifest(self, suites):
+        """Point the fixture manifest at the given {suite_id: problem} set.
+
+        One case per suite and the python arms only, so a suite needs neither the
+        rust nor a delegated collector and an unfiltered run stays a fixture.
+        """
+        import yaml
+        path = self.root / "benchmarks/gpu/manifests/routine.yaml"
+        manifest = yaml.safe_load(path.read_text())
+        manifest["suites"] = {suite_id: dict(manifest["suites"][suite_id], problems=[problem],
+                                             backends=list(BACKENDS))
+                              for suite_id, problem in suites.items()}
+        path.write_text(yaml.safe_dump(manifest))
+
+    def refuse_page(self, suite_name):
+        """Make the receipt refuse one suite's page and accept every other one."""
+        real = self.root / "scripts/ci/result_ingestion_real.py"
+        real.write_text(self.real_receipt)
+        self.receipt.write_text(
+            "import runpy, sys\n"
+            f"if sys.argv[-1].endswith('/{suite_name}.md'):\n"
+            "    print('receipt: refused ' + sys.argv[-1], file=sys.stderr)\n"
+            "    sys.exit(4)\n"
+            f"runpy.run_path({str(real)!r}, run_name='__main__')\n")
 
     def test_a_refused_page_still_publishes_the_rows_and_the_accounting(self):
         process = self.run_collection()
@@ -171,6 +215,28 @@ class PublishStepFailureTest(unittest.TestCase):
         self.assertNotIn("PUBLISH FAILED", process.stderr)
         self.assertTrue((self.root / "result/nvidia-gpu/gpu/dense.provenance.json").is_file())
 
+    def test_a_refused_page_does_not_skip_the_next_suite(self):
+        # A one-suite fixture cannot tell "carried on" from "stopped": a `break`
+        # in the receipt branch leaves it green. The second suite's rows are what
+        # prove the loop continued.
+        self.install_manifest(TWO_SUITES)
+        self.refuse_page("dense")
+        process = self.run_collection(self.routine_refresh_env())
+        self.assertEqual(process.returncode, 1, process.stdout + process.stderr)
+        self.assertIn("receipt: refused", process.stderr)
+        self.assertIn("PUBLISH FAILED", process.stderr)
+        accounting = json.loads((self.selection / "case_status.json").read_text())
+        self.assertEqual(accounting["counts"]["executed"], 4)
+        self.assertEqual({key.split(":")[0] for key in accounting["executed"]},
+                         {"gpu/dense", "gpu/einsum"})
+        # Both suites' own wall records: a `continue` that skipped the rest of the
+        # loop body would lose the first suite's record but keep the rows above.
+        for name in ("dense", "einsum"):
+            self.assertTrue((self.root / f"data/results/nvidia-gpu/gpu/{name}/{STAMP}"
+                             / "wall_command.json").is_file(), name)
+        coverage = (self.selection / "report.md").read_text()
+        self.assertIn("gpu/dense:", coverage)
+        self.assertIn("gpu/einsum:", coverage)
 
     def test_an_unwritable_coverage_report_does_not_stop_the_run(self):
         # The maintained coverage page is published after the loop, and only on an
@@ -179,13 +245,8 @@ class PublishStepFailureTest(unittest.TestCase):
         # run before the wall record and the exit accounting (#374). The routine
         # manifest is shrunk to the one suite this fixture measures so that an
         # unfiltered run stays a contract test.
-        backends = ", ".join(BACKENDS)
-        (self.root / "benchmarks/gpu/manifests/routine.yaml").write_text(
-            "schema_version: 1\nmanifest_version: 2\nissue: 107\nsuites:\n"
-            "  gpu/dense:\n    file: benchmarks/gpu/dense.yaml\n"
-            f"    problems: [{PROBLEM}]\n    backends: [{backends}]\n")
-        for name in ("GPU_BENCH_SUITE", "GPU_BENCH_BACKENDS", "GPU_BENCH_PROBLEM"):
-            self.env.pop(name, None)
+        self.install_manifest({"gpu/dense": PROBLEM})
+        self.env = self.routine_refresh_env()
         self.receipt.write_text(self.real_receipt)
         first = self.run_collection()
         self.assertEqual(first.returncode, 0, first.stdout + first.stderr)
@@ -201,10 +262,10 @@ class PublishStepFailureTest(unittest.TestCase):
                 stale.unlink()
         second = self.run_collection()
         self.assertEqual(second.returncode, 1, second.stdout + second.stderr)
-        self.assertIn("PUBLISH FAILED: the coverage report", second.stderr)
         self.assertTrue((self.selection / "case_status.json").is_file())
         self.assertTrue((self.selection / "wall_command_complete.json").is_file())
         self.assertTrue((self.selection / "wall_report.md").is_file())
+        self.assertIn("PUBLISH FAILED: the coverage report", second.stderr)
 
 if __name__ == "__main__":
     unittest.main()
