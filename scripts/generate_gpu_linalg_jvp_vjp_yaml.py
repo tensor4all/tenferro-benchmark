@@ -198,8 +198,9 @@ SUITES = {
             "never compared or averaged together. The n=4096 rows cannot afford a second "
             "CPU AD pass, so they state the check that backs them (analytic, or a "
             "central difference) instead of the default cpu_reference. The QR cases "
-            "measured with one retirement per K calls live in "
-            "`gpu/linalg_ad_throughput`."
+            "measured with one retirement per K calls -- 256 JVP/VJP and 4096 JVP -- "
+            "live in `gpu/linalg_ad_throughput`; its 4096 VJP is absent because it "
+            "retains a 128 MiB gradient per run and the retention budget pins K to 1."
         ),
         "large",
     ),
