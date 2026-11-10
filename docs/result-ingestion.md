@@ -130,11 +130,12 @@ A workflow failure outside case collection does not invent failed cases.
 
 Pages shows nonzero outcome counts and collapsible case names, and explicitly
 labels source-workflow failure and unproduced suites. Zero-count notes are
-omitted. A publisher's receipt is not a campaign: it has no run identity and no
-`missing_suites`, so Pages keeps the last receipt that has a `source` as the
-campaign that defines current coverage, and a newer runner publish never hides
-the suites that campaign did not collect. An old report retained for an
-unproduced suite is labelled against the
+omitted. A publisher's receipt written from a runner's own page is not a
+campaign: it has no run identity and no `missing_suites` (one that replaced an
+unchanged sidecar keeps both from the campaign it replaced), so Pages keeps the
+last receipt that has a `source` as the campaign that defines current coverage,
+and a newer runner publish never hides the suites that campaign did not collect.
+An old report retained for an unproduced suite is labelled against the
 latest accepted collection's coverage. The `updated` line keeps its original
 revision/time meaning; timing values, ratios and raw reports are unchanged.
 
@@ -150,12 +151,14 @@ into `result/`. A formatter run by hand with `--output` pointing into `result/`
 is a hand edit, not a publication, and the acceptance check refuses it until the
 page is published through one of those paths. A receipt without `source` is a
 publisher's receipt: it records the published files, the suite identity and the
-collection time, not a source run, because a
-runner has no run identity to record. Acceptance is one rule for both — the
-receipt's `files` map holds the sidecar's sha256 — so a revision published
-without a receipt is an edit. Committed sidecars from before a suite's first
-receipt were stamped once by
-the same function, in its own commit, and are not rewritten afterwards.
+collection time, not a source run, because a runner has no run identity to
+record. A publish that replaces a receipt whose sidecar is byte-identical keeps
+that receipt's run identity and digest map: those are the same measurements, and
+only the page was rendered again. Acceptance is one rule for both — the receipt's
+`files` map holds the sidecar's sha256 — so a revision published without a
+receipt is an edit. Committed sidecars from before a suite's first receipt were
+stamped once by the same function, in its own commit, and are not rewritten
+afterwards.
 
 ## Ordering, partial bundles and atomicity
 

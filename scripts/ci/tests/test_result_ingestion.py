@@ -88,6 +88,33 @@ class IngestionTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'conflicting'):
             plan_updates(self.repo, conflicting)
 
+    def test_a_republished_page_still_accepts_the_run_it_recorded(self):
+        # A publish rewrites the receipt from the page it rendered. The run that
+        # produced the page must survive that rewrite, or replaying the same
+        # accepted bundle conflicts with the identity the publish just wrote (#443).
+        updates, _ = plan_updates(self.repo, self.validate())
+        self.apply(updates)
+        self.assertEqual(plan_updates(self.repo, self.validate()), ({}, {'cpu/einsum': 'duplicate'}))
+        published = json.loads(publish_receipt(
+            self.repo / 'result/amd-cpu/cpu/einsum.md', self.repo).read_text())
+        self.assertEqual(plan_updates(self.repo, self.validate()), ({}, {'cpu/einsum': 'duplicate'}))
+        self.assertEqual(published['harness_commit'], 'a'*40)
+
+    def test_the_same_source_key_with_another_content_is_a_conflict(self):
+        # Carrying the run and its digest map across a publish must not stop the same
+        # key from rejecting a genuinely different one: not another harness commit,
+        # and not a changed run record that leaves the page byte-identical.
+        updates, _ = plan_updates(self.repo, self.validate())
+        self.apply(updates)
+        publish_receipt(self.repo / 'result/amd-cpu/cpu/einsum.md', self.repo)
+        harness = self.validate()
+        harness[0][0]['harness_commit'] = 'c'*40
+        record = self.validate()
+        record[0][0]['files']['data/results/amd-cpu/cpu/einsum/20261018_000000/run.yaml'] = 'f'*64
+        for conflicting in (harness, record):
+            with self.assertRaisesRegex(ValueError, 'conflicting'):
+                plan_updates(self.repo, conflicting)
+
     def test_a_publisher_receipt_records_the_published_files(self):
         # Every path that writes a sidecar writes this receipt (#431), so the
         # acceptance check reads the same digest map whether the driver or a

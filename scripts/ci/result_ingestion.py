@@ -71,8 +71,11 @@ def safe_file(root: Path, relative: str) -> Path:
     return current
 
 
+# What a publish carries from the receipt it replaces: the run identity
+# (``harness_commit``, ``source``) and the coverage, none of which it can derive
+# from the page it renders.
 CAMPAIGN_RECEIPT_KEYS = ('schema_version', 'target_profile', 'suite_id', 'collected_at',
-                         'source', 'status', 'case_outcomes', 'missing_suites')
+                         'harness_commit', 'source', 'status', 'case_outcomes', 'missing_suites')
 
 
 def acceptance_receipt(profile: str, suite: str, collected_at: str, tenferro_commit: str,
@@ -120,10 +123,16 @@ def publish_receipt(report: Path, root: Path = REPOSITORY_ROOT) -> Path:
             if sidecar and (previous.get('files') or {}).get(sidecar) == files[sidecar]:
                 # The same sidecar, published again: these are the same measurements,
                 # and only the rendering may have changed. Rewriting the receipt must
-                # not demote the run that produced them — its source, its recorded
-                # failure and its coverage stay where the dashboard reads them.
+                # not demote the run that produced them — its harness commit, its
+                # source, its recorded failure and its coverage stay where the
+                # dashboard and the replay check read them.
                 receipt.update({key: previous[key] for key in CAMPAIGN_RECEIPT_KEYS
                                 if key in previous and key != 'schema_version'})
+                # This publish rewrote the page, not the run record the driver also
+                # digested. Keep those entries and refresh the page's own, or the
+                # receipt no longer matches the digest map it is a receipt for, and
+                # replaying the bundle it records conflicts with it.
+                receipt['files'] = {**(previous.get('files') or {}), **files}
             else:
                 receipt['campaign'] = {key: value for key, value in previous.items()
                                        if key in CAMPAIGN_RECEIPT_KEYS}
