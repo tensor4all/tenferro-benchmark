@@ -169,6 +169,64 @@ diagnostics are described in [the shape-stream workflow](gpu-shape-stream.md),
 with [GPU0 scan timings and separate GPU1 counters](../result/nvidia-gpu/gpu/shape_stream.md).
 Unsupported routes stay explicit and do not count as measured coverage.
 
+`scripts/ci/gpu_bench_results.py` is the week-over-week reading of accepted GPU
+results (#420): the baseline is the previous ISO week's accepted run of the same
+suite, taken from the committed summary sidecars by collection time, never
+"the last two accepted runs". A pair whose `tenferro_commit` is identical, whose
+`hardware.host` differs, whose runs fall in the same ISO week, or whose records
+disagree on `unit` is refused by name with no table and exit 1, and a previous
+week without an accepted run says `no baseline` rather than borrowing a
+neighbouring run. The report states both runs' commit, host, week and arm set
+above any row. Run metadata is read by type before the pair is gated: a revision
+whose `suite_id`, `tenferro_commit`, `hardware` or collection timestamp is
+missing or of another type (`hardware: ["h"]`, a non-string `host`, a numeric
+`timestamp`, an instant whose previous ISO week does not exist) is not a run this
+tool can compare, so the report states the metadata an accepted run has to record
+instead of tracing back on the field. A record that is shaped fine but whose
+`suite_id` or `target_profile` is not the one the report was asked for is refused
+by name with no table and exit 1, because comparing it means reading another
+suite's run against this suite's baseline under that other suite's title.
+
+An accepted run is a revision the ingestion driver recorded a receipt for: it
+commits `<suite>.provenance.json` together with the sidecar, holding the
+sidecar's sha256 (`result_ingestion.plan_updates`). A revision without that
+receipt is an edit, not a measurement: a receipt-free revision is the published
+history when no receipt exists at or before it — a property of its own ancestry,
+so merging another branch cannot reclassify it — and otherwise only a commit that
+publishes the run's report together with the sidecar (a receipt-free edit of both
+files is still taken as a publish; #431 removes that second acceptance path). In
+a repository that records no receipt at all, a sidecar revision is the published
+history by definition, because there is no acceptance signal to check. A receipt
+the tool cannot read (not JSON, `files` not a map) accepts nothing: that revision
+is skipped and named on stderr, so one corrupt receipt does not replace the
+report of the runs that do have a readable one, and neither does a committed
+sidecar that is not a JSON object. A row is
+compared only when the ingestion driver would accept it (status `ok`, a finite
+non-negative median and IQR, `verified: true`); a record the driver would reject
+as a whole (a repeated identity, an identity field that is not a string, a median
+or IQR that is not a finite non-negative number — an integer too large for a float
+included, a verification mode outside the schema, a status the driver does not
+record, or a `measure_only` row marked verified or without a reason) is refused by
+name with no table and exit 1 instead of one of its rows being overwritten. A row
+without a
+verified measurement — or one whose counterpart the other run did not record as
+a measurement, is named under the table instead of being compared or dropped
+silently. A row only one of the two runs recorded at all is named the same way, so
+a case that vanished from a week cannot read as no regression — and when the run
+that recorded it measured it, the report exits 1: the table still prints, but it
+no longer covers the run. A row a run recorded as a failure (`runtime_failed`,
+`oom`, ...) is classified before the unverified rows and exits 1 whether the
+other run measured the identity, failed it as well or did not record it: an
+unverified row on the other side has no comparable counterpart, and naming it
+there must not turn a crashed run into a passing week. A candidate the
+driver would reject is named even when that week has no accepted run to compare
+it with. A shallow
+clone, an unreadable repository, and a `--threshold` outside 1 to 1000000 are
+errors (exit 2) and never read as "no baseline".
+
+It reads committed results and measures nothing, so it needs no GPU and no
+scheduler change.
+
 These GPU scan rows are workflow-latency diagnostics. They contain no paired
 baseline/candidate performance conclusion. GPU paired confirmation and
 quick/full command-wall budgeting remain tracked in #107; the CPU paired

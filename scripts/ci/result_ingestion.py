@@ -41,6 +41,10 @@ READBACK_TITLE = 'RunPod readback (manual report)'
 
 
 def instant(value: str) -> datetime:
+    # A timestamp of another type records no instant: ``.replace`` raised
+    # AttributeError out of a caller that reports a ValueError.
+    if not isinstance(value, str):
+        raise ValueError('Collection timestamp is not a string')
     parsed = datetime.fromisoformat(value.replace('Z', '+00:00'))
     if parsed.tzinfo is None:
         raise ValueError('Collection timestamp must include a timezone')
