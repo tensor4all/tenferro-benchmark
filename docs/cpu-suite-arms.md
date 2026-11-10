@@ -54,6 +54,10 @@ prepare step to move outside the clock; the trace arm compiles and prepares outs
 eager number as what a program pays per `jvp`/`vjp` call, not as a prepared-program steady state.
 `scripts/format_linalg_ad_results.py` states both facts beside the table, so the two columns are
 not read as the same measurement; `scripts/ci/tests/test_linalg_ad_backends.py` keeps that note.
+The raw sample record says it too: an eager AD row writes
+`eager_session_policy: forward_and_derivative_inside_timing_with_eager_ad_prepare`, where a primal
+row writes `borrowed_session_outside_timing_for_primal`. The row is therefore self-describing
+rather than setup-inclusive by accident (`src/bin/publication_gate.rs`).
 
 The committed summaries still show **0 eager JVP/VJP rows** because they were collected before the
 registration. The next collection fills the eager column; this page states no eager-vs-trace

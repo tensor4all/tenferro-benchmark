@@ -78,9 +78,10 @@ class LinalgAdBackendColumns(unittest.TestCase):
         # the same measurement is wrong, so the page has to say so.
         page = fmt.format_table(write_csv([row("tenferro-eager", "3.0"),
                                            row("tenferro-trace", "11.0")]))
-        self.assertIn("Both tenferro arms time the same work", page)
-        self.assertIn("pays its", page)
+        self.assertIn("Both tenferro arms return the same requested outputs", page)
+        self.assertIn("carries the eager API's own AD", page)
         self.assertIn("prepared-program steady state", page)
+        self.assertIn("not a like-for-like difference", page)
 
     def test_declared_order_is_kept_then_extras_sorted(self):
         self.assertEqual(
