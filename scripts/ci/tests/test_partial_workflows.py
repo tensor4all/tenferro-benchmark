@@ -95,11 +95,46 @@ class PartialWorkflowTest(unittest.TestCase):
         self.assertIn('gpu_artifact.py', verify['run'])
         self.assertNotIn('|| continue', verify['run'])
 
+    def test_every_gpu_dispatch_carries_its_purpose_into_the_run_record(self):
+        workflow = self.workflow('benchmark-runpod-gpu')
+        inputs = workflow[True]['workflow_dispatch']['inputs']
+        # An unmarked dispatch counts as weekly (the strict direction), so the
+        # default is the weekly attempt rather than an exemption.
+        self.assertEqual(inputs['purpose']['default'], 'weekly')
+        self.assertEqual(inputs['purpose']['options'], ['weekly', 'backfill', 'verify'])
+        self.assertEqual(inputs['target']['default'], '')
+        # The purpose has to reach the run record: weekly_gate.py reads it back
+        # from the run name to count this week's dispatches. The readback family
+        # keeps its title prefix, which ingestion excludes on, so a readback is
+        # counted under its own purpose too.
+        run_name = workflow['run-name']
+        self.assertIn("inputs.purpose || 'weekly'", run_name)
+        self.assertIn('inputs.target', run_name)
+        self.assertIn("'RunPod readback (manual report)'", run_name)
+        self.assertIn('[purpose={1} target={2}]', run_name)
+        gate = next(step for step in workflow['jobs']['weekly-gate']['steps']
+                    if step.get('id') == 'gate')
+        self.assertEqual(gate['env']['PURPOSE'], '${{ inputs.purpose }}')
+        self.assertEqual(gate['env']['TARGET'], '${{ inputs.target }}')
+        self.assertEqual(gate['env']['RUN_ATTEMPT'], '${{ github.run_attempt }}')
+        self.assertIn('--run-attempt "$RUN_ATTEMPT" --purpose "$PURPOSE" --target "$TARGET"',
+                      gate['run'])
+        # A dispatch re-run repeats a dispatch that is already counted, so the
+        # renting job refuses it before it can rent; a scheduled slot retries itself.
+        self.assertIn("github.event_name == 'schedule' || github.run_attempt == 1",
+                      workflow['jobs']['start-runpod']['if'])
+        # A re-run of a scheduled slot skips the gate job, so the budget is checked
+        # again where the money is spent.
+        recheck = next(step for step in workflow['jobs']['start-runpod']['steps']
+                       if step.get('name') == 'Re-check the dispatch budget before renting')
+        self.assertIn('--purpose "$PURPOSE" --target "$TARGET"', recheck['run'])
+        self.assertIn("grep -qx 'proceed=true' \"$GITHUB_OUTPUT\"", recheck['run'])
+
     def test_ingest_if_admits_only_success_failure_and_preserves_trust_conditions(self):
         condition=self.workflow('ingest-results')['jobs']['ingest']['if']
         self.assertIn('fromJSON(\'["success", "failure"]\')',condition)
         for trust in ('github.repository ==', 'head_repository.full_name == github.repository',
-                      "display_title != 'RunPod readback (manual report)'"):
+                      "!startsWith(github.event.workflow_run.display_title, 'RunPod readback (manual report)')"):
             self.assertIn(trust,condition)
 
 

@@ -64,8 +64,36 @@ The schedule fires four retry slots across the weekend (UTC): Saturday 08:00,
 slot proceed only when no scheduled run has succeeded since Saturday 00:00 UTC,
 so the first slot that obtains a GPU and completes provides that week's
 results, and a slot that cannot obtain a card is retried by the next one
-without renting anything in between. Manual dispatches always proceed.
-Scheduled runs use `suite=all` and the default backends.
+without renting anything in between. Scheduled runs use `suite=all`, the default
+backends, and count as `weekly` attempts.
+
+### Dispatch purposes and their budgets
+
+Every dispatch carries a `purpose` input, and the run name records it:
+`RunPod GPU benchmark [purpose=verify target=tensor4all/tenferro-rs#419]`. A run
+with no marker counts as `weekly`, the strict direction.
+
+- `weekly` and `backfill` are attempts to satisfy the schedule and share a cap
+  of **3 per weekly window** (Saturday 00:00 UTC onward). Restarting a failed
+  weekly collection counts here, which is what the cap exists for.
+- `verify` checks a fix and has its own cap of **6 per weekly window**, and it
+  must name what it verifies through `target: <repo>#<n>`.
+
+The budget counts manual dispatches. A scheduled slot is not a dispatch, and a
+slot that skipped never rented a GPU, so the weekend retries do not spend the
+budget. A week whose dispatches already spent it refuses the slots too.
+
+`scripts/ci/weekly_gate.py` runs before anything is rented and again immediately
+before the pod is created (so a re-run of a scheduled slot cannot rent either),
+prints both counters (`weekly 1/3, verify 4/6`) into the step summary, and fails
+the run with the reason when the budget is spent. The answer to a 7th
+verification is to batch the fixes into one run in the next weekly window.
+Manual dispatches proceed only within those budgets, a re-run of a dispatch is
+refused instead of renting again under an already counted run, and a readback
+dispatch is counted under the purpose it was given. The counters are read back
+from the run names in the current window, counting the runs that started before
+this one, so there is no second place to update. A window of
+`WINDOW_LIMIT` runs fails closed instead of counting a truncated history.
 
 Both scheduled and dispatched runs request the `a100` tier: any in-stock
 A100 (`NVIDIA A100 80GB PCIe`, `NVIDIA A100-SXM4-80GB` or
@@ -576,5 +604,6 @@ and measurement raw runs, metadata, commands, and generated report at
 `result/nvidia-gpu/gpu/perf_issues.md`. This filtered standalone report is reviewed
 and committed through a PR; it does not carry the standard-suite publication
 receipt. `ingest-results.yml` skips runs titled `RunPod readback (manual report)`
-so they cannot automatically replace the complete performance-issues report.
+(and the purpose marker that follows that title) so they cannot automatically
+replace the complete performance-issues report.
 The existing cleanup job and pod lifetime watchdog apply to this selection too.

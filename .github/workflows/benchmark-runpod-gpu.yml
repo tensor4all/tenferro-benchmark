@@ -1,5 +1,8 @@
 name: benchmark-runpod-gpu
-run-name: ${{ inputs.suite == 'perf-issues-readback' && 'RunPod readback (manual report)' || 'RunPod GPU benchmark' }}
+# The purpose is part of the run record: the budget in scripts/ci/weekly_gate.py
+# reads it back from the run name, and the run list shows what each A100 hour was
+# spent on. The readback title keeps its prefix: ingestion excludes that family by it.
+run-name: ${{ format('{0} [purpose={1} target={2}]', inputs.suite == 'perf-issues-readback' && 'RunPod readback (manual report)' || 'RunPod GPU benchmark', inputs.purpose || 'weekly', inputs.target || '-') }}
 
 on:
   # Weekly collection with weekend retry slots. The first slot that succeeds
@@ -12,6 +15,23 @@ on:
     - cron: "0 8 * * 0"
   workflow_dispatch:
     inputs:
+      purpose:
+        description: >-
+          Why this run exists: a weekly/backfill attempt, or verifying a fix
+        required: false
+        default: weekly
+        type: choice
+        options:
+          - weekly
+          - backfill
+          - verify
+      target:
+        description: >-
+          Required for purpose=verify: the issue or pull request it verifies,
+          as <repo>#<n>
+        required: false
+        default: ""
+        type: string
       suite:
         description: GPU suite YAML, all GPU suites, or perf-issues-readback
         required: true
@@ -73,7 +93,7 @@ env:
 
 jobs:
   weekly-gate:
-    name: Skip if this week's GPU results already exist
+    name: Check this week's result and the dispatch budget
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -85,11 +105,18 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Check for this week's successful scheduled run
+      - name: Check this week's runs against the dispatch budget
         id: gate
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python3 -m scripts.ci.weekly_gate --repository "$GITHUB_REPOSITORY" --event "$GITHUB_EVENT_NAME" --run-id "$GITHUB_RUN_ID"
+          # Scheduled runs have no inputs and count as weekly attempts.
+          PURPOSE: ${{ inputs.purpose }}
+          TARGET: ${{ inputs.target }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: >-
+          python3 -m scripts.ci.weekly_gate
+          --repository "$GITHUB_REPOSITORY" --event "$GITHUB_EVENT_NAME" --run-id "$GITHUB_RUN_ID"
+          --run-attempt "$RUN_ATTEMPT" --purpose "$PURPOSE" --target "$TARGET"
 
   prepare-benchmark:
     name: Build GPU benchmark before renting GPU
@@ -299,7 +326,10 @@ jobs:
 
   start-runpod:
     name: Start ephemeral RunPod runner
-    if: ${{ !inputs.prepare_only }}
+    # A dispatch's re-run repeats a dispatch that is already counted, so it must not
+    # rent (scripts/ci/weekly_gate.py says the same, with the reason). A scheduled
+    # slot retries itself and keeps its own gate.
+    if: ${{ !inputs.prepare_only && (github.event_name == 'schedule' || github.run_attempt == 1) }}
     needs: [prepare-benchmark, prepare-environment]
     runs-on: ubuntu-latest
     # Must outlive the pod: the pod's own watchdog deletes it after POD_MAX_LIFETIME_SECONDS, so the
@@ -314,6 +344,21 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: false
+
+      - name: Re-check the dispatch budget before renting
+        # The last word before money is spent: a re-run of a scheduled slot skips the
+        # gate job, and a skipped or refused week must not rent.
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PURPOSE: ${{ inputs.purpose }}
+          TARGET: ${{ inputs.target }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+          python3 -m scripts.ci.weekly_gate \
+            --repository "$GITHUB_REPOSITORY" --event "$GITHUB_EVENT_NAME" --run-id "$GITHUB_RUN_ID" \
+            --run-attempt "$RUN_ATTEMPT" --purpose "$PURPOSE" --target "$TARGET"
+          grep -qx 'proceed=true' "$GITHUB_OUTPUT"
 
       - name: Create GitHub App token
         id: app-token

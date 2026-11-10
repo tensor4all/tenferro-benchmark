@@ -1,11 +1,41 @@
+import io
+import json
+import os
+import sys
+import tempfile
 import unittest
-from datetime import datetime, timezone
+from contextlib import redirect_stdout
+from datetime import datetime, timedelta, timezone
+from unittest.mock import patch
 
-from scripts.ci.weekly_gate import already_collected, week_start
+from scripts.ci import weekly_gate
+from scripts.ci.weekly_gate import (already_collected, budget_report, count_purposes,
+                                    normalize_purpose, purpose_of, refusal, week_start)
 
 
 def at(text):
     return datetime.fromisoformat(text).replace(tzinfo=timezone.utc)
+
+
+def this_week(hours):
+    """A timestamp inside the current weekly window, `hours` after it opened."""
+    start = week_start(datetime.now(timezone.utc))
+    return (start + timedelta(hours=hours)).strftime('%Y-%m-%dT%H:%M:%SZ')
+
+
+def read(path):
+    if not os.path.exists(path):
+        return ''
+    with open(path, encoding='utf-8') as handle:
+        return handle.read()
+
+
+def gpu_run(run_id, created, purpose='', event='workflow_dispatch', conclusion='success'):
+    title = 'RunPod GPU benchmark'
+    if purpose:
+        title += f' [purpose={purpose} target=SpM-lab/tenferro-rs#1]'
+    return {'databaseId': run_id, 'createdAt': created, 'event': event,
+            'conclusion': conclusion, 'displayTitle': title}
 
 
 class WeeklyGateTests(unittest.TestCase):
@@ -15,13 +45,176 @@ class WeeklyGateTests(unittest.TestCase):
         self.assertEqual(week_start(at('2026-10-16T23:59:00')), at('2026-10-10T00:00:00'))
 
     def test_success_this_week_skips_later_slots(self):
-        runs = [{'databaseId': 1, 'createdAt': '2026-10-17T08:00:05Z'}]
+        runs = [{'databaseId': 1, 'createdAt': '2026-10-17T08:00:05Z', 'event': 'schedule',
+                 'conclusion': 'success', 'displayTitle': 'RunPod GPU benchmark [purpose=weekly target=-]'}]
         self.assertTrue(already_collected(runs, at('2026-10-18T08:00:00'), '2'))
 
     def test_last_week_or_own_run_does_not_count(self):
-        runs = [{'databaseId': 1, 'createdAt': '2026-10-11T08:00:05Z'},
-                {'databaseId': 2, 'createdAt': '2026-10-17T14:00:05Z'}]
+        runs = [{'databaseId': 1, 'createdAt': '2026-10-11T08:00:05Z', 'event': 'schedule',
+                 'conclusion': 'success', 'displayTitle': 'RunPod GPU benchmark'},
+                {'databaseId': 2, 'createdAt': '2026-10-17T14:00:05Z', 'event': 'schedule',
+                 'conclusion': 'success', 'displayTitle': 'RunPod GPU benchmark'}]
         self.assertFalse(already_collected(runs, at('2026-10-17T14:00:30'), '2'))
+
+    def test_a_week_of_verifications_is_not_a_collected_week(self):
+        # A verify run checks a fix; reading it as a satisfied week would hide a
+        # missed collection instead of reporting it.
+        runs = [gpu_run(1, '2026-10-17T08:00:05Z', 'verify', event='schedule'),
+                gpu_run(2, '2026-10-18T09:00:05Z', 'verify')]
+        self.assertFalse(already_collected(runs, at('2026-10-18T10:00:00'), '3'))
+
+
+class PurposeTests(unittest.TestCase):
+    def test_a_run_without_a_purpose_counts_as_weekly(self):
+        self.assertEqual(normalize_purpose(''), 'weekly')
+        self.assertEqual(normalize_purpose(None), 'weekly')
+        self.assertEqual(normalize_purpose('verfy'), 'weekly')
+        self.assertEqual(purpose_of({'displayTitle': 'RunPod GPU benchmark'}), 'weekly')
+        self.assertEqual(purpose_of({'displayTitle': 'RunPod GPU benchmark [purpose=backfill target=-]'}),
+                         'backfill')
+        counts = count_purposes([gpu_run(1, '2026-10-17T08:00:05Z'),
+                                 gpu_run(2, '2026-10-17T09:00:05Z', 'backfill')],
+                                at('2026-10-18T10:00:00'), '3')
+        self.assertEqual(counts, {'weekly': 1, 'verify': 0, 'backfill': 1})
+
+    def test_a_scheduled_slot_does_not_spend_the_dispatch_budget(self):
+        # Four slots per weekend, and the ones that skip never rent a GPU: counting
+        # them would spend the weekly cap on a normal week.
+        runs = [gpu_run(1, '2026-10-17T08:00:05Z', event='schedule'),
+                gpu_run(2, '2026-10-17T14:00:05Z', event='schedule'),
+                gpu_run(3, '2026-10-17T20:00:05Z', event='schedule'),
+                gpu_run(4, '2026-10-18T08:00:05Z', event='schedule')]
+        counts = count_purposes(runs, at('2026-10-18T10:00:00'), '5')
+        self.assertEqual(counts, {'weekly': 0, 'verify': 0, 'backfill': 0})
+
+    def test_the_weekly_and_backfill_cap_refuses_the_fourth_run(self):
+        counts = {'weekly': 2, 'backfill': 1, 'verify': 0}
+        self.assertIsNone(refusal('weekly', '', {'weekly': 2, 'backfill': 0, 'verify': 0}))
+        refused = refusal('backfill', '', counts)
+        self.assertIn('weekly budget spent this week (weekly 3/3, verify 0/6)', refused)
+
+    def test_the_verify_cap_allows_six_and_refuses_the_seventh(self):
+        target = 'tensor4all/tenferro-rs#419'
+        self.assertIsNone(refusal('verify', target, {'weekly': 0, 'backfill': 0, 'verify': 5}))
+        refused = refusal('verify', target, {'weekly': 0, 'backfill': 0, 'verify': 6})
+        self.assertIn('verify budget spent this week (weekly 0/3, verify 6/6)', refused)
+
+    def test_a_verification_must_name_what_it_verifies(self):
+        counts = {'weekly': 0, 'backfill': 0, 'verify': 2}
+        self.assertIn('needs target=<repo>#<n>', refusal('verify', '', counts))
+        self.assertIn('needs target=<repo>#<n>', refusal('verify', '#419', counts))
+        # The other purposes do not need a target.
+        self.assertIsNone(refusal('weekly', '', counts))
+
+    def test_the_weekly_report_prints_both_counters(self):
+        counts = {'weekly': 1, 'backfill': 0, 'verify': 4}
+        self.assertEqual(budget_report(counts), 'weekly 1/3, verify 4/6')
+
+
+class GateMainTests(unittest.TestCase):
+    def run_gate(self, runs, purpose='', target='', event='workflow_dispatch', run_attempt='1'):
+        with tempfile.TemporaryDirectory() as tmp:
+            paths = {'output': os.path.join(tmp, 'output'), 'summary': os.path.join(tmp, 'summary')}
+            environment = {'GITHUB_OUTPUT': paths['output'], 'GITHUB_STEP_SUMMARY': paths['summary']}
+            argv = ['weekly_gate', '--repository', 'tensor4all/tenferro-benchmark',
+                    '--event', event, '--run-id', '99', '--run-attempt', run_attempt,
+                    '--purpose', purpose, '--target', target]
+            buffer = io.StringIO()
+            with patch.object(sys, 'argv', argv), patch.dict(os.environ, environment), \
+                    patch.object(weekly_gate.subprocess, 'check_output', return_value=json.dumps(runs)), \
+                    redirect_stdout(buffer):
+                code = 0
+                try:
+                    weekly_gate.main()
+                except SystemExit as stop:
+                    code = stop.code
+            written = {name: read(path) for name, path in paths.items()}
+        return code, buffer.getvalue(), written['output'], written['summary']
+
+    def test_a_mixed_week_reports_both_counters_and_proceeds(self):
+        runs = [gpu_run(1, this_week(1), 'weekly')] + \
+               [gpu_run(10 + index, this_week(2 + index), 'verify') for index in range(4)]
+        code, stdout, output, summary = self.run_gate(runs, purpose='weekly')
+        self.assertEqual(code, 0)
+        self.assertIn('Dispatch budget this week: weekly 1/3, verify 4/6', stdout)
+        self.assertIn('proceed=true', output)
+        self.assertEqual(summary.count('weekly 1/3, verify 4/6'), 1)
+    def test_the_fourth_weekly_dispatch_is_refused_with_the_reason(self):
+        runs = [gpu_run(1, this_week(1), 'weekly'),
+                gpu_run(2, this_week(2), 'weekly'),
+                gpu_run(3, this_week(3), 'backfill')]
+        code, stdout, output, summary = self.run_gate(runs, purpose='weekly')
+        self.assertEqual(code, 1)
+        self.assertIn('weekly budget spent this week (weekly 3/3, verify 0/6)', stdout)
+        self.assertIn('refused', summary)
+        self.assertNotIn('proceed=', output)
+
+    def test_the_seventh_verification_is_refused_with_the_reason(self):
+        runs = [gpu_run(10 + index, this_week(1 + index), 'verify') for index in range(6)]
+        code, stdout, _, _ = self.run_gate(runs, purpose='verify', target='tensor4all/tenferro-rs#419')
+        self.assertEqual(code, 1)
+        self.assertIn('verify budget spent this week (weekly 0/3, verify 6/6)', stdout)
+
+    def test_a_verification_without_a_target_is_refused(self):
+        code, stdout, _, _ = self.run_gate([], purpose='verify')
+        self.assertEqual(code, 1)
+        self.assertIn('purpose=verify needs target=<repo>#<n>', stdout)
+
+    def test_the_sixth_verification_proceeds(self):
+        runs = [gpu_run(10 + index, this_week(1 + index), 'verify') for index in range(5)]
+        code, stdout, output, summary = self.run_gate(runs, purpose='verify',
+                                                     target='tensor4all/tenferro-rs#419')
+        self.assertEqual(code, 0)
+        self.assertIn('proceed=true', output)
+        self.assertIn('purpose=verify target=tensor4all/tenferro-rs#419: weekly 0/3, verify 5/6', summary)
+
+    def test_a_queued_successor_does_not_spend_the_budget_of_this_dispatch(self):
+        runs = [gpu_run(1, this_week(1), 'weekly'), gpu_run(2, this_week(2), 'weekly'),
+                gpu_run(500, this_week(3), 'weekly')]
+        code, stdout, output, _ = self.run_gate(runs, purpose='weekly')
+        self.assertEqual(code, 0)
+        self.assertIn('Dispatch budget this week: weekly 2/3, verify 0/6', stdout)
+        self.assertIn('proceed=true', output)
+
+    def test_a_rerun_of_a_dispatch_is_refused(self):
+        code, stdout, _, _ = self.run_gate([], purpose='weekly', run_attempt='2')
+        self.assertEqual(code, 1)
+        self.assertIn('a re-run repeats a dispatch that already has its own record', stdout)
+
+    def test_a_scheduled_slot_may_retry_itself(self):
+        # The weekend slots exist to retry a slot that could not obtain a card.
+        code, stdout, _, _ = self.run_gate([], event='schedule', run_attempt='2')
+        self.assertEqual(code, 0)
+        self.assertIn('No successful GPU run this week yet; collecting.', stdout)
+
+    def test_a_rerun_counts_the_runs_that_came_after_it(self):
+        # A re-run executes after the runs it has to be counted against, so a later
+        # dispatch is not a queued successor for it.
+        runs = [gpu_run(500, this_week(3), 'weekly'), gpu_run(600, this_week(4), 'weekly')]
+        code, stdout, _, _ = self.run_gate(runs, event='schedule', run_attempt='2')
+        self.assertIn('Dispatch budget this week: weekly 2/3, verify 0/6', stdout)
+
+    def test_a_truncated_history_fails_closed(self):
+        runs = [gpu_run(1 + index, this_week(1), 'verify') for index in range(weekly_gate.WINDOW_LIMIT)]
+        code, stdout, _, _ = self.run_gate(runs, purpose='verify', target='tensor4all/tenferro-rs#419')
+        self.assertEqual(code, 1)
+        self.assertIn('fail closed rather than rent against an unknown budget', stdout)
+
+    def test_the_schedule_still_skips_a_collected_week(self):
+        runs = [gpu_run(2, this_week(1), event='schedule')]
+        code, stdout, output, _ = self.run_gate(runs, event='schedule')
+        self.assertEqual(code, 0)
+        self.assertIn('This week already has successful GPU results; skipping.', stdout)
+        self.assertIn('proceed=false', output)
+
+    def test_a_spent_budget_refuses_the_scheduled_slot_too(self):
+        runs = [gpu_run(1, this_week(1), 'weekly'),
+                gpu_run(2, this_week(2), 'weekly'),
+                gpu_run(3, this_week(3), 'weekly')]
+        code, stdout, output, _ = self.run_gate(runs, event='schedule')
+        self.assertEqual(code, 1)
+        self.assertIn('weekly budget spent this week (weekly 3/3, verify 0/6)', stdout)
+        self.assertNotIn('proceed=', output)
 
 
 if __name__ == '__main__':

@@ -86,6 +86,7 @@ class PartialDriverTest(unittest.TestCase):
         for change in ({'head_repository': {'full_name': 'fork/repo'}},
                        {'repository': {'full_name': 'fork/repo'}},
                        {'display_title': 'RunPod readback (manual report)'},
+                       {'display_title': 'RunPod readback (manual report) [purpose=verify target=o/r#1]'},
                        *({'conclusion': value} for value in ('cancelled', 'timed_out', 'skipped', 'neutral'))):
             run = dict(self.run, **change)
             with self.subTest(change=change), patch.object(driver, 'gh_json', return_value=run) as api:
