@@ -6,6 +6,9 @@ the rows the other arms had already written were never folded, so the suite
 published nothing and the week lost the measurements it did make. The script
 records the failure, keeps every row the other arms wrote, writes the report,
 the summary and the routine-contract records, and reports red only after that.
+
+The second test covers publication itself; the first one runs with
+`GPU_BENCH_SKIP_LATEST=1`, so it says nothing about it.
 """
 import json
 import os
@@ -129,6 +132,30 @@ class PermutationContinuesAfterFailureTest(unittest.TestCase):
         self.assertEqual({(record["problem_id"], record["backend"]) for record in measured},
                          {(PATTERN, RUST_ARM), (PATTERN, MEMCPY_ARM)})
         self.assertTrue((self.run_dir / "report.md").is_file())
+    def test_a_page_without_its_summary_is_not_published(self):
+        # Publication enabled, and the two steps that produce what a publish
+        # needs disagree: the formatter renders the page and dies before writing
+        # the sidecar, and the normalizer refuses the same rows. A page whose
+        # sidecar and receipt do not exist is half a run, so nothing may reach
+        # result/ -- the maintained page, its summary and its receipt publish
+        # together or not at all.
+        self.env.pop("GPU_BENCH_SKIP_LATEST")
+        (self.root / "scripts/format_gpu_permutation_results.py").write_text(
+            "import sys\nfrom pathlib import Path\n"
+            "Path(sys.argv[sys.argv.index('--output')+1]).write_text('# half a run\\n')\n"
+            "sys.exit(7)\n")
+        (self.root / "scripts/normalize_gpu_records.py").write_text(
+            "import sys\nsys.exit(9)\n")
+        process = subprocess.run(["bash", str(self.root / "scripts/run_gpu_permutation.sh")],
+                                 env=self.env, capture_output=True, text=True, timeout=300)
+        output = process.stdout + process.stderr
+        self.assertEqual(process.returncode, 1, output)
+        self.assertIn("FORMAT FAILED: gpu/permutation formatter exited 7", process.stderr)
+        self.assertIn("NORMALIZE FAILED: gpu/permutation normalize exited 9", process.stderr)
+        self.assertIn("PUBLISH SKIPPED", process.stderr)
+        self.assertFalse((self.root / "result/nvidia-gpu/gpu/permutation.md").exists(), output)
+        self.assertFalse((self.root / "result/nvidia-gpu/gpu/permutation.summary.json").exists(),
+                         output)
 
 
 if __name__ == "__main__":
