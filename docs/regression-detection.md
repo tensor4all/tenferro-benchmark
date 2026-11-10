@@ -177,7 +177,11 @@ suite, taken from the committed summary sidecars by collection time, never
 disagree on `unit` is refused by name with no table and exit 1, and a previous
 week without an accepted run says `no baseline` rather than borrowing a
 neighbouring run. The report states both runs' commit, host, week and arm set
-above any row.
+above any row. Run metadata is read by type before the pair is gated: a revision
+whose `suite_id`, `tenferro_commit`, `hardware` or collection timestamp is
+missing or of another type (`hardware: ["h"]`, a numeric `timestamp`) is not a
+run this tool can compare, so the report states the metadata an accepted run has
+to record instead of tracing back on the field.
 
 An accepted run is a revision the ingestion driver recorded a receipt for: it
 commits `<suite>.provenance.json` together with the sidecar, holding the

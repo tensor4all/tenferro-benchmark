@@ -32,7 +32,10 @@ sidecar's sha256 (``result_ingestion.plan_updates``).  A receipt that disagrees
 belongs to an edit, not to an accepted measurement; a revision without a receipt
 is history when no receipt exists at or before it, and otherwise only a commit
 that publishes the report with the sidecar.  A committed receipt is a trusted
-marker of the driver's decision, not authentication.
+marker of the driver's decision, not authentication.  A revision whose run
+metadata is not shaped the way this tool reads it (a suite id, a commit, a host
+and a collection timestamp) is not a run it can compare, and the report says so
+instead of tracing back on the field.
 
 Exit status: 0 a comparison table was printed, 1 refused, a measurement only one
 run recorded, or no baseline, 2 the history could not be read (git's message on
@@ -129,23 +132,35 @@ def collected(record: dict) -> datetime:
     Same contract as ``result_ingestion.instant``, which is not imported here
     because that module requires jsonschema for a timestamp: upgrade this to the
     shared helper once the contract lives where a reporting tool can reach it.
+    A timestamp of another type records no time: ``.replace`` raised
+    AttributeError before any refusal could name the revision.
     """
-    parsed = datetime.fromisoformat(record['timestamp'].replace('Z', '+00:00'))
+    timestamp = record.get('timestamp')
+    if not isinstance(timestamp, str):
+        raise ValueError('collection timestamp is not a string')
+    parsed = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
     if parsed.tzinfo is None:
         raise ValueError('collection timestamp must include a timezone')
     return parsed.astimezone(timezone.utc)
 
 
 def host(record: dict) -> str | None:
-    return (record.get('hardware') or {}).get('host')
+    """The recorded ``hardware.host``, or None when ``hardware`` is not an object.
+
+    A list or a string there records no host: ``.get`` off it raised
+    AttributeError while the history was read, before the refusal gate ran.
+    """
+    hardware = record.get('hardware')
+    return hardware.get('host') if isinstance(hardware, dict) else None
 
 
 def accepted_runs(repo: Path, profile: str, suite: str) -> list[dict]:
     """Every accepted run of one suite, newest measurement first.
 
     Acceptance is the driver's receipt for that revision, not the commit
-    message.  A revision that records no commit, host or collection time cannot
-    be placed in a week or gated, so it is not a run this tool can compare.
+    message.  A revision that records no suite id, commit, host or collection
+    time cannot be placed in a week or gated, so it is not a run this tool can
+    compare.
     """
     relative = f'result/{profile}/{suite}.summary.json'
     receipt_path = f'result/{profile}/{suite}.provenance.json'
@@ -161,8 +176,12 @@ def accepted_runs(repo: Path, profile: str, suite: str) -> list[dict]:
         if content is None or not accepted(repo, sha, relative, receipt_path, content):
             continue
         document = json.loads(content)
+        # Every field is read by type: this gate is the diagnostic, so a broken
+        # revision must fail it here instead of raising on the way through.
+        suite_id = document.get('suite_id')
         commit = document.get('tenferro_commit')
-        if not (isinstance(commit, str) and re.fullmatch('[0-9a-f]{40}', commit)
+        if not (isinstance(suite_id, str) and suite_id
+                and isinstance(commit, str) and re.fullmatch('[0-9a-f]{40}', commit)
                 and host(document) and document.get('timestamp')):
             continue
         try:
@@ -504,8 +523,8 @@ def main() -> int:
         print(f'gpu_bench_results: {error}', file=sys.stderr)
         return 2
     if not records:
-        print(f"no accepted run of {args.profile} {args.suite} records a commit, a host and a "
-              f'collection time; nothing to compare')
+        print(f"no accepted run of {args.profile} {args.suite} records a suite id, a commit, "
+              f'a host and a collection time; nothing to compare')
         return 1
     candidate = records[0]
     result = compare(candidate, baseline_for(records, candidate), args.threshold)

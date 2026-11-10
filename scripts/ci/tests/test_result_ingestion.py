@@ -101,6 +101,8 @@ class IngestionTest(unittest.TestCase):
         self.assertEqual(instant('2026-10-18T09:00:00+09:00'), instant('2026-10-18T00:00:00Z'))
         with self.assertRaises(ValueError):
             instant('2026-10-18T00:00:00')
+        with self.assertRaisesRegex(ValueError, 'not a string'):
+            instant(1762600000)
 
     def test_digest_and_incomplete_second_suite_reject_without_writes(self):
         self.entry['files']['result/amd-cpu/cpu/einsum.md'] = 'f'*64

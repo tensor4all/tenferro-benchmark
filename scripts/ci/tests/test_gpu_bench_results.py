@@ -460,6 +460,54 @@ class HistoryTests(unittest.TestCase):
         self.accept(document)
         self.assertEqual(accepted_runs(self.repo, 'nvidia-gpu', 'gpu/dense'), [])
 
+    def test_a_record_whose_hardware_is_not_an_object_is_not_a_run(self):
+        # host() read `.get` off `hardware` itself, so a list, a string or a
+        # number there raised AttributeError while the history was read: a
+        # Traceback instead of the documented "not a run" diagnostic.
+        for hardware in (['h'], 'h', 7):
+            with self.subTest(hardware=hardware):
+                self.setUp()
+                document = record(WEEK_45_LATE, COMMIT_B)
+                document['hardware'] = hardware
+                self.accept(document)
+                self.assertEqual(accepted_runs(self.repo, 'nvidia-gpu', 'gpu/dense'), [])
+                process = self.run_tool()
+                self.assertEqual(process.returncode, 1)
+                self.assertIn('records a suite id, a commit, a host and a collection time',
+                              process.stdout)
+                self.assertEqual(process.stderr, '')
+
+    def test_a_record_whose_timestamp_is_a_number_is_not_a_run(self):
+        # collected() called `.replace` on the timestamp, so a JSON number raised
+        # AttributeError before the refusal gate could name the revision.
+        for timestamp in (1762600000, 1.5, True):
+            with self.subTest(timestamp=timestamp):
+                self.setUp()
+                document = record(WEEK_45_LATE, COMMIT_B)
+                document['timestamp'] = timestamp
+                self.accept(document)
+                self.assertEqual(accepted_runs(self.repo, 'nvidia-gpu', 'gpu/dense'), [])
+                process = self.run_tool()
+                self.assertEqual(process.returncode, 1)
+                self.assertIn('records a suite id, a commit, a host and a collection time',
+                              process.stdout)
+                self.assertEqual(process.stderr, '')
+
+    def test_a_record_without_a_suite_id_is_not_a_run(self):
+        # render() titles the report with the record's suite id, so a missing one
+        # raised KeyError after the comparison had already been computed.
+        document = record(WEEK_45_LATE, COMMIT_B)
+        del document['suite_id']
+        payload = json.dumps(document).encode()
+        relative = self.write('result/nvidia-gpu/gpu/dense.summary.json', payload)
+        self.receipt(relative, payload)
+        self.commit('Accept benchmark run 1 attempt 1')
+        self.assertEqual(accepted_runs(self.repo, 'nvidia-gpu', 'gpu/dense'), [])
+        process = self.run_tool()
+        self.assertEqual(process.returncode, 1)
+        self.assertIn('records a suite id, a commit, a host and a collection time', process.stdout)
+        self.assertEqual(process.stderr, '')
+
     def test_cli_prints_the_identity_then_the_table_and_exits_zero(self):
         self.accept(record(WEEK_44, COMMIT_A))
         self.accept(record(WEEK_45_LATE, COMMIT_B, scale=1.5))
