@@ -1,5 +1,8 @@
 name: benchmark-runpod-gpu
-run-name: ${{ inputs.suite == 'perf-issues-readback' && 'RunPod readback (manual report)' || 'RunPod GPU benchmark' }}
+# The purpose is part of the run record: the budget in scripts/ci/weekly_gate.py
+# reads it back from the run name, and the run list shows what each A100 hour was
+# spent on. The readback title keeps its prefix: ingestion excludes that family by it.
+run-name: ${{ format('{0} [purpose={1} target={2}]', inputs.suite == 'perf-issues-readback' && 'RunPod readback (manual report)' || 'RunPod GPU benchmark', inputs.purpose || 'weekly', inputs.target || '-') }}
 
 on:
   # Weekly collection with weekend retry slots. The first slot that succeeds
@@ -12,6 +15,23 @@ on:
     - cron: "0 8 * * 0"
   workflow_dispatch:
     inputs:
+      purpose:
+        description: >-
+          Why this run exists: a weekly/backfill attempt, or verifying a fix
+        required: false
+        default: weekly
+        type: choice
+        options:
+          - weekly
+          - backfill
+          - verify
+      target:
+        description: >-
+          Required for purpose=verify: the issue or pull request it verifies,
+          as <repo>#<n>
+        required: false
+        default: ""
+        type: string
       suite:
         description: GPU suite YAML, all GPU suites, or perf-issues-readback
         required: true
@@ -73,7 +93,7 @@ env:
 
 jobs:
   weekly-gate:
-    name: Skip if this week's GPU results already exist
+    name: Check this week's result and the dispatch budget
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -85,11 +105,19 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Check for this week's successful scheduled run
+      - name: Check this week's runs against the dispatch budget
         id: gate
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python3 -m scripts.ci.weekly_gate --repository "$GITHUB_REPOSITORY" --event "$GITHUB_EVENT_NAME" --run-id "$GITHUB_RUN_ID"
+          # Scheduled runs have no inputs and count as weekly attempts.
+          PURPOSE: ${{ inputs.purpose }}
+          TARGET: ${{ inputs.target }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: >-
+          python3 -m scripts.ci.weekly_gate
+          --repository "$GITHUB_REPOSITORY" --event "$GITHUB_EVENT_NAME" --run-id "$GITHUB_RUN_ID"
+          --run-attempt "$RUN_ATTEMPT" --branch "$GITHUB_REF_NAME"
+          --purpose "$PURPOSE" --target "$TARGET"
 
   prepare-benchmark:
     name: Build GPU benchmark before renting GPU
@@ -299,9 +327,17 @@ jobs:
 
   start-runpod:
     name: Start ephemeral RunPod runner
-    if: ${{ !inputs.prepare_only }}
+    # No re-run rents: what the attempt it repeats actually did cannot be told from the
+    # record, and a retry that may spend is a dispatch carrying its purpose
+    # (scripts/ci/weekly_gate.py says the same, with the reason).
+    if: ${{ !inputs.prepare_only && github.run_attempt == 1 }}
     needs: [prepare-benchmark, prepare-environment]
     runs-on: ubuntu-latest
+    # The re-check below calls `gh run list`, which needs actions: read. Granting it
+    # here keeps the workflow default (contents: read) for every other job.
+    permissions:
+      contents: read
+      actions: read
     # Must outlive the pod: the pod's own watchdog deletes it after POD_MAX_LIFETIME_SECONDS, so the
     # runner's timeout is the backstop and has to be the *larger* of the two. A runner timeout below
     # the watchdog kills the job while the pod is still alive and still billing.
@@ -314,6 +350,22 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: false
+
+      - name: Re-check the dispatch budget before renting
+        # The last word before money is spent: the concurrency queue can put this job
+        # behind another dispatch, so the budget is read again right here.
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PURPOSE: ${{ inputs.purpose }}
+          TARGET: ${{ inputs.target }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+          python3 -m scripts.ci.weekly_gate \
+            --repository "$GITHUB_REPOSITORY" --event "$GITHUB_EVENT_NAME" --run-id "$GITHUB_RUN_ID" \
+            --run-attempt "$RUN_ATTEMPT" --branch "$GITHUB_REF_NAME" \
+            --purpose "$PURPOSE" --target "$TARGET"
+          grep -qx 'proceed=true' "$GITHUB_OUTPUT"
 
       - name: Create GitHub App token
         id: app-token
