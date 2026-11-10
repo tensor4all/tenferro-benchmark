@@ -125,6 +125,28 @@ def well_conditioned(n: int, seed: int) -> LazyArray:
     )
 
 
+def well_conditioned_rect(m: int, n: int, seed: int) -> LazyArray:
+    """Rectangular twin of `well_conditioned` for the tall least-squares row.
+
+    The ramp fixture repeats its columns every `2048 / gcd(m * 1837 mod 2048,
+    2048)` columns (8 for `m = 768`), so a (768, 384) ramp has rank 8 and the
+    GELS driver rejects it as rank deficient (#299).
+    """
+    import jax.numpy as jnp
+
+    def build():
+        k = min(m, n)
+        indices = jnp.arange(k)
+        return (
+            tensor_f64((m, n), seed)
+            .get()
+            .at[indices, indices]
+            .add(2.0 + indices.astype(jnp.float64) / n)
+        )
+
+    return LazyArray(build)
+
+
 def well_conditioned_c64(n: int, seed: int) -> LazyArray:
     import jax.numpy as jnp
 
@@ -344,7 +366,7 @@ def make_cases() -> list[Case]:
     a768 = well_conditioned(768, 1)
     rect = tensor_f64((512, 256), 1)
     lu1024 = well_conditioned(1024, 1)
-    lstsq_a = tensor_f64((768, 384), 1)
+    lstsq_a = well_conditioned_rect(768, 384, 1)
     lstsq_rhs = tensor_f64((768, 16), 2)
     svd_full_a = tensor_f64((768, 384), 1)
     norm = tensor_f64((2048, 2048), 1)
