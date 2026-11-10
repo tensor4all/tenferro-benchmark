@@ -555,10 +555,12 @@ fi
 "${PYTHON[@]}" "$SCRIPT_DIR/format_gpu_routine_coverage.py" "$SELECTION_DIR/case_status.json" \
     --output "$SELECTION_DIR/report.md" || VALIDATION_FAILED=1
 if [[ "${GPU_BENCH_SKIP_LATEST:-0}" != 1 && "${GPU_BENCH_VERIFY_ONLY:-0}" != 1 && "$FILTERED" == 0 ]]; then
-    mkdir -p "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu"
     # A filtered probe is not a routine profile refresh: its accounting stays in
-    # the raw selection dir.
-    cp "$SELECTION_DIR/report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_coverage.md"
+    # the raw selection dir. The maintained copy is a publication step like the
+    # per-suite page: an unwritable destination is deferred so the wall record
+    # and the exit accounting below are still written (#374).
+    mkdir -p "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu" || { echo "PUBLISH FAILED: the coverage report directory $REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu could not be created" >&2; VALIDATION_FAILED=1; }
+    cp "$SELECTION_DIR/report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_coverage.md" || { publish_rc=$?; echo "PUBLISH FAILED: the coverage report could not be written to $REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_coverage.md (exit $publish_rc)" >&2; VALIDATION_FAILED=1; }
 fi
 
 CONTROLS="${GPU_BENCH_ROUTINE_CONTROLS:-}"

@@ -172,5 +172,33 @@ class PublishStepFailureTest(unittest.TestCase):
         self.assertTrue((self.root / "result/nvidia-gpu/gpu/dense.provenance.json").is_file())
 
 
+    def test_an_unwritable_coverage_report_does_not_stop_the_run(self):
+        # The maintained coverage page is published after the loop, and only on an
+        # unfiltered refresh. Guarding only the per-suite page would leave this copy
+        # as the last bare `set -e` step: an unwritable destination there ends the
+        # run before the wall record and the exit accounting (#374). The routine
+        # manifest is shrunk to the one suite this fixture measures so that an
+        # unfiltered run stays a contract test.
+        backends = ", ".join(BACKENDS)
+        (self.root / "benchmarks/gpu/manifests/routine.yaml").write_text(
+            "schema_version: 1\nmanifest_version: 2\nissue: 107\nsuites:\n"
+            "  gpu/dense:\n    file: benchmarks/gpu/dense.yaml\n"
+            f"    problems: [{PROBLEM}]\n    backends: [{backends}]\n")
+        for name in ("GPU_BENCH_SUITE", "GPU_BENCH_BACKENDS", "GPU_BENCH_PROBLEM"):
+            self.env.pop(name, None)
+        self.receipt.write_text(self.real_receipt)
+        first = self.run_collection()
+        self.assertEqual(first.returncode, 0, first.stdout + first.stderr)
+        coverage = self.root / "result/nvidia-gpu/gpu/routine_coverage.md"
+        self.assertTrue(coverage.is_file(), "the unfiltered run did not reach the maintained copy")
+        coverage.chmod(0o444)
+        self.addCleanup(coverage.chmod, 0o644)
+        second = self.run_collection()
+        self.assertEqual(second.returncode, 1, second.stdout + second.stderr)
+        self.assertIn("PUBLISH FAILED: the coverage report", second.stderr)
+        self.assertTrue((self.selection / "case_status.json").is_file())
+        self.assertTrue((self.selection / "wall_command_complete.json").is_file())
+        self.assertTrue((self.selection / "wall_report.md").is_file())
+
 if __name__ == "__main__":
     unittest.main()
