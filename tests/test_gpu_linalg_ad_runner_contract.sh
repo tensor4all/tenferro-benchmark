@@ -9,9 +9,15 @@ cd "$ROOT"
 # pass per sample, while hoisting it into the setup measures only the cached
 # backward apply. This reads the AST instead of an indentation depth, so moving
 # the builders to module scope (which broke the previous regex) cannot silence
-# it, and it resolves the callable the sampler actually calls -- the one a
-# builder returns as `runner`, and the one handed to `jax.jit` -- rather than
-# any nested function that happens to contain the call.
+# it, and it follows the callable the sampler actually calls -- the one a builder
+# returns as `runner`, and the one handed to `jax.jit` -- so a setup helper that
+# builds the pullback early and compiles a wrapper is rejected too.
+#
+# The syntax it understands is deliberately restricted: a builder must hand back
+# the runner through a dict literal (directly, or through a variable that holds
+# one) and pass `jax.jit` either the callable's name or a lambda that calls it.
+# That is what these two builders do; another shape needs this check extended,
+# not bypassed.
 python3 - <<'PY'
 import ast
 import sys
@@ -48,98 +54,112 @@ def calls(node, name):
     ]
 
 
-def callables_named(node, name):
-    """Every `def name` and `name = lambda ...` bound inside `node`.
-
-    A builder binds the same name on more than one branch (`runner` is a lambda
-    on the JVP branch and a `def` on the VJP one), so all of them are returned:
-    the call only has to sit in the one that handles its phase.
-    """
+def bindings(frame, name):
+    """Every `def name` and `name = lambda ...` in the builder, with its line."""
     found = []
-    for child in ast.walk(node):
+    for child in ast.walk(frame):
         if isinstance(child, ast.FunctionDef) and child.name == name:
             found.append(child)
         if isinstance(child, ast.Assign):
-            targets = [t for t in child.targets if isinstance(t, ast.Name)]
-            if any(t.id == name for t in targets) and isinstance(child.value, ast.Lambda):
-                found.append(child.value)
+            if any(isinstance(t, ast.Name) and t.id == name for t in child.targets):
+                if isinstance(child.value, ast.Lambda):
+                    found.append(child.value)
     return found
 
 
-def returned_runner_names(node):
-    """Names a builder hands back under the `runner` key of its result dict."""
-    names = set()
-    for child in ast.walk(node):
-        if isinstance(child, ast.Return) and isinstance(child.value, ast.Dict):
-            for key, value in zip(child.value.keys, child.value.values):
-                if (
-                    isinstance(key, ast.Constant)
-                    and key.value == "runner"
-                    and isinstance(value, ast.Name)
-                ):
-                    names.add(value.id)
-    return names
+def dict_value_at(frame, mapping, key):
+    """The Name a dict literal (or the variable holding one) maps `key` to."""
+    for k, v in zip(mapping.keys, mapping.values):
+        if isinstance(k, ast.Constant) and k.value == key and isinstance(v, ast.Name):
+            return v.id
+    return None
 
 
-def jitted_names(node):
-    """Names passed as the callable to `jax.jit`."""
-    names = set()
-    for call in calls(node, "jax.jit"):
-        if call.args and isinstance(call.args[0], ast.Name):
-            names.add(call.args[0].id)
-    return names
+def runner_uses(frame):
+    """(name, line) for every runner the builder hands to its caller."""
+    uses = []
+    for node in ast.walk(frame):
+        if not isinstance(node, ast.Return):
+            continue
+        value = node.value
+        if isinstance(value, ast.Dict):
+            name = dict_value_at(frame, value, "runner")
+            if name:
+                uses.append((name, node.lineno))
+        elif isinstance(value, ast.Name):
+            # `result = {...}` then `return result`
+            holder = [
+                a for a in ast.walk(frame)
+                if isinstance(a, ast.Assign)
+                and any(isinstance(t, ast.Name) and t.id == value.id for t in a.targets)
+                and isinstance(a.value, ast.Dict)
+                and a.lineno < node.lineno
+            ]
+            if not holder:
+                continue
+            latest = max(holder, key=lambda a: a.lineno)
+            name = dict_value_at(frame, latest.value, "runner")
+            if name:
+                uses.append((name, node.lineno))
+    return uses
+
+
+def jit_uses(frame):
+    """(name, line) for every callable handed to `jax.jit`."""
+    uses = []
+    for call in calls(frame, "jax.jit"):
+        if not call.args:
+            continue
+        arg = call.args[0]
+        if isinstance(arg, ast.Name):
+            uses.append((arg.id, call.lineno))
+        elif isinstance(arg, ast.Lambda):
+            inner = [n.func.id for n in ast.walk(arg)
+                     if isinstance(n, ast.Call) and isinstance(n.func, ast.Name)]
+            uses.extend((name, call.lineno) for name in inner)
+    return uses
 
 
 def inside(call, closure):
     return closure is not None and closure.lineno <= call.lineno <= closure.end_lineno
 
 
-problems = []
-
-
-def require_inside(arm, vjp_name, builder_name, callable_source, what):
-    """Every `vjp_name` call must sit in a callable taken from `callable_source`."""
+def check(label, vjp_name, builder_name, use_finder, what):
     frame = builder(builder_name)
     vjp_calls = calls(frame, vjp_name)
     if not vjp_calls:
         problems.append(f"{builder_name} builds no {vjp_name} call")
         return
-    names = callable_source(frame)
-    if not names:
+    uses = use_finder(frame)
+    if not uses:
         problems.append(f"{builder_name}: no callable this row's sampler uses ({what})")
         return
-    closures = {name: callables_named(frame, name) for name in names}
-    missing = sorted(name for name, nodes in closures.items() if not nodes)
-    if missing:
-        problems.append(f"{builder_name}: {what} {missing} cannot be resolved")
-        return
-    for call in vjp_calls:
-        if not any(inside(call, closure)
-                   for nodes in closures.values() for closure in nodes):
-            names_text = ", ".join(sorted(closures))
-            problems.append(
-                f"line {call.lineno}: {vjp_name} is not inside {names_text} "
-                f"({what}); the row would time the cached backward apply only"
-            )
+    for name, use_line in sorted(set(uses)):
+        candidates = [b for b in bindings(frame, name) if b.lineno < use_line]
+        if not candidates:
+            problems.append(f"{builder_name}: {name} has no binding before line {use_line}")
+            continue
+        # The binding in effect at the use site is the newest one before it: an
+        # earlier `def runner` that still holds the VJP does not count once the
+        # name has been rebound to something the setup computed.
+        active = max(candidates, key=lambda b: b.lineno)
+        for call in vjp_calls:
+            if not inside(call, active):
+                problems.append(
+                    f"line {call.lineno}: {vjp_name} is not inside {name}, the callable "
+                    f"{what} (the {label} row would time the cached backward apply only)"
+                )
 
+
+problems = []
 
 # PyTorch: the callable the sampler calls is the one returned as `runner`.
-require_inside(
-    "torch",
-    "torch.func.vjp",
-    "_torch_framework",
-    returned_runner_names,
-    "the builder returns under `runner`",
-)
+check("PyTorch", "torch.func.vjp", "_torch_framework", runner_uses,
+      "the builder returns under `runner`")
 
 # JAX: the callable the sampler calls is the one compiled by `jax.jit`.
-require_inside(
-    "jax",
-    "jax.vjp",
-    "_jax_framework",
-    jitted_names,
-    "the builder hands to `jax.jit`",
-)
+check("JAX", "jax.vjp", "_jax_framework", jit_uses,
+      "the builder hands to `jax.jit`")
 
 if problems:
     print("\n".join(problems), file=sys.stderr)

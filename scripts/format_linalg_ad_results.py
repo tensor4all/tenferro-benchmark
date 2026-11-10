@@ -13,6 +13,15 @@ from pathlib import Path
 import report_summary
 from format_cpu_ops_results import BACKEND_LABELS, clean_markdown_eof, normalize_row, row_value
 
+# On this page the eager arm is a per-call API cost, not a prepared-program
+# steady state: its sample carries the eager API's own AD preparation, which the
+# public API cannot move outside the clock (`docs/cpu-suite-arms.md`). The column
+# says so, because a table headed only "eager mode" reads as the same
+# measurement as the trace program beside it.
+AD_BACKEND_LABELS = {
+    "tenferro-eager": "tenferro-rs eager per call, incl. AD prepare (ms)",
+}
+
 LINALG_AD_BACKEND_ORDER = [
     "tenferro-eager",
     "tenferro-trace",
@@ -85,7 +94,7 @@ def format_table(path: Path) -> str:
         "operation.",
         "",
         "| suite | benchmark | dtype | threads | shape | "
-        + " | ".join(BACKEND_LABELS.get(b, b) for b in order)
+        + " | ".join(AD_BACKEND_LABELS.get(b, BACKEND_LABELS.get(b, b)) for b in order)
         + " |",
         "|---|---|---:|---:|---|"
         + "|".join("---:" for _ in order)

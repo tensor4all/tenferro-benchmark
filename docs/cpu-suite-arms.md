@@ -52,8 +52,9 @@ The eager call also carries the AD preparation it performs itself (the eager VJP
 derivative, the eager JVP re-prepares per call), because the public eager API exposes no separate
 prepare step to move outside the clock; the trace arm compiles and prepares outside it. Read the
 eager number as what a program pays per `jvp`/`vjp` call, not as a prepared-program steady state.
-`scripts/format_linalg_ad_results.py` states both facts beside the table, so the two columns are
-not read as the same measurement; `scripts/ci/tests/test_linalg_ad_backends.py` keeps that note.
+`scripts/format_linalg_ad_results.py` states both facts beside the table and heads the eager column
+`tenferro-rs eager per call, incl. AD prepare (ms)`, so the two columns are not read as the same
+measurement; `scripts/ci/tests/test_linalg_ad_backends.py` keeps that note and that heading.
 The raw sample record says it too: an eager AD row writes
 `eager_session_policy: forward_and_derivative_inside_timing_with_eager_ad_prepare`, where a primal
 row writes `borrowed_session_outside_timing_for_primal`. The row is therefore self-describing
