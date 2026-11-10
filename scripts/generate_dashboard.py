@@ -1258,10 +1258,16 @@ def fmt_median(value: float | None, unit: str) -> str:
     if value is None:
         return "-"
     if value >= 1000:
-        return f"{value:.1f} {unit}"
-    if value >= 1:
-        return f"{value:.3f} {unit}"
-    return f"{value:.4g} {unit}"
+        text = f"{value:.1f}"
+    elif value >= 1:
+        text = f"{value:.3f}"
+    else:
+        text = f"{value:.4g}"
+    if len(text) > 12:
+        # %.1f of 1e150 is 152 integer digits, and a chart row cannot wrap: keep the
+        # text bounded (`1e+150 ms`).  No median in the committed results reaches this.
+        text = f"{value:.3g}"
+    return f"{text} {unit}"
 
 
 def esc(value: Any) -> str:
@@ -1301,6 +1307,24 @@ BAR_LABEL_WIDTH = 300
 BAR_AREA_WIDTH = 420
 BAR_HEIGHT = 12
 BAR_GAP = 4
+CHART_FONT_PX = 11  # .chart-label / .chart-value / .chart-fail
+CHART_TEXT_UNITS = RATIO_CHART_WIDTH - BAR_LABEL_WIDTH
+# SVG text does not wrap, so a line has to be cut to its column.  Chrome measures
+# the UI face at 11px as: 'W' 0.97 em, '%' 0.93, '@' 0.92, 'm'/'M' 0.88, other
+# capitals 0.66-0.78, digits 0.47-0.65, lowercase 0.25-0.62.  The narrow set below
+# is priced at 0.62 em and every other character at a full em, so a digit or a
+# capital pays for the widest glyph and a glyph no measurement covers cannot come
+# out cheaper than an em.  Only macOS Chrome was measured; a face wider than that
+# is not covered for lowercase.
+NARROW_EM = 0.62
+NARROW_CHARS = set("abcdefghijklnopqrstuvxyz !\"'()*,-./:;?[]_`{|}")
+
+
+def text_units(text: str) -> float:
+    """An upper bound on how much of the chart's width ``text`` renders at."""
+    return sum(
+        CHART_FONT_PX * (NARROW_EM if char in NARROW_CHARS else 1.0) for char in text
+    )
 
 RATIO_COLORS = {"eager": "bar-tenferro", "trace": "bar-tenferro-alt"}
 
@@ -1472,6 +1496,113 @@ def bar_tooltip(item: dict[str, Any], case: dict[str, Any], baseline_label: str,
     return text
 
 
+def measured_items(case: dict[str, Any], unit: str) -> tuple[list[tuple[str, str]], str]:
+    """The case's measured arms as ``(backend, median)``, and why it has no ratio.
+
+    A case whose baseline arm failed is not a case that measured nothing: its
+    contender's median is printed here, next to the reason the baseline has no
+    number.  Only a case with no ok measurement at all says so.
+    """
+    items = [
+        (str(item["backend"]), fmt_median(item["median"], unit))
+        for item in case.get("measured") or []
+    ]
+    if not items:
+        return [], "no measurement was recorded as ok"
+    if case.get("baseline_median") is None:
+        return items, "but its baseline arm produced no number"
+    if not case.get("contenders"):
+        return items, "but no arm of it had a ratio against that baseline"
+    return items, ""
+
+
+def measured_note(case: dict[str, Any], unit: str) -> str:
+    """The note as prose, for the no-ratio paragraph (HTML, so it wraps)."""
+    items, reason = measured_items(case, unit)
+    if not items:
+        return reason
+    text = "measured " + " · ".join(
+        f"<code>{esc(backend)}</code> {esc(median)}" for backend, median in items
+    )
+    return f"{text}, {reason}" if reason else text
+
+
+def wrap_line(text: str) -> list[str]:
+    """Split one chart line to the row's column width, at spaces where it can."""
+    units, lines, line = CHART_TEXT_UNITS, [], ""
+    for word in text.split(" "):
+        while True:
+            space = text_units(" ") if line else 0.0
+            if text_units(line) + space + text_units(word) <= units:
+                line = f"{line} {word}" if line else word
+                break
+            if text_units(word) <= units:
+                lines.append(line)  # the word fits, so it starts the next line
+                line = ""
+                continue
+            # A word wider than the whole column (a long backend name): break it.
+            room = units - text_units(line) - space
+            cut = 0
+            while cut < len(word) and text_units(word[: cut + 1]) <= room:
+                cut += 1
+            if cut == 0:
+                lines.append(line)
+                line = ""
+                continue
+            lines.append(f"{line} {word[:cut]}" if line else word[:cut])
+            line, word = "", word[cut:]
+    return lines + [line] if line else lines
+
+
+def measured_lines(case: dict[str, Any], unit: str) -> list[str]:
+    """The note as chart lines: one arm per line, because SVG text does not wrap.
+
+    A four-arm case in a single ``<text>`` ran to x=1107 in the chart's fixed
+    1060-unit viewport, so the browser cut the explanation off.
+    """
+    items, reason = measured_items(case, unit)
+    if not items:
+        return [reason]
+    lines = [
+        f'{"measured " if index == 0 else ""}{backend} {median}'
+        for index, (backend, median) in enumerate(items)
+    ]
+    return lines + [reason] if reason else lines
+
+
+def no_ratio_note(case: dict[str, Any], unit: str) -> str:
+    """One case of the no-ratio paragraph: what it measured and what did not run."""
+    text = f'<code>{esc(case["case"])}</code> {measured_note(case, unit)}'
+    not_ok = [
+        f'<span class="fail">{esc(item["label"])}</span> <code>{esc(item["backend"])}</code>'
+        + (f' <span class="muted">{esc(item["reason"])}</span>' if item.get("reason") else "")
+        for item in case.get("not_ok") or []
+    ]
+    if not_ok:
+        text += "; not ok: " + " · ".join(not_ok)
+    return text
+
+
+def case_lines(case: dict[str, Any], unit: str) -> list[tuple[str, str]]:
+    """The ``(class, text)`` lines drawn below a case's bars, cut to the column.
+
+    The fail lines come first, then the measured note when the case has no bar.
+    A reason or a backend name is free text, so one that does not fit the column
+    takes another line instead of running past the chart's edge.
+    """
+    lines: list[tuple[str, str]] = []
+    for bad in case.get("not_ok") or []:
+        text = " · ".join(
+            [str(bad["label"]), str(bad["backend"])]
+            + ([str(bad["reason"])] if bad.get("reason") else [])
+        )
+        lines += [("chart-fail", part) for part in wrap_line(text)]
+    if not case["contenders"] and case.get("measured"):
+        for line in measured_lines(case, unit):
+            lines += [("chart-value", part) for part in wrap_line(line)]
+    return lines
+
+
 def svg_ratio_chart(cases: list[dict[str, Any]], baseline_label: str, unit: str = "ms") -> str:
     """Per-case ratios for one suite, one bar per contender.
 
@@ -1484,25 +1615,24 @@ def svg_ratio_chart(cases: list[dict[str, Any]], baseline_label: str, unit: str 
 
     An arm that did not produce a number is drawn as a ``fail`` line under its
     case, never by dropping the case: a case with one failed arm and one measured
-    arm keeps both.
+    arm keeps both.  A case that measured something but produced no ratio says so
+    in its own line, whatever the other cases of the suite did.
     """
-    rows = [case for case in cases if case["contenders"] or case.get("not_ok")]
+    rows = [
+        case
+        for case in cases
+        if case["contenders"] or case.get("not_ok") or case.get("measured")
+    ]
     if not rows:
         return ""
     ratios = [item["ratio"] for case in rows for item in case["contenders"]]
     if not ratios:
-        # Nothing to plot, but the failures are still named.
+        # Nothing to plot: no case has both sides of a comparison.  Name what each
+        # case did record — a measured median and the reason an arm has none — so
+        # the paragraph never claims a number was not measured when it was.
         return (
-            '<p class="chart-legend">No ratio could be computed and no measurement was '
-            "recorded as ok: "
-            + " · ".join(
-                f'<code>{esc(case["case"])}</code> '
-                + " ".join(
-                    f'<span class="fail">{esc(item["label"])}</span> <code>{esc(item["backend"])}</code>'
-                    for item in case.get("not_ok") or []
-                )
-                for case in rows
-            )
+            '<p class="chart-legend">No ratio could be computed: '
+            + " · ".join(no_ratio_note(case, unit) for case in rows)
             + "</p>"
         )
     low = math.log10(min(ratios) / 1.15)
@@ -1512,8 +1642,13 @@ def svg_ratio_chart(cases: list[dict[str, Any]], baseline_label: str, unit: str 
     def x_of(value: float) -> float:
         return BAR_LABEL_WIDTH + (math.log10(value) - low) / span * BAR_AREA_WIDTH
 
+    extra = [case_lines(case, unit) for case in rows]
     row_height = max(
-        1, max(len(case["contenders"]) + len(case.get("not_ok") or []) for case in rows)
+        1,
+        max(
+            len(case["contenders"]) + len(lines)
+            for case, lines in zip(rows, extra)
+        ),
     ) * (BAR_HEIGHT + BAR_GAP) + 10
     height = len(rows) * row_height + 34
     parts = [
@@ -1532,7 +1667,7 @@ def svg_ratio_chart(cases: list[dict[str, Any]], baseline_label: str, unit: str 
         f'<line class="chart-reference" x1="{parity:.1f}" y1="16" x2="{parity:.1f}" y2="{height - 4}"></line>'
     )
     y = 24
-    for case in rows:
+    for case, lines in zip(rows, extra):
         parts.append(f'<text x="0" y="{y + 9}" class="chart-label">{esc(case["case"])}</text>')
         for index, item in enumerate(case["contenders"]):
             bar_y = y + index * (BAR_HEIGHT + BAR_GAP)
@@ -1561,15 +1696,13 @@ def svg_ratio_chart(cases: list[dict[str, Any]], baseline_label: str, unit: str 
                 + ('<tspan class="chart-noisy"> noisy</tspan>' if item.get("noisy") else "")
                 + "</text>"
             )
-        for index, bad in enumerate(case.get("not_ok") or [], start=len(case["contenders"])):
-            bar_y = y + index * (BAR_HEIGHT + BAR_GAP)
-            # No bar: no number was produced.  The arm is still named, with its
-            # recorded reason, in a slot that would otherwise read as "not measured".
+        for index, (css, text) in enumerate(lines, start=len(case["contenders"])):
+            # A fail line names an arm that produced no number; the note beside it says
+            # what was measured.  Both were cut to the column above, and the row was
+            # sized from these same lines, so all of them stay inside the chart.
             parts.append(
-                f'<text x="{BAR_LABEL_WIDTH}" y="{bar_y + 9}" class="chart-fail">'
-                f'{esc(bad["label"])} · {esc(bad["backend"])}'
-                + (f' · {esc(bad["reason"])}' if bad.get("reason") else "")
-                + "</text>"
+                f'<text x="{BAR_LABEL_WIDTH}" y="{y + index * (BAR_HEIGHT + BAR_GAP) + 9}"'
+                f' class="{css}">{esc(text)}</text>'
             )
         y += row_height
     parts.append("</svg>")
@@ -2126,6 +2259,13 @@ def case_ratio_row(
             }
             for row in non_ok_rows(case.rows)
         ],
+        # Every ok measurement of the case, whether or not it became a bar: a case
+        # whose baseline failed still recorded the medians its own arms produced.
+        "measured": [
+            {"backend": str(row.get("backend")), "median": float(row["median"])}
+            for row in case.rows
+            if row_status(row) == "ok" and row.get("median") is not None
+        ],
     }
     if baseline is None:
         return item
@@ -2505,9 +2645,19 @@ def render_top(
 
 
 def profile_header_from_views(
-    profile: str, views: list[SuiteView], reference: datetime | None = None
+    profile: str,
+    views: list[SuiteView],
+    reference: datetime | None = None,
+    *,
+    empty_note: str = "no machine-readable summary",
 ) -> str:
-    """Profile head.  ``reference`` is the newest collection the ages are measured from."""
+    """Profile head.  ``reference`` is the newest collection the ages are measured from.
+
+    ``views`` must be the suites the page renders: the dates, the suite count and
+    the stale count describe those blocks and nothing else.  ``empty_note`` says
+    why there is no date line, so an empty ``views`` is not reported as a missing
+    summary when the profile does have one for a page it is not drawn on.
+    """
     documents = [view.document for view in views if view.document]
     hardware = next((hardware_name(doc) for doc in documents if hardware_name(doc)), None)
     commit = next((str(doc["tenferro_commit"]) for doc in documents if doc.get("tenferro_commit")), None)
@@ -2518,7 +2668,7 @@ def profile_header_from_views(
     if commit:
         pieces.append(f"<span>tenferro: <code>{esc(commit[:12])}</code></span>")
     if not documents:
-        pieces.append('<span class="muted">no machine-readable summary</span>')
+        pieces.append(f'<span class="muted">{esc(empty_note)}</span>')
     return '<div class="profile-head">' + "".join(pieces) + "</div>"
 
 
@@ -2655,7 +2805,18 @@ def render_family(
         profile_reference = collection_reference(profile_documents) or page_reference
         body.append('<section class="profile-card">')
         body.append(f'<h2>{esc(profile_label(profile))}</h2>')
-        body.append(profile_header_from_views(profile, profile_shown or profile_views, profile_reference))
+        if profile_shown:
+            body.append(profile_header_from_views(profile, profile_shown, profile_reference))
+        else:
+            # Nothing from this profile is drawn on this page, so it cannot date the
+            # header: a suite of the other regime (or a diagnostic) is not evidence
+            # for what this page shows.
+            empty_note = "no suite from this profile is rendered on this page"
+            if not any(view.document for view in profile_views):
+                empty_note = "no machine-readable summary"
+            body.append(
+                profile_header_from_views(profile, [], profile_reference, empty_note=empty_note)
+            )
         if profile in GITHUB_HOSTED_PROFILES or any(is_hosted(view) for view in profile_views):
             body.append(f'<p class="notice">{REPORT_QUALITY_NOTICE}</p>')
         profile_maintained = [
