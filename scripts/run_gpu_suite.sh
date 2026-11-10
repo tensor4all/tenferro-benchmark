@@ -500,16 +500,39 @@ for index in "${!SUITES[@]}"; do
         continue
     }
     if [[ "${GPU_BENCH_SKIP_LATEST:-0}" != 1 ]]; then
-        cp "$MARKDOWN_OUT" "$REPORT_OUT"
+        # Publishing the page is one step of the collection, not its outcome: a
+        # refused receipt or an unwritable report must not withhold the next
+        # suite, the accounting or the coverage report written after this loop.
+        published=1
+        cp "$MARKDOWN_OUT" "$REPORT_OUT" || {
+            publish_rc=$?
+            echo "PUBLISH FAILED: $suite_id page could not be written to $REPORT_OUT (exit $publish_rc)" >&2
+            published=0
+            VALIDATION_FAILED=1
+        }
         # The formatter writes a dashboard summary sidecar next to the raw
         # report; publish it next to the maintained Markdown under the same
         # condition so the dashboard never shows a stale summary.
         if [[ -f "${MARKDOWN_OUT%.md}.summary.json" ]]; then
-            cp "${MARKDOWN_OUT%.md}.summary.json" "${REPORT_OUT%.md}.summary.json"
-            "${PYTHON[@]}" "$SCRIPT_DIR/ci/result_ingestion.py" "$REPORT_OUT"
+            cp "${MARKDOWN_OUT%.md}.summary.json" "${REPORT_OUT%.md}.summary.json" || {
+                echo "PUBLISH FAILED: $suite_id summary could not be written next to $REPORT_OUT" >&2
+                published=0
+                VALIDATION_FAILED=1
+            }
+            # The receipt hashes the page and the sidecar it finds, so it must not
+            # attest a pair a failed copy left half replaced: a stale page with a
+            # fresh summary is worse than no receipt, because it looks published.
+            if [[ "$published" == 1 ]]; then
+                "${PYTHON[@]}" "$SCRIPT_DIR/ci/result_ingestion.py" "$REPORT_OUT" || {
+                    ingestion_rc=$?
+                    echo "PUBLISH FAILED: $suite_id receipt exited $ingestion_rc; the page and its summary are written" >&2
+                    VALIDATION_FAILED=1
+                }
+            fi
         fi
     fi
-    write_suite_wall_record "$RUN_DIR" "$COLLECTION_START_NS" "$COLLECTION_END_NS" "$REPORT_START_NS"
+    write_suite_wall_record "$RUN_DIR" "$COLLECTION_START_NS" "$COLLECTION_END_NS" "$REPORT_START_NS" \
+        || VALIDATION_FAILED=1
 
     echo ""
     echo "GPU benchmark suite complete: $suite_id"
@@ -532,10 +555,12 @@ fi
 "${PYTHON[@]}" "$SCRIPT_DIR/format_gpu_routine_coverage.py" "$SELECTION_DIR/case_status.json" \
     --output "$SELECTION_DIR/report.md" || VALIDATION_FAILED=1
 if [[ "${GPU_BENCH_SKIP_LATEST:-0}" != 1 && "${GPU_BENCH_VERIFY_ONLY:-0}" != 1 && "$FILTERED" == 0 ]]; then
-    mkdir -p "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu"
     # A filtered probe is not a routine profile refresh: its accounting stays in
-    # the raw selection dir.
-    cp "$SELECTION_DIR/report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_coverage.md"
+    # the raw selection dir. The maintained copy is a publication step like the
+    # per-suite page: an unwritable destination is deferred so the wall record
+    # and the exit accounting below are still written (#374).
+    mkdir -p "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu" || { echo "PUBLISH FAILED: the coverage report directory $REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu could not be created" >&2; VALIDATION_FAILED=1; }
+    cp "$SELECTION_DIR/report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_coverage.md" || { publish_rc=$?; echo "PUBLISH FAILED: the coverage report could not be written to $REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_coverage.md (exit $publish_rc)" >&2; VALIDATION_FAILED=1; }
 fi
 
 CONTROLS="${GPU_BENCH_ROUTINE_CONTROLS:-}"
