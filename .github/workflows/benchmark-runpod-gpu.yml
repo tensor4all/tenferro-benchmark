@@ -327,10 +327,10 @@ jobs:
 
   start-runpod:
     name: Start ephemeral RunPod runner
-    # A dispatch's re-run repeats a dispatch that is already counted, so it must not
-    # rent (scripts/ci/weekly_gate.py says the same, with the reason). A scheduled
-    # slot retries itself and keeps its own gate.
-    if: ${{ !inputs.prepare_only && (github.event_name == 'schedule' || github.run_attempt == 1) }}
+    # No re-run rents: what the attempt it repeats actually did cannot be told from the
+    # record, and a retry that may spend is a dispatch carrying its purpose
+    # (scripts/ci/weekly_gate.py says the same, with the reason).
+    if: ${{ !inputs.prepare_only && github.run_attempt == 1 }}
     needs: [prepare-benchmark, prepare-environment]
     runs-on: ubuntu-latest
     # The re-check below calls `gh run list`, which needs actions: read. Granting it
@@ -352,8 +352,8 @@ jobs:
           persist-credentials: false
 
       - name: Re-check the dispatch budget before renting
-        # The last word before money is spent: a re-run of a scheduled slot skips the
-        # gate job, and a skipped or refused week must not rent.
+        # The last word before money is spent: the concurrency queue can put this job
+        # behind another dispatch, so the budget is read again right here.
         env:
           GH_TOKEN: ${{ github.token }}
           PURPOSE: ${{ inputs.purpose }}

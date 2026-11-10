@@ -31,11 +31,11 @@ def read(path):
 
 
 def gpu_run(run_id, created, purpose='', event='workflow_dispatch', conclusion='success',
-            branch='main'):
+            branch='main', attempt=1):
     title = 'RunPod GPU benchmark'
     if purpose:
         title += f' [purpose={purpose} target=SpM-lab/tenferro-rs#1]'
-    return {'databaseId': run_id, 'createdAt': created, 'event': event,
+    return {'databaseId': run_id, 'attempt': attempt, 'createdAt': created, 'event': event,
             'conclusion': conclusion, 'displayTitle': title, 'headBranch': branch}
 
 
@@ -124,9 +124,10 @@ class GateMainTests(unittest.TestCase):
             argv = ['weekly_gate', '--repository', 'tensor4all/tenferro-benchmark',
                     '--event', event, '--run-id', '99', '--run-attempt', run_attempt,
                     '--branch', branch, '--purpose', purpose, '--target', target]
+            answers = [json.dumps(runs)]
             buffer = io.StringIO()
             with patch.object(sys, 'argv', argv), patch.dict(os.environ, environment), \
-                    patch.object(weekly_gate.subprocess, 'check_output', return_value=json.dumps(runs)), \
+                    patch.object(weekly_gate.subprocess, 'check_output', side_effect=answers), \
                     redirect_stdout(buffer):
                 code = 0
                 try:
@@ -174,23 +175,60 @@ class GateMainTests(unittest.TestCase):
         self.assertIn('purpose=verify target=tensor4all/tenferro-rs#419: weekly 0/3, verify 5/6', summary)
 
     def test_a_queued_successor_does_not_spend_the_budget_of_this_dispatch(self):
+        # A run that is still queued or running may not have rented yet; the record
+        # arrives the moment it is queued.
         runs = [gpu_run(1, this_week(1), 'weekly'), gpu_run(2, this_week(2), 'weekly'),
-                gpu_run(500, this_week(3), 'weekly')]
+                gpu_run(500, this_week(3), 'weekly', conclusion=None)]
         code, stdout, output, _ = self.run_gate(runs, purpose='weekly')
         self.assertEqual(code, 0)
         self.assertIn('Dispatch budget this week: weekly 2/3, verify 0/6', stdout)
         self.assertIn('proceed=true', output)
 
+    def test_a_finished_successor_spends_the_budget(self):
+        # The concurrency group does not order runs by id: 100-102 can finish before 99
+        # starts, and their A100 hours are spent whether or not their ids are higher.
+        runs = [gpu_run(100, this_week(1), 'weekly'), gpu_run(101, this_week(2), 'weekly'),
+                gpu_run(102, this_week(3), 'backfill')]
+        code, stdout, output, _ = self.run_gate(runs, purpose='weekly')
+        self.assertEqual(code, 1)
+        self.assertIn('weekly budget spent this week (weekly 3/3, verify 0/6)', stdout)
+        self.assertNotIn('proceed=', output)
+
+    def test_mixed_successors_count_only_when_they_finished(self):
+        runs = [gpu_run(100, this_week(1), 'weekly', conclusion=None),
+                gpu_run(101, this_week(2), 'weekly'),
+                gpu_run(102, this_week(3), 'verify')]
+        code, stdout, _, _ = self.run_gate(runs, purpose='weekly')
+        self.assertEqual(code, 0)
+        self.assertIn('Dispatch budget this week: weekly 1/3, verify 1/6', stdout)
+
+    def test_a_requeued_successor_still_spends_the_budget(self):
+        # Re-running a run clears its conclusion while the new attempt runs, but its
+        # finished attempt already spent; a first attempt that is still queued has not.
+        runs = [gpu_run(100, this_week(1), 'weekly', conclusion=None, attempt=2),
+                gpu_run(101, this_week(2), 'weekly', conclusion=None)]
+        code, stdout, output, _ = self.run_gate(runs, purpose='weekly')
+        self.assertEqual(code, 0)
+        self.assertIn('Dispatch budget this week: weekly 1/3, verify 0/6', stdout)
+        self.assertIn('proceed=true', output)
+
     def test_a_rerun_of_a_dispatch_is_refused(self):
         code, stdout, _, _ = self.run_gate([], purpose='weekly', run_attempt='2')
         self.assertEqual(code, 1)
-        self.assertIn('a re-run repeats a dispatch that already has its own record', stdout)
+        self.assertIn('a re-run repeats a run that is already recorded', stdout)
 
-    def test_a_scheduled_slot_may_retry_itself(self):
-        # The weekend slots exist to retry a slot that could not obtain a card.
-        code, stdout, _, _ = self.run_gate([], event='schedule', run_attempt='2')
-        self.assertEqual(code, 0)
-        self.assertIn('No successful GPU run this week yet; collecting.', stdout)
+    def test_a_rerun_never_rents(self):
+        # What the repeated attempt actually did cannot be told: a failure can follow a
+        # successful collection, and a failed provisioning can leave a pod billing. A
+        # scheduled slot retries at its next slot; an immediate retry is a counted
+        # dispatch.
+        for event in ('schedule', 'workflow_dispatch'):
+            for run_attempt in ('2', '3'):
+                with self.subTest(event=event, run_attempt=run_attempt):
+                    code, stdout, output, _ = self.run_gate([], event=event, run_attempt=run_attempt)
+                    self.assertEqual(code, 1)
+                    self.assertIn('a retry that may rent has to be counted', stdout)
+                    self.assertNotIn('proceed=', output)
 
     def test_a_rerun_counts_the_runs_that_came_after_it(self):
         # A re-run executes after the runs it has to be counted against, so a later
@@ -242,9 +280,10 @@ class GateMainTests(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertIn('Dispatch budget this week: weekly 0/3, verify 2/6', stdout)
 
-    def test_the_history_query_is_bounded_to_the_branch_and_carries_its_field(self):
+    def test_the_history_query_is_bounded_to_the_branch_and_carries_its_fields(self):
         # The window is bounded to this branch on the server: another branch's runs
-        # in the 100-run limit would fail main closed while it spent nothing.
+        # in the 100-run limit would fail main closed while it spent nothing. The
+        # branch and the attempt count are what the counters are read from.
         call = MagicMock(return_value='[]')
         argv = ['weekly_gate', '--repository', 'tensor4all/tenferro-benchmark',
                 '--event', 'workflow_dispatch', '--run-id', '99', '--branch', 'feat/perf-probe']
@@ -255,6 +294,7 @@ class GateMainTests(unittest.TestCase):
         query = call.call_args.args[0]
         self.assertEqual(query[query.index('--branch') + 1], 'feat/perf-probe')
         self.assertIn('headBranch', query[query.index('--json') + 1])
+        self.assertIn('attempt', query[query.index('--json') + 1])
 
     def test_a_later_slot_that_already_collected_is_not_re_rented(self):
         # The concurrency group serializes the weekend slots but does not order them

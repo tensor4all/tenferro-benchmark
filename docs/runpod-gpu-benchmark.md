@@ -86,16 +86,19 @@ are per branch: a dispatch from a feature branch spends that branch's budget and
 never refuses main's scheduled slot.
 
 `scripts/ci/weekly_gate.py` runs before anything is rented and again immediately
-before the pod is created (so a re-run of a scheduled slot cannot rent either),
-prints both counters (`weekly 1/3, verify 4/6`) into the step summary, and fails
+before the pod is created, prints both counters (`weekly 1/3, verify 4/6`) into the step summary, and fails
 the run with the reason when the budget is spent. The answer to a 7th
 verification is to batch the fixes into one run in the next weekly window.
-Manual dispatches proceed only within those budgets, a re-run of a dispatch is
-refused instead of renting again under an already counted run, and a readback
-dispatch is counted under the purpose it was given. The counters are read back
-from the run names in the current window, counting the runs that started before
-this one, so there is no second place to update. A window of
-`WINDOW_LIMIT` runs fails closed instead of counting a truncated history.
+Manual dispatches proceed only within those budgets, and no re-run rents: what
+the attempt it repeats actually did cannot be told from the record (a failure can
+follow a successful collection, and a failed provisioning can leave a pod
+billing), so a scheduled slot retries at its next slot and a retry that needs a
+GPU is a dispatch carrying its purpose. A readback dispatch is counted under the
+purpose it was given. The counters are read back from the run names in the current
+window, counting the runs that started before this one plus any successor that
+already finished (the concurrency group does not order runs by id), so there is no
+second place to update. A window of `WINDOW_LIMIT` runs fails
+closed instead of counting a truncated history.
 
 Both scheduled and dispatched runs request the `a100` tier: any in-stock
 A100 (`NVIDIA A100 80GB PCIe`, `NVIDIA A100-SXM4-80GB` or

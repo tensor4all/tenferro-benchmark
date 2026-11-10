@@ -60,20 +60,30 @@ def purpose_of(run: dict) -> str:
     return normalize_purpose(found.group(1) if found else '')
 
 
+def completed(run: dict) -> bool:
+    """A run that has a conclusion, or a second attempt, has already run."""
+    # A re-run clears the conclusion while it runs, but its first attempt had one, so the
+    # attempt count keeps a requeued successor in the count.
+    return bool(run.get('conclusion')) or int(run.get('attempt') or 1) > 1
+
+
 def week_runs(runs: list[dict], now: datetime, current_run_id: str,
               branch: str = MAIN_BRANCH, predecessors_only: bool = True) -> list[dict]:
     """This week's other runs on `branch`.
 
-    `predecessors_only` ignores queued successors: a later run cannot have rented a
-    GPU before this one did, and counting them would make a dispatch refuse itself
-    because someone queued another. A re-run executes after the runs it has to be
-    counted against, so it looks at the whole window instead.
+    `predecessors_only` ignores a successor that is still on its first attempt: it may
+    not have rented yet, and counting it would make a dispatch refuse itself because
+    someone queued another. A successor that already finished, or that is re-running an
+    attempt that finished, may have rented, and the concurrency group does not order runs
+    by id, so it is counted. A re-run executes after the runs it has to be counted
+    against, so it looks at the whole window instead.
     """
     start = week_start(now)
     return [run for run in runs
             if str(run['databaseId']) != current_run_id
             and run.get('headBranch') == branch
-            and (not predecessors_only or int(run['databaseId']) < int(current_run_id))
+            and (not predecessors_only or int(run['databaseId']) < int(current_run_id)
+                 or completed(run))
             and datetime.fromisoformat(run['createdAt'].replace('Z', '+00:00')) >= start]
 
 
@@ -116,12 +126,20 @@ def truncation_refusal(returned: int) -> str | None:
             'fail closed rather than rent against an unknown budget.')
 
 
-def rerun_refusal(event: str, run_attempt: int) -> str | None:
-    """A re-run repeats a dispatch that is already counted; a scheduled slot retries itself."""
-    if event == 'schedule' or run_attempt <= 1:
+def rerun_refusal(run_attempt: int) -> str | None:
+    """A re-run may not rent: what the attempt it repeats actually did cannot be told.
+
+    A `failure` can follow a successful collection (the pod deletion or an upload
+    failing afterwards), and a failed provisioning attempt can leave a pod behind, so no
+    conclusion proves that a re-run would not rent and collect a second time. A
+    scheduled slot has four chances per weekend and the next slot reads this week's
+    result; a retry that needs a GPU now is a dispatch carrying its purpose, which the
+    budget counts.
+    """
+    if run_attempt <= 1:
         return None
-    return ('a re-run repeats a dispatch that already has its own record: dispatch a new run with '
-            'its purpose instead, so the budget sees this attempt.')
+    return ('a re-run repeats a run that is already recorded, and a retry that may rent has to be '
+            'counted: let the next scheduled slot try, or dispatch a new run with its purpose.')
 
 
 def already_collected(runs: list[dict], now: datetime, current_run_id: str,
@@ -172,14 +190,15 @@ def main() -> None:
         'gh', 'run', 'list', '--repo', args.repository, '--workflow', 'benchmark-runpod-gpu.yml',
         '--branch', args.branch,
         '--created', f'>={week_start(now).strftime("%Y-%m-%d")}', '--limit', str(WINDOW_LIMIT),
-        '--json', 'databaseId,createdAt,event,conclusion,displayTitle,headBranch',
+        '--json', 'databaseId,attempt,createdAt,event,conclusion,displayTitle,headBranch',
     ], text=True))
     predecessors_only = args.run_attempt == 1
     counts = count_purposes(runs, now, args.run_id, args.branch, predecessors_only)
     report = budget_report(counts)
     print(f'Dispatch budget this week: {report}')
     note(f'purpose={purpose} target={args.target or "-"}: {report}')
-    refused = (truncation_refusal(len(runs)) or rerun_refusal(args.event, args.run_attempt)
+    refused = (truncation_refusal(len(runs))
+               or rerun_refusal(args.run_attempt)
                or refusal(purpose, args.target, counts))
     if refused:
         print(refused)

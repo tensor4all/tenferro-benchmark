@@ -119,12 +119,10 @@ class PartialWorkflowTest(unittest.TestCase):
         self.assertEqual(gate['env']['RUN_ATTEMPT'], '${{ github.run_attempt }}')
         self.assertIn('--run-attempt "$RUN_ATTEMPT" --branch "$GITHUB_REF_NAME" '
                       '--purpose "$PURPOSE" --target "$TARGET"', gate['run'])
-        # A dispatch re-run repeats a dispatch that is already counted, so the
-        # renting job refuses it before it can rent; a scheduled slot retries itself.
-        self.assertIn("github.event_name == 'schedule' || github.run_attempt == 1",
-                      workflow['jobs']['start-runpod']['if'])
-        # A re-run of a scheduled slot skips the gate job, so the budget is checked
-        # again where the money is spent.
+        # No re-run rents, so the renting job never starts on attempt 2.
+        self.assertIn('github.run_attempt == 1', workflow['jobs']['start-runpod']['if'])
+        self.assertNotIn('github.event_name', workflow['jobs']['start-runpod']['if'])
+        # The budget is checked again where the money is spent.
         recheck = next(step for step in workflow['jobs']['start-runpod']['steps']
                        if step.get('name') == 'Re-check the dispatch budget before renting')
         self.assertIn('--purpose "$PURPOSE" --target "$TARGET"', recheck['run'])
