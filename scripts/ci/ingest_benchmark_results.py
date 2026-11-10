@@ -202,10 +202,20 @@ def merge_through_pull_request(branch: str, commit: str, title: str):
     # whether or not this job sees it: re-read the state within a bounded budget
     # and treat an invisible merge as pending, never as a failure.
     racing = 'Merge already in progress' in merged.stderr
+    unobserved = None
     for attempt in range(1 + len(MERGE_POLL_DELAYS) if racing else 1):
         if attempt:
             time.sleep(MERGE_POLL_DELAYS[attempt - 1])
-        state = json.loads(gh_pull_request(f'repos/{REPOSITORY}/pulls/{number}').stdout)
+        try:
+            state = json.loads(gh_pull_request(f'repos/{REPOSITORY}/pulls/{number}').stdout)
+        except subprocess.CalledProcessError as error:
+            # A failed read is an observation failure, not a merge failure: the
+            # 405 already said the merge is landing, and a 502 or a dropped
+            # connection says nothing about it. Keep polling, then report pending.
+            if not racing:
+                raise
+            unobserved = error
+            continue
         if state.get('merged'):
             return state['merge_commit_sha']
         if not racing and not state.get('mergeable'):
@@ -215,6 +225,8 @@ def merge_through_pull_request(branch: str, commit: str, title: str):
                    f'and was still not visible as merged after {sum(MERGE_POLL_DELAYS)}s of polling. '
                    'The merge lands on its own; publishing is requested anyway and the next '
                    'ingest re-sends it.')
+        if unobserved:
+            pending += f' Last state read failed: {unobserved}'
         print(pending)
         if os.environ.get('GITHUB_STEP_SUMMARY'):
             with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as output:
