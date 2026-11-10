@@ -55,15 +55,20 @@ def calls(node, name):
 
 
 def bindings(frame, name):
-    """Every `def name` and `name = lambda ...` in the builder, with its line."""
+    """Every binding of `name` in the builder, as (line, callable or None).
+
+    A non-lambda assignment (`runner = cached`) is recorded with no callable: the
+    name is rebound to something this check cannot follow, and that has to fail
+    closed rather than fall back to the older definition.
+    """
     found = []
     for child in ast.walk(frame):
         if isinstance(child, ast.FunctionDef) and child.name == name:
-            found.append(child)
+            found.append((child.lineno, child))
         if isinstance(child, ast.Assign):
             if any(isinstance(t, ast.Name) and t.id == name for t in child.targets):
-                if isinstance(child.value, ast.Lambda):
-                    found.append(child.value)
+                callable_node = child.value if isinstance(child.value, ast.Lambda) else None
+                found.append((child.lineno, callable_node))
     return found
 
 
@@ -135,14 +140,21 @@ def check(label, vjp_name, builder_name, use_finder, what):
         problems.append(f"{builder_name}: no callable this row's sampler uses ({what})")
         return
     for name, use_line in sorted(set(uses)):
-        candidates = [b for b in bindings(frame, name) if b.lineno < use_line]
+        candidates = [b for b in bindings(frame, name) if b[0] < use_line]
         if not candidates:
             problems.append(f"{builder_name}: {name} has no binding before line {use_line}")
             continue
         # The binding in effect at the use site is the newest one before it: an
         # earlier `def runner` that still holds the VJP does not count once the
-        # name has been rebound to something the setup computed.
-        active = max(candidates, key=lambda b: b.lineno)
+        # name has been rebound, and a rebinding to something that is not a
+        # def/lambda cannot be followed, so it fails closed.
+        active_line, active = max(candidates, key=lambda b: b[0])
+        if active is None:
+            problems.append(
+                f"{builder_name}: {name} is rebound at line {active_line} to something "
+                f"this check cannot follow; keep it a def/lambda or extend the check"
+            )
+            continue
         for call in vjp_calls:
             if not inside(call, active):
                 problems.append(
