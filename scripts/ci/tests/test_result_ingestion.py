@@ -129,6 +129,12 @@ class IngestionTest(unittest.TestCase):
         # hashes describe the page this publish just replaced.
         self.assertEqual(receipt['campaign'], {k: v for k, v in campaign.items() if k != 'files'})
         self.assertEqual(receipt['files']['result/amd-cpu/cpu/cpu_ops.md'], digest(report))
+        # A second publish sees the carried campaign, not the campaign's receipt.
+        # Dropping it here would lose the inventory as surely as the first overwrite.
+        report.write_bytes(b'republished twice')
+        again = json.loads(publish_receipt(report, self.repo).read_text())
+        self.assertEqual(again['campaign'], receipt['campaign'])
+        self.assertEqual(again['files']['result/amd-cpu/cpu/cpu_ops.md'], digest(report))
 
     def test_a_publisher_receipt_orders_by_collection_time(self):
         # A receipt without a source run records no ingestion order, so the

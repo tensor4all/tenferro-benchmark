@@ -113,6 +113,10 @@ def publish_receipt(report: Path, root: Path = REPOSITORY_ROOT) -> Path:
         if isinstance(previous, dict) and previous.get('source'):
             receipt['campaign'] = {key: value for key, value in previous.items()
                                    if key in CAMPAIGN_RECEIPT_KEYS}
+        elif isinstance(previous, dict) and isinstance(previous.get('campaign'), dict):
+            # The second publish over the same page sees the carried campaign, not
+            # the campaign's own receipt: keep carrying it, or it dies with the page.
+            receipt['campaign'] = previous['campaign']
     path.write_text(json.dumps(receipt, indent=2, sort_keys=True) + '\n')
     return path
 
