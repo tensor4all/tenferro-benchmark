@@ -198,6 +198,7 @@ record, or a `measure_only` row marked verified or without a reason) is refused 
 name with no table and exit 1 instead of one of its rows being overwritten. A row
 without a
 verified measurement — or one whose counterpart the other run did not record as
+a measurement, is named under the table instead of being compared or dropped
 silently. A row only one of the two runs recorded at all is named the same way, so
 a case that vanished from a week cannot read as no regression — and when the run
 that recorded it measured it, the report exits 1: the table still prints, but it
