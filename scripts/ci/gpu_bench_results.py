@@ -19,6 +19,8 @@ unverified row is named under the table instead, and so is a row the other run
 did not record as a measurement.  A row that only one of the two runs recorded
 at all is named as well, so a case that vanished from a week is not read as no
 change; when the run that recorded it measured it, that lost coverage exits 1.
+A row one run measured and the other recorded as a run failure rather than a
+skip is lost coverage for the same reason and exits 1 too.
 A record the driver would reject as a whole (a repeated identity, an
 identity field that is not a string, a median that is not a finite non-negative
 number, a measure_only row marked verified) refuses the comparison by name rather
@@ -444,13 +446,17 @@ def slower_rows(baseline: dict, candidate: dict, threshold: float) -> dict:
                                'baseline': (left or {}).get('median'),
                                'candidate': (right or {}).get('median'), 'sides': sides})
             continue
-        dropped = [f'{side} status {(row or {}).get("status")}'
+        dropped = [(side, (row or {}).get('status'))
                    for side, row, other in (('baseline', left, right), ('candidate', right, left))
                    if row is not None and not measured(row) and other is not None and measured(other)]
         if dropped:
             # The identity is a measurement on one side and a non-`ok` row on the
-            # other, so there is no ratio; naming it is the diagnostic.
-            not_ok.append({'case': key[0], 'group': key[1], 'backend': key[2], 'notes': dropped})
+            # other, so there is no ratio; naming it is the diagnostic.  A side
+            # that recorded a run failure, unlike a recorded skip, lost the
+            # measurement the other run has.
+            not_ok.append({'case': key[0], 'group': key[1], 'backend': key[2],
+                           'notes': [f'{side} status {status}' for side, status in dropped],
+                           'failed': any(status in FAILED_STATUSES for _, status in dropped)})
             continue
         if left is None or right is None:
             # One run has no entry for this identity at all.  A case that an
@@ -582,8 +588,13 @@ def status(result: dict) -> int:
     # An identity only one run recorded is lost coverage when that run measured
     # it: the table still prints the rows both runs share, but it no longer
     # covers the run, so a disappeared measurement cannot read as exit 0.  A
-    # one-sided `skipped` row measured nothing on either side and keeps 0.
-    lost = any(measured(row) for row in result['absent'])
+    # one-sided `skipped` row measured nothing on either side and keeps 0.  The
+    # same holds when one run measured an identity and the other recorded a run
+    # failure there (`runtime_failed`, `oom`, ...): that failure is a measurement
+    # the pair does not cover, and reading it as a successful comparison reports
+    # a broken benchmark as a passing week.
+    lost = (any(measured(row) for row in result['absent'])
+            or any(row['failed'] for row in result['not_ok']))
     return 0 if (result['baseline'] is not None and not result['refusals']
                  and not result['invalid'] and not lost) else 1
 

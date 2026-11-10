@@ -217,6 +217,24 @@ class BaselineTests(unittest.TestCase):
         text = render(result)
         self.assertEqual(result['rows'], [])
         self.assertIn('dense_matmul/matmul/tenferro-cuda-eager (candidate status skipped)', text)
+        # A recorded skip is not a lost measurement, so it keeps the status.
+        self.assertEqual(status(result), 0)
+
+    def test_a_recorded_run_failure_is_not_a_successful_comparison(self):
+        # The candidate recorded a run failure where the baseline measured, so no
+        # row was compared and the table printed (none) with exit 0: a broken
+        # benchmark read as a passing week.
+        baseline, candidate = record(WEEK_44, COMMIT_A), record(WEEK_45_LATE, COMMIT_B)
+        candidate['rows'][0] = {'case': 'dense_matmul', 'group': 'matmul',
+                                'backend': 'tenferro-cuda-eager', 'status': 'runtime_failed',
+                                'reason': 'kernel crashed', 'median': None, 'iqr': None,
+                                'verified': False}
+        result = compare(candidate, baseline, 1.2, request=('nvidia-gpu', 'gpu/dense'))
+        text = render(result)
+        self.assertEqual(result['rows'], [])
+        self.assertIn('dense_matmul/matmul/tenferro-cuda-eager (candidate status runtime_failed)',
+                      text)
+        self.assertEqual(status(result), 1)
 
     def test_an_unhashable_group_is_refused_without_crashing(self):
         # The identity was hashed before its type was checked, so a list group
