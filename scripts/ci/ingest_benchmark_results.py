@@ -173,6 +173,17 @@ MERGE_PENDING = _PendingMerge()
 # so the budget is 60 s and an invisible merge is reported as pending instead.
 MERGE_POLL_DELAYS = (2, 4, 8, 16, 30)
 
+# Distinct process exit for "the merge call raced and the state stayed
+# unreadable": the workflow turns it into a warning instead of a red run,
+# because the data may well have landed and publication was already requested.
+MERGE_STATE_UNKNOWN_EXIT = 3
+
+
+def merge_race(stderr: str) -> bool:
+    """A 405 says the required-checks auto-merge already owns this pull request."""
+    text = stderr.lower()
+    return '405' in text and ('merge already in progress' in text or 'already merged' in text)
+
 
 def merge_through_pull_request(branch: str, commit: str, title: str):
     """Merge the exact result commit through a PR.
@@ -201,7 +212,7 @@ def merge_through_pull_request(branch: str, commit: str, title: str):
     # the race against this call. GitHub has accepted that merge, so it lands
     # whether or not this job sees it: re-read the state within a bounded budget
     # and treat an invisible merge as pending, never as a failure.
-    racing = 'Merge already in progress' in merged.stderr
+    racing = merge_race(merged.stderr)
     unobserved = None
     for attempt in range(1 + len(MERGE_POLL_DELAYS) if racing else 1):
         if attempt:
@@ -221,8 +232,9 @@ def merge_through_pull_request(branch: str, commit: str, title: str):
         if not racing and not state.get('mergeable'):
             return None
     if racing:
-        pending = (f'Merge pending: pull request #{number} answered 405 "Merge already in progress" '
-                   f'and was still not visible as merged after {sum(MERGE_POLL_DELAYS)}s of polling. '
+        pending = (f'Merge pending: could not determine merge state of #{number} after HTTP 405 '
+                   f'({merged.stderr.strip()}); still not visible as merged after '
+                   f'{sum(MERGE_POLL_DELAYS)}s of polling. '
                    'The merge lands on its own; publishing is requested anyway and the next '
                    'ingest re-sends it.')
         if unobserved:
@@ -278,9 +290,9 @@ def commit_results(root: Path, validated, source: dict, attempts=3):
         merged = merge_through_pull_request(branch, commit, title)
         if merged is MERGE_PENDING:
             # The merge is landing on its own. Replaying would race it and
-            # failing would skip request_publication(), so stop here and report
-            # no visible commit.
-            return decisions, None
+            # failing would skip request_publication(), so stop here and pass the
+            # pending fact to main(), which reports the distinct exit code.
+            return decisions, MERGE_PENDING
         if merged:
             return decisions, merged
         # Only discard our own generated tracked result changes in this
@@ -330,7 +342,7 @@ def main():
         if os.environ.get('GITHUB_STEP_SUMMARY'):
             with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as output:
                 output.write('## Benchmark ingestion\n\n' + message + '\n')
-        return
+        return 0
     profile, source, artifact = selection
     with tempfile.TemporaryDirectory() as directory:
         bundle = Path(directory) / 'bundle'
@@ -349,8 +361,12 @@ def main():
         if args.validate_only:
             decisions = {receipt['suite_id']: 'validated' for receipt, _ in validated}
             commit = None
+            pending = False
         else:
             decisions, commit = commit_results(args.repository_dir.resolve(), validated, source)
+            pending = commit is MERGE_PENDING
+            if pending:
+                commit = None
             # Dispatch even after duplicate/stale ingestion to recover a
             # previous successful commit followed by a failed dispatch.
             request_publication()
@@ -362,11 +378,12 @@ def main():
         if os.environ.get('GITHUB_STEP_SUMMARY'):
             with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as output:
                 output.write('## Benchmark ingestion\n\n```json\n' + summary + '\n```\n')
+    return MERGE_STATE_UNKNOWN_EXIT if pending else 0
 
 
 if __name__ == '__main__':
     try:
-        main()
+        status = main()
     except Exception as error:
         message = f'Benchmark ingestion rejected or failed: {error}'
         print(message, file=sys.stderr)
@@ -374,3 +391,4 @@ if __name__ == '__main__':
             with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as output:
                 output.write('## Benchmark ingestion failed\n\n' + message + '\n')
         raise SystemExit(1) from error
+    raise SystemExit(status)

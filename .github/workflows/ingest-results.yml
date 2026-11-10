@@ -75,5 +75,14 @@ jobs:
         run: |
           args=(--run-id "$SOURCE_RUN_ID")
           if [[ "$VALIDATE_ONLY" == true ]]; then args+=(--validate-only); fi
+          status=0
           uv run --no-project --python 3.12 --with-requirements scripts/dashboard-requirements.txt --with jsonschema \
-            python scripts/ci/ingest_benchmark_results.py "${args[@]}"
+            python scripts/ci/ingest_benchmark_results.py "${args[@]}" || status=$?
+          if [[ "$status" -eq 3 ]]; then
+            # The merge request was accepted but its state stayed unreadable:
+            # the data may have landed and publication was still requested, so a
+            # red run here would only teach readers to skim this job.
+            echo "::warning::Could not confirm the result merge state; publication was still requested. Re-run ingest-results with run $SOURCE_RUN_ID to confirm."
+            exit 0
+          fi
+          exit "$status"

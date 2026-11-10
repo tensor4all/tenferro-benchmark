@@ -273,9 +273,23 @@ class MergeRaceTest(unittest.TestCase):
     def test_405_with_failing_state_reads_still_requests_publication(self):
         # The whole chain: a 405 whose state reads all fail must not raise out of
         # commit_results, so main() still dispatches the publication.
+        self.read_error = True
+        status, output, publish = self.run_main()
+        publish.assert_called_once()
+        self.assertEqual(status, 3)
+        self.assertIn('could not determine merge state of #7 after HTTP 405', output)
+
+    def test_already_merged_405_polls_like_merge_in_progress(self):
+        # The issue names both 405 messages as the success path; "already merged"
+        # must reach the same bounded poll instead of one read and a failure.
+        self.merge_stderr = 'gh: Pull request tensor4all/tenferro-benchmark#7 was already merged (HTTP 405)'
+        self.states = [{'merged': False, 'mergeable': True}, {'merged': True, 'merge_commit_sha': 'squashed'}]
+        self.assertEqual(self.merge(), 'squashed')
+        self.assertEqual(len(self.state_reads()), 2)
+
+    def run_main(self):
         from scripts.ci import ingest_benchmark_results as driver
         from scripts.ci.tests import test_result_ingestion as fixtures
-        self.read_error = True
         fixture = fixtures.IngestionTest()
         fixture.setUp()
         self.addCleanup(fixture.doCleanups)
@@ -290,6 +304,7 @@ class MergeRaceTest(unittest.TestCase):
         def fake_git(root, *args, check=True):
             stdout = {'diff': 'result/amd-cpu/cpu/einsum.md', 'rev-parse': 'deadbeef'}.get(args[0], '')
             return subprocess.CompletedProcess(args, 0, stdout, '')
+        output = io.StringIO()
         with tempfile.TemporaryDirectory() as directory, \
              patch.object(driver, 'gh_json', fake_json), \
              patch.object(driver, 'download_artifact'), \
@@ -298,8 +313,18 @@ class MergeRaceTest(unittest.TestCase):
              patch.object(driver, 'plan_updates', return_value=(payload, {'cpu/einsum': 'accepted'})), \
              patch.object(driver, 'request_publication') as publish, \
              patch('sys.argv', ['ingest', '--run-id', str(fixture.run['id']),
-                                '--repository-dir', directory]):
-            driver.main()
+                                '--repository-dir', directory]), \
+             contextlib.redirect_stdout(output):
+            status = driver.main()
+        return status, output.getvalue(), publish
+
+    def test_405_that_never_becomes_visible_exits_with_a_distinct_code(self):
+        # 405 then OPEN for every attempt: the run must say so with its own code,
+        # not a merge failure, and must still request publication.
+        self.states = [{'merged': False, 'mergeable': True}] * 6
+        status, output, publish = self.run_main()
+        self.assertEqual(status, 3)
+        self.assertIn('could not determine merge state of #7 after HTTP 405', output)
         publish.assert_called_once()
 
     def test_other_merge_errors_fail_immediately_without_polling(self):
@@ -329,7 +354,7 @@ class PendingMergeTest(unittest.TestCase):
              patch.object(driver, 'merge_through_pull_request', return_value=driver.MERGE_PENDING):
             decisions, commit = commit_results(Path(directory), [({}, payload)],
                                                {'run_id': 1, 'run_attempt': 1})
-        self.assertEqual((decisions, commit), ({'cpu/einsum': 'accepted'}, None))
+        self.assertEqual((decisions, commit), ({'cpu/einsum': 'accepted'}, driver.MERGE_PENDING))
         # No replay: the landing merge already owns this branch.
         self.assertEqual(len(pushes), 1)
 

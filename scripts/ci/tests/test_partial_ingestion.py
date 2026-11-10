@@ -53,7 +53,7 @@ class PartialDriverTest(unittest.TestCase):
     def test_pending_merge_still_requests_publication(self):
         # A 405 merge lands on its own: no commit is visible, but the idempotent
         # publication request must still go out.
-        self.invoke(commit=None)
+        self.invoke(commit=driver.MERGE_PENDING)
         self.publish.assert_called_once()
 
     def test_failure_complete_artifact_preserves_three_failed_cases_as_partial(self):
