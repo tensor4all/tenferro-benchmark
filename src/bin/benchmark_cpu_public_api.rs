@@ -1617,6 +1617,22 @@ fn well_conditioned(n: usize, seed: u64) -> &'static Tensor {
     })
 }
 
+/// Rectangular twin of `well_conditioned` for the tall least-squares row: the
+/// ramp fixture with the same diagonal boost on the first `min(m, n)` entries.
+/// The ramp alone repeats its columns every `2048 / gcd(m * 1837 mod 2048, 2048)`
+/// columns (8 for `m = 768`), so a (768, 384) ramp has rank 8 and the GELS
+/// driver rejects it as rank deficient (#299).
+fn well_conditioned_rect(m: usize, n: usize, seed: u64) -> &'static Tensor {
+    static CACHE: TensorCache = OnceLock::new();
+    cached_tensor(&CACHE, format!("{m}x{n}:{seed}"), || {
+        let mut values = data_f64(m * n, seed);
+        for j in 0..m.min(n) {
+            values[j + j * m] += 2.0 + j as f64 / n as f64;
+        }
+        Tensor::from_vec_col_major(vec![m, n], values).unwrap()
+    })
+}
+
 /// Batch count for `cpu/linalg_batched`; batch is the trailing axis.
 const LU_BATCH: usize = 1024;
 
@@ -1972,8 +1988,10 @@ fn build_trace_case(case: &Case) -> BenchResult<Vec<TracedTensor>> {
             let (p, l, u, pivots) = traced(trace, well_conditioned(1024, 1))?.lu()?;
             Ok(vec![p, l, u, pivots])
         }
-        ("cpu/linalg_uncovered", "lstsq") => one(traced(trace, tensor_f64(&[768, 384], 1))?
-            .lstsq(&traced(trace, tensor_f64(&[768, 16], 2))?)?),
+        ("cpu/linalg_uncovered", "lstsq") => {
+            one(traced(trace, well_conditioned_rect(768, 384, 1))?
+                .lstsq(&traced(trace, tensor_f64(&[768, 16], 2))?)?)
+        }
         ("cpu/linalg_uncovered", "svd_full") => {
             let (u, s, vt) = traced(trace, tensor_f64(&[768, 384], 1))?.svd_full()?;
             Ok(vec![u, s, vt])
@@ -2915,7 +2933,7 @@ fn lstsq_f64(b: &mut CpuEngine) -> tenferro_tensor::Result<()> {
         if fixture.is_none() {
             let ctx = eager_cpu_context();
             let a = EagerTensor::from_tensor_in(
-                tensor_f64(&[768, 384], 1)
+                well_conditioned_rect(768, 384, 1)
                     .duplicate()
                     .expect("lstsq lhs tensor should duplicate"),
                 Arc::clone(&ctx),

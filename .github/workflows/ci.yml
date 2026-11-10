@@ -173,6 +173,11 @@ jobs:
           bash tests/test_public_api_selection.sh
           uv run python -m unittest tests.test_public_api_candidates
 
+      - name: Validate public API fixture and report validity
+        # The fixture tests guard the input each row's contract assumes (#299:
+        # the lstsq row drives GELS, which needs full column rank).
+        run: uv run python -m unittest tests.test_public_api_harness_validity
+
       - name: Validate GPU public API fixtures and timing contracts without a GPU
         run: |
           bash -n scripts/run_gpu_public_api.sh

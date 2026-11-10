@@ -207,6 +207,26 @@ def well_conditioned(n: int, seed: int):
     return LazyTensor(build)
 
 
+def well_conditioned_rect(m: int, n: int, seed: int):
+    """Rectangular twin of `well_conditioned` for the tall least-squares row.
+
+    The ramp fixture repeats its columns every `2048 / gcd(m * 1837 mod 2048,
+    2048)` columns (8 for `m = 768`), so a (768, 384) ramp has rank 8 and the
+    GELS driver rejects it as rank deficient (#299).
+    """
+
+    def build():
+        import torch
+
+        x = tensor_f64((m, n), seed).get().clone()
+        k = min(m, n)
+        indices = torch.arange(k)
+        x[indices, indices] += 2.0 + indices.to(torch.float64) / n
+        return x
+
+    return LazyTensor(build)
+
+
 def well_conditioned_c64(n: int, seed: int):
     def build():
         import torch
@@ -429,7 +449,7 @@ def make_cases() -> list[tuple[str, str, str, str, str, Callable[[], object] | N
     a768 = well_conditioned(768, 1)
     rect512x256 = tensor_f64((512, 256), 1)
     lu1024 = well_conditioned(1024, 1)
-    lstsq_a = tensor_f64((768, 384), 1)
+    lstsq_a = well_conditioned_rect(768, 384, 1)
     lstsq_rhs = tensor_f64((768, 16), 2)
     svd_full_a = tensor_f64((768, 384), 1)
     norm2048 = tensor_f64((2048, 2048), 1)

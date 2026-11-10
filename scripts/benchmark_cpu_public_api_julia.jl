@@ -71,6 +71,20 @@ function well_conditioned(n::Int, seed::Int)
     return x
 end
 
+"""
+Rectangular twin of `well_conditioned` for the tall least-squares row. The
+ramp fixture repeats its columns every `2048 / gcd(m * 1837 mod 2048, 2048)`
+columns (8 for `m = 768`), so a (768, 384) ramp has rank 8 and the GELS driver
+rejects it as rank deficient (#299).
+"""
+function well_conditioned_rect(m::Int, n::Int, seed::Int)
+    x = tensor_f64((m, n), seed)
+    for i in 1:min(m, n)
+        x[i, i] += 2.0 + (i - 1) / n
+    end
+    return x
+end
+
 function lower_triangular_fixture(n::Int, seed::Int)
     x = LinearAlgebra.tril(0.05 .* tensor_f64((n, n), seed))
     for i in 1:n
@@ -476,7 +490,7 @@ function linalg_uncovered_cases()
     a768 = well_conditioned(768, 1)
     rect512x256 = tensor_f64((512, 256), 1)
     lu1024 = well_conditioned(1024, 1)
-    lstsq_a = tensor_f64((768, 384), 1)
+    lstsq_a = well_conditioned_rect(768, 384, 1)
     lstsq_rhs = tensor_f64((768, 16), 2)
     svd_full_a = tensor_f64((768, 384), 1)
     norm2048 = tensor_f64((2048, 2048), 1)
