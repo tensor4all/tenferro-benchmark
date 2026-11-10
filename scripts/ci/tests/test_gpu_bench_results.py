@@ -51,7 +51,6 @@ class RefusalTests(unittest.TestCase):
     def assertRefused(self, result, clause):
         text = render(result)
         self.assertEqual(status(result), 1)
-
         self.assertIn(clause, text)
         self.assertNotIn('| case |', text)
 
@@ -113,7 +112,6 @@ class BaselineTests(unittest.TestCase):
         self.assertNotIn('| case |', text)
         self.assertEqual(status(result), 1)
 
-
     def test_report_states_both_runs_identity(self):
         candidate = record(WEEK_45_LATE, COMMIT_B, scale=1.5)
         baseline = record(WEEK_44, COMMIT_A)
@@ -139,7 +137,6 @@ class BaselineTests(unittest.TestCase):
         result = compare(candidate, baseline, 1.2)
         text = render(result)
         self.assertEqual(status(result), 1)
-
         self.assertIn('different unit: ms vs ns/op', text)
         self.assertNotIn('| case |', text)
         self.assertNotIn('1000000.00x', text)
@@ -300,6 +297,28 @@ class BaselineTests(unittest.TestCase):
         result = compare(candidate, baseline, 1.2)
         self.assertEqual([row["case"] for row in result["absent"]], ["new"])
         self.assertIn("new/matmul/pytorch-cuda (candidate only, status ok)", render(result))
+
+    def test_a_measurement_only_one_run_recorded_exits_nonzero(self):
+        # Naming the identity is not enough: the table no longer covers the run,
+        # so a missing measurement must not read as a successful comparison.
+        baseline, candidate = record(WEEK_44, COMMIT_A), record(WEEK_45_LATE, COMMIT_B)
+        candidate['rows'] = candidate['rows'][1:]
+        result = compare(candidate, baseline, 1.2)
+        text = render(result)
+        self.assertIn('dense_matmul/matmul/tenferro-cuda-eager (baseline only, status ok)', text)
+        self.assertEqual(status(result), 1)
+
+    def test_a_skipped_row_the_other_run_never_recorded_keeps_the_status(self):
+        # Neither week measured this identity, so nothing was lost: it is named,
+        # but a run whose only gaps are recorded skips is still a comparison.
+        baseline, candidate = record(WEEK_44, COMMIT_A), record(WEEK_45_LATE, COMMIT_B)
+        baseline['rows'][0] = {'case': 'dense_matmul', 'group': 'matmul',
+                               'backend': 'tenferro-cuda-eager', 'status': 'skipped',
+                               'reason': 'no kernel', 'median': None, 'iqr': None}
+        candidate['rows'] = candidate['rows'][1:]
+        result = compare(candidate, baseline, 1.2)
+        self.assertIn('tenferro-cuda-eager (baseline only, status skipped)', render(result))
+        self.assertEqual(status(result), 0)
 
     def test_an_invalid_candidate_without_a_baseline_is_still_named(self):
         # render() returned the missing-baseline message before reading the

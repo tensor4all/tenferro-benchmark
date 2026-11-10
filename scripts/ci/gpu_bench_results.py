@@ -18,7 +18,8 @@ exits 1.  A row enters a table only when the ingestion driver would accept it
 unverified row is named under the table instead, and so is a row the other run
 did not record as a measurement.  A row that only one of the two runs recorded
 at all is named as well, so a case that vanished from a week is not read as no
-change.  A record the driver would reject as a whole (a repeated identity, an
+change; when the run that recorded it measured it, that lost coverage exits 1.
+A record the driver would reject as a whole (a repeated identity, an
 identity field that is not a string, a median that is not a finite non-negative
 number, a measure_only row marked verified) refuses the comparison by name rather
 than overwriting one of its rows: keeping the last one hides a regression.  When
@@ -33,8 +34,9 @@ is history when no receipt exists at or before it, and otherwise only a commit
 that publishes the report with the sidecar.  A committed receipt is a trusted
 marker of the driver's decision, not authentication.
 
-Exit status: 0 a comparison table was printed, 1 refused or no baseline, 2 the
-history could not be read (git's message on stderr) or the threshold is invalid.
+Exit status: 0 a comparison table was printed, 1 refused, a measurement only one
+run recorded, or no baseline, 2 the history could not be read (git's message on
+stderr) or the threshold is invalid.
 """
 from __future__ import annotations
 
@@ -305,11 +307,13 @@ def invalid_rows(record: dict) -> list[str]:
     return out
 
 
+def measured(row: dict) -> bool:
+    """A row the ingestion driver records as a measurement."""
+    return row.get('status') == 'ok' and finite_non_negative(row.get('median'))
+
+
 def slower_rows(baseline: dict, candidate: dict, threshold: float) -> dict:
     """Slower rows, the rows whose ratio cannot be taken, and the ones not compared."""
-    def measured(row: dict) -> bool:
-        return row.get('status') == 'ok' and finite_non_negative(row.get('median'))
-
     before = {row_key(row): row for row in baseline['rows']}
     after = {row_key(row): row for row in candidate['rows']}
     rows, undefined, unverified, not_ok, absent = [], [], [], [], []
@@ -436,8 +440,13 @@ def render(result: dict) -> str:
 
 
 def status(result: dict) -> int:
+    # An identity only one run recorded is lost coverage when that run measured
+    # it: the table still prints the rows both runs share, but it no longer
+    # covers the run, so a disappeared measurement cannot read as exit 0.  A
+    # one-sided `skipped` row measured nothing on either side and keeps 0.
+    lost = any(measured(row) for row in result['absent'])
     return 0 if (result['baseline'] is not None and not result['refusals']
-                 and not result['invalid']) else 1
+                 and not result['invalid'] and not lost) else 1
 
 
 def threshold(text: str) -> float:
