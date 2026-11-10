@@ -69,6 +69,99 @@ class DenseSpdFixtureTests(unittest.TestCase):
         np.testing.assert_array_equal(matrix, np.asarray(SPD_3_SEED_7))
 
 
+class TallLeastSquaresFixtureTests(unittest.TestCase):
+    """The `lstsq` row drives GELS, which requires full column rank (#299).
+
+    `tensor_f64` repeats its columns every `2048 / gcd(m * 1837 mod 2048, 2048)`
+    columns, so the bare (768, 384) ramp has rank 8 and every backend but the
+    rank-revealing ones either errors or returns a residual-1e152 non-solution.
+    """
+
+    def test_pytorch_row_solves_to_a_small_solution_at_one_and_eight_threads(self) -> None:
+        import torch
+
+        module = load_module(
+            "benchmark_cpu_public_api_python",
+            ROOT / "scripts" / "benchmark_cpu_public_api_python.py",
+        )
+        case = next(
+            case
+            for case in module.make_cases()
+            if case[0] == "cpu/linalg_uncovered" and case[1] == "lstsq"
+        )
+        previous = torch.get_num_threads()
+        try:
+            for threads in (1, 8):
+                with self.subTest(threads=threads):
+                    torch.set_num_threads(threads)
+                    # The row's own callable, i.e. GELS on the shipped fixture.
+                    solution = case[5]()
+                    # A rank-deficient draw either raises INFO=345 (8 threads)
+                    # or returns a residual-1e152 non-solution (1 thread).
+                    self.assertLess(solution.abs().max().item(), 100.0)
+        finally:
+            torch.set_num_threads(previous)
+
+    def test_pytorch_fixture_has_full_column_rank(self) -> None:
+        import torch
+
+        module = load_module(
+            "benchmark_cpu_public_api_python",
+            ROOT / "scripts" / "benchmark_cpu_public_api_python.py",
+        )
+        matrix = module.well_conditioned_rect(768, 384, 1).get()
+        ramp = module.tensor_f64((768, 384), 1).get()
+        diagonal = torch.arange(384)
+
+        self.assertEqual(int(torch.linalg.matrix_rank(matrix).item()), 384)
+        self.assertEqual(int(torch.linalg.matrix_rank(ramp).item()), 8)
+        delta = matrix - ramp
+        boost = delta[diagonal, diagonal]
+        self.assertEqual(boost[0].item(), 2.0)
+        self.assertEqual(boost[191].item(), 2.0 + 191 / 384)
+        off_diagonal = delta.clone()
+        off_diagonal[diagonal, diagonal] = 0.0
+        self.assertEqual(int(torch.count_nonzero(off_diagonal).item()), 0)
+
+    def test_jax_fixture_has_full_column_rank(self) -> None:
+        import jax
+        import numpy as np
+
+        jax.config.update("jax_enable_x64", True)
+        jax.config.update("jax_platform_name", "cpu")
+        module = load_module(
+            "benchmark_cpu_public_api_jax",
+            ROOT / "scripts" / "benchmark_cpu_public_api_jax.py",
+        )
+        matrix = np.asarray(module.well_conditioned_rect(768, 384, 1).get())
+
+        self.assertEqual(int(np.linalg.matrix_rank(matrix)), 384)
+        self.assertFalse(np.array_equal(matrix[:, 0], matrix[:, 8]))
+
+    def test_jax_fixture_matches_the_pytorch_fixture(self) -> None:
+        import jax
+        import numpy as np
+
+        jax.config.update("jax_enable_x64", True)
+        jax.config.update("jax_platform_name", "cpu")
+        torch_module = load_module(
+            "benchmark_cpu_public_api_python",
+            ROOT / "scripts" / "benchmark_cpu_public_api_python.py",
+        )
+        jax_module = load_module(
+            "benchmark_cpu_public_api_jax",
+            ROOT / "scripts" / "benchmark_cpu_public_api_jax.py",
+        )
+        # XLA rewrites `j / n` into a multiplication by the reciprocal, so the
+        # diagonal boost can differ by one ULP; the ramp part is exact.
+        np.testing.assert_allclose(
+            np.asarray(jax_module.well_conditioned_rect(768, 384, 1).get()),
+            torch_module.well_conditioned_rect(768, 384, 1).get().numpy(),
+            rtol=0.0,
+            atol=1e-15,
+        )
+
+
 class PlausibilityReportTests(unittest.TestCase):
     def test_report_flags_cells_more_than_ten_times_faster_than_row_reference(
         self,
