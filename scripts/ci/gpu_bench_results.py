@@ -44,6 +44,7 @@ import argparse
 import hashlib
 import json
 import math
+import re
 import subprocess
 import sys
 from datetime import datetime, timedelta, timezone
@@ -160,7 +161,9 @@ def accepted_runs(repo: Path, profile: str, suite: str) -> list[dict]:
         if content is None or not accepted(repo, sha, relative, receipt_path, content):
             continue
         document = json.loads(content)
-        if not (document.get('tenferro_commit') and host(document) and document.get('timestamp')):
+        commit = document.get('tenferro_commit')
+        if not (isinstance(commit, str) and re.fullmatch('[0-9a-f]{40}', commit)
+                and host(document) and document.get('timestamp')):
             continue
         try:
             collected(document)
@@ -268,8 +271,18 @@ def row_problems(row: dict) -> list[str]:
         return out
     status = row['status']
     # The fields the schema requires on every row, whatever its status.
-    if 'verified' in row and type(row['verified']) is not bool:
+    if 'median' not in row:
+        out.append('median is missing')
+    elif row['median'] is not None and type(row['median']) not in (int, float):
+        out.append('median is not a number or null')
+    if 'verified' not in row:
+        out.append('verified is missing')
+    elif type(row['verified']) is not bool:
         out.append('verified is not a boolean')
+    if 'reason' in row and not isinstance(row['reason'], str):
+        out.append('reason is not a string')
+    if 'iqr' in row and row['iqr'] is not None and type(row['iqr']) not in (int, float):
+        out.append('iqr is not a number or null')
     mode = row.get('verification')
     modes = ('cpu_reference', 'analytic', 'finite_difference', 'measure_only')
     if 'verification' in row and mode not in modes:
@@ -387,7 +400,10 @@ def compare(candidate: dict, baseline: dict | None, threshold: float) -> dict:
 
 
 def identity(record: dict) -> str:
-    return (f"tenferro-rs `{record['tenferro_commit'][:7]}`, host `{host(record)}`, "
+    """The identity line of a run; a malformed revision is shown, not sliced."""
+    commit = record.get('tenferro_commit')
+    shown = commit[:7] if isinstance(commit, str) else str(commit)
+    return (f"tenferro-rs `{shown}`, host `{host(record)}`, "
             f"week `{iso_week(record)}`, arms: {', '.join(arm_set(record))}")
 
 

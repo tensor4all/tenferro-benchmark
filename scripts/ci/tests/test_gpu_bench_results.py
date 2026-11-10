@@ -210,7 +210,7 @@ class BaselineTests(unittest.TestCase):
         baseline, candidate = record(WEEK_44, COMMIT_A), record(WEEK_45_LATE, COMMIT_B)
         candidate['rows'][0] = {'case': 'dense_matmul', 'group': 'matmul',
                                 'backend': 'tenferro-cuda-eager', 'status': 'skipped',
-                                'reason': 'no kernel', 'median': None, 'iqr': None}
+                                'reason': 'no kernel', 'median': None, 'iqr': None, 'verified': False}
         result = compare(candidate, baseline, 1.2)
         text = render(result)
         self.assertEqual(result['rows'], [])
@@ -361,7 +361,8 @@ class BaselineTests(unittest.TestCase):
         baseline, candidate = record(WEEK_44, COMMIT_A), record(WEEK_45_LATE, COMMIT_B)
         baseline['rows'][0] = {'case': 'dense_matmul', 'group': 'matmul',
                                'backend': 'tenferro-cuda-eager', 'status': 'skipped',
-                               'reason': 'no kernel', 'median': None, 'iqr': None}
+                               'reason': 'no kernel', 'median': None, 'iqr': None,
+                               'verified': False}
         candidate['rows'] = candidate['rows'][1:]
         result = compare(candidate, baseline, 1.2)
         self.assertIn('tenferro-cuda-eager (baseline only, status skipped)', render(result))
@@ -444,6 +445,14 @@ class HistoryTests(unittest.TestCase):
         self.accept(record(WEEK_44, COMMIT_A))
         records = accepted_runs(self.repo, 'nvidia-gpu', 'gpu/dense')
         self.assertEqual(records[0]['timestamp'], WEEK_45_LATE)
+
+    def test_a_record_whose_commit_is_not_a_revision_is_not_a_run(self):
+        # The identity line slices the revision, so a non-string commit reached
+        # render() and raised TypeError instead of a diagnostic.
+        document = record(WEEK_45_LATE, COMMIT_B)
+        document['tenferro_commit'] = 123
+        self.accept(document)
+        self.assertEqual(accepted_runs(self.repo, 'nvidia-gpu', 'gpu/dense'), [])
 
     def test_a_record_without_a_host_is_not_a_comparable_run(self):
         document = record(WEEK_44, COMMIT_A)
