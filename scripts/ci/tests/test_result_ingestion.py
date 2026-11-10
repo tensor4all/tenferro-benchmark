@@ -159,6 +159,13 @@ class IngestionTest(unittest.TestCase):
         self.assertEqual(receipt['status'], 'partial')
         self.assertEqual(receipt['missing_suites'], ['cpu/einsum'])
         self.assertNotIn('campaign', receipt)
+        # A re-render changes the Markdown and not the sidecar: the measurements,
+        # and the run that recorded them, are still the same ones.
+        report.write_bytes(b'report\n\nre-rendered\n')
+        rerendered = json.loads(publish_receipt(report, self.repo).read_text())
+        self.assertEqual(rerendered['source'], campaign['source'])
+        self.assertEqual(rerendered['status'], 'partial')
+        self.assertEqual(rerendered['files']['result/amd-cpu/cpu/cpu_ops.md'], digest(report))
 
     def test_a_publisher_receipt_orders_by_collection_time(self):
         # A receipt without a source run records no ingestion order, so the
