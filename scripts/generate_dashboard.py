@@ -1320,11 +1320,47 @@ NARROW_EM = 0.62
 NARROW_CHARS = set("abcdefghijklnopqrstuvxyz !\"'()*,-./:;?[]_`{|}")
 
 
-def text_units(text: str) -> float:
+CHART_NOTE_PX = 10  # .chart-note
+CHART_NOTE_LINE = 12  # baseline-to-baseline step of a wrapped .chart-note
+LABEL_GAP = 6  # between a bar (or its whisker) and the label after it
+
+
+def text_units(text: str, px: float = CHART_FONT_PX) -> float:
     """An upper bound on how much of the chart's width ``text`` renders at."""
-    return sum(
-        CHART_FONT_PX * (NARROW_EM if char in NARROW_CHARS else 1.0) for char in text
-    )
+    return sum(px * (NARROW_EM if char in NARROW_CHARS else 1.0) for char in text)
+
+
+def wrap_clauses(clauses: list[str], units: float, px: float = CHART_NOTE_PX) -> list[str]:
+    """Pack `` · ``-joined clauses into lines of ``units``, breaking only between them.
+
+    A legend is a list of definitions: breaking inside one ("label = contender /"
+    on one line, "PyTorch, ms" on the next) splits a definition from its subject,
+    so a line ends at a clause boundary.  A clause wider than a whole line on its
+    own still wraps at its spaces rather than running off the chart.
+    """
+    lines: list[str] = []
+    for clause in clauses:
+        joined = f"{lines[-1]} · {clause}" if lines else clause
+        if lines and text_units(joined, px) <= units:
+            lines[-1] = joined
+        else:
+            lines += wrap_line(clause, units, px)
+    return lines
+
+
+def value_label_x(end: float, right: float, text: str, width: float) -> float:
+    """Where a bar's value label starts, so that all of it is inside the chart.
+
+    After the whisker when the label fits there.  When a wide interval pushes it
+    past the edge, the label goes back to the bar's end and the whisker runs
+    under it (``.chart-value`` draws a background halo); a label too long even
+    for that is clamped to the right margin.  The bar and whisker never move.
+    """
+    # Floored to the 0.1 unit the label is printed at, so rounding cannot push it out.
+    room = math.floor((width - text_units(text)) * 10) / 10
+    if right + LABEL_GAP <= room:
+        return right + LABEL_GAP
+    return max(0.0, min(end + LABEL_GAP, room))
 
 RATIO_COLORS = {"eager": "bar-tenferro", "trace": "bar-tenferro-alt"}
 
@@ -1405,17 +1441,29 @@ def svg_case_chart(
     def x_of(value: float) -> float:
         return BAR_LABEL_WIDTH + (math.log10(value) - low) / span * BAR_AREA_WIDTH
 
-    top = 24
-    rows_count = len(points) + len(failed)
+    note = ["bar = median time (log scale)", "shorter (left) is faster"]
+    if reference is not None:
+        note.append(f"dashed line = {baseline_label} ({fmt_median(reference, unit)})")
+    note_lines = wrap_clauses(note, BAR_CHART_WIDTH)
+    top = 24 + (len(note_lines) - 1) * CHART_NOTE_LINE
+    # A failed arm's reason is free text: a long one takes more lines of its row
+    # instead of running past the chart's right edge, where the browser cuts it.
+    fail_lines = [
+        wrap_line(
+            non_ok_label(row)
+            + (f" · {str(row.get('reason')).strip()}" if row.get("reason") else ""),
+            BAR_CHART_WIDTH - BAR_LABEL_WIDTH - LABEL_GAP,
+        )
+        for row in failed
+    ]
+    rows_count = len(points) + sum(len(lines) for lines in fail_lines)
     height = rows_count * (BAR_HEIGHT + BAR_GAP) + top + 8
     parts = [
         f'<svg class="bars" viewBox="0 0 {BAR_CHART_WIDTH} {height}" '
         f'width="100%" role="img" aria-label="median by backend">'
     ]
-    note = "bar = median time (log scale) · shorter (left) is faster"
-    if reference is not None:
-        note += f" · dashed line = {baseline_label} ({fmt_median(reference, unit)})"
-    parts.append(f'<text x="0" y="10" class="chart-note">{esc(note)}</text>')
+    for index, line in enumerate(note_lines):
+        parts.append(f'<text x="0" y="{10 + index * CHART_NOTE_LINE}" class="chart-note">{esc(line)}</text>')
     if reference is not None:
         parts.append(
             f'<line class="chart-reference" x1="{x_of(reference):.1f}" y1="{top - 6}" '
@@ -1440,18 +1488,20 @@ def svg_case_chart(
             right = max(right, x2)
         if reference is not None and backend.startswith("tenferro"):
             label += f" · {value / reference:.2f}x"
-        parts.append(f'<text x="{right + 6:.1f}" y="{y + 9}" class="chart-value">{esc(label)}</text>')
-    for index, row in enumerate(failed):
-        y = (len(points) + index) * (BAR_HEIGHT + BAR_GAP) + top
+        x = value_label_x(end, right, label, BAR_CHART_WIDTH)
+        parts.append(f'<text x="{x:.1f}" y="{y + 9}" class="chart-value">{esc(label)}</text>')
+    line_index = len(points)
+    for row, lines in zip(failed, fail_lines):
+        y = line_index * (BAR_HEIGHT + BAR_GAP) + top
         parts.append(
             f'<text x="0" y="{y + 9}" class="chart-label">{esc(row.get("backend"))}</text>'
         )
-        parts.append(
-            f'<text x="{BAR_LABEL_WIDTH + 6}" y="{y + 9}" class="chart-fail">'
-            f"{esc(non_ok_label(row))}"
-            + (f" · {esc(str(row.get('reason')).strip())}" if row.get("reason") else "")
-            + "</text>"
-        )
+        for offset, line in enumerate(lines):
+            parts.append(
+                f'<text x="{BAR_LABEL_WIDTH + LABEL_GAP}" '
+                f'y="{y + offset * (BAR_HEIGHT + BAR_GAP) + 9}" class="chart-fail">{esc(line)}</text>'
+            )
+        line_index += len(lines)
     parts.append("</svg>")
     return "".join(parts)
 
@@ -1527,23 +1577,24 @@ def measured_note(case: dict[str, Any], unit: str) -> str:
     return f"{text}, {reason}" if reason else text
 
 
-def wrap_line(text: str) -> list[str]:
-    """Split one chart line to the row's column width, at spaces where it can."""
-    units, lines, line = CHART_TEXT_UNITS, [], ""
+def wrap_line(text: str, units: float = CHART_TEXT_UNITS, px: float = CHART_FONT_PX) -> list[str]:
+    """Split one chart line to ``units`` of width, at spaces where it can."""
+    lines: list[str] = []
+    line = ""
     for word in text.split(" "):
         while True:
-            space = text_units(" ") if line else 0.0
-            if text_units(line) + space + text_units(word) <= units:
+            space = text_units(" ", px) if line else 0.0
+            if text_units(line, px) + space + text_units(word, px) <= units:
                 line = f"{line} {word}" if line else word
                 break
-            if text_units(word) <= units:
+            if text_units(word, px) <= units:
                 lines.append(line)  # the word fits, so it starts the next line
                 line = ""
                 continue
             # A word wider than the whole column (a long backend name): break it.
-            room = units - text_units(line) - space
+            room = units - text_units(line, px) - space
             cut = 0
-            while cut < len(word) and text_units(word[: cut + 1]) <= room:
+            while cut < len(word) and text_units(word[: cut + 1], px) <= room:
                 cut += 1
             if cut == 0:
                 lines.append(line)
@@ -1650,23 +1701,34 @@ def svg_ratio_chart(cases: list[dict[str, Any]], baseline_label: str, unit: str 
             for case, lines in zip(rows, extra)
         ),
     ) * (BAR_HEIGHT + BAR_GAP) + 10
-    height = len(rows) * row_height + 34
+    # The legend is one definition per clause; it takes as many lines as the
+    # chart's width needs, and the rows start below the last of them.
+    legend = wrap_clauses(
+        [
+            f"bar = case median / {baseline_label} median",
+            f"label = contender / {baseline_label}, {unit}",
+            "dashed line = baseline (1.00x)",
+            "log scale",
+            "shorter (left) is faster",
+            "whisker = estimated 95% CI",
+            noise_legend(),
+            "fail = that arm produced no number, so it has no bar",
+        ],
+        RATIO_CHART_WIDTH,
+    )
+    header = (len(legend) - 1) * CHART_NOTE_LINE
+    height = len(rows) * row_height + 34 + header
     parts = [
         f'<svg class="bars" viewBox="0 0 {RATIO_CHART_WIDTH} {height}" '
         f'width="100%" role="img" aria-label="per-case ratio against {esc(baseline_label)}">'
     ]
-    parts.append(
-        f'<text x="0" y="10" class="chart-note">bar = case median / {esc(baseline_label)} median · '
-        f"label = contender / {esc(baseline_label)}, {esc(unit)} · "
-        "dashed line = baseline (1.00x) · log scale · shorter (left) is faster · "
-        f"whisker = estimated 95% CI · {esc(noise_legend())} · "
-        "fail = that arm produced no number, so it has no bar</text>"
-    )
+    for index, line in enumerate(legend):
+        parts.append(f'<text x="0" y="{10 + index * CHART_NOTE_LINE}" class="chart-note">{esc(line)}</text>')
     parity = x_of(1.0)
     parts.append(
-        f'<line class="chart-reference" x1="{parity:.1f}" y1="16" x2="{parity:.1f}" y2="{height - 4}"></line>'
+        f'<line class="chart-reference" x1="{parity:.1f}" y1="{16 + header}" x2="{parity:.1f}" y2="{height - 4}"></line>'
     )
-    y = 24
+    y = 24 + header
     for case, lines in zip(rows, extra):
         parts.append(f'<text x="0" y="{y + 9}" class="chart-label">{esc(case["case"])}</text>')
         for index, item in enumerate(case["contenders"]):
@@ -1690,9 +1752,13 @@ def svg_ratio_chart(cases: list[dict[str, Any]], baseline_label: str, unit: str 
                 x1, x2 = x_of(item["ratio"] * interval[0]), x_of(item["ratio"] * interval[1])
                 whisker(parts, x1, x2, bar_y, BAR_HEIGHT)
                 right = max(right, x2)
+            label = ratio_bar_label(item, case, unit)
+            x = value_label_x(
+                end, right, label + (" noisy" if item.get("noisy") else ""), RATIO_CHART_WIDTH
+            )
             parts.append(
-                f'<text x="{right + 6:.1f}" y="{bar_y + 9}" class="chart-value">'
-                f'{esc(ratio_bar_label(item, case, unit))}'
+                f'<text x="{x:.1f}" y="{bar_y + 9}" class="chart-value">'
+                f'{esc(label)}'
                 + ('<tspan class="chart-noisy"> noisy</tspan>' if item.get("noisy") else "")
                 + "</text>"
             )
@@ -1779,7 +1845,8 @@ thead th { position: sticky; top: 0; }
 .chart-fail { font-size: 11px; fill: var(--fail-fg); font-weight: 600; font-family: inherit; }
 .bars { display: block; max-width: 100%; height: auto; margin: .4rem 0 1.2rem; }
 .chart-label { font-size: 11px; fill: var(--fg); font-family: inherit; }
-.chart-value { font-size: 11px; fill: var(--muted); font-family: inherit; }
+.chart-value { font-size: 11px; fill: var(--muted); font-family: inherit;
+  paint-order: stroke; stroke: var(--bg); stroke-width: 3px; stroke-linejoin: round; }
 .chart-noisy { fill: var(--much-slower); font-weight: 600; }
 .chart-note { font-size: 10px; fill: var(--muted); font-family: inherit; }
 .chart-reference { stroke: var(--fg); stroke-width: 1; stroke-dasharray: 4 3; opacity: .5; }
