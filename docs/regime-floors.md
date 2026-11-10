@@ -69,7 +69,7 @@ is marked **provisional** — conservative, not measured.
 | `elementwise` | 262,144 | yes | the two `elementwise_chain` points fit `t = 69.6 µs + 27.9 ps·n` (1k = 69.6 µs, 1M = 99.6 µs in deferred-batch mode): 1000× the elements buys 1.43× the time, and the 10% doubling criterion is met only above `n ≈ 2.8e5`. 2^18 sits just under it (the gain there is ~9.8%) and is kept because it is the size the published `reuse_contraction` cases are measured at — moving those is a separate decision, hence *provisional*. At 1M the fixed share is still ~70%: the floor is a minimum, not a promise of purity. |
 | `fft` | 1,048,576 | yes | only the 1M point is published (0.063–0.135 ms); the 1k point was never measured. |
 | `linalg` | 65,536 | yes | the same backend and dtype — `tenferro-cuda-direct` f64 cholesky at 32² (1,024 elements, 77.7 µs) and 512² (262,144 elements, 419.4 µs) — fits ≈1.31 ns/element plus a **≈76 µs fixed term**, i.e. 18% of the 512² call is still fixed (an earlier version of this row compared a PyTorch f32 32² point with a JAX f64 512² one, which is not a cost curve). 2^16 keeps every 512² case and excludes the 32²/64×32 catalogue entries; the floor is *provisional* because two sizes are all the evidence there is. |
-| `linalg_ad` | 1,048,576 | yes | QR JVP costs 0.68 ms per call at n=4 (16 elements) and 2.87 ms at n=256 (65,536), both single-call `tenferro-cuda-trace`: 4,096× the elements buys 4.2× the time, and a two-point fit puts ≈24% of the 65,536-element call in a fixed term — the AD wrapper, not the 256² factorisation it wraps (tens of µs). (The `linalg_ad_throughput` suite reports 1.43 ms for the same n=256 case in deferred-batch mode; that is a different timing contract. The 0.37 ms quoted earlier here was the JAX arm.) No AD case above 512² is measured, so 2^20 is a **conservative bound extrapolated from two smaller sizes, not a measured crossing**; no AD case currently clears it — that is the finding, not a gap in the table. |
+| `linalg_ad` | 1,048,576 | yes | QR JVP costs 0.68 ms per call at n=4 (16 elements) and 2.87 ms at n=256 (65,536), both single-call `tenferro-cuda-trace`: 4,096× the elements buys 4.2× the time, and a two-point fit puts ≈24% of the 65,536-element call in a fixed term — the AD wrapper, not the 256² factorisation it wraps (tens of µs). (The `linalg_ad_throughput` suite reports 1.43 ms for the same n=256 case in deferred-batch mode; that is a different timing contract. The 0.37 ms quoted earlier here was the JAX arm.) The matrix now declares n=4096 rows (16,777,216 elements, 16× the floor) in `gpu/linalg_jvp_vjp` and `gpu/linalg_ad_throughput`, but **none has been measured yet**, so 2^20 is still a **bound extrapolated from the two smaller sizes, not a measured crossing**. The first 4096 run is what turns the floor from extrapolated into measured; until then the rows that clear it are throughput by declaration, not by evidence. |
 | `permutation` | 1,048,576 | no | every published pattern is 3.9e8–5.4e8 elements (5.0–8.4 ms). |
 | `sparse` | 1,048,576 (nnz) | yes | spmv at 6.7e7 nnz takes 2.26 ms and spmm at 4.2e6 nnz takes 16.3 ms; the floor is a factor of 4 below the smallest published case, which is why it is marked *provisional*. |
 | `tensornetwork` | 1,048,576 | yes | the single case is a whole-network contraction at 78 ms. The fixture is an external submodule, so its element count is not derivable; the case declares `floor_exempt` with the reason instead of inventing a size. |
@@ -89,7 +89,9 @@ only its page changed:
 | suite | case | elements | was | now |
 |---|---|---|---|---|
 | `gpu/linalg_jvp_vjp` | 10 × `linalg_ad_large_grad_sum_*_{jvp,vjp}_f64_{256,512}` | 65,536 / 262,144 | throughput (undeclared) | latency |
+| `gpu/linalg_jvp_vjp` | 10 × `linalg_ad_large_grad_sum_*_{jvp,vjp}_f64_4096` | 16,777,216 | latency (suite default) | throughput |
 | `gpu/linalg_ad_throughput` | `linalg_ad_large_grad_sum_qr_jvp_f64_256`, `..._qr_vjp_f64_256` | 65,536 | throughput | latency |
+| `gpu/linalg_ad_throughput` | `linalg_ad_large_grad_sum_qr_jvp_f64_4096`, `..._qr_vjp_f64_4096` | 16,777,216 | latency (suite default) | throughput |
 | `gpu/dense_throughput` | `dense_batched_matmul_f64_b16_32_throughput` | 16,384 | throughput | latency |
 | `gpu/dense_throughput` | `elementwise_chain_f64_1k_throughput` | 1,024 | throughput | latency |
 | `gpu/reuse_contraction` | 12 × `dot_general_*_s256`, `einsum_plan_*_s256` | ≤ 65,536 | throughput | latency |
@@ -100,7 +102,8 @@ only its page changed:
 (`defaults.measure: deferred_batch`) for trend continuity: the suite id names the
 collection, `regime` names the workload class, and the AD runner selects its
 route from `measure` (falling back to `regime` for suites that do not declare
-one). Its page says in words that it has no throughput-regime case.
+one). Its n=256 cases are latency rows and its n=4096 cases are throughput rows,
+and the page shows the two in separate sections.
 
 ## Timing mode is not regime
 

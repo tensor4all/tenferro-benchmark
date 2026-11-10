@@ -150,9 +150,10 @@ suites:
   gpu/linalg_jvp_vjp:
     file: benchmarks/gpu/linalg_jvp_vjp.yaml
     driver: gpu_linalg_ad
-    # n=256 only (10 operations x 1 size). The n=512 rows are a size sweep of
-    # the same GPU-sized AD workloads; one size detects regressions and keeps
-    # the weekly AD cost bounded.
+    # n=256 only (10 operations x 1 size). The n=4096 rows are the throughput
+    # end of the same AD workloads (a per-call 4096 case is ~100 ms-3.5 s of
+    # GPU work before its check); one size detects regressions and keeps the
+    # weekly AD cost bounded, so the 4096 rows are run on an explicit probe.
     problems:
     - linalg_ad_large_grad_sum_svd_s_jvp_f64_256
     - linalg_ad_large_grad_sum_svd_s_vjp_f64_256

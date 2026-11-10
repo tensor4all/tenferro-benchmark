@@ -100,6 +100,25 @@ def problem_meta(problem_id: str) -> tuple[str, str, str]:
     return suite, benchmark, shape
 
 
+def suite_regimes(run_metadata: dict[str, Any] | None) -> dict[str, str]:
+    """The regime each case of this run declares, from the suite file it ran.
+
+    A record carries no regime: the case declares its working class in the
+    manifest, which is the same file the validator and the dashboard read. A
+    suite that holds both classes is published in two sections, because a
+    throughput row and a latency row are different measurements.
+    """
+    if not run_metadata or not run_metadata.get("suite_file"):
+        return {}
+    document = yaml.safe_load(Path(run_metadata["suite_file"]).read_text()) or {}
+    default = (document.get("defaults") or {}).get("regime")
+    return {
+        problem["id"]: problem.get("regime") or default
+        for problem in document.get("problems") or []
+        if problem.get("id")
+    }
+
+
 def format_markdown(
     records: list[dict[str, Any]],
     run_metadata: dict[str, Any] | None = None,
@@ -169,12 +188,14 @@ def format_markdown(
                 raise ValueError(f"incomplete/unselected AD matrix: missing={sorted(expected-seen)}, extra={sorted(seen-expected)}")
             missing = sorted(expected - seen)
     by_key: dict[tuple[str, str, str, str], dict[str, dict[str, Any]]] = defaultdict(dict)
+    case_of: dict[tuple[str, str, str, str], str] = {}
     for record in records:
         suite, benchmark, shape = problem_meta(record["problem_id"])
         key = (suite, benchmark, "f64", shape)
         backend = record["backend"]
         if backend in BACKEND_ORDER:
             by_key[key][backend] = record
+            case_of[key] = record["problem_id"]
 
     lines = ["# GPU Linalg JVP/VJP Benchmark Results", ""]
     if run_metadata:
@@ -291,29 +312,55 @@ def format_markdown(
         )
     lines.append("")
 
-    lines.extend(
-        [
-            "## Linalg JVP/VJP Benchmark Items",
-            "",
-            "| suite | benchmark | dtype | shape | "
-            + " | ".join(BACKEND_LABELS[b] for b in BACKEND_ORDER)
-            + " |",
-            "|---|---|---:|---|"
-            + "|".join("---:" for _ in BACKEND_ORDER)
-            + "|",
-        ]
-    )
-
-    for suite, benchmark, dtype, shape in sorted(by_key):
-        backends = by_key[(suite, benchmark, dtype, shape)]
-        row = [
-            suite,
-            f"`{benchmark}`",
-            dtype,
-            f"`{shape}`",
-            *(format_cell(backends.get(backend)) for backend in BACKEND_ORDER),
-        ]
-        lines.append("| " + " | ".join(row) + " |")
+    lines.extend(["## Linalg JVP/VJP Benchmark Items", ""])
+    regimes = suite_regimes(run_metadata)
+    keys = sorted(by_key)
+    sections: list[tuple[str | None, list[tuple[str, str, str, str]]]] = [(None, keys)]
+    if regimes:
+        throughput = [key for key in keys if regimes.get(case_of[key]) == "throughput"]
+        latency = [key for key in keys if regimes.get(case_of[key]) != "throughput"]
+        if throughput and latency:
+            sections = [("Throughput regime", throughput), ("Latency regime", latency)]
+    for title, section_keys in sections:
+        if title:
+            lines.extend(
+                [
+                    f"### {title}",
+                    "",
+                    (
+                        "Compute-bound rows: every case here is over its family's floor in "
+                        "`docs/regime-floors.md`. They are never averaged with, or read as a "
+                        "ratio against, the other section."
+                        if title == "Throughput regime"
+                        else "Per-call latency rows: the device kernels are a small fraction of "
+                        "each number, so these are not GPU throughput."
+                    ),
+                    "",
+                ]
+            )
+        lines.extend(
+            [
+                "| suite | benchmark | dtype | shape | "
+                + " | ".join(BACKEND_LABELS[b] for b in BACKEND_ORDER)
+                + " |",
+                "|---|---|---:|---|"
+                + "|".join("---:" for _ in BACKEND_ORDER)
+                + "|",
+            ]
+        )
+        for suite, benchmark, dtype, shape in section_keys:
+            backends = by_key[(suite, benchmark, dtype, shape)]
+            row = [
+                suite,
+                f"`{benchmark}`",
+                dtype,
+                f"`{shape}`",
+                *(format_cell(backends.get(backend)) for backend in BACKEND_ORDER),
+            ]
+            lines.append("| " + " | ".join(row) + " |")
+        lines.append("")
+    if lines[-1] == "":
+        lines.pop()
 
     lines.extend(["", "## Sampling and unsupported routes", "", "| Case | Backend | Ops/sample | Samples | Scope / reason |", "| --- | --- | ---: | ---: | --- |"])
     for record in records:

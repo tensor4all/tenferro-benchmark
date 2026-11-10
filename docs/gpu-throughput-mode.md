@@ -44,12 +44,20 @@ are separate facts:
 - `defaults.measure: deferred_batch` says *how* the suite times its cases (one
   retirement per K calls). It is what the AD runner follows now, falling back to
   `regime` for suites that do not declare it.
-- `regime` says *what* each case measures. Both cases in
-  `gpu/linalg_ad_throughput` are 256×256, below the `linalg_ad` floor in
+- `regime` says *what* each case measures. The two 256×256 cases in
+  `gpu/linalg_ad_throughput` are below the `linalg_ad` floor in
   `docs/regime-floors.md`, so their regime is `latency`: a 256² QR JVP costs
   1.43 ms per call while the factorisation it wraps costs tens of µs. They are
   published on the latency page, still timed with the deferred batch, and the
-  suite page says so.
+  suite page says so. Its two 4096×4096 cases are over that floor, so they are
+  the suite's throughput rows; the retention budget bounds their K to 2 rather
+  than 64 (one 4096² output set is 128 MiB), and each row records its own
+  effective K.
+
+Both regimes can therefore appear in one suite, and the page shows them in
+separate sections. What must not happen is a row joining the two: a K=2
+deferred-batch row and a K=64 one are different measurements even when they
+name the same operation.
 
 ## Batch size
 

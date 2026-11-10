@@ -6,11 +6,16 @@ description: >-
   deferred prepared runs (Runtime::run_prepared_deferred) in one caller-held
   session and pays one retirement barrier in a single finish_prepared, so a
   sample's per-call time is sample_ms / K. Deferred batch is this suite's timing
-  mode (`defaults.measure`), not its workload class: the two cases it holds are
-  256x256, below the linalg_ad floor, so their `regime` is `latency` and the rows
-  document per-call framework overhead. They are never comparable with, or
+  mode (`defaults.measure`), not its workload class. The n=256 cases are 65,536
+  elements, below the linalg_ad floor, so their `regime` is `latency` and the rows
+  document per-call framework overhead; they are never comparable with, or
   averaged together with, the per-call latency rows of `gpu/linalg_jvp_vjp` and
   `gpu/linalg_ad_latency`, which pay one retirement per call (tenferro-rs #2087).
+  The n=4096 cases are 16,777,216 elements, over that floor, so they are the
+  suite's throughput rows: the same amortization measured where the work, not the
+  retirement, dominates. K there is bounded by the 256 MiB output-retention
+  budget (one output set is 128 MiB), so a n=4096 sample amortizes two runs where
+  an n=256 sample amortizes 64; every row records its own effective K.
 defaults:
   regime: throughput
   measure: deferred_batch
@@ -98,3 +103,69 @@ problems:
     rtol: 1.0e-05
     atol: 1.0e-08
   notes: shape=256x256
+- id: linalg_ad_large_grad_sum_qr_jvp_f64_4096
+  family: linalg_ad
+  op: jvp
+  regime: throughput
+  intent: >-
+    QR JVP at n=4096 (16,777,216 elements, over the linalg_ad floor) when K
+    deferred prepared runs share one retirement: the throughput counterpart of
+    the n=256 row above, with the work rather than the retirement dominating.
+    One output set is 128 MiB, so the 256 MiB retention budget pins K to 2 here
+    instead of the default 64; the row records its own effective K and must not
+    be compared with an n=256 row.
+  dtype:
+    a: f64
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  data:
+    generator: well_conditioned
+    seed: 26
+  linalg_ad:
+    suite: large
+    loss: grad_sum_qr
+    n: 4096
+    matrix_seed: 26
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    mode: finite_difference
+    rtol: 1.0e-05
+    atol: 1.0e-08
+  notes: shape=4096x4096
+- id: linalg_ad_large_grad_sum_qr_vjp_f64_4096
+  family: linalg_ad
+  op: vjp
+  regime: throughput
+  intent: >-
+    QR VJP at n=4096 (16,777,216 elements, over the linalg_ad floor) when K
+    deferred prepared runs share one retirement. One output set is 128 MiB, so
+    the 256 MiB retention budget pins K to 2 instead of the default 64; the row
+    records its own effective K and must not be compared with an n=256 row.
+  dtype:
+    a: f64
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  data:
+    generator: well_conditioned
+    seed: 26
+  linalg_ad:
+    suite: large
+    loss: grad_sum_qr
+    n: 4096
+    matrix_seed: 26
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    mode: finite_difference
+    rtol: 1.0e-05
+    atol: 1.0e-08
+  notes: shape=4096x4096
