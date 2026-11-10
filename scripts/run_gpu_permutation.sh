@@ -154,32 +154,47 @@ echo "Timestamp:    $TIMESTAMP"
 echo "Run dir:      ${RUN_DIR#$PROJECT_DIR/}"
 echo ""
 
-echo "Building benchmark_gpu_permutation..."
 PERMUTATION_BIN="${CARGO_TARGET_DIR:-$PROJECT_DIR/target}/release/benchmark_gpu_permutation"
-if [[ "${GPU_BENCH_PREBUILT_RUST:-0}" == 1 ]]; then
-    # The hosted build job ships this binary; the benchmark pod has no Rust toolchain.
-    python3 "$SCRIPT_DIR/ci/gpu_artifact.py" "$PERMUTATION_BIN"
-else
+RUST_JSONL="$RUN_DIR/rust_output.jsonl"
+GPU_BENCH_BACKEND_SLEEP="${GPU_BENCH_BACKEND_SLEEP:-2}"
+
+# Every failure below is recorded and the collection continues: one dead arm (or
+# a build that never produced the binary) must never cost the run the rows the
+# other arms did measure. The script reports red at the very end, after the page,
+# the summary and the records are written. The arm bodies return explicitly: the
+# caller runs them under `||`, where `set -e` is off.
+run_rust_arm() {
+    echo "Building benchmark_gpu_permutation..."
+    if [[ "${GPU_BENCH_PREBUILT_RUST:-0}" == 1 ]]; then
+        # The hosted build job ships this binary; the benchmark pod has no Rust toolchain.
+        python3 "$SCRIPT_DIR/ci/gpu_artifact.py" "$PERMUTATION_BIN" || return $?
+    else
+        CUBECL_DEBUG_LOG=0 \
+        CUDA_PATH="${CUDA_HOME:-/usr/local/cuda}" \
+        RUST_MIN_STACK="$RUST_MIN_STACK" \
+        LD_LIBRARY_PATH="${CUDA_HOME:-/usr/local/cuda}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
+            cargo build --release --features cuda --bin benchmark_gpu_permutation || return $?
+    fi
+    echo "Running Rust GPU permutation benchmarks (tenferro-cuda-transpose, tenferro-cuda-to-contiguous, tenferro-cuda-destination-reuse, cutensor)..."
     CUBECL_DEBUG_LOG=0 \
     CUDA_PATH="${CUDA_HOME:-/usr/local/cuda}" \
     RUST_MIN_STACK="$RUST_MIN_STACK" \
     LD_LIBRARY_PATH="${CUDA_HOME:-/usr/local/cuda}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
-        cargo build --release --features cuda --bin benchmark_gpu_permutation
+    GPU_BENCH_DEVICE="$DEVICE_ORDINAL" \
+    BENCH_OUTPUT="$RUST_JSONL" \
+        "$PERMUTATION_BIN"
+}
+
+COLLECTION_FAILED=0
+rust_rc=0
+run_rust_arm || rust_rc=$?
+if [[ "$rust_rc" != 0 ]]; then
+    echo "ARM FAILED: $SUITE_ID rust collector exited $rust_rc; keeping the rows it wrote and continuing" >&2
+    COLLECTION_FAILED=1
 fi
 
-RUST_JSONL="$RUN_DIR/rust_output.jsonl"
-GPU_BENCH_BACKEND_SLEEP="${GPU_BENCH_BACKEND_SLEEP:-2}"
-
-echo "Running Rust GPU permutation benchmarks (tenferro-cuda-transpose, tenferro-cuda-to-contiguous, tenferro-cuda-destination-reuse, cutensor)..."
-CUBECL_DEBUG_LOG=0 \
-CUDA_PATH="${CUDA_HOME:-/usr/local/cuda}" \
-RUST_MIN_STACK="$RUST_MIN_STACK" \
-LD_LIBRARY_PATH="${CUDA_HOME:-/usr/local/cuda}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
-GPU_BENCH_DEVICE="$DEVICE_ORDINAL" \
-BENCH_OUTPUT="$RUST_JSONL" \
-    "${CARGO_TARGET_DIR:-$PROJECT_DIR/target}/release/benchmark_gpu_permutation"
-
-INPUTS=("$RUST_JSONL")
+INPUTS=()
+[[ -s "$RUST_JSONL" ]] && INPUTS+=("$RUST_JSONL")
 
 # One process per Python backend, strictly sequential, mirroring
 # scripts/run_gpu_suite.sh: separate processes so framework CUDA allocators
@@ -187,31 +202,61 @@ INPUTS=("$RUST_JSONL")
 for backend in pytorch-cuda memcpy-d2d; do
     echo "Running Python GPU permutation benchmarks ($backend)..."
     BACKEND_JSONL="$RUN_DIR/python_output_${backend}.jsonl"
+    arm_rc=0
     GPU_BENCH_DEVICE="$DEVICE_ORDINAL" \
     BENCH_OUTPUT="$BACKEND_JSONL" \
-        "${PYTHON[@]}" "$SCRIPT_DIR/benchmark_gpu_permutation_python.py" "$backend"
-    [[ -s "$BACKEND_JSONL" ]] && INPUTS+=("$BACKEND_JSONL")
+        "${PYTHON[@]}" "$SCRIPT_DIR/benchmark_gpu_permutation_python.py" "$backend" || arm_rc=$?
+    if [[ "$arm_rc" != 0 ]]; then
+        echo "ARM FAILED: $SUITE_ID $backend exited $arm_rc; keeping the rows it wrote and continuing" >&2
+        COLLECTION_FAILED=1
+    fi
+    if [[ -s "$BACKEND_JSONL" ]]; then
+        INPUTS+=("$BACKEND_JSONL")
+    fi
     sleep "$GPU_BENCH_BACKEND_SLEEP"
 done
+
+if [[ ${#INPUTS[@]} -eq 0 ]]; then
+    echo "No arm produced a row for $SUITE_ID; nothing to format." >&2
+    COLLECTION_FAILED=1
+fi
 
 echo ""
 # The routine path reads one record contract: fold this suite's rows and build
 # its summary, then render the permutation page into the run directory.
 echo "Formatting gpu/permutation results as markdown..."
-"${FORMATTER[@]}" \
-    "${INPUTS[@]}" \
-    --run-metadata "$RUN_YAML" \
-    --output "$RUN_DIR/report.md"
+formatter_rc=0
+if [[ ${#INPUTS[@]} -gt 0 ]]; then
+    "${FORMATTER[@]}" \
+        "${INPUTS[@]}" \
+        --run-metadata "$RUN_YAML" \
+        --output "$RUN_DIR/report.md" || formatter_rc=$?
+fi
+if [[ "$formatter_rc" != 0 ]]; then
+    echo "FORMAT FAILED: $SUITE_ID formatter exited $formatter_rc; its rows stay in the raw run" >&2
+    COLLECTION_FAILED=1
+fi
 # One record contract for the routine accounting, the bundle row gate and the
 # dashboard summary. It is written after the page so the shared summary replaces
-# this suite's own sidecar rather than the other way round.
-"${PYTHON[@]}" "$SCRIPT_DIR/normalize_gpu_records.py" --output "$RUN_DIR/records.jsonl" \
-    --summary "$RUN_DIR/report.summary.json" --run-metadata "$RUN_YAML" "${INPUTS[@]}"
+# this suite's own sidecar rather than the other way round. It runs even when the
+# page could not be rendered: the rows it measured stay countable either way.
+normalize_rc=0
+if [[ ${#INPUTS[@]} -gt 0 ]]; then
+    "${PYTHON[@]}" "$SCRIPT_DIR/normalize_gpu_records.py" --output "$RUN_DIR/records.jsonl" \
+        --summary "$RUN_DIR/report.summary.json" --run-metadata "$RUN_YAML" "${INPUTS[@]}" || normalize_rc=$?
+fi
+if [[ "$normalize_rc" != 0 ]]; then
+    echo "NORMALIZE FAILED: $SUITE_ID normalize exited $normalize_rc; its rows stay in the raw run" >&2
+    COLLECTION_FAILED=1
+fi
 if [[ "${GPU_BENCH_SKIP_LATEST:-0}" != 1 ]]; then
-    cp "$RUN_DIR/report.md" "$LATEST_REPORT"
-    # Record the correctness-gate mode in the maintained report text, before the
-    # receipt is written: the receipt holds the digest of the page as published.
-    "${PYTHON[@]}" - "$LATEST_REPORT" "$PERMUTATION_VERIFICATION_MODE" <<'PY'
+    if [[ ! -s "$RUN_DIR/report.md" || ! -s "$RUN_DIR/report.summary.json" ]]; then
+        echo "PUBLISH SKIPPED: $SUITE_ID has no page or summary to publish" >&2
+    else
+        cp "$RUN_DIR/report.md" "$LATEST_REPORT"
+        # Record the correctness-gate mode in the maintained report text, before the
+        # receipt is written: the receipt holds the digest of the page as published.
+        "${PYTHON[@]}" - "$LATEST_REPORT" "$PERMUTATION_VERIFICATION_MODE" <<'PY'
 import sys
 from pathlib import Path
 path = Path(sys.argv[1])
@@ -224,11 +269,19 @@ text += (
 ) % sys.argv[2]
 path.write_text(text)
 PY
-    cp "$RUN_DIR/report.summary.json" "${LATEST_REPORT%.md}.summary.json"
-    "${PYTHON[@]}" "$SCRIPT_DIR/ci/result_ingestion.py" "$LATEST_REPORT"
+        cp "$RUN_DIR/report.summary.json" "${LATEST_REPORT%.md}.summary.json"
+        "${PYTHON[@]}" "$SCRIPT_DIR/ci/result_ingestion.py" "$LATEST_REPORT"
+    fi
 fi
 
 echo ""
+if [[ "$COLLECTION_FAILED" != 0 ]]; then
+    # Everything measured is written and packaged by the caller's always-step;
+    # this exit code only makes the collection red so someone looks at it.
+    echo "GPU permutation collection finished with failures; the rows it measured and the" >&2
+    echo "reasons it recorded are in ${RUN_DIR#$PROJECT_DIR/}." >&2
+    exit 1
+fi
 echo "GPU permutation benchmark suite complete: $SUITE_ID"
 echo "Run YAML:  ${RUN_YAML#$PROJECT_DIR/}"
 for path in "${INPUTS[@]}"; do
