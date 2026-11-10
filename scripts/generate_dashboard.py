@@ -1153,6 +1153,24 @@ BAR_LABEL_WIDTH = 300
 BAR_AREA_WIDTH = 420
 BAR_HEIGHT = 12
 BAR_GAP = 4
+CHART_FONT_PX = 11  # .chart-label / .chart-value / .chart-fail
+CHART_TEXT_UNITS = RATIO_CHART_WIDTH - BAR_LABEL_WIDTH
+# SVG text does not wrap, so a line has to be cut to its column.  Chrome measures
+# the UI face at 11px as: 'W' 0.97 em, '%' 0.93, '@' 0.92, 'm'/'M' 0.88, other
+# capitals 0.66-0.78, digits 0.47-0.65, lowercase 0.25-0.62.  The narrow set below
+# is priced at 0.62 em and every other character at a full em, so a digit or a
+# capital pays for the widest glyph and a glyph no measurement covers cannot come
+# out cheaper than an em.  Only macOS Chrome was measured; a face wider than that
+# is not covered for lowercase.
+NARROW_EM = 0.62
+NARROW_CHARS = set("abcdefghijklnopqrstuvxyz !\"'()*,-./:;?[]_`{|}")
+
+
+def text_units(text: str) -> float:
+    """An upper bound on how much of the chart's width ``text`` renders at."""
+    return sum(
+        CHART_FONT_PX * (NARROW_EM if char in NARROW_CHARS else 1.0) for char in text
+    )
 
 RATIO_COLORS = {"eager": "bar-tenferro", "trace": "bar-tenferro-alt"}
 
@@ -1355,6 +1373,33 @@ def measured_note(case: dict[str, Any], unit: str) -> str:
     return f"{text}, {reason}" if reason else text
 
 
+def wrap_line(text: str) -> list[str]:
+    """Split one chart line to the row's column width, at spaces where it can."""
+    units, lines, line = CHART_TEXT_UNITS, [], ""
+    for word in text.split(" "):
+        while True:
+            space = text_units(" ") if line else 0.0
+            if text_units(line) + space + text_units(word) <= units:
+                line = f"{line} {word}" if line else word
+                break
+            if text_units(word) <= units:
+                lines.append(line)  # the word fits, so it starts the next line
+                line = ""
+                continue
+            # A word wider than the whole column (a long backend name): break it.
+            room = units - text_units(line) - space
+            cut = 0
+            while cut < len(word) and text_units(word[: cut + 1]) <= room:
+                cut += 1
+            if cut == 0:
+                lines.append(line)
+                line = ""
+                continue
+            lines.append(f"{line} {word[:cut]}" if line else word[:cut])
+            line, word = "", word[cut:]
+    return lines + [line] if line else lines
+
+
 def measured_lines(case: dict[str, Any], unit: str) -> list[str]:
     """The note as chart lines: one arm per line, because SVG text does not wrap.
 
@@ -1384,14 +1429,24 @@ def no_ratio_note(case: dict[str, Any], unit: str) -> str:
     return text
 
 
-def note_line_count(case: dict[str, Any]) -> int:
-    """Chart lines the measured note occupies: one per arm plus the reason."""
-    return 0 if case["contenders"] or not case.get("measured") else len(case["measured"]) + 1
+def case_lines(case: dict[str, Any], unit: str) -> list[tuple[str, str]]:
+    """The ``(class, text)`` lines drawn below a case's bars, cut to the column.
 
-
-def chart_lines(case: dict[str, Any]) -> int:
-    """Lines one case occupies: one per bar, per fail line, and per measured note line."""
-    return len(case["contenders"]) + len(case.get("not_ok") or []) + note_line_count(case)
+    The fail lines come first, then the measured note when the case has no bar.
+    A reason or a backend name is free text, so one that does not fit the column
+    takes another line instead of running past the chart's edge.
+    """
+    lines: list[tuple[str, str]] = []
+    for bad in case.get("not_ok") or []:
+        text = " · ".join(
+            [str(bad["label"]), str(bad["backend"])]
+            + ([str(bad["reason"])] if bad.get("reason") else [])
+        )
+        lines += [("chart-fail", part) for part in wrap_line(text)]
+    if not case["contenders"] and case.get("measured"):
+        for line in measured_lines(case, unit):
+            lines += [("chart-value", part) for part in wrap_line(line)]
+    return lines
 
 
 def svg_ratio_chart(cases: list[dict[str, Any]], baseline_label: str, unit: str = "ms") -> str:
@@ -1433,8 +1488,13 @@ def svg_ratio_chart(cases: list[dict[str, Any]], baseline_label: str, unit: str 
     def x_of(value: float) -> float:
         return BAR_LABEL_WIDTH + (math.log10(value) - low) / span * BAR_AREA_WIDTH
 
+    extra = [case_lines(case, unit) for case in rows]
     row_height = max(
-        1, max(chart_lines(case) for case in rows)
+        1,
+        max(
+            len(case["contenders"]) + len(lines)
+            for case, lines in zip(rows, extra)
+        ),
     ) * (BAR_HEIGHT + BAR_GAP) + 10
     height = len(rows) * row_height + 34
     parts = [
@@ -1453,7 +1513,7 @@ def svg_ratio_chart(cases: list[dict[str, Any]], baseline_label: str, unit: str 
         f'<line class="chart-reference" x1="{parity:.1f}" y1="16" x2="{parity:.1f}" y2="{height - 4}"></line>'
     )
     y = 24
-    for case in rows:
+    for case, lines in zip(rows, extra):
         parts.append(f'<text x="0" y="{y + 9}" class="chart-label">{esc(case["case"])}</text>')
         for index, item in enumerate(case["contenders"]):
             bar_y = y + index * (BAR_HEIGHT + BAR_GAP)
@@ -1482,25 +1542,14 @@ def svg_ratio_chart(cases: list[dict[str, Any]], baseline_label: str, unit: str 
                 + ('<tspan class="chart-noisy"> noisy</tspan>' if item.get("noisy") else "")
                 + "</text>"
             )
-        for index, bad in enumerate(case.get("not_ok") or [], start=len(case["contenders"])):
-            bar_y = y + index * (BAR_HEIGHT + BAR_GAP)
-            # No bar: no number was produced.  The arm is still named, with its
-            # recorded reason, in a slot that would otherwise read as "not measured".
+        for index, (css, text) in enumerate(lines, start=len(case["contenders"])):
+            # A fail line names an arm that produced no number; the note beside it says
+            # what was measured.  Both were cut to the column above, and the row was
+            # sized from these same lines, so all of them stay inside the chart.
             parts.append(
-                f'<text x="{BAR_LABEL_WIDTH}" y="{bar_y + 9}" class="chart-fail">'
-                f'{esc(bad["label"])} · {esc(bad["backend"])}'
-                + (f' · {esc(bad["reason"])}' if bad.get("reason") else "")
-                + "</text>"
+                f'<text x="{BAR_LABEL_WIDTH}" y="{y + index * (BAR_HEIGHT + BAR_GAP) + 9}"'
+                f' class="{css}">{esc(text)}</text>'
             )
-        if note_line_count(case):
-            # Nothing to compare, but something was measured: say it here, beside the
-            # fail lines, one arm per line so that no line leaves the viewport.
-            first = y + (chart_lines(case) - note_line_count(case)) * (BAR_HEIGHT + BAR_GAP)
-            for index, line in enumerate(measured_lines(case, unit)):
-                parts.append(
-                    f'<text x="{BAR_LABEL_WIDTH}" y="{first + index * (BAR_HEIGHT + BAR_GAP) + 9}"'
-                    f' class="chart-value">{esc(line)}</text>'
-                )
         y += row_height
     parts.append("</svg>")
     return "".join(parts)

@@ -1245,12 +1245,35 @@ def chart_no_ratio_note(html):
 
 
 # SVG text does not wrap and a chart's viewBox is a fixed 1060 units wide, so a row's
-# text has to fit between 300 (the row's label column) and 1060.  Chrome measures this
-# font at 0.47 em per character; the bound below is the conservative 0.60 em
-# (11px * 0.60 = 6.6 px/char), so the test errs towards failing.
-CHART_TEXT_START = 300
-CHART_TEXT_END = 1060
-CHART_PX_PER_CHAR = 11 * 0.60
+# text has to fit between 300 (the row's label column) and 1060.  `text_units` prices a
+# line from Chrome's measurement of this font at 11px ('W' 0.97 em, '%' 0.93, 'm' 0.88,
+# other capitals 0.66-0.78, digits 0.47-0.65, lowercase 0.25-0.62): the narrow set is
+# 0.62 em and everything else a full em, so a wide glyph cannot be undercounted.  The
+# 0.60 em/char this file used before was not conservative: it priced each of 95 'W's at
+# 6.6 units where Chrome renders them 10.7 units wide.
+CHART_TEXT_START = dashboard.BAR_LABEL_WIDTH
+CHART_TEXT_END = dashboard.RATIO_CHART_WIDTH
+
+
+def chart_layout(chart):
+    """The chart's height and, per case label, the texts drawn under it.
+
+    Each row is ``(name, label_y, [(x, y, class, text)])`` in document order, so a
+    test can hold a row's lines to the row the renderer gave them.
+    """
+    height = float(re.search(r'viewBox="0 0 \d+ (\d+)"', chart).group(1))
+    blocks = re.split(r'<text x="0" y="(\d+)" class="chart-label">([^<]*)</text>', chart)
+    rows = []
+    for index in range(1, len(blocks), 3):
+        texts = [
+            (float(x), float(y), css, text)
+            for x, y, css, text in re.findall(
+                r'<text x="([\d.]+)" y="(\d+)" class="(chart-[a-z]+)">([^<]*)</text>',
+                blocks[index + 2],
+            )
+        ]
+        rows.append((blocks[index + 1], float(blocks[index]), texts))
+    return height, rows
 
 
 def chart_svg(html):
@@ -1455,18 +1478,22 @@ class ChartNotePerCaseTest(unittest.TestCase):
     def test_a_note_with_several_medians_stays_inside_the_chart(self):
         # cpu/public_api declares the eager and trace arms while this row set is measured
         # on five other backends: no arm matches, so the case has no bar and a note that
-        # has to name every median.  1e150 is the width bound: `%.1f` would print 152
-        # integer digits into a `<text>` that cannot wrap.
+        # has to name every median.  1e150 is the number bound: `%.1f` would print 152
+        # integer digits into a `<text>` that cannot wrap.  95 'W's is the free-text
+        # bound: a backend name is not bounded by anything, and one character of it
+        # measures 0.97 em, so this line is wider than the row's whole column.
         self.write_suite(
             "cpu/public_api",
             "throughput",
-            ("add_into_f64_32x32", "case_comparable"),
+            ("add_into_f64_32x32", "case_long_name", "case_comparable"),
             [
                 row("add_into_f64_32x32", "julia-base", 21.347),
                 row("add_into_f64_32x32", "pytorch-cpu", 21.431),
                 row("add_into_f64_32x32", "strided-jl", 67.0),
                 row("add_into_f64_32x32", "tenferro-direct", 21.511),
                 row("add_into_f64_32x32", "tenferro-rs", 1e150),
+                row("case_long_name", "W" * 95, 20.0),
+                row("case_long_name", "pytorch-cuda", 0.0, status="failed", reason="CUDA OOM"),
                 # A neighbour with a ratio, so this suite draws a chart (not a paragraph).
                 row("case_comparable", "tenferro-eager", 30.0),
                 row("case_comparable", "pytorch-cpu", 10.0),
@@ -1474,15 +1501,30 @@ class ChartNotePerCaseTest(unittest.TestCase):
             profile="mac-cpu",
         )
         chart = chart_svg((self.generate() / "cpu/index.html").read_text())
-        # A row's text cannot wrap, so every line it draws has to fit the viewport.
-        for text in re.findall(r'class="chart-(?:value|fail)">([^<]*)</text>', chart):
-            right = CHART_TEXT_START + CHART_PX_PER_CHAR * len(text)
-            self.assertLessEqual(right, CHART_TEXT_END, text)
+        height, rows = chart_layout(chart)
+        # A row's text cannot wrap on its own, so every line drawn in the label column
+        # has to fit between it and the chart's right edge.
+        for name, _, texts in rows:
+            for x, _, _, text in texts:
+                self.assertGreaterEqual(x, CHART_TEXT_START)
+                self.assertLessEqual(x + dashboard.text_units(text), CHART_TEXT_END, text)
+        # The 95-character name is wider than the column on its own, so the note took
+        # more lines instead of running off the chart, and nothing was dropped: the
+        # name it was drawn for and the median it recorded are both still there.
+        long_row = next(texts for name, _, texts in rows if name == "case_long_name")
+        note = [text for _, _, css, text in long_row if css == "chart-value"]
+        self.assertGreater(len(note), 2, note)
+        self.assertIn("W" * 95, "".join(note).replace(" ", ""))
+        self.assertTrue(any("20.000 ms" in text for text in note), note)
         # And the note names each arm with the median it was drawn from, one per line,
         # then why there is no ratio (anything with `x · ` is a bar's ratio label).
+        multi_arm = [
+            text
+            for name, _, texts in rows if name == "add_into_f64_32x32"
+            for _, _, css, text in texts if css == "chart-value"
+        ]
         self.assertEqual(
-            [text for text in re.findall(r'<text [^>]*class="chart-value">([^<]*)</text>', chart)
-             if "x · " not in text],
+            multi_arm,
             [
                 "measured julia-base 21.347 ms",
                 "pytorch-cpu 21.431 ms",
@@ -1492,6 +1534,19 @@ class ChartNotePerCaseTest(unittest.TestCase):
                 "but no arm of it had a ratio against that baseline",
             ],
         )
+        # Vertical containment: a row's lines have to fit the height the chart reserved
+        # for them and the label the renderer put them under.  `note_line_count` used to
+        # be an independent guess at how many lines the note would draw, so a wrong guess
+        # clipped the extra lines off the bottom (or let them run into the next row) and
+        # the element-count assertions above still passed.
+        self.assertEqual(len(rows), 3)
+        for index, (name, label_y, texts) in enumerate(rows):
+            self.assertTrue(texts, name)
+            for x, text_y, _, text in texts:
+                self.assertGreaterEqual(text_y, label_y, text)
+                self.assertLessEqual(text_y + 4, height, text)
+                if index + 1 < len(rows):
+                    self.assertLess(text_y, rows[index + 1][1], text)
 
     def test_a_case_whose_declared_references_both_failed_keeps_its_row(self):
         (self.instances / "gpu_perf_issues.json").write_text(
