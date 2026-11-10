@@ -13,6 +13,7 @@ use std::time::{Duration, Instant};
 use tenferro_ad::{AdContext, EagerRuntime, EagerSession, EagerTensor};
 use tenferro_cpu::{runtime_engine_id, runtime_engine_registration, CpuEngine};
 use tenferro_einsum::{EagerSessionEinsumExt, TraceContextEinsumExt};
+use tenferro_einsum_benchmark::spd_from_base;
 use tenferro_einsum_benchmark::thread_enforcement::{
     enforce_thread_request, verify_backend_threads,
 };
@@ -1899,6 +1900,7 @@ fn summarize_measurement(
     phase: &str,
     shape: &str,
     backend: &str,
+    eager_session_policy: &str,
 ) -> Result<(f64, f64), Error> {
     record_raw(serde_json::json!({
         "record_type": "samples", "suite": suite,
@@ -1912,7 +1914,7 @@ fn summarize_measurement(
         "target_ns": SAMPLE_TARGET_NS, "calibration_ns": measured.calibration_ns,
         "estimated_retained_bytes_per_operation": measured.estimated_bytes,
         "retention_budget_bytes": RETENTION_BUDGET_BYTES,
-        "execution_scope": "shared_cpu", "eager_session_policy": "borrowed_session_outside_timing_for_primal", "output_policy": "allocation_returning_retained_until_stop",
+        "execution_scope": "shared_cpu", "eager_session_policy": eager_session_policy, "output_policy": "allocation_returning_retained_until_stop",
     }))?;
     let (median, iqr) = median_iqr_ms(measured.times);
     Ok((
@@ -1997,7 +1999,15 @@ fn bench_row<I: Clone + Send + Sync, O>(
     }
     let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
         let measured = measure_eager(config, shape, &mut setup, &mut execute)?;
-        summarize_measurement(measured, suite, op, phase, shape, "tenferro-eager")
+        summarize_measurement(
+            measured,
+            suite,
+            op,
+            phase,
+            shape,
+            "tenferro-eager",
+            "borrowed_session_outside_timing_for_primal",
+        )
     }));
 
     match result {
@@ -2058,7 +2068,19 @@ fn bench_eager_ad_row<I, O>(
 
     let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
         let measured = measure_eager_ad(config, shape, &mut setup, &mut execute)?;
-        summarize_measurement(measured, suite, op, phase, shape, "tenferro-eager")
+        // Unlike a primal row, the forward pass is inside this sample, and so is
+        // the eager API's own AD preparation (tenferro-rs #2206 exposes no
+        // separate prepare step). The record says that instead of claiming the
+        // primal-only policy above.
+        summarize_measurement(
+            measured,
+            suite,
+            op,
+            phase,
+            shape,
+            "tenferro-eager",
+            "forward_and_derivative_inside_timing_with_eager_ad_prepare",
+        )
     }));
 
     match result {
@@ -2128,7 +2150,15 @@ fn bench_trace_row(
             || Ok(()),
             |_| runtime.run(&mut [&mut *engine], &prepared, &[]),
         )?;
-        summarize_measurement(measured, suite, op, phase, shape, "tenferro-trace")
+        summarize_measurement(
+            measured,
+            suite,
+            op,
+            phase,
+            shape,
+            "tenferro-trace",
+            "borrowed_session_outside_timing_for_trace_program",
+        )
     }));
 
     match result {
@@ -2232,7 +2262,15 @@ fn bench_einsum_trace_row(config: &BenchConfig, n: usize) -> Row {
             || Ok(()),
             |_| runtime.run(&mut [&mut *engine], &prepared, &[]),
         )?;
-        summarize_measurement(measured, suite, op, phase, &shape, "tenferro-trace")
+        summarize_measurement(
+            measured,
+            suite,
+            op,
+            phase,
+            &shape,
+            "tenferro-trace",
+            "borrowed_session_outside_timing_for_trace_program",
+        )
     }));
 
     match result {
@@ -2611,22 +2649,12 @@ fn well_conditioned_matrix(n: usize, seed: u64) -> Vec<f64> {
     data
 }
 
+/// The `spd` fixture: `BᵀB + I` for the well-conditioned `B`.
+///
+/// One BLAS-shaped GEMM instead of a triple loop: `BᵀB` is 2n³ flops, and the
+/// batched rows build one matrix per batch element. See `spd_from_base`.
 fn spd_matrix(n: usize, seed: u64) -> Vec<f64> {
-    let base = well_conditioned_matrix(n, seed);
-    let mut out = vec![0.0; n * n];
-    for j in 0..n {
-        for i in 0..n {
-            let mut sum = 0.0;
-            for k in 0..n {
-                sum += base[k + n * i] * base[k + n * j];
-            }
-            if i == j {
-                sum += 1.0;
-            }
-            out[i + n * j] = sum;
-        }
-    }
-    out
+    spd_from_base(&well_conditioned_matrix(n, seed), n)
 }
 
 fn batched_well_conditioned(n: usize, batch: usize, seed: u64) -> Vec<f64> {

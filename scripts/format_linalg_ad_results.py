@@ -13,6 +13,15 @@ from pathlib import Path
 import report_summary
 from format_cpu_ops_results import BACKEND_LABELS, clean_markdown_eof, normalize_row, row_value
 
+# On this page the eager arm is a per-call API cost, not a prepared-program
+# steady state: its sample carries the eager API's own AD preparation, which the
+# public API cannot move outside the clock (`docs/cpu-suite-arms.md`). The column
+# says so, because a table headed only "eager mode" reads as the same
+# measurement as the trace program beside it.
+AD_BACKEND_LABELS = {
+    "tenferro-eager": "tenferro-rs eager per call, incl. AD prepare (ms)",
+}
+
 LINALG_AD_BACKEND_ORDER = [
     "tenferro-eager",
     "tenferro-trace",
@@ -73,8 +82,19 @@ def format_table(path: Path) -> str:
         "tenferro-rs measures both arms: eager `EagerRuntime::jvp` / `vjp`, and trace-mode",
         "`AdContext`. PyTorch uses `torch.func.jvp` / `vjp`; JAX uses `jax.jvp` / `jax.vjp`.",
         "",
+        "Both tenferro arms return the same requested outputs -- the primal and the",
+        "declared derivative -- with fixtures and wrapping outside the clock. They are",
+        "not the same execution: the eager sample runs the forward pass in a borrowed",
+        "session and then the derivative call, which carries the eager API's own AD",
+        "preparation on every call (its VJP reuses a prepared derivative when the cache",
+        "holds one, its JVP re-prepares), because that API exposes no separate prepare",
+        "step. The trace arm compiles and prepares the program before sampling. So the",
+        "trace number is a prepared-program steady state and the eager number is the",
+        "per-call cost of the public API, not a like-for-like difference in one",
+        "operation.",
+        "",
         "| suite | benchmark | dtype | threads | shape | "
-        + " | ".join(BACKEND_LABELS.get(b, b) for b in order)
+        + " | ".join(AD_BACKEND_LABELS.get(b, BACKEND_LABELS.get(b, b)) for b in order)
         + " |",
         "|---|---|---:|---:|---|"
         + "|".join("---:" for _ in order)

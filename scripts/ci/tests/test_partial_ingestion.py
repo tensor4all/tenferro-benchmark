@@ -29,14 +29,14 @@ class PartialDriverTest(unittest.TestCase):
             fixture.entry['files'][relative] = digest(path)
         fixture.save()
 
-    def invoke(self, artifacts=None):
+    def invoke(self, artifacts=None, commit='fixture-commit'):
         artifacts = [self.artifact] if artifacts is None else artifacts
         api = patch.object(driver, 'gh_json', side_effect=[self.run, {'total_count': len(artifacts), 'artifacts': artifacts}])
         def download(artifact, path):
             shutil.copytree(self.fixture.bundle, path)
         self.commit = self.enterContext(patch.object(driver, 'commit_results'))
         self.publish = self.enterContext(patch.object(driver, 'request_publication'))
-        self.commit.return_value = ({'cpu/einsum': 'accepted'}, 'fixture-commit')
+        self.commit.return_value = ({'cpu/einsum': 'accepted'}, commit)
         with api, patch.object(driver, 'download_artifact', side_effect=download), \
                 patch('sys.argv', ['ingest', '--run-id', '123']), patch.dict('os.environ', {'GITHUB_STEP_SUMMARY': ''}):
             driver.main()
@@ -49,6 +49,12 @@ class PartialDriverTest(unittest.TestCase):
         self.assertEqual(receipt['source']['conclusion'], 'success')
         self.publish.assert_called_once()
         self.assertEqual(json.loads(payload['result/amd-cpu/cpu/einsum.summary.json'])['rows'][0]['median'], 1.5)
+
+    def test_pending_merge_still_requests_publication(self):
+        # A 405 merge lands on its own: no commit is visible, but the idempotent
+        # publication request must still go out.
+        self.invoke(commit=None)
+        self.publish.assert_called_once()
 
     def test_failure_complete_artifact_preserves_three_failed_cases_as_partial(self):
         self.run['conclusion'] = 'failure'
@@ -86,6 +92,7 @@ class PartialDriverTest(unittest.TestCase):
         for change in ({'head_repository': {'full_name': 'fork/repo'}},
                        {'repository': {'full_name': 'fork/repo'}},
                        {'display_title': 'RunPod readback (manual report)'},
+                       {'display_title': 'RunPod readback (manual report) [purpose=verify target=o/r#1]'},
                        *({'conclusion': value} for value in ('cancelled', 'timed_out', 'skipped', 'neutral'))):
             run = dict(self.run, **change)
             with self.subTest(change=change), patch.object(driver, 'gh_json', return_value=run) as api:

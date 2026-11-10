@@ -39,6 +39,11 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 # publish again, not even through a bundle replayed from an older run.
 RETIRED_PROFILES = frozenset({'linux-cpu'})
 
+# The readback report is a manual review artifact, never an automatic result. The
+# run name continues with its purpose marker ([purpose=... target=...]), so the
+# match is a prefix.
+READBACK_TITLE = 'RunPod readback (manual report)'
+
 
 def instant(value: str) -> datetime:
     # A timestamp of another type records no instant: ``.replace`` raised
@@ -128,7 +133,7 @@ def validate_source_run(run: dict) -> None:
             or run.get('head_repository', {}).get('full_name') != REPOSITORY
             or run.get('head_branch') != 'main'
             or run.get('status') != 'completed' or workflow not in WORKFLOWS
-            or run.get('display_title') == 'RunPod readback (manual report)'):
+            or (run.get('display_title') or '').startswith(READBACK_TITLE)):
         raise ValueError('Run is not an eligible canonical main benchmark workflow (fork/readback excluded)')
     if run.get('conclusion') not in ('success', 'failure'):
         raise ValueError(f"Run conclusion must be success or failure, not {run.get('conclusion')!r}")

@@ -210,7 +210,11 @@ a measurement, is named under the table instead of being compared or dropped
 silently. A row only one of the two runs recorded at all is named the same way, so
 a case that vanished from a week cannot read as no regression — and when the run
 that recorded it measured it, the report exits 1: the table still prints, but it
-no longer covers the run. A candidate the
+no longer covers the run. A row a run recorded as a failure (`runtime_failed`,
+`oom`, ...) is classified before the unverified rows and exits 1 whether the
+other run measured the identity, failed it as well or did not record it: an
+unverified row on the other side has no comparable counterpart, and naming it
+there must not turn a crashed run into a passing week. A candidate the
 driver would reject is named even when that week has no accepted run to compare
 it with. A shallow
 clone, an unreadable repository, and a `--threshold` outside 1 to 1000000 are

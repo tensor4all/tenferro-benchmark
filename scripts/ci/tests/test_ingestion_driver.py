@@ -1,3 +1,4 @@
+import contextlib
 import io
 import json
 import stat
@@ -180,6 +181,157 @@ class PullRequestMergeTest(unittest.TestCase):
         with patch('scripts.ci.ingest_benchmark_results.required_checks', return_value=set()), \
              patch('scripts.ci.ingest_benchmark_results.gh_json', return_value={'check_runs': []}):
             self.assertIsNone(merge_through_pull_request('b', 'abc', 'Accept'))
+
+
+class MergeRaceTest(unittest.TestCase):
+    """A 405 from the required-checks auto-merge winning the race is the success path."""
+
+    pr = 'repos/tensor4all/tenferro-benchmark/pulls/7'
+
+    def setUp(self):
+        self.calls = []
+        self.states = [{'merged': True, 'merge_commit_sha': 'squashed'}]
+        self.merge_stderr = 'gh: Merge already in progress (HTTP 405)'
+        self.read_error = False
+        def fake(*args, check=True):
+            self.calls.append(args)
+            if args[0] == '--method':
+                return subprocess.CompletedProcess(args, 1, '', self.merge_stderr)
+            if '?' in args[0]:
+                return subprocess.CompletedProcess(args, 0, json.dumps([{'number': 7}]), '')
+            if self.read_error:
+                raise subprocess.CalledProcessError(1, ['gh', 'api', args[0]], '', 'gh: 502 Bad Gateway')
+            return subprocess.CompletedProcess(args, 0, json.dumps(self.states.pop(0)), '')
+        for target, replacement in (('gh_pull_request', fake), ('required_checks', lambda: set()),
+                                    ('gh_json', lambda endpoint: {'check_runs': []})):
+            patcher = patch(f'scripts.ci.ingest_benchmark_results.{target}', replacement)
+            patcher.start()
+            self.addCleanup(patcher.stop)
+        sleep = patch('scripts.ci.ingest_benchmark_results.time.sleep')
+        self.sleep = sleep.start()
+        self.addCleanup(sleep.stop)
+        env = patch.dict('os.environ', {'GITHUB_STEP_SUMMARY': ''})
+        env.start()
+        self.addCleanup(env.stop)
+
+    def merge(self):
+        from scripts.ci.ingest_benchmark_results import merge_through_pull_request
+        return merge_through_pull_request('b', 'abc', 'Accept')
+
+    def state_reads(self):
+        return [call for call in self.calls if call == (self.pr,)]
+
+    def test_405_that_becomes_merged_is_a_success(self):
+        self.assertEqual(self.merge(), 'squashed')
+        self.assertEqual(len(self.state_reads()), 1)
+        self.sleep.assert_not_called()
+
+    def test_405_that_merges_after_the_first_read_is_a_success(self):
+        # The observed race: the read right after the 405 still says merged=false.
+        self.states = [{'merged': False, 'mergeable': True}, {'merged': True, 'merge_commit_sha': 'squashed'}]
+        self.assertEqual(self.merge(), 'squashed')
+        self.assertEqual(len(self.state_reads()), 2)
+
+    def test_405_that_merges_after_more_than_five_reads_is_a_success(self):
+        # The reported incident: the merge took >13 min to become visible, so a
+        # five-read budget alone would still have failed the job.
+        self.states = [{'merged': False, 'mergeable': True}] * 5 + [{'merged': True, 'merge_commit_sha': 'squashed'}]
+        self.assertEqual(self.merge(), 'squashed')
+        self.assertEqual(len(self.state_reads()), 6)
+
+    def test_405_that_never_becomes_visible_is_pending_not_a_failure(self):
+        from scripts.ci.ingest_benchmark_results import MERGE_PENDING, MERGE_POLL_DELAYS
+        self.states = [{'merged': False, 'mergeable': True}] * 6
+        output = io.StringIO()
+        with tempfile.TemporaryDirectory() as directory:
+            summary = Path(directory)/'summary.md'
+            summary.write_text('')
+            with contextlib.redirect_stdout(output), \
+                    patch.dict('os.environ', {'GITHUB_STEP_SUMMARY': str(summary)}):
+                self.assertIs(self.merge(), MERGE_PENDING)
+            self.assertIn('Merge pending', summary.read_text())
+        self.assertEqual(len(self.state_reads()), 6)
+        self.assertEqual(self.sleep.call_count, 5)
+        # The budget is bounded and stays far below the 13 min the incident took.
+        self.assertEqual(sum(MERGE_POLL_DELAYS), 60)
+        self.assertEqual([call.args[0] for call in self.sleep.call_args_list], list(MERGE_POLL_DELAYS))
+        self.assertIn('Merge pending', output.getvalue())
+        self.assertIn('#7', output.getvalue())
+
+    def test_405_with_failing_state_reads_is_pending_not_a_failure(self):
+        from scripts.ci.ingest_benchmark_results import MERGE_PENDING, MERGE_POLL_DELAYS
+        self.read_error = True
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            self.assertIs(self.merge(), MERGE_PENDING)
+        self.assertEqual(len(self.state_reads()), 6)
+        self.assertEqual(self.sleep.call_count, 5)
+        self.assertEqual([call.args[0] for call in self.sleep.call_args_list], list(MERGE_POLL_DELAYS))
+        self.assertIn('Merge pending', output.getvalue())
+        self.assertIn('Last state read failed', output.getvalue())
+
+    def test_405_with_failing_state_reads_still_requests_publication(self):
+        # The whole chain: a 405 whose state reads all fail must not raise out of
+        # commit_results, so main() still dispatches the publication.
+        from scripts.ci import ingest_benchmark_results as driver
+        from scripts.ci.tests import test_result_ingestion as fixtures
+        self.read_error = True
+        fixture = fixtures.IngestionTest()
+        fixture.setUp()
+        self.addCleanup(fixture.doCleanups)
+        payload = {'result/amd-cpu/cpu/einsum.md': b'validated report'}
+        receipt = {'suite_id': 'cpu/einsum', 'status': 'complete', 'case_outcomes': {}, 'missing_suites': []}
+        def fake_json(endpoint):
+            if '/artifacts?' in endpoint:
+                return {'total_count': 1, 'artifacts': [fixture.artifact]}
+            if endpoint.endswith(f"runs/{fixture.run['id']}"):
+                return fixture.run
+            return {'check_runs': []}
+        def fake_git(root, *args, check=True):
+            stdout = {'diff': 'result/amd-cpu/cpu/einsum.md', 'rev-parse': 'deadbeef'}.get(args[0], '')
+            return subprocess.CompletedProcess(args, 0, stdout, '')
+        with tempfile.TemporaryDirectory() as directory, \
+             patch.object(driver, 'gh_json', fake_json), \
+             patch.object(driver, 'download_artifact'), \
+             patch.object(driver, 'validate_bundle', return_value=[(receipt, payload)]), \
+             patch.object(driver, 'git', fake_git), \
+             patch.object(driver, 'plan_updates', return_value=(payload, {'cpu/einsum': 'accepted'})), \
+             patch.object(driver, 'request_publication') as publish, \
+             patch('sys.argv', ['ingest', '--run-id', str(fixture.run['id']),
+                                '--repository-dir', directory]):
+            driver.main()
+        publish.assert_called_once()
+
+    def test_other_merge_errors_fail_immediately_without_polling(self):
+        self.merge_stderr = 'gh: Protected branch update failed (HTTP 422)'
+        self.states = [{'merged': False, 'mergeable': True}]
+        with self.assertRaisesRegex(RuntimeError, 'Protected branch'):
+            self.merge()
+        self.assertEqual(len(self.state_reads()), 1)
+        self.sleep.assert_not_called()
+
+
+class PendingMergeTest(unittest.TestCase):
+    """A 405 merge that is landing must not stop the run before publication."""
+
+    def test_pending_merge_ends_the_replay_loop_without_failing(self):
+        from scripts.ci import ingest_benchmark_results as driver
+        payload = {'result/amd-cpu/cpu/einsum.md': b'validated report'}
+        pushes = []
+        def fake_git(root, *args, check=True):
+            if args[0] == 'push':
+                pushes.append(args)
+            stdout = {'diff': 'result/amd-cpu/cpu/einsum.md', 'rev-parse': 'deadbeef'}.get(args[0], '')
+            return subprocess.CompletedProcess(args, 0, stdout, '')
+        with tempfile.TemporaryDirectory() as directory, \
+             patch.object(driver, 'git', fake_git), \
+             patch.object(driver, 'plan_updates', return_value=(payload, {'cpu/einsum': 'accepted'})), \
+             patch.object(driver, 'merge_through_pull_request', return_value=driver.MERGE_PENDING):
+            decisions, commit = commit_results(Path(directory), [({}, payload)],
+                                               {'run_id': 1, 'run_attempt': 1})
+        self.assertEqual((decisions, commit), ({'cpu/einsum': 'accepted'}, None))
+        # No replay: the landing merge already owns this branch.
+        self.assertEqual(len(pushes), 1)
 
 
 if __name__ == '__main__':

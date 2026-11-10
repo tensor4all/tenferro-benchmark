@@ -11,6 +11,7 @@ use std::time::{Duration, Instant};
 
 use serde_json::{json, Value};
 use tenferro_ad::AdContext;
+use tenferro_einsum_benchmark::spd_from_base;
 use tenferro_einsum_benchmark::verification_mode;
 use tenferro_gpu::cuda::{
     cuda_runtime_engine_registration, download_tensor, gpu_available, upload_tensor, CudaEngine,
@@ -972,22 +973,13 @@ fn well_conditioned_matrix(n: usize, seed: u64) -> Vec<f64> {
     data
 }
 
+/// The `spd` fixture: `BᵀB + I` for the well-conditioned `B`.
+///
+/// The product is one BLAS-shaped GEMM rather than a triple loop, because at
+/// n=4096 the fixture is 137 GFLOP and this suite pays it once per arm and once
+/// more for its CPU reference. See `spd_from_base`.
 fn spd_matrix(n: usize, seed: u64) -> Vec<f64> {
-    let base = well_conditioned_matrix(n, seed);
-    let mut out = vec![0.0; n * n];
-    for j in 0..n {
-        for i in 0..n {
-            let mut sum = 0.0;
-            for k in 0..n {
-                sum += base[k + n * i] * base[k + n * j];
-            }
-            if i == j {
-                sum += 1.0;
-            }
-            out[i + n * j] = sum;
-        }
-    }
-    out
+    spd_from_base(&well_conditioned_matrix(n, seed), n)
 }
 
 const TANGENT_SEED_OFFSET: u64 = 1_000;

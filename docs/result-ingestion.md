@@ -22,7 +22,8 @@ Installation of dependencies and deployment still need network access.
 Only runs of the canonical repository `tensor4all/tenferro-benchmark`, on
 `main`, with conclusion `success` or `failure` and one of these workflow paths qualify.
 `cancelled`, `skipped`, `timed_out` and all other conclusions are rejected.
-Forks and `RunPod readback (manual report)` are excluded, including manual ingestion dispatches:
+Forks and runs titled `RunPod readback (manual report)` (with its purpose marker) are
+excluded, including manual ingestion dispatches:
 
 | Workflow | Artifact name | Target profile |
 | --- | --- | --- |
