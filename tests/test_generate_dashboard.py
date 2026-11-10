@@ -1244,6 +1244,11 @@ def chart_no_ratio_note(html):
     return html[start : html.index("</p>", start)]
 
 
+def chart_svg(html):
+    """The rendered ratio chart of a page (a chart with ratios, so an SVG)."""
+    return re.findall(r'<svg class="bars".*?</svg>', html, re.S)[0]
+
+
 def profile_header(html, index=0):
     """One ``profile-head`` div of a page (the spans are inline, so it is one line)."""
     return re.findall(r'<div class="profile-head">.*?</div>', html, re.S)[index]
@@ -1338,6 +1343,148 @@ class RatioChartWithoutBaselineTest(unittest.TestCase):
         self.assertIn("20.000 ms", note)
         self.assertIn("CUDA OOM", note)
         self.assertNotIn("no measurement was recorded as ok", note)
+
+
+class ChartNotePerCaseTest(unittest.TestCase):
+    """The no-ratio note belongs to a case, not to a suite.
+
+    ``svg_ratio_chart`` printed that note only when *no* case of the suite had a
+    ratio.  One comparable neighbour was enough to switch the chart to bars, and
+    then a case whose own arm measured 20 ms printed nothing but
+    ``fail · pytorch-cuda · CUDA OOM``: the number the run recorded disappeared
+    because a different case could be compared.
+    """
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.result = self.root / "result"
+        self.benchmarks = self.root / "benchmarks" / "gpu"
+        self.instances = self.root / "instances"
+        self.instances.mkdir(parents=True)
+
+    def write_suite(self, suite_id, regime, problems, rows):
+        self.benchmarks.mkdir(parents=True, exist_ok=True)
+        stem = suite_id.split("/", 1)[1]
+        (self.benchmarks / f"{stem}.yaml").write_text(
+            f"schema_version: 1\nsuite_id: {suite_id}\ndefaults:\n  regime: {regime}\n"
+            "problems:\n" + "".join(f"  - {{id: {problem}}}\n" for problem in problems)
+        )
+        suite_dir = self.result / "nvidia-gpu" / suite_id.split("/", 1)[0]
+        suite_dir.mkdir(parents=True)
+        report = suite_dir / f"{stem}.md"
+        report.write_text(f"# {suite_id}\n\nbody\n")
+        report.with_suffix(".summary.json").write_text(
+            json.dumps(summary_document(rows, suite_id=suite_id))
+        )
+
+    def generate(self):
+        output = self.root / "site"
+        self.assertEqual(
+            dashboard.generate(
+                self.result,
+                output,
+                baseline_dir=self.root / "baseline",
+                git_repo=None,
+                instances_dir=self.instances,
+                benchmarks_dir=self.root / "benchmarks",
+                latest_profiles=None,
+            ),
+            0,
+        )
+        return output
+
+    def test_a_case_without_a_ratio_keeps_its_median_beside_a_comparable_case(self):
+        self.write_suite(
+            "gpu/dense",
+            "throughput",
+            ("case_ok", "case_comparable"),
+            [
+                row("case_ok", "tenferro-cuda-eager", 20.0),
+                row("case_ok", "pytorch-cuda", 0.0, status="failed", reason="CUDA OOM"),
+                row("case_comparable", "tenferro-cuda-eager", 30.0),
+                row("case_comparable", "pytorch-cuda", 10.0),
+            ],
+        )
+        chart = chart_svg((self.generate() / "gpu/index.html").read_text())
+        # The comparable case draws its bar...
+        self.assertIn('class="chart-label">case_comparable', chart)
+        # ...and the neighbour beside it still says what it measured.
+        self.assertIn('class="chart-label">case_ok', chart)
+        self.assertIn("20.000 ms", chart)
+        self.assertIn("CUDA OOM", chart)
+        # Its own line, below its own fail line and above the next case.
+        fail_y = int(
+            re.search(r'<text x="300" y="(\d+)" class="chart-fail">', chart).group(1)
+        )
+        measured_y = int(
+            re.search(r'<text x="300" y="(\d+)" class="chart-value">measured ', chart).group(1)
+        )
+        next_case_y = int(
+            re.search(r'<text x="0" y="(\d+)" class="chart-label">case_comparable', chart).group(1)
+        )
+        height = int(re.search(r'viewBox="0 0 1060 (\d+)"', chart).group(1))
+        self.assertLess(fail_y, measured_y)
+        # The row is tall enough for its extra line: it stays inside the chart.
+        self.assertLessEqual(measured_y + 9, height)
+        # And the case above it keeps its own single line.
+        self.assertLess(next_case_y, fail_y)
+
+    def test_a_case_whose_declared_references_both_failed_keeps_its_row(self):
+        (self.instances / "gpu_perf_issues.json").write_text(
+            json.dumps(
+                [
+                    {
+                        "id": "transfer_up_f64_cudarc-pageable_8B",
+                        "reference_for": "transfer_up_f64_tenferro_8B",
+                    },
+                    {
+                        "id": "transfer_up_f64_cudarc-pinned_8B",
+                        "reference_for": "transfer_up_f64_tenferro_8B",
+                    },
+                ]
+            )
+        )
+        self.write_suite(
+            "gpu/perf_issues",
+            "latency",
+            (
+                "transfer_up_f64_tenferro_8B",
+                "transfer_up_f64_cudarc-pageable_8B",
+                "transfer_up_f64_cudarc-pinned_8B",
+            ),
+            [
+                row("transfer_up_f64_tenferro_8B", "tenferro-cuda-eager", 20.0),
+                row(
+                    "transfer_up_f64_cudarc-pageable_8B",
+                    "cudarc",
+                    0.0,
+                    status="failed",
+                    reason="probe crashed",
+                ),
+                row(
+                    "transfer_up_f64_cudarc-pinned_8B",
+                    "cudarc",
+                    0.0,
+                    status="failed",
+                    reason="probe crashed",
+                ),
+            ],
+        )
+        note = chart_no_ratio_note((self.generate() / "gpu/latency/index.html").read_text())
+        # The case whose own arm ran keeps the median it recorded, next to the
+        # reference failures that are the reason it has no ratio.
+        self.assertIn("20.000 ms", note)
+        self.assertIn(
+            "<code>transfer_up_f64_tenferro_8B</code> measured "
+            "<code>tenferro-cuda-eager</code> 20.000 ms, but its baseline arm produced no number",
+            note,
+        )
+        # The failures are still named, with their reason, beside it.
+        for reference in ("cudarc-pageable", "cudarc-pinned"):
+            self.assertIn(f"<code>transfer_up_f64_{reference}_8B</code>", note)
+        self.assertIn('<span class="muted">probe crashed</span>', note)
 
 
 class ProfileHeaderScopeTest(unittest.TestCase):
