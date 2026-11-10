@@ -1318,34 +1318,51 @@ def bar_tooltip(item: dict[str, Any], case: dict[str, Any], baseline_label: str,
     return text
 
 
-def measured_note(case: dict[str, Any], unit: str, markup: bool = True) -> str:
-    """What one case measured and why that is not a ratio.
+def measured_items(case: dict[str, Any], unit: str) -> tuple[list[tuple[str, str]], str]:
+    """The case's measured arms as ``(backend, median)``, and why it has no ratio.
 
     A case whose baseline arm failed is not a case that measured nothing: its
     contender's median is printed here, next to the reason the baseline has no
-    number.  Only a case with no ok measurement at all says so.  ``markup=False``
-    is the plain-text form for an SVG ``<text>``, which cannot hold HTML tags.
+    number.  Only a case with no ok measurement at all says so.
     """
-
-    def text_of(value: str) -> str:
-        return esc(value) if markup else value
-
-    def code(value: str) -> str:
-        return f"<code>{esc(value)}</code>" if markup else value
-
-    measured = [
-        f'{code(str(item["backend"]))} {text_of(fmt_median(item["median"], unit))}'
+    items = [
+        (str(item["backend"]), fmt_median(item["median"], unit))
         for item in case.get("measured") or []
     ]
-    if measured:
-        text = f"measured {' · '.join(measured)}"
-        if case.get("baseline_median") is None:
-            text += ", but its baseline arm produced no number"
-        elif not case.get("contenders"):
-            text += ", but no arm of it had a ratio against that baseline"
-    else:
-        text = "no measurement was recorded as ok"
-    return text
+    if not items:
+        return [], "no measurement was recorded as ok"
+    if case.get("baseline_median") is None:
+        return items, "but its baseline arm produced no number"
+    if not case.get("contenders"):
+        return items, "but no arm of it had a ratio against that baseline"
+    return items, ""
+
+
+def measured_note(case: dict[str, Any], unit: str) -> str:
+    """The note as prose, for the no-ratio paragraph (HTML, so it wraps)."""
+    items, reason = measured_items(case, unit)
+    if not items:
+        return reason
+    text = "measured " + " · ".join(
+        f"<code>{esc(backend)}</code> {esc(median)}" for backend, median in items
+    )
+    return f"{text}, {reason}" if reason else text
+
+
+def measured_lines(case: dict[str, Any], unit: str) -> list[str]:
+    """The note as chart lines: one arm per line, because SVG text does not wrap.
+
+    A four-arm case in a single ``<text>`` ran to x=1107 in the chart's fixed
+    1060-unit viewport, so the browser cut the explanation off.
+    """
+    items, reason = measured_items(case, unit)
+    if not items:
+        return [reason]
+    lines = [
+        f'{"measured " if index == 0 else ""}{backend} {median}'
+        for index, (backend, median) in enumerate(items)
+    ]
+    return lines + [reason] if reason else lines
 
 
 def no_ratio_note(case: dict[str, Any], unit: str) -> str:
@@ -1361,10 +1378,14 @@ def no_ratio_note(case: dict[str, Any], unit: str) -> str:
     return text
 
 
+def note_line_count(case: dict[str, Any]) -> int:
+    """Chart lines the measured note occupies: one per arm plus the reason."""
+    return 0 if case["contenders"] or not case.get("measured") else len(case["measured"]) + 1
+
+
 def chart_lines(case: dict[str, Any]) -> int:
-    """Lines one case occupies: one per bar, per fail line, and its measured note."""
-    lines = len(case["contenders"]) + len(case.get("not_ok") or [])
-    return lines + (0 if case["contenders"] or not case.get("measured") else 1)
+    """Lines one case occupies: one per bar, per fail line, and per measured note line."""
+    return len(case["contenders"]) + len(case.get("not_ok") or []) + note_line_count(case)
 
 
 def svg_ratio_chart(cases: list[dict[str, Any]], baseline_label: str, unit: str = "ms") -> str:
@@ -1465,14 +1486,15 @@ def svg_ratio_chart(cases: list[dict[str, Any]], baseline_label: str, unit: str 
                 + (f' · {esc(bad["reason"])}' if bad.get("reason") else "")
                 + "</text>"
             )
-        if not case["contenders"] and case.get("measured"):
-            # Nothing to compare, but something was measured: say it here, beside
-            # the fail lines, instead of only in a suite-wide paragraph.
-            bar_y = y + (chart_lines(case) - 1) * (BAR_HEIGHT + BAR_GAP)
-            parts.append(
-                f'<text x="{BAR_LABEL_WIDTH}" y="{bar_y + 9}" class="chart-value">'
-                f'{esc(measured_note(case, unit, markup=False))}</text>'
-            )
+        if note_line_count(case):
+            # Nothing to compare, but something was measured: say it here, beside the
+            # fail lines, one arm per line so that no line leaves the viewport.
+            first = y + (chart_lines(case) - note_line_count(case)) * (BAR_HEIGHT + BAR_GAP)
+            for index, line in enumerate(measured_lines(case, unit)):
+                parts.append(
+                    f'<text x="{BAR_LABEL_WIDTH}" y="{first + index * (BAR_HEIGHT + BAR_GAP) + 9}"'
+                    f' class="chart-value">{esc(line)}</text>'
+                )
         y += row_height
     parts.append("</svg>")
     return "".join(parts)

@@ -1244,6 +1244,15 @@ def chart_no_ratio_note(html):
     return html[start : html.index("</p>", start)]
 
 
+# SVG text does not wrap and a chart's viewBox is a fixed 1060 units wide, so a row's
+# text has to fit between 300 (the row's label column) and 1060.  Chrome measures this
+# font at 0.47 em per character; the bound below is the conservative 0.60 em
+# (11px * 0.60 = 6.6 px/char), so the test errs towards failing.
+CHART_TEXT_START = 300
+CHART_TEXT_END = 1060
+CHART_PX_PER_CHAR = 11 * 0.60
+
+
 def chart_svg(html):
     """The rendered ratio chart of a page (a chart with ratios, so an SVG)."""
     return re.findall(r'<svg class="bars".*?</svg>', html, re.S)[0]
@@ -1364,7 +1373,7 @@ class ChartNotePerCaseTest(unittest.TestCase):
         self.instances = self.root / "instances"
         self.instances.mkdir(parents=True)
 
-    def write_suite(self, suite_id, regime, problems, rows):
+    def write_suite(self, suite_id, regime, problems, rows, profile="nvidia-gpu"):
         self.benchmarks.mkdir(parents=True, exist_ok=True)
         stem = suite_id.split("/", 1)[1]
         (self.benchmarks / f"{stem}.yaml").write_text(
@@ -1375,12 +1384,12 @@ class ChartNotePerCaseTest(unittest.TestCase):
                 for problem in problems
             )
         )
-        suite_dir = self.result / "nvidia-gpu" / suite_id.split("/", 1)[0]
+        suite_dir = self.result / profile / suite_id.split("/", 1)[0]
         suite_dir.mkdir(parents=True)
         report = suite_dir / f"{stem}.md"
         report.write_text(f"# {suite_id}\n\nbody\n")
         report.with_suffix(".summary.json").write_text(
-            json.dumps(summary_document(rows, suite_id=suite_id))
+            json.dumps(summary_document(rows, suite_id=suite_id, profile=profile))
         )
 
     def generate(self):
@@ -1442,6 +1451,35 @@ class ChartNotePerCaseTest(unittest.TestCase):
         self.assertLessEqual(measured_y + 9, height)
         # And the case above it keeps its own single line.
         self.assertLess(next_case_y, fail_y)
+
+    def test_a_note_with_several_medians_stays_inside_the_chart(self):
+        # cpu/public_api declares the eager and trace arms while this row set is measured
+        # on four other backends: no arm matches, so the case has no bar and a note that
+        # has to name all four medians.
+        self.write_suite(
+            "cpu/public_api",
+            "throughput",
+            ("add_into_f64_32x32", "case_comparable"),
+            [
+                row("add_into_f64_32x32", "julia-base", 21.347),
+                row("add_into_f64_32x32", "pytorch-cpu", 21.431),
+                row("add_into_f64_32x32", "strided-jl", 67.0),
+                row("add_into_f64_32x32", "tenferro-direct", 21.511),
+                # A neighbour with a ratio, so this suite draws a chart (not a paragraph).
+                row("case_comparable", "tenferro-eager", 30.0),
+                row("case_comparable", "pytorch-cpu", 10.0),
+            ],
+            profile="mac-cpu",
+        )
+        chart = chart_svg((self.generate() / "cpu/index.html").read_text())
+        # A row's text cannot wrap, so every line it draws has to fit the viewport.
+        for text in re.findall(r'class="chart-(?:value|fail)">([^<]*)</text>', chart):
+            right = CHART_TEXT_START + CHART_PX_PER_CHAR * len(text)
+            self.assertLessEqual(right, CHART_TEXT_END, text)
+        # And it still names every median it was drawn from.
+        for backend in ("julia-base", "pytorch-cpu", "strided-jl", "tenferro-direct"):
+            self.assertIn(backend, chart)
+        self.assertIn("but no arm of it had a ratio against that baseline", chart)
 
     def test_a_case_whose_declared_references_both_failed_keeps_its_row(self):
         (self.instances / "gpu_perf_issues.json").write_text(
