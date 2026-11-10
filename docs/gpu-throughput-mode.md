@@ -49,10 +49,12 @@ are separate facts:
   `docs/regime-floors.md`, so their regime is `latency`: a 256² QR JVP costs
   1.43 ms per call while the factorisation it wraps costs tens of µs. They are
   published on the latency page, still timed with the deferred batch, and the
-  suite page says so. Its two 4096×4096 cases are over that floor, so they are
-  the suite's throughput rows; the retention budget bounds their K to 2 rather
-  than 64 (one 4096² output set is 128 MiB), and each row records its own
-  effective K.
+  suite page says so. Its 4096×4096 JVP case is over that floor, so it is the
+  suite's throughput row, and K stays at 64 there because a JVP row retains two
+  f64 scalars. The matching 4096 VJP is not in the suite: it retains a 128 MiB
+  gradient per run, so the 256 MiB retention budget pins K to 1, and a K=1 row
+  would only restate the per-call measurement that `gpu/linalg_jvp_vjp` already
+  publishes as a throughput row.
 
 Both regimes can therefore appear in one suite, and the page shows them in
 separate sections. What must not happen is a row joining the two: a K=2

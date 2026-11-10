@@ -11,11 +11,13 @@ description: >-
   document per-call framework overhead; they are never comparable with, or
   averaged together with, the per-call latency rows of `gpu/linalg_jvp_vjp` and
   `gpu/linalg_ad_latency`, which pay one retirement per call (tenferro-rs #2087).
-  The n=4096 cases are 16,777,216 elements, over that floor, so they are the
-  suite's throughput rows: the same amortization measured where the work, not the
-  retirement, dominates. K there is bounded by the 256 MiB output-retention
-  budget (one output set is 128 MiB), so a n=4096 sample amortizes two runs where
-  an n=256 sample amortizes 64; every row records its own effective K.
+  The n=4096 JVP case is 16,777,216 elements, over that floor, so it is the
+  suite's throughput row: the same amortization measured where the work, not the
+  retirement, dominates. Its output set is two f64 scalars, so K stays at 64.
+  The matching 4096 VJP is deliberately absent: it retains a 128 MiB gradient
+  per run, the 256 MiB retention budget pins its K to 1, and a K=1 row is the
+  per-call measurement that already exists in `gpu/linalg_jvp_vjp` -- where that
+  case is published as a throughput row. Every row records its own effective K.
 defaults:
   regime: throughput
   measure: deferred_batch
@@ -111,41 +113,9 @@ problems:
     QR JVP at n=4096 (16,777,216 elements, over the linalg_ad floor) when K
     deferred prepared runs share one retirement: the throughput counterpart of
     the n=256 row above, with the work rather than the retirement dominating.
-    One output set is 128 MiB, so the 256 MiB retention budget pins K to 2 here
-    instead of the default 64; the row records its own effective K and must not
-    be compared with an n=256 row.
-  dtype:
-    a: f64
-  layout:
-    tenferro: col_major
-    framework: row_major_contiguous
-  data:
-    generator: well_conditioned
-    seed: 26
-  linalg_ad:
-    suite: large
-    loss: grad_sum_qr
-    n: 4096
-    matrix_seed: 26
-  run:
-    warmups: 3
-    runs: 7
-    timing_scope: steady_state_host_api_plus_device_sync
-  verify:
-    reference: cpu_fp64
-    mode: finite_difference
-    rtol: 1.0e-05
-    atol: 1.0e-08
-  notes: shape=4096x4096
-- id: linalg_ad_large_grad_sum_qr_vjp_f64_4096
-  family: linalg_ad
-  op: vjp
-  regime: throughput
-  intent: >-
-    QR VJP at n=4096 (16,777,216 elements, over the linalg_ad floor) when K
-    deferred prepared runs share one retirement. One output set is 128 MiB, so
-    the 256 MiB retention budget pins K to 2 instead of the default 64; the row
-    records its own effective K and must not be compared with an n=256 row.
+    A JVP row retains two f64 scalars (16 bytes), so the 256 MiB retention
+    budget leaves K at the default 64; the row records its own effective K and
+    must not be compared with an n=256 row.
   dtype:
     a: f64
   layout:

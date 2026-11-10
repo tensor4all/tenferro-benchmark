@@ -217,6 +217,30 @@ class RegimeSectionTest(unittest.TestCase):
         self.assertNotIn("`4096x4096`", latency_section)
         self.assertIn("not GPU throughput", latency_section)
 
+    def test_a_case_the_manifest_does_not_place_is_refused(self):
+        # Classifying an undeclared case by omission would put a compute-bound
+        # number in the latency table; the page refuses instead.
+        import json
+        import tempfile
+        from pathlib import Path
+        from format_gpu_linalg_ad_results import format_markdown
+
+        latency = "linalg_ad_large_grad_sum_qr_jvp_f64_256"
+        throughput = "linalg_ad_large_grad_sum_qr_jvp_f64_4096"
+        with tempfile.TemporaryDirectory() as tmp:
+            suite_file = Path(tmp) / "suite.yaml"
+            suite_file.write_text(json.dumps({
+                "suite_id": "gpu/linalg_jvp_vjp",
+                "backends": ["pytorch-cuda"],
+                "problems": [
+                    {"id": latency, "regime": "latency"},
+                    {"id": throughput},
+                ],
+            }))
+            metadata = {"suite_id": "gpu/linalg_jvp_vjp", "suite_file": str(suite_file)}
+            with self.assertRaisesRegex(ValueError, "cannot place these AD cases"):
+                format_markdown([self.record(latency), self.record(throughput)], metadata)
+
     def test_a_single_regime_suite_keeps_its_single_table(self):
         import json
         import tempfile

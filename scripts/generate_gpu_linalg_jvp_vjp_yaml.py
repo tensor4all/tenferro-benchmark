@@ -71,8 +71,10 @@ def verify_block(loss: str, n: int) -> dict:
     """The check that backs this row, and why it is not the strongest one.
 
     A row that cannot afford `cpu_reference` is not left unchecked and is not
-    silently marked verified: it names the check that actually ran, and every
-    mode is compared against every output element at the suite's tolerances.
+    silently marked verified: it names the check that actually ran. `analytic`
+    compares every output element; `finite_difference` compares the primal and
+    one projection of the derivative, and says so in its record. Both are judged
+    at the suite's own tolerances.
     """
     block = {"reference": "cpu_fp64", "rtol": 1.0e-5, "atol": 1.0e-8}
     if n * n <= CPU_REFERENCE_MAX_ELEMENTS:

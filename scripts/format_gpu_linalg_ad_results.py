@@ -106,16 +106,20 @@ def suite_regimes(run_metadata: dict[str, Any] | None) -> dict[str, str]:
     A record carries no regime: the case declares its working class in the
     manifest, which is the same file the validator and the dashboard read. A
     suite that holds both classes is published in two sections, because a
-    throughput row and a latency row are different measurements.
+    throughput row and a latency row are different measurements. A routine run
+    records the path of its own selection snapshot, so the split follows the
+    manifest the run was collected from rather than a later edit of the suite.
     """
     if not run_metadata or not run_metadata.get("suite_file"):
         return {}
     document = yaml.safe_load(Path(run_metadata["suite_file"]).read_text()) or {}
     default = (document.get("defaults") or {}).get("regime")
+    # A case that declares no regime (and inherits none) is left out on
+    # purpose: the caller refuses to guess which section it belongs to.
     return {
         problem["id"]: problem.get("regime") or default
         for problem in document.get("problems") or []
-        if problem.get("id")
+        if problem.get("id") and (problem.get("regime") or default)
     }
 
 
@@ -317,8 +321,16 @@ def format_markdown(
     keys = sorted(by_key)
     sections: list[tuple[str | None, list[tuple[str, str, str, str]]]] = [(None, keys)]
     if regimes:
-        throughput = [key for key in keys if regimes.get(case_of[key]) == "throughput"]
-        latency = [key for key in keys if regimes.get(case_of[key]) != "throughput"]
+        # Fail closed: a case the suite file does not place in a regime is a
+        # broken manifest, not a latency row. Classifying it by omission would
+        # put a compute-bound number in the latency table.
+        undeclared = sorted({case_of[key] for key in keys if case_of[key] not in regimes})
+        if undeclared:
+            raise ValueError(
+                "cannot place these AD cases in a regime: " + ", ".join(undeclared)
+            )
+        throughput = [key for key in keys if regimes[case_of[key]] == "throughput"]
+        latency = [key for key in keys if regimes[case_of[key]] != "throughput"]
         if throughput and latency:
             sections = [("Throughput regime", throughput), ("Latency regime", latency)]
     for title, section_keys in sections:
