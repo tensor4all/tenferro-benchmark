@@ -12,6 +12,10 @@ run name (`[purpose=... target=...]`), so the counters are read back from the
 runs themselves instead of a second store. Only manual dispatches are counted:
 a scheduled slot is not a dispatch, and a slot that skipped never rented a GPU.
 A week that already spent the budget refuses the scheduled slot too.
+
+Every count is scoped to the branch the run belongs to. A dispatch from a
+feature branch is a record of the same workflow in the same window, and it must
+not spend main's weekly budget; it still spends its own branch's cap.
 """
 from __future__ import annotations
 
@@ -24,6 +28,9 @@ from datetime import datetime, timedelta, timezone
 
 # Saturday 00:00 UTC opens the weekly window; the retry slots fall inside it.
 WEEK_START_WEEKDAY = 5
+
+# The branch a run is dispatched from (the schedule runs on the default branch).
+MAIN_BRANCH = 'main'
 
 # A100 hours are the scarce resource. The shared cap stops us retrying a weekly
 # collection; `verify` runs are counted separately because batching two fixes
@@ -54,8 +61,8 @@ def purpose_of(run: dict) -> str:
 
 
 def week_runs(runs: list[dict], now: datetime, current_run_id: str,
-              predecessors_only: bool = True) -> list[dict]:
-    """This week's other runs.
+              branch: str = MAIN_BRANCH, predecessors_only: bool = True) -> list[dict]:
+    """This week's other runs on `branch`.
 
     `predecessors_only` ignores queued successors: a later run cannot have rented a
     GPU before this one did, and counting them would make a dispatch refuse itself
@@ -65,16 +72,17 @@ def week_runs(runs: list[dict], now: datetime, current_run_id: str,
     start = week_start(now)
     return [run for run in runs
             if str(run['databaseId']) != current_run_id
+            and run.get('headBranch') == branch
             and (not predecessors_only or int(run['databaseId']) < int(current_run_id))
             and datetime.fromisoformat(run['createdAt'].replace('Z', '+00:00')) >= start]
 
 
 def count_purposes(runs: list[dict], now: datetime, current_run_id: str,
-                   predecessors_only: bool = True) -> dict[str, int]:
+                   branch: str = MAIN_BRANCH, predecessors_only: bool = True) -> dict[str, int]:
     counts = dict.fromkeys(PURPOSES, 0)
     # Scheduled slots have their own gate: a slot that skipped never rented a GPU,
     # and counting the weekend's four slots would spend the cap on a normal week.
-    for run in week_runs(runs, now, current_run_id, predecessors_only):
+    for run in week_runs(runs, now, current_run_id, branch, predecessors_only):
         if run.get('event') != 'schedule':
             counts[purpose_of(run)] += 1
     return counts
@@ -117,14 +125,19 @@ def rerun_refusal(event: str, run_attempt: int) -> str | None:
 
 
 def already_collected(runs: list[dict], now: datetime, current_run_id: str,
-                      predecessors_only: bool = True) -> bool:
+                      branch: str = MAIN_BRANCH) -> bool:
     """Whether a scheduled run already provided this week's results.
 
     Only a *scheduled* success satisfies the week. A `verify` run checks a fix
     and never counts as a collected week, because that reading is the one that
     hides a missed collection.
+
+    The whole window is asked, not the predecessors: the concurrency group
+    serializes the weekend slots but does not order them by run id, so a later
+    slot can finish the collection first, and skipping only the run ids below
+    this one would rent a second pod for a week that is already collected.
     """
-    for run in week_runs(runs, now, current_run_id, predecessors_only):
+    for run in week_runs(runs, now, current_run_id, branch, predecessors_only=False):
         if run.get('event') == 'schedule' and run.get('conclusion') == 'success' \
                 and purpose_of(run) != 'verify':
             return True
@@ -145,20 +158,24 @@ def main() -> None:
     parser.add_argument('--event', required=True)
     parser.add_argument('--run-id', required=True)
     parser.add_argument('--run-attempt', type=int, default=1, help='github.run_attempt; a re-run is refused')
+    parser.add_argument('--branch', default=MAIN_BRANCH,
+                        help='the branch this run belongs to; each branch has its own budget')
     parser.add_argument('--purpose', default='', help='weekly|backfill|verify; anything else counts as weekly')
     parser.add_argument('--target', default='', help='<repo>#<n> this run verifies, required for verify')
     args = parser.parse_args()
     purpose = normalize_purpose(args.purpose)
     now = datetime.now(timezone.utc)
-    # The created filter bounds the window on the server; WINDOW_LIMIT is the point
-    # where the counters stop being trustworthy.
+    # The created filter bounds the window on the server, and --branch keeps another
+    # branch's runs from eating the 100-run limit; WINDOW_LIMIT is the point where
+    # the counters stop being trustworthy.
     runs = json.loads(subprocess.check_output([
         'gh', 'run', 'list', '--repo', args.repository, '--workflow', 'benchmark-runpod-gpu.yml',
+        '--branch', args.branch,
         '--created', f'>={week_start(now).strftime("%Y-%m-%d")}', '--limit', str(WINDOW_LIMIT),
-        '--json', 'databaseId,createdAt,event,conclusion,displayTitle',
+        '--json', 'databaseId,createdAt,event,conclusion,displayTitle,headBranch',
     ], text=True))
     predecessors_only = args.run_attempt == 1
-    counts = count_purposes(runs, now, args.run_id, predecessors_only)
+    counts = count_purposes(runs, now, args.run_id, args.branch, predecessors_only)
     report = budget_report(counts)
     print(f'Dispatch budget this week: {report}')
     note(f'purpose={purpose} target={args.target or "-"}: {report}')
@@ -170,7 +187,7 @@ def main() -> None:
         raise SystemExit(1)
     proceed = True
     if args.event == 'schedule':
-        proceed = not already_collected(runs, now, args.run_id, predecessors_only)
+        proceed = not already_collected(runs, now, args.run_id, args.branch)
         print('This week already has successful GPU results; skipping.' if not proceed
               else 'No successful GPU run this week yet; collecting.')
     output = os.environ.get('GITHUB_OUTPUT')

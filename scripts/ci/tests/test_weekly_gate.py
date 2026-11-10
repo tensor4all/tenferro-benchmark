@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from contextlib import redirect_stdout
 from datetime import datetime, timedelta, timezone
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from scripts.ci import weekly_gate
 from scripts.ci.weekly_gate import (already_collected, budget_report, count_purposes,
@@ -30,12 +30,13 @@ def read(path):
         return handle.read()
 
 
-def gpu_run(run_id, created, purpose='', event='workflow_dispatch', conclusion='success'):
+def gpu_run(run_id, created, purpose='', event='workflow_dispatch', conclusion='success',
+            branch='main'):
     title = 'RunPod GPU benchmark'
     if purpose:
         title += f' [purpose={purpose} target=SpM-lab/tenferro-rs#1]'
     return {'databaseId': run_id, 'createdAt': created, 'event': event,
-            'conclusion': conclusion, 'displayTitle': title}
+            'conclusion': conclusion, 'displayTitle': title, 'headBranch': branch}
 
 
 class WeeklyGateTests(unittest.TestCase):
@@ -46,14 +47,17 @@ class WeeklyGateTests(unittest.TestCase):
 
     def test_success_this_week_skips_later_slots(self):
         runs = [{'databaseId': 1, 'createdAt': '2026-10-17T08:00:05Z', 'event': 'schedule',
-                 'conclusion': 'success', 'displayTitle': 'RunPod GPU benchmark [purpose=weekly target=-]'}]
+                 'conclusion': 'success', 'headBranch': 'main',
+                 'displayTitle': 'RunPod GPU benchmark [purpose=weekly target=-]'}]
         self.assertTrue(already_collected(runs, at('2026-10-18T08:00:00'), '2'))
 
     def test_last_week_or_own_run_does_not_count(self):
         runs = [{'databaseId': 1, 'createdAt': '2026-10-11T08:00:05Z', 'event': 'schedule',
-                 'conclusion': 'success', 'displayTitle': 'RunPod GPU benchmark'},
+                 'conclusion': 'success', 'headBranch': 'main',
+                 'displayTitle': 'RunPod GPU benchmark'},
                 {'databaseId': 2, 'createdAt': '2026-10-17T14:00:05Z', 'event': 'schedule',
-                 'conclusion': 'success', 'displayTitle': 'RunPod GPU benchmark'}]
+                 'conclusion': 'success', 'headBranch': 'main',
+                 'displayTitle': 'RunPod GPU benchmark'}]
         self.assertFalse(already_collected(runs, at('2026-10-17T14:00:30'), '2'))
 
     def test_a_week_of_verifications_is_not_a_collected_week(self):
@@ -112,13 +116,14 @@ class PurposeTests(unittest.TestCase):
 
 
 class GateMainTests(unittest.TestCase):
-    def run_gate(self, runs, purpose='', target='', event='workflow_dispatch', run_attempt='1'):
+    def run_gate(self, runs, purpose='', target='', event='workflow_dispatch', run_attempt='1',
+                 branch='main'):
         with tempfile.TemporaryDirectory() as tmp:
             paths = {'output': os.path.join(tmp, 'output'), 'summary': os.path.join(tmp, 'summary')}
             environment = {'GITHUB_OUTPUT': paths['output'], 'GITHUB_STEP_SUMMARY': paths['summary']}
             argv = ['weekly_gate', '--repository', 'tensor4all/tenferro-benchmark',
                     '--event', event, '--run-id', '99', '--run-attempt', run_attempt,
-                    '--purpose', purpose, '--target', target]
+                    '--branch', branch, '--purpose', purpose, '--target', target]
             buffer = io.StringIO()
             with patch.object(sys, 'argv', argv), patch.dict(os.environ, environment), \
                     patch.object(weekly_gate.subprocess, 'check_output', return_value=json.dumps(runs)), \
@@ -202,6 +207,60 @@ class GateMainTests(unittest.TestCase):
 
     def test_the_schedule_still_skips_a_collected_week(self):
         runs = [gpu_run(2, this_week(1), event='schedule')]
+        code, stdout, output, _ = self.run_gate(runs, event='schedule')
+        self.assertEqual(code, 0)
+        self.assertIn('This week already has successful GPU results; skipping.', stdout)
+        self.assertIn('proceed=false', output)
+
+    def test_a_development_branch_record_does_not_spend_mains_budget(self):
+        # A dispatch from a feature branch records the same workflow in the same
+        # weekly window. main's scheduled slot must not read that spending as its
+        # own and refuse itself; the counters it prints must be main's too.
+        runs = [gpu_run(1 + index, this_week(1 + index), 'weekly', branch='feat/perf-probe')
+                for index in range(3)] + [gpu_run(10, this_week(6), 'weekly')]
+        code, stdout, output, summary = self.run_gate(runs, purpose='weekly')
+        self.assertEqual(code, 0)
+        self.assertIn('Dispatch budget this week: weekly 1/3, verify 0/6', stdout)
+        self.assertIn('weekly 1/3, verify 0/6', summary)
+        self.assertIn('proceed=true', output)
+
+    def test_a_development_branch_success_is_not_a_collected_week(self):
+        runs = [gpu_run(1, this_week(1), event='schedule', branch='feat/perf-probe')]
+        code, stdout, output, _ = self.run_gate(runs, event='schedule')
+        self.assertEqual(code, 0)
+        self.assertIn('No successful GPU run this week yet; collecting.', stdout)
+        self.assertIn('proceed=true', output)
+
+    def test_a_feature_branch_counts_only_its_own_dispatches(self):
+        # Per-branch scoping is not an exemption: a fix verified from a branch still
+        # spends that branch's cap, while main's records do not enter its counters.
+        runs = [gpu_run(1, this_week(1), 'weekly'),
+                gpu_run(2, this_week(2), 'verify', branch='feat/perf-probe'),
+                gpu_run(3, this_week(3), 'verify', branch='feat/perf-probe')]
+        code, stdout, _, _ = self.run_gate(runs, purpose='verify', target='SpM-lab/tenferro-rs#1',
+                                           branch='feat/perf-probe')
+        self.assertEqual(code, 0)
+        self.assertIn('Dispatch budget this week: weekly 0/3, verify 2/6', stdout)
+
+    def test_the_history_query_is_bounded_to_the_branch_and_carries_its_field(self):
+        # The window is bounded to this branch on the server: another branch's runs
+        # in the 100-run limit would fail main closed while it spent nothing.
+        call = MagicMock(return_value='[]')
+        argv = ['weekly_gate', '--repository', 'tensor4all/tenferro-benchmark',
+                '--event', 'workflow_dispatch', '--run-id', '99', '--branch', 'feat/perf-probe']
+        with patch.object(sys, 'argv', argv), patch.dict(os.environ, {}, clear=True), \
+                patch.object(weekly_gate.subprocess, 'check_output', call), \
+                redirect_stdout(io.StringIO()):
+            weekly_gate.main()
+        query = call.call_args.args[0]
+        self.assertEqual(query[query.index('--branch') + 1], 'feat/perf-probe')
+        self.assertIn('headBranch', query[query.index('--json') + 1])
+
+    def test_a_later_slot_that_already_collected_is_not_re_rented(self):
+        # The concurrency group serializes the weekend slots but does not order them
+        # by run id, so a later slot can finish the collection first. Counting only
+        # predecessors would rent a second pod for a week that is already collected.
+        runs = [gpu_run(500, this_week(2), event='schedule')]
         code, stdout, output, _ = self.run_gate(runs, event='schedule')
         self.assertEqual(code, 0)
         self.assertIn('This week already has successful GPU results; skipping.', stdout)

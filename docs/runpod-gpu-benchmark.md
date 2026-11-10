@@ -81,7 +81,9 @@ with no marker counts as `weekly`, the strict direction.
 
 The budget counts manual dispatches. A scheduled slot is not a dispatch, and a
 slot that skipped never rented a GPU, so the weekend retries do not spend the
-budget. A week whose dispatches already spent it refuses the slots too.
+budget. A week whose dispatches already spent it refuses the slots too. Counters
+are per branch: a dispatch from a feature branch spends that branch's budget and
+never refuses main's scheduled slot.
 
 `scripts/ci/weekly_gate.py` runs before anything is rented and again immediately
 before the pod is created (so a re-run of a scheduled slot cannot rent either),

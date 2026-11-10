@@ -116,7 +116,8 @@ jobs:
         run: >-
           python3 -m scripts.ci.weekly_gate
           --repository "$GITHUB_REPOSITORY" --event "$GITHUB_EVENT_NAME" --run-id "$GITHUB_RUN_ID"
-          --run-attempt "$RUN_ATTEMPT" --purpose "$PURPOSE" --target "$TARGET"
+          --run-attempt "$RUN_ATTEMPT" --branch "$GITHUB_REF_NAME"
+          --purpose "$PURPOSE" --target "$TARGET"
 
   prepare-benchmark:
     name: Build GPU benchmark before renting GPU
@@ -332,6 +333,11 @@ jobs:
     if: ${{ !inputs.prepare_only && (github.event_name == 'schedule' || github.run_attempt == 1) }}
     needs: [prepare-benchmark, prepare-environment]
     runs-on: ubuntu-latest
+    # The re-check below calls `gh run list`, which needs actions: read. Granting it
+    # here keeps the workflow default (contents: read) for every other job.
+    permissions:
+      contents: read
+      actions: read
     # Must outlive the pod: the pod's own watchdog deletes it after POD_MAX_LIFETIME_SECONDS, so the
     # runner's timeout is the backstop and has to be the *larger* of the two. A runner timeout below
     # the watchdog kills the job while the pod is still alive and still billing.
@@ -357,7 +363,8 @@ jobs:
           set -euo pipefail
           python3 -m scripts.ci.weekly_gate \
             --repository "$GITHUB_REPOSITORY" --event "$GITHUB_EVENT_NAME" --run-id "$GITHUB_RUN_ID" \
-            --run-attempt "$RUN_ATTEMPT" --purpose "$PURPOSE" --target "$TARGET"
+            --run-attempt "$RUN_ATTEMPT" --branch "$GITHUB_REF_NAME" \
+            --purpose "$PURPOSE" --target "$TARGET"
           grep -qx 'proceed=true' "$GITHUB_OUTPUT"
 
       - name: Create GitHub App token

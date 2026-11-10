@@ -117,8 +117,8 @@ class PartialWorkflowTest(unittest.TestCase):
         self.assertEqual(gate['env']['PURPOSE'], '${{ inputs.purpose }}')
         self.assertEqual(gate['env']['TARGET'], '${{ inputs.target }}')
         self.assertEqual(gate['env']['RUN_ATTEMPT'], '${{ github.run_attempt }}')
-        self.assertIn('--run-attempt "$RUN_ATTEMPT" --purpose "$PURPOSE" --target "$TARGET"',
-                      gate['run'])
+        self.assertIn('--run-attempt "$RUN_ATTEMPT" --branch "$GITHUB_REF_NAME" '
+                      '--purpose "$PURPOSE" --target "$TARGET"', gate['run'])
         # A dispatch re-run repeats a dispatch that is already counted, so the
         # renting job refuses it before it can rent; a scheduled slot retries itself.
         self.assertIn("github.event_name == 'schedule' || github.run_attempt == 1",
@@ -128,7 +128,21 @@ class PartialWorkflowTest(unittest.TestCase):
         recheck = next(step for step in workflow['jobs']['start-runpod']['steps']
                        if step.get('name') == 'Re-check the dispatch budget before renting')
         self.assertIn('--purpose "$PURPOSE" --target "$TARGET"', recheck['run'])
+        self.assertIn('--branch "$GITHUB_REF_NAME"', recheck['run'])
         self.assertIn("grep -qx 'proceed=true' \"$GITHUB_OUTPUT\"", recheck['run'])
+
+    def test_only_the_jobs_that_read_run_history_may_do_so(self):
+        # The workflow grants contents: read. Reading the run history for the budget
+        # needs actions: read, so the two jobs that call `gh run list` grant it
+        # themselves and every other job stays at the workflow default.
+        workflow = self.workflow('benchmark-runpod-gpu')
+        self.assertEqual(workflow['permissions'], {'contents': 'read'})
+        granted = sorted(name for name, job in workflow['jobs'].items()
+                         if 'actions' in (job.get('permissions') or {}))
+        self.assertEqual(granted, ['start-runpod', 'weekly-gate'])
+        for job in granted:
+            self.assertEqual(workflow['jobs'][job]['permissions']['actions'], 'read')
+            self.assertEqual(workflow['jobs'][job]['permissions']['contents'], 'read')
 
     def test_ingest_if_admits_only_success_failure_and_preserves_trust_conditions(self):
         condition=self.workflow('ingest-results')['jobs']['ingest']['if']
