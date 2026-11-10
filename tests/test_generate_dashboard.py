@@ -1412,9 +1412,17 @@ class ChartNotePerCaseTest(unittest.TestCase):
             ],
         )
         chart = chart_svg((self.generate() / "gpu/index.html").read_text())
-        # The comparable case draws its bar...
+        # The comparable case keeps the comparison it earned: exactly one bar, filled
+        # as a tenferro bar, carrying both medians, and the ratio it is drawn at.
+        bars = re.findall(r'<rect\b[^>]*class="bar-[^"]*"[^>]*>', chart)
+        self.assertEqual(len(bars), 1, chart)
+        self.assertIn('class="bar-tenferro"', bars[0])
+        self.assertGreater(float(re.search(r'width="([\d.]+)"', bars[0]).group(1)), 0.0)
+        self.assertIn("<title>eager: median 30.000 ms vs PyTorch median 10.000 ms</title>", chart)
+        self.assertIn('class="chart-value">eager 3.00x · 30 / 10 ms</text>', chart)
         self.assertIn('class="chart-label">case_comparable', chart)
-        # ...and the neighbour beside it still says what it measured.
+        # ...and the neighbour beside it still says what it measured, with no bar:
+        # nothing was measured on the other side of it.
         self.assertIn('class="chart-label">case_ok', chart)
         self.assertIn("20.000 ms", chart)
         self.assertIn("CUDA OOM", chart)
