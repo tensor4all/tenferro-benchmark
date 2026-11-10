@@ -52,7 +52,7 @@ class LinalgAdBackendColumns(unittest.TestCase):
         path = write_csv([row("tenferro-trace", "11.0"), row("pytorch-cpu", "2.0")])
         table = fmt.format_table(path)
         self.assertIn("tenferro-rs trace mode (ms)", table)
-        self.assertNotIn("tenferro-rs eager mode (ms)", table)
+        self.assertNotIn("tenferro-rs eager per call", table)
 
     def test_eager_rows_are_rendered_not_dropped(self):
         path = write_csv(
@@ -63,13 +63,25 @@ class LinalgAdBackendColumns(unittest.TestCase):
             ]
         )
         table = fmt.format_table(path)
-        self.assertIn("tenferro-rs eager mode (ms)", table)
+        self.assertIn("tenferro-rs eager per call, incl. AD prepare (ms)", table)
         self.assertIn("| 3.000 ± 0.100 |", table)
 
     def test_an_unknown_backend_keeps_its_column(self):
         path = write_csv([row("tenferro-trace", "11.0"), row("some-new-ref", "4.0")])
         table = fmt.format_table(path)
         self.assertIn("some-new-ref", table)
+
+    def test_the_eager_column_states_what_it_includes(self):
+        # The two tenferro arms time the same work but prepare differently: the
+        # eager API pays its own AD preparation inside the sample and the trace
+        # arm prepares before sampling. A reader who takes the two columns as
+        # the same measurement is wrong, so the page has to say so.
+        page = fmt.format_table(write_csv([row("tenferro-eager", "3.0"),
+                                           row("tenferro-trace", "11.0")]))
+        self.assertIn("Both tenferro arms return the same requested outputs", page)
+        self.assertIn("carries the eager API's own AD", page)
+        self.assertIn("prepared-program steady state", page)
+        self.assertIn("not a like-for-like difference", page)
 
     def test_declared_order_is_kept_then_extras_sorted(self):
         self.assertEqual(
