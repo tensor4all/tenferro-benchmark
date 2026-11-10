@@ -197,7 +197,8 @@ def unit(record: dict) -> str:
 
 
 def arm_set(record: dict) -> list[str]:
-    return sorted({str(row.get('backend')) for row in record['rows'] if isinstance(row, dict)})
+    rows = record.get('rows') if isinstance(record.get('rows'), list) else []
+    return sorted({str(row.get('backend')) for row in rows if isinstance(row, dict)})
 
 
 def refusals(candidate: dict, baseline: dict) -> list[str]:
@@ -275,8 +276,8 @@ def row_problems(row: dict) -> list[str]:
     if row.get('iqr') is not None and not finite_non_negative(row['iqr']):
         out.append('IQR is not finite and non-negative')
     mode = row.get('verification')
-    if mode is not None and mode not in ('cpu_reference', 'analytic', 'finite_difference',
-                                         'measure_only'):
+    modes = ('cpu_reference', 'analytic', 'finite_difference', 'measure_only')
+    if 'verification' in row and mode not in modes:
         out.append(f'verification {mode} is not a recorded mode')
     if row.get('verification') == 'measure_only':
         if row.get('verified') is not False:

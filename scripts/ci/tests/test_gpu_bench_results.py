@@ -247,6 +247,28 @@ class BaselineTests(unittest.TestCase):
         self.assertIn("verification made_up is not a recorded mode", text)
         self.assertEqual(status(result), 1)
 
+    def test_a_record_without_a_row_array_is_refused_and_printed(self):
+        # The refusal was computed, but render() walked the rows to state the arm
+        # set first, so the CLI died before printing it.
+        baseline, candidate = record(WEEK_44, COMMIT_A), record(WEEK_45_LATE, COMMIT_B)
+        candidate["rows"] = None
+        result = compare(candidate, baseline, 1.2)
+        text = render(result)
+        self.assertIn("candidate rows is not an array", text)
+        self.assertEqual(status(result), 1)
+
+    def test_an_explicit_null_verification_is_refused(self):
+        # The schema allows an absent verification mode, not a null one, so the
+        # two cases cannot share the same guard.
+        baseline, candidate = record(WEEK_44, COMMIT_A), record(WEEK_45_LATE, COMMIT_B)
+        candidate["rows"][0].update(median=10.0, verification=None)
+        result = compare(candidate, baseline, 1.2)
+        text = render(result)
+        self.assertEqual(result["rows"], [])
+        self.assertNotIn("10.00x", text)
+        self.assertIn("verification None is not a recorded mode", text)
+        self.assertEqual(status(result), 1)
+
     def test_a_measure_only_row_cannot_be_verified(self):
         # The schema requires verified=false for measure_only and the driver
         # validates that schema, so this row is refused instead of compared.
