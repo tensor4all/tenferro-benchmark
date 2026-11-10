@@ -158,8 +158,28 @@ def wait_for_checks(commit: str, names: set[str], timeout=40 * 60, interval=30):
         time.sleep(interval)
 
 
+class _PendingMerge:
+    """A 405 merge was accepted by GitHub but its commit is not visible here yet."""
+
+    def __repr__(self):
+        return 'MERGE_PENDING'
+
+
+MERGE_PENDING = _PendingMerge()
+
+# A 405 means GitHub already accepted a merge for this pull request; it only
+# needs time to become visible. Polling is bounded because the ingest job must
+# not sit on a merge that lands on its own: the 2026-11 incident took >13 min,
+# so the budget is 60 s and an invisible merge is reported as pending instead.
+MERGE_POLL_DELAYS = (2, 4, 8, 16, 30)
+
+
 def merge_through_pull_request(branch: str, commit: str, title: str):
-    """Merge the exact result commit through a PR; None means main moved and a replay is needed."""
+    """Merge the exact result commit through a PR.
+
+    None means main moved and a replay is needed; MERGE_PENDING means a 405
+    merge is landing without us and the publication request must still go out.
+    """
     owner = REPOSITORY.split('/')[0]
     found = json.loads(gh_pull_request(f'repos/{REPOSITORY}/pulls?head={owner}:{branch}&state=open').stdout)
     if found:
@@ -178,17 +198,28 @@ def merge_through_pull_request(branch: str, commit: str, title: str):
     if merged.returncode == 0:
         return json.loads(merged.stdout)['sha']
     # A 405 "Merge already in progress" means the required-checks auto-merge won
-    # the race against this call. It can report before the merge is visible on
-    # the pull request, so re-read the state a few times before giving up.
+    # the race against this call. GitHub has accepted that merge, so it lands
+    # whether or not this job sees it: re-read the state within a bounded budget
+    # and treat an invisible merge as pending, never as a failure.
     racing = 'Merge already in progress' in merged.stderr
-    for attempt in range(5 if racing else 1):
+    for attempt in range(1 + len(MERGE_POLL_DELAYS) if racing else 1):
         if attempt:
-            time.sleep(2)
+            time.sleep(MERGE_POLL_DELAYS[attempt - 1])
         state = json.loads(gh_pull_request(f'repos/{REPOSITORY}/pulls/{number}').stdout)
         if state.get('merged'):
             return state['merge_commit_sha']
         if not racing and not state.get('mergeable'):
             return None
+    if racing:
+        pending = (f'Merge pending: pull request #{number} answered 405 "Merge already in progress" '
+                   f'and was still not visible as merged after {sum(MERGE_POLL_DELAYS)}s of polling. '
+                   'The merge lands on its own; publishing is requested anyway and the next '
+                   'ingest re-sends it.')
+        print(pending)
+        if os.environ.get('GITHUB_STEP_SUMMARY'):
+            with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as output:
+                output.write('## Benchmark ingestion\n\n' + pending + '\n')
+        return MERGE_PENDING
     raise RuntimeError(f'Could not merge result pull request #{number}: {merged.stderr.strip()}')
 
 
@@ -233,6 +264,11 @@ def commit_results(root: Path, validated, source: dict, attempts=3):
         commit = git(root, 'rev-parse', 'HEAD').stdout.strip()
         git(root, 'push', '--force', 'origin', f'HEAD:refs/heads/{branch}')
         merged = merge_through_pull_request(branch, commit, title)
+        if merged is MERGE_PENDING:
+            # The merge is landing on its own. Replaying would race it and
+            # failing would skip request_publication(), so stop here and report
+            # no visible commit.
+            return decisions, None
         if merged:
             return decisions, merged
         # Only discard our own generated tracked result changes in this
