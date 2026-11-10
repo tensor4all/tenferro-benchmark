@@ -20,7 +20,8 @@ did not record as a measurement.  A row that only one of the two runs recorded
 at all is named as well, so a case that vanished from a week is not read as no
 change; when the run that recorded it measured it, that lost coverage exits 1.
 A row one run measured and the other recorded as a run failure rather than a
-skip is lost coverage for the same reason and exits 1 too.
+skip is lost coverage for the same reason and exits 1 too, and so is a recorded
+failure whose counterpart measured it, failed it as well, or never recorded it.
 A record the driver would reject as a whole (a repeated identity, an
 identity field that is not a string, a median that is not a finite non-negative
 number, a measure_only row marked verified) refuses the comparison by name rather
@@ -448,12 +449,13 @@ def slower_rows(baseline: dict, candidate: dict, threshold: float) -> dict:
             continue
         dropped = [(side, (row or {}).get('status'))
                    for side, row, other in (('baseline', left, right), ('candidate', right, left))
-                   if row is not None and not measured(row) and other is not None and measured(other)]
+                   if row is not None and other is not None and not measured(row)]
         if dropped:
-            # The identity is a measurement on one side and a non-`ok` row on the
-            # other, so there is no ratio; naming it is the diagnostic.  A side
-            # that recorded a run failure, unlike a recorded skip, lost the
-            # measurement the other run has.
+            # Both runs recorded the identity and at least one of them recorded no
+            # measurement, so there is no ratio; naming it is the diagnostic.  A
+            # run failure, unlike a recorded skip, is a measurement the pair does
+            # not cover - named here whether the other side measured it, failed it
+            # as well, or is absent (the branch below).
             not_ok.append({'case': key[0], 'group': key[1], 'backend': key[2],
                            'notes': [f'{side} status {status}' for side, status in dropped],
                            'failed': any(status in FAILED_STATUSES for _, status in dropped)})
@@ -463,9 +465,10 @@ def slower_rows(baseline: dict, candidate: dict, threshold: float) -> dict:
             # earlier week measured and this week's run did not record is lost
             # coverage: it used to leave the table empty with no diagnostic.
             side, row = ('baseline', left) if right is None else ('candidate', right)
+            status = row.get('status')
             absent.append({'case': key[0], 'group': key[1], 'backend': key[2],
-                           'side': side, 'status': row.get('status'),
-                           'median': row.get('median')})
+                           'side': side, 'status': status, 'median': row.get('median'),
+                           'failed': status in FAILED_STATUSES})
             continue
         if not (measured(left) and measured(right)):
             continue
@@ -588,12 +591,12 @@ def status(result: dict) -> int:
     # An identity only one run recorded is lost coverage when that run measured
     # it: the table still prints the rows both runs share, but it no longer
     # covers the run, so a disappeared measurement cannot read as exit 0.  A
-    # one-sided `skipped` row measured nothing on either side and keeps 0.  The
-    # same holds when one run measured an identity and the other recorded a run
-    # failure there (`runtime_failed`, `oom`, ...): that failure is a measurement
-    # the pair does not cover, and reading it as a successful comparison reports
-    # a broken benchmark as a passing week.
-    lost = (any(measured(row) for row in result['absent'])
+    # one-sided `skipped` row measured nothing on either side and keeps 0.  A
+    # recorded run failure (`runtime_failed`, `oom`, ...) is lost coverage on its
+    # own, whether the other run measured that identity, failed it as well or
+    # never recorded it: reading it as a successful comparison reports a broken
+    # benchmark as a passing week.
+    lost = (any(measured(row) or row['failed'] for row in result['absent'])
             or any(row['failed'] for row in result['not_ok']))
     return 0 if (result['baseline'] is not None and not result['refusals']
                  and not result['invalid'] and not lost) else 1

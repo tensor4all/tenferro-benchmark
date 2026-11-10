@@ -221,20 +221,32 @@ class BaselineTests(unittest.TestCase):
         self.assertEqual(status(result), 0)
 
     def test_a_recorded_run_failure_is_not_a_successful_comparison(self):
-        # The candidate recorded a run failure where the baseline measured, so no
-        # row was compared and the table printed (none) with exit 0: a broken
-        # benchmark read as a passing week.
-        baseline, candidate = record(WEEK_44, COMMIT_A), record(WEEK_45_LATE, COMMIT_B)
-        candidate['rows'][0] = {'case': 'dense_matmul', 'group': 'matmul',
-                                'backend': 'tenferro-cuda-eager', 'status': 'runtime_failed',
-                                'reason': 'kernel crashed', 'median': None, 'iqr': None,
-                                'verified': False}
-        result = compare(candidate, baseline, 1.2, request=('nvidia-gpu', 'gpu/dense'))
-        text = render(result)
-        self.assertEqual(result['rows'], [])
-        self.assertIn('dense_matmul/matmul/tenferro-cuda-eager (candidate status runtime_failed)',
-                      text)
-        self.assertEqual(status(result), 1)
+        # A run failure is not a measurement the pair covers, whether the other
+        # run measured the identity, failed it as well, or never recorded it: the
+        # table printed the row (or (none)) and still exited 0.
+        failure = {'case': 'dense_matmul', 'group': 'matmul', 'backend': 'tenferro-cuda-eager',
+                   'status': 'runtime_failed', 'reason': 'kernel crashed', 'median': None,
+                   'iqr': None, 'verified': False}
+        for case, baseline_row, candidate_row, clause in (
+                ('candidate failed', 'measured', failure,
+                 '(candidate status runtime_failed)'),
+                ('both failed', failure, dict(failure, status='oom'),
+                 '(baseline status runtime_failed and candidate status oom)'),
+                ('candidate only', None, failure,
+                 '(candidate only, status runtime_failed)')):
+            with self.subTest(case=case):
+                baseline, candidate = record(WEEK_44, COMMIT_A), record(WEEK_45_LATE, COMMIT_B)
+                if baseline_row is None:
+                    baseline['rows'] = baseline['rows'][1:]
+                elif baseline_row != 'measured':
+                    baseline['rows'][0] = baseline_row
+                if candidate_row != 'measured':
+                    candidate['rows'][0] = candidate_row
+                result = compare(candidate, baseline, 1.2, request=('nvidia-gpu', 'gpu/dense'))
+                text = render(result)
+                self.assertEqual(result['rows'], [])
+                self.assertIn('dense_matmul/matmul/tenferro-cuda-eager ' + clause, text)
+                self.assertEqual(status(result), 1)
 
     def test_an_unhashable_group_is_refused_without_crashing(self):
         # The identity was hashed before its type was checked, so a list group
