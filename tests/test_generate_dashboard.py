@@ -9,6 +9,7 @@ import sys
 import tempfile
 import unittest
 import unittest.mock
+from html import unescape
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -1620,6 +1621,147 @@ class ChartNotePerCaseTest(unittest.TestCase):
         for reference in ("cudarc-pageable", "cudarc-pinned"):
             self.assertIn(f"<code>transfer_up_f64_{reference}_8B</code>", note)
         self.assertIn('<span class="muted">probe crashed</span>', note)
+
+
+# Every chart text, priced without a browser.  A chart is an SVG with a fixed viewBox
+# (1060 units for the ratio chart, 880 for the case chart) and SVG text does not wrap,
+# so a text whose right edge passes the viewBox is cut off.  The width bound is
+#
+#     width(text, px) = px * sum(0.62 if char in TEXT_NARROW else 1.0 for char in text)
+#
+# with px = 10 for .chart-note and 11 for every other chart class.  Chrome measures
+# this face at 'W' 0.97 em, '%' 0.93, 'm' 0.88, other capitals 0.66-0.78, digits
+# 0.47-0.65 and lowercase 0.25-0.62 (0.47 em per character on average over the
+# committed result), so pricing the narrow set at its widest glyph and everything
+# else at a full em cannot undercount a line.  The formula is written out here, not
+# imported, so a change to the generator's own estimate cannot loosen this check.
+TEXT_NARROW = set("abcdefghijklnopqrstuvxyz !\"'()*,-./:;?[]_`{|}")
+TEXT_PX = {"chart-note": 10}
+
+
+def text_width_bound(text, px):
+    return px * sum(0.62 if char in TEXT_NARROW else 1.0 for char in text)
+
+
+def chart_texts(page_html):
+    """Every ``<text>`` of every chart as ``(viewbox_width, x, class, text)``.
+
+    The text is what the reader sees: a ``<tspan>`` is part of its line and a
+    ``<title>`` (hover only) is not.
+    """
+    texts = []
+    for width, body in re.findall(
+        r'<svg class="bars" viewBox="0 0 (\d+) \d+"(.*?)</svg>', page_html, re.S
+    ):
+        for attrs, inner in re.findall(r"<text ([^>]*)>(.*?)</text>", body, re.S):
+            x = float(re.search(r'\bx="(-?[\d.]+)"', attrs).group(1))
+            css = re.search(r'\bclass="([\w-]+)"', attrs).group(1)
+            inner = re.sub(r"<title>.*?</title>", "", inner, flags=re.S)
+            texts.append((float(width), x, css, unescape(re.sub(r"<[^>]+>", "", inner))))
+    return texts
+
+
+def overflowing_texts(page_html):
+    """The chart texts whose bound passes the left or right edge of their viewBox."""
+    return [
+        (width, x, css, text)
+        for width, x, css, text in chart_texts(page_html)
+        if x < 0 or x + text_width_bound(text, TEXT_PX.get(css, 11)) > width
+    ]
+
+
+class ChartTextInsideViewBoxTest(unittest.TestCase):
+    """No chart text is drawn past its viewBox, and none is shortened to get there.
+
+    Issue #436: on the committed result, 354 chart texts ran past the right edge in
+    Chrome and were cut off: a ``fail`` line whose recorded reason ended
+    mid-word, a ratio label pushed out of the chart by a wide whisker, and the
+    ratio chart's one-line legend.  A cut line is a claim the reader cannot finish,
+    so a long line takes more lines instead, and a label that does not fit to the
+    right of its whisker sits on the whisker instead of past the edge.
+    """
+
+    REASON = (
+        "CUDA implementation checked numerically only: API creates and uploads scalar "
+        "constants through context.upload, so the timed path is not the one measured; "
+        "host-placement bug fixed by upstream 917d5341"
+    )
+
+    def test_case_chart_keeps_a_long_reason_and_a_wide_whisker_inside(self):
+        rows = [
+            row("c", "pytorch-cuda", 10.0, iqr=0.2),
+            # IQR five times the median: the CI runs far past the axis.
+            row("c", "tenferro-cuda-eager", 1.0, iqr=5.0),
+            row("c", "tenferro-cuda-trace", None, status="unsupported", reason=self.REASON),
+        ]
+        svg = dashboard.svg_case_chart(rows, "ms", runs=7, baseline=rows[0], baseline_label="PyTorch")
+        self.assertEqual(overflowing_texts(svg), [])
+        texts = chart_texts(svg)
+        # Nothing was dropped to fit: the whole reason is still on the page, in order...
+        fail = " ".join(text for _, _, css, text in texts if css == "chart-fail")
+        self.assertIn(self.REASON, fail)
+        # ...and the label keeps every character of the number it was drawn from.
+        self.assertIn("1.000 ms · 0.10x", [text for _, _, css, text in texts if css == "chart-value"])
+
+    def test_ratio_chart_keeps_its_legend_and_a_pushed_label_inside(self):
+        cases = [
+            {
+                "case": "c",
+                "baseline_median": 112034.0,
+                "contenders": [
+                    {
+                        "label": "tenferro-cuda",
+                        "kind": "tenferro",
+                        "ratio": 3.87,
+                        "median": 434054.0,
+                        "interval": (0.5, 40.0),
+                        "noisy": True,
+                    },
+                    {"label": "JAX", "kind": "reference", "ratio": 0.9, "median": 100000.0},
+                ],
+            }
+        ]
+        svg = dashboard.svg_ratio_chart(cases, "declared reference", "ns/op")
+        self.assertEqual(overflowing_texts(svg), [])
+        texts = chart_texts(svg)
+        values = [text for _, _, css, text in texts if css == "chart-value"]
+        self.assertIn("tenferro-cuda ~3.87x · 434000 ns/op / 112000 ns/op noisy", values)
+        # The legend is broken between its clauses, never inside one.
+        legend = [text for _, _, css, text in texts if css == "chart-note"]
+        self.assertGreater(len(legend), 1, legend)
+        for clause in (
+            "label = contender / declared reference, ns/op",
+            "dashed line = baseline (1.00x)",
+            "fail = that arm produced no number, so it has no bar",
+        ):
+            self.assertTrue(any(clause in line for line in legend), (clause, legend))
+
+    def test_the_committed_result_draws_no_text_past_a_chart_edge(self):
+        temp = tempfile.TemporaryDirectory()
+        self.addCleanup(temp.cleanup)
+        output = Path(temp.name) / "site"
+        # Every profile, not only the deployed set: issue #436 counted 1001 texts there.
+        self.assertEqual(
+            dashboard.generate(
+                ROOT / "result",
+                output,
+                baseline_dir=Path(temp.name) / "baseline",
+                git_repo=None,
+                latest_profiles=None,
+            ),
+            0,
+        )
+        pages = sorted(output.rglob("*.html"))
+        charted = [path for path in pages if '<svg class="bars"' in path.read_text()]
+        self.assertGreater(len(charted), 0)
+        overflow = {
+            str(path.relative_to(output)): found
+            for path in charted
+            if (found := overflowing_texts(path.read_text()))
+        }
+        total = sum(len(found) for found in overflow.values())
+        sample = [item for found in overflow.values() for item in found][:5]
+        self.assertEqual(total, 0, f"{total} chart texts on {len(overflow)} pages, e.g. {sample}")
 
 
 class ProfileHeaderScopeTest(unittest.TestCase):
