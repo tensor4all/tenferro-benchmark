@@ -93,7 +93,10 @@ Manual dispatches proceed only within those budgets, and no re-run rents: what
 the attempt it repeats actually did cannot be told from the record (a failure can
 follow a successful collection, and a failed provisioning can leave a pod
 billing), so a scheduled slot retries at its next slot and a retry that needs a
-GPU is a dispatch carrying its purpose. A readback dispatch is counted under the
+GPU is a dispatch carrying its purpose. A slot that collected keeps counting after
+a re-run of it was refused: that refusal leaves the run failed, so the attempt it
+repeats is read from its own history and the next slot still sees the week.
+A readback dispatch is counted under the
 purpose it was given. The counters are read back from the run names in the current
 window, counting the runs that started before this one plus any successor that
 already finished (the concurrency group does not order runs by id), so there is no

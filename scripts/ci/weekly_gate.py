@@ -142,6 +142,29 @@ def rerun_refusal(run_attempt: int) -> str | None:
             'counted: let the next scheduled slot try, or dispatch a new run with its purpose.')
 
 
+def resolve_attempts(repository: str, runs: list[dict]) -> list[dict]:
+    """Mark the scheduled runs whose earlier attempt succeeded.
+
+    `gh run list` reports only the latest attempt of a run, and refusing a re-run turns
+    a slot that collected into a failed run. Without the attempt it repeats, the next
+    slot would read an uncollected week and rent again, so ask for the attempts
+    themselves. Only a scheduled run past its first attempt that does not already show
+    a success needs the query, which is rare.
+    """
+    for run in runs:
+        attempts = int(run.get('attempt') or 1)
+        if run.get('event') != 'schedule' or attempts < 2 or run.get('conclusion') == 'success':
+            continue
+        # `any` stops at the first success: a later attempt that cannot be read must not
+        # take an answer that is already decided down with it.
+        earlier = (subprocess.check_output([
+            'gh', 'api', f'repos/{repository}/actions/runs/{run["databaseId"]}/attempts/{attempt}',
+            '--jq', '.conclusion',
+        ], text=True).strip() for attempt in range(1, attempts))
+        run['prior_success'] = any(conclusion == 'success' for conclusion in earlier)
+    return runs
+
+
 def already_collected(runs: list[dict], now: datetime, current_run_id: str,
                       branch: str = MAIN_BRANCH) -> bool:
     """Whether a scheduled run already provided this week's results.
@@ -154,10 +177,14 @@ def already_collected(runs: list[dict], now: datetime, current_run_id: str,
     serializes the weekend slots but does not order them by run id, so a later
     slot can finish the collection first, and skipping only the run ids below
     this one would rent a second pod for a week that is already collected.
+
+    `prior_success` is set by `resolve_attempts()`: a slot that collected keeps
+    counting after a re-run of it was refused, because that refusal leaves the run
+    with conclusion=failure while its first attempt still provided the results.
     """
     for run in week_runs(runs, now, current_run_id, branch, predecessors_only=False):
-        if run.get('event') == 'schedule' and run.get('conclusion') == 'success' \
-                and purpose_of(run) != 'verify':
+        if run.get('event') == 'schedule' and purpose_of(run) != 'verify' \
+                and (run.get('conclusion') == 'success' or run.get('prior_success')):
             return True
     return False
 
@@ -192,6 +219,7 @@ def main() -> None:
         '--created', f'>={week_start(now).strftime("%Y-%m-%d")}', '--limit', str(WINDOW_LIMIT),
         '--json', 'databaseId,attempt,createdAt,event,conclusion,displayTitle,headBranch',
     ], text=True))
+    runs = resolve_attempts(args.repository, runs)
     predecessors_only = args.run_attempt == 1
     counts = count_purposes(runs, now, args.run_id, args.branch, predecessors_only)
     report = budget_report(counts)

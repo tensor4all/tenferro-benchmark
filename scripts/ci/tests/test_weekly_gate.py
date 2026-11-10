@@ -60,6 +60,15 @@ class WeeklyGateTests(unittest.TestCase):
                  'displayTitle': 'RunPod GPU benchmark'}]
         self.assertFalse(already_collected(runs, at('2026-10-17T14:00:30'), '2'))
 
+    def test_a_slot_that_collected_still_counts_after_its_re_run(self):
+        # A re-run of a collected slot is refused, and that refusal leaves the run with
+        # conclusion=failure while its first attempt keeps the week's results.
+        runs = [gpu_run(1, '2026-10-17T08:00:05Z', event='schedule', conclusion='failure',
+                        attempt=2)]
+        self.assertFalse(already_collected(runs, at('2026-10-18T08:00:00'), '2'))
+        runs[0]['prior_success'] = True
+        self.assertTrue(already_collected(runs, at('2026-10-18T08:00:00'), '2'))
+
     def test_a_week_of_verifications_is_not_a_collected_week(self):
         # A verify run checks a fix; reading it as a satisfied week would hide a
         # missed collection instead of reporting it.
@@ -117,14 +126,14 @@ class PurposeTests(unittest.TestCase):
 
 class GateMainTests(unittest.TestCase):
     def run_gate(self, runs, purpose='', target='', event='workflow_dispatch', run_attempt='1',
-                 branch='main'):
+                 branch='main', attempts=()):
         with tempfile.TemporaryDirectory() as tmp:
             paths = {'output': os.path.join(tmp, 'output'), 'summary': os.path.join(tmp, 'summary')}
             environment = {'GITHUB_OUTPUT': paths['output'], 'GITHUB_STEP_SUMMARY': paths['summary']}
             argv = ['weekly_gate', '--repository', 'tensor4all/tenferro-benchmark',
                     '--event', event, '--run-id', '99', '--run-attempt', run_attempt,
                     '--branch', branch, '--purpose', purpose, '--target', target]
-            answers = [json.dumps(runs)]
+            answers = [json.dumps(runs)] + list(attempts)
             buffer = io.StringIO()
             with patch.object(sys, 'argv', argv), patch.dict(os.environ, environment), \
                     patch.object(weekly_gate.subprocess, 'check_output', side_effect=answers), \
@@ -295,6 +304,45 @@ class GateMainTests(unittest.TestCase):
         self.assertEqual(query[query.index('--branch') + 1], 'feat/perf-probe')
         self.assertIn('headBranch', query[query.index('--json') + 1])
         self.assertIn('attempt', query[query.index('--json') + 1])
+
+    def test_a_collected_slot_keeps_counting_after_its_refused_re_run(self):
+        # 1. a slot collects on its first attempt; 2. "Re-run all jobs" is refused, which
+        # leaves that run failed; 3. the next slot must still see the collected week.
+        runs = [gpu_run(1, this_week(1), event='schedule', conclusion='failure', attempt=2)]
+        code, stdout, output, _ = self.run_gate(runs, event='schedule', attempts=['success'])
+        self.assertEqual(code, 0)
+        self.assertIn('This week already has successful GPU results; skipping.', stdout)
+        self.assertIn('proceed=false', output)
+
+    def test_a_re_run_of_a_failed_slot_does_not_make_the_week_collected(self):
+        # The negative side of the same fold: nothing succeeded, so the week is still
+        # open and this slot collects.
+        runs = [gpu_run(1, this_week(1), event='schedule', conclusion='failure', attempt=2)]
+        code, stdout, output, _ = self.run_gate(runs, event='schedule', attempts=['failure'])
+        self.assertEqual(code, 0)
+        self.assertIn('No successful GPU run this week yet; collecting.', stdout)
+        self.assertIn('proceed=true', output)
+
+    def test_a_decided_week_does_not_query_the_remaining_attempts(self):
+        # A success in an earlier attempt answers the question; an attempt that cannot be
+        # read afterwards must not fail the gate instead of skipping the week.
+        runs = [gpu_run(1, this_week(1), event='schedule', conclusion='failure', attempt=3)]
+        code, stdout, _, _ = self.run_gate(runs, event='schedule',
+                                           attempts=['success', RuntimeError('must not query')])
+        self.assertEqual(code, 0)
+        self.assertIn('This week already has successful GPU results; skipping.', stdout)
+
+    def test_the_first_attempt_of_a_re_run_is_read(self):
+        runs = [gpu_run(1, this_week(1), event='schedule', conclusion='failure', attempt=2)]
+        call = MagicMock(side_effect=[json.dumps(runs), 'success'])
+        argv = ['weekly_gate', '--repository', 'tensor4all/tenferro-benchmark',
+                '--event', 'schedule', '--run-id', '99']
+        with patch.object(sys, 'argv', argv), patch.dict(os.environ, {}, clear=True), \
+                patch.object(weekly_gate.subprocess, 'check_output', call), \
+                redirect_stdout(io.StringIO()):
+            weekly_gate.main()
+        query = call.call_args_list[1].args[0]
+        self.assertEqual(query[2], 'repos/tensor4all/tenferro-benchmark/actions/runs/1/attempts/1')
 
     def test_a_later_slot_that_already_collected_is_not_re_rented(self):
         # The concurrency group serializes the weekend slots but does not order them
