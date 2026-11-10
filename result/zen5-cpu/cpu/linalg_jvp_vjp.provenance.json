@@ -1,0 +1,20 @@
+{
+  "collected_at": "2026-10-28T00:16:12.734135+00:00",
+  "files": {
+    "result/zen5-cpu/cpu/linalg_jvp_vjp.md": "2e2d8ef670b6b098f2cff13b28160ab86a4d1b9b84fa654967b2152733ae00fe",
+    "result/zen5-cpu/cpu/linalg_jvp_vjp.summary.json": "8ec94e7fefb1583bca29b6259035a702f869bf7aff36085129c1789de7172ffe"
+  },
+  "hardware": {
+    "cpu": "x86_64",
+    "host": "bcfefbe95606",
+    "threads": [
+      1,
+      4,
+      8
+    ]
+  },
+  "schema_version": 1,
+  "suite_id": "cpu/linalg_jvp_vjp",
+  "target_profile": "zen5-cpu",
+  "tenferro_commit": "8fec1ca70852b930c092e7177c30bb8af7594a57"
+}

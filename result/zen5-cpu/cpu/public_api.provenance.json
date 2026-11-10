@@ -1,0 +1,20 @@
+{
+  "collected_at": "2026-10-28T00:48:01.050761+00:00",
+  "files": {
+    "result/zen5-cpu/cpu/public_api.md": "9cc76f7a7e9ed1bf5f47c5d74acfe2546c792301dcbe3faf5bc7015087ea1756",
+    "result/zen5-cpu/cpu/public_api.summary.json": "924ac10674a3ecb139c95aec74e05fce62e231170117602359693d7dc094273a"
+  },
+  "hardware": {
+    "cpu": "x86_64",
+    "host": "bcfefbe95606",
+    "threads": [
+      1,
+      4,
+      8
+    ]
+  },
+  "schema_version": 1,
+  "suite_id": "cpu/public_api",
+  "target_profile": "zen5-cpu",
+  "tenferro_commit": "8fec1ca70852b930c092e7177c30bb8af7594a57"
+}

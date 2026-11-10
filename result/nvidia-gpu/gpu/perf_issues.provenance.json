@@ -1,0 +1,18 @@
+{
+  "collected_at": "2026-10-27T01:23:06Z",
+  "files": {
+    "result/nvidia-gpu/gpu/perf_issues.md": "f1bf6e8130c3df42514b638436b50ccbc7dab6fce9daf5db1dde93a900be4852",
+    "result/nvidia-gpu/gpu/perf_issues.summary.json": "22365962f211baa2bd3e06ba74188a8aac25b94db0115a5120472fb4a1cfd464"
+  },
+  "hardware": {
+    "gpu": "NVIDIA A100 80GB PCIe",
+    "host": "2da32d4129f4",
+    "threads": [
+      1
+    ]
+  },
+  "schema_version": 1,
+  "suite_id": "gpu/perf_issues",
+  "target_profile": "nvidia-gpu",
+  "tenferro_commit": "234a51369c257ffd311e9e547b75b394b4adb5dc"
+}
