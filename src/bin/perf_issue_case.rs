@@ -255,8 +255,46 @@ fn complex_values(n: usize, seed: u64) -> Vec<Complex64> {
         .collect()
 }
 
+/// Report a non-finite error term as `INFINITY`, so it always fails.
+///
+/// `f64::max` returns the other operand when one side is NaN, so the
+/// `worst = worst.max(e)` and `.fold(0.0, f64::max)` folds below would drop a
+/// NaN term without a trace and could leave a passing value. Every error term
+/// that is folded with `max` goes through this first (`rel_error` and
+/// `rel_error_c64` already do).
+fn fail_closed(error: f64) -> f64 {
+    if error.is_finite() {
+        error
+    } else {
+        f64::INFINITY
+    }
+}
+
+/// `|actual - expected| / max(|expected|, 1)`, non-finite reported as `INFINITY`.
 fn rel_error(actual: f64, expected: f64) -> f64 {
-    (actual - expected).abs() / expected.abs().max(1.0)
+    fail_closed((actual - expected).abs() / expected.abs().max(1.0))
+}
+
+/// `‖actual - expected‖ / max(‖expected‖, 1)` for complex values, non-finite
+/// reported as `INFINITY`.
+///
+/// `Complex64::norm()` overflows to `inf` for finite components such as
+/// `1.5e308 + 1.5e308i`, and a finite miss divided by that `inf` is a passing 0.
+/// The difference and `expected` are divided by `s = max(1, largest component
+/// magnitude of either)` before taking norms, which leaves the ratio unchanged
+/// (`1 / s` takes the place of the floor `1`) and keeps both norms finite. The
+/// subtraction happens before the scaling, so a small miss loses no precision;
+/// with every component in `[-1, 1]`, `s = 1` and this is the unscaled
+/// expression exactly. A difference that itself overflows is a miss of order
+/// `‖expected‖` or larger and is reported as `INFINITY`.
+fn rel_error_c64(actual: Complex64, expected: Complex64) -> f64 {
+    let diff = actual - expected;
+    let parts = [diff.re, diff.im, expected.re, expected.im];
+    if !parts.iter().all(|x| x.is_finite()) {
+        return f64::INFINITY;
+    }
+    let scale = parts.iter().fold(1.0f64, |m, x| m.max(x.abs()));
+    fail_closed((diff / scale).norm() / (expected / scale).norm().max(1.0 / scale))
 }
 
 fn check_tol(error: f64, tol: f64, what: &str) -> Result<f64> {
@@ -782,7 +820,7 @@ fn gemm_mm256(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
                 } else {
                     Complex64::new(c.as_slice::<f64>()?[i + j * n], 0.0)
                 };
-                worst = worst.max((got - e).norm() / e.norm().max(1.0));
+                worst = worst.max(rel_error_c64(got, *e));
             }
             let error = check_tol(worst, 1e-10, "mm256")?;
             let measurement = measure(timing, n * n * elem, || {
@@ -827,13 +865,7 @@ fn rank1_dot(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
         )
     };
     let expected: Complex64 = x.iter().zip(&y).map(|(a, b)| a.conj() * b).sum();
-    let check = |got: Complex64| {
-        check_tol(
-            (got - expected).norm() / expected.norm().max(1.0),
-            1e-10,
-            "conjugated dot",
-        )
-    };
+    let check = |got: Complex64| check_tol(rel_error_c64(got, expected), 1e-10, "conjugated dot");
     match arm {
         "dot-general-rank1" => {
             // dot_general has no conjugation; the conjugated operand is
@@ -1593,7 +1625,7 @@ fn trace_metadata_case(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
     let check = |t: &Tensor| -> Result<f64> {
         let actual = t.as_slice::<f32>()?;
         if actual.len() != expected.len() { return Err("incorrect output length".into()); }
-        let error = actual.iter().zip(&expected).map(|(a, b)| (*a as f64 - *b as f64).abs()).fold(0.0f64, f64::max);
+        let error = actual.iter().zip(&expected).map(|(a, b)| fail_closed((*a as f64 - *b as f64).abs())).fold(0.0f64, f64::max);
         check_tol(error, 1e-6, "trace metadata")
     };
     let x = Tensor::from_vec_col_major(vec![rows, cols], data)?;
@@ -2226,7 +2258,7 @@ fn fft_axis_c2c(params: &Value, timing: &Timing, threads: usize) -> Result<CaseO
                 })
                 .sum();
             let have = got[k + n * j + n * n * l];
-            worst = worst.max((have - want).norm() / want.norm().max(1.0));
+            worst = worst.max(rel_error_c64(have, want));
         }
         let error = check_tol(worst, 1e-9, "fft lanes against direct DFT")?;
         let measurement = measure(timing, bytes, || {
@@ -2870,4 +2902,55 @@ fn main() -> Result<()> {
     }
     println!("{}", serde_json::to_string(&output)?);
     Ok(())
+}
+
+#[cfg(test)]
+mod rel_error_tests {
+    use super::*;
+
+    /// The `worst = worst.max(rel_error(..))` fold the case checks use.
+    fn fold_worst(terms: impl IntoIterator<Item = f64>) -> f64 {
+        terms.into_iter().fold(0.0f64, |worst, e| worst.max(e))
+    }
+
+    #[test]
+    fn nan_expected_is_not_dropped_by_the_max_fold() {
+        let worst = fold_worst([rel_error(0.25, 0.25), rel_error(0.25, f64::NAN)]);
+        assert_eq!(worst, f64::INFINITY);
+        assert!(check_tol(worst, 1e-12, "fold").is_err());
+
+        let one = Complex64::new(0.25, -0.25);
+        let worst = fold_worst([
+            rel_error_c64(one, one),
+            rel_error_c64(one, Complex64::new(f64::NAN, 0.0)),
+        ]);
+        assert_eq!(worst, f64::INFINITY);
+        assert!(check_tol(worst, 1e-10, "fold").is_err());
+    }
+
+    #[test]
+    fn complex_norm_overflow_does_not_zero_a_finite_miss() {
+        let expected = Complex64::new(1.5e308, 1.5e308);
+        assert_eq!(expected.norm(), f64::INFINITY);
+        let actual = expected * (1.0 + 1e-6);
+        let error = rel_error_c64(actual, expected);
+        assert!((error - 1e-6).abs() < 1e-12, "error = {error:e}");
+        assert!(check_tol(error, 1e-10, "overflow").is_err());
+    }
+
+    #[test]
+    fn complex_rel_error_matches_the_unscaled_ratio_in_range() {
+        let expected = Complex64::new(3.0, -4.0);
+        let actual = Complex64::new(3.0 + 3e-9, -4.0 - 4e-9);
+        let unscaled = (actual - expected).norm() / expected.norm().max(1.0);
+        let error = rel_error_c64(actual, expected);
+        assert!(
+            (error - unscaled).abs() <= 1e-14 * unscaled,
+            "{error:e} vs {unscaled:e}"
+        );
+
+        let small = Complex64::new(0.25, -0.5);
+        let near = small + Complex64::new(1e-12, 0.0);
+        assert_eq!(rel_error_c64(near, small), (near - small).norm());
+    }
 }

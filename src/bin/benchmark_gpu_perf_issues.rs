@@ -2384,9 +2384,22 @@ fn eigh_residual_f64(a: &[f64], w: &[f64], v: &[f64], n: usize) -> f64 {
     worst
 }
 
+/// Complex counterpart of [`eigh_residual_f64`].
+///
+/// `||A||` is `max(max_ij ‖a_ij‖, 1)`, held as `scale * norm` with
+/// `scale = max(1, largest component magnitude of A)`: `‖a_ij‖` itself overflows
+/// to `inf` for finite components such as `1.5e308 + 1.5e308i`, and dividing a
+/// finite residual by that `inf` reported 0. With every component in `[-1, 1]`,
+/// `scale = 1` and this is the unscaled expression exactly.
 fn eigh_residual_c64(a: &[Complex64], w: &[f64], v: &[Complex64], n: usize) -> f64 {
     let mut worst = 0.0f64;
-    let norm = a.iter().fold(0.0f64, |m, x| m.max(x.norm())).max(1.0);
+    let scale = a
+        .iter()
+        .fold(1.0f64, |m, x| m.max(x.re.abs()).max(x.im.abs()));
+    let norm = a
+        .iter()
+        .fold(0.0f64, |m, x| m.max((x / scale).norm()))
+        .max(1.0 / scale);
     for j in 0..n {
         let vnorm = (0..n).map(|i| v[i + j * n].norm_sqr()).sum::<f64>().sqrt();
         worst = worst_of(worst, (vnorm - 1.0).abs());
@@ -2397,7 +2410,7 @@ fn eigh_residual_c64(a: &[Complex64], w: &[f64], v: &[Complex64], n: usize) -> f
             })
             .sum::<f64>()
             .sqrt();
-        worst = worst_of(worst, residual / norm);
+        worst = worst_of(worst, residual / scale / norm);
     }
     for j in 0..n.min(3) {
         for k in (j + 1)..n.min(4) {
@@ -2800,4 +2813,61 @@ fn main() -> Result<()> {
     }
     println!("{}", serde_json::to_string(&output)?);
     Ok(())
+}
+
+#[cfg(test)]
+mod eigh_residual_tests {
+    use super::*;
+
+    /// A finite residual against an `A` whose entry norm overflows must report
+    /// the true ratio, not 0. The ratio stays far below any tolerance here: the
+    /// residual is accumulated through `norm_sqr`, so a finite residual is below
+    /// ~1.3e154 while the overflowing norm is above ~1.8e308. The verdict of the
+    /// 1e-8 check cannot flip; the reported `max_rel_error` was wrong.
+    #[test]
+    fn complex_entry_norm_overflow_does_not_zero_a_finite_residual() {
+        let n = 6;
+        let c = Complex64::new(1.5e308, 1.5e308);
+        assert_eq!(c.norm(), f64::INFINITY);
+        let mut a = vec![Complex64::new(0.0, 0.0); n * n];
+        // a[0, 1] = c and a[1, 0] = conj(c), column-major.
+        a[n] = c;
+        a[1] = c.conj();
+
+        // Columns e2, e3, e4, e5 (pairwise orthonormal), then e2 and e3 again,
+        // which the overlap check does not compare. A e2 = 0, so column 4 with
+        // w = 1e150 leaves residual 1e150.
+        let mut v = vec![Complex64::new(0.0, 0.0); n * n];
+        for (j, unit) in [2, 3, 4, 5, 2, 3].into_iter().enumerate() {
+            v[unit + j * n] = Complex64::new(1.0, 0.0);
+        }
+        let w = [0.0, 0.0, 0.0, 0.0, 1e150, 0.0];
+        let error = eigh_residual_c64(&a, &w, &v, n);
+        let want = 1e150 / 1.5e308 / std::f64::consts::SQRT_2;
+        assert!(error > 0.0, "a finite residual was reported as {error:e}");
+        assert!(
+            (error - want).abs() <= 1e-12 * want,
+            "{error:e} vs {want:e}"
+        );
+    }
+
+    #[test]
+    fn complex_residual_is_unchanged_for_unit_scale_entries() {
+        let n = 2;
+        let a = [
+            Complex64::new(0.5, 0.0),
+            Complex64::new(0.0, -0.25),
+            Complex64::new(0.0, 0.25),
+            Complex64::new(-0.5, 0.0),
+        ];
+        let v = [
+            Complex64::new(1.0, 0.0),
+            Complex64::new(0.0, 0.0),
+            Complex64::new(0.0, 0.0),
+            Complex64::new(1.0, 0.0),
+        ];
+        let w = [0.5, -0.5];
+        // A e0 - 0.5 e0 = (0, -0.25i): residual 0.25 over ||A|| floored at 1.
+        assert_eq!(eigh_residual_c64(&a, &w, &v, n), 0.25);
+    }
 }
