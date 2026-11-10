@@ -18,11 +18,12 @@ exits 1.  A row enters a table only when the ingestion driver would accept it
 unverified row is named under the table instead, and so is a row the other run
 did not record as a measurement.  A row that only one of the two runs recorded
 at all is named as well, so a case that vanished from a week is not read as no
-change.  A record the driver would reject as a whole (a
-repeated identity) refuses the comparison by name rather than overwriting one of
-the rows: keeping the last one hides a regression.  When the table is printed,
-the two runs' commit, host, week and arm set are stated above it, so the reader
-never reconstructs which measurements were compared.
+change.  A record the driver would reject as a whole (a repeated identity, an
+identity field that is not a string, a median that is not a finite non-negative
+number, a measure_only row marked verified) refuses the comparison by name rather
+than overwriting one of its rows: keeping the last one hides a regression.  When
+the table is printed, the two runs' commit, host, week and arm set are stated
+above it, so the reader never reconstructs which measurements were compared.
 
 A run is accepted when the data says so: the ingestion driver commits the
 sidecar together with ``<suite>.provenance.json``, whose ``files`` map holds the
@@ -218,45 +219,92 @@ def row_key(row: dict) -> tuple[str, str, str]:
     (case, group, backend): (case, backend) collides across groups and one row
     would hide the other.
     """
-    return (row['case'], row.get('group', ''), row['backend'])
+    return (row.get('case'), row.get('group', ''), row.get('backend'))
 
 
 def name(key: tuple[str, str, str]) -> str:
-    return '/'.join(key)
+    return '/'.join(str(part) for part in key)
+
+
+def finite_non_negative(value) -> bool:
+    """A JSON number the driver accepts: finite and not negative.
+
+    math.isfinite raises OverflowError when an integer is too large for a float,
+    and JSON puts no bound on how large an integer may be: that is a refusal, not
+    a crash of the comparison.
+    """
+    if type(value) not in (int, float):
+        return False
+    try:
+        return math.isfinite(value) and value >= 0
+    except OverflowError:
+        return False
+
+
+def row_problems(row: dict) -> list[str]:
+    """Why result_ingestion.validate_summary would refuse this row, if it would.
+
+    The identity fields come first because every other check indexes by them: a
+    null group is a row the schema refuses, and the comparison used to fail while
+    sorting the identities.  The rest is the gate of the driver: a measurement
+    must be finite, non-negative and verified; measure_only is the absence of a
+    check, so it cannot be verified and has to say why; a skipped or unsupported
+    row carries no median and has to give its reason.
+    """
+    out = [f'{field} is not a non-empty string' for field in ('case', 'backend')
+           if not isinstance(row.get(field), str) or not row[field]]
+    if 'group' in row and not isinstance(row['group'], str):
+        out.append('group is not a string')
+    if not isinstance(row.get('status'), str) or not row.get('status'):
+        out.append('status is not a non-empty string')
+        return out
+    if row['status'] != 'ok':
+        status = row['status']
+        explained = status in ('unsupported', 'skipped') or status.startswith('unsupported:')
+        if explained and not str(row.get('reason') or '').strip():
+            out.append(f'status {status} without a reason')
+        if row.get('median') is not None or row.get('iqr') is not None:
+            out.append(f'status {status} carrying a median or IQR')
+        return out
+    if type(row.get('verified')) is not bool:
+        out.append('verified is not a boolean')
+    if not finite_non_negative(row.get('median')):
+        out.append('median is not a finite non-negative number')
+    if row.get('iqr') is not None and not finite_non_negative(row['iqr']):
+        out.append('IQR is not finite and non-negative')
+    if row.get('verification') == 'measure_only':
+        if row.get('verified') is not False:
+            out.append('measure_only row marked verified')
+    return out
 
 
 def invalid_rows(record: dict) -> list[str]:
     """Why the ingestion driver would reject this record's rows, if it would.
 
-    ``result_ingestion.validate_summary`` refuses a repeated identity and a
-    measurement whose median or IQR is not a finite non-negative number, and it
-    refuses the whole summary when it does.  A receipt-free revision never
-    passed that gate, so its rows are checked here before any ratio is taken.
+    The driver refuses a repeated identity and any row the schema refuses, and it
+    refuses the whole summary when it does.  A receipt-free revision never passed
+    that gate, so its rows are checked here before any ratio is taken.
     """
-    def valid(value) -> bool:
-        return type(value) in (int, float) and math.isfinite(value) and value >= 0
-
+    if not isinstance(record.get('rows'), list):
+        return ['rows is not an array']
     out, seen = [], set()
-    for row in record['rows']:
+    for position, row in enumerate(record['rows']):
+        if not isinstance(row, dict):
+            out.append(f'row {position}: not an object')
+            continue
         key = row_key(row)
         if key in seen:
             out.append(f'{name(key)}: duplicate identity')
             continue
         seen.add(key)
-        if row.get('status') != 'ok':
-            continue
-        if not valid(row.get('median')):
-            out.append(f'{name(key)}: median is not a finite non-negative number')
-        if row.get('iqr') is not None and not valid(row['iqr']):
-            out.append(f'{name(key)}: IQR is not finite and non-negative')
+        out.extend(f'{name(key)}: {why}' for why in row_problems(row))
     return out
 
 
 def slower_rows(baseline: dict, candidate: dict, threshold: float) -> dict:
     """Slower rows, the rows whose ratio cannot be taken, and the ones not compared."""
     def measured(row: dict) -> bool:
-        return (row.get('status') == 'ok' and type(row.get('median')) in (int, float)
-                and math.isfinite(row['median']) and row['median'] >= 0)
+        return row.get('status') == 'ok' and finite_non_negative(row.get('median'))
 
     before = {row_key(row): row for row in baseline['rows']}
     after = {row_key(row): row for row in candidate['rows']}

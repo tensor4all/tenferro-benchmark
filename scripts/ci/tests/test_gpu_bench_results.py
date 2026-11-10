@@ -219,6 +219,37 @@ class BaselineTests(unittest.TestCase):
         self.assertEqual(result['rows'], [])
         self.assertIn('dense_matmul/matmul/tenferro-cuda-eager (candidate status skipped)', text)
 
+    def test_a_measure_only_row_cannot_be_verified(self):
+        # The schema requires verified=false for measure_only and the driver
+        # validates that schema, so this row is refused instead of compared.
+        baseline, candidate = record(WEEK_44, COMMIT_A), record(WEEK_45_LATE, COMMIT_B)
+        candidate["rows"][0].update(median=10.0, verification="measure_only", reason="not checked")
+        result = compare(candidate, baseline, 1.2)
+        text = render(result)
+        self.assertEqual(result["rows"], [])
+        self.assertNotIn("10.00x", text)
+        self.assertIn("candidate dense_matmul/matmul/tenferro-cuda-eager: measure_only row marked verified", text)
+
+    def test_an_integer_too_large_for_a_float_is_refused_by_name(self):
+        # JSON puts no bound on an integer, and math.isfinite raises
+        # OverflowError on 10**400 instead of returning False.
+        baseline, candidate = record(WEEK_44, COMMIT_A), record(WEEK_45_LATE, COMMIT_B)
+        candidate["rows"][0]["median"] = 10 ** 400
+        result = compare(candidate, baseline, 1.2)
+        text = render(result)
+        self.assertEqual(result["rows"], [])
+        self.assertIn("candidate dense_matmul/matmul/tenferro-cuda-eager: median is not a finite "
+                      "non-negative number", text)
+
+    def test_a_non_string_group_is_refused_instead_of_crashing_the_sort(self):
+        baseline, candidate = record(WEEK_44, COMMIT_A), record(WEEK_45_LATE, COMMIT_B)
+        candidate["rows"][0]["group"] = None
+        result = compare(candidate, baseline, 1.2)
+        text = render(result)
+        self.assertEqual(result["rows"], [])
+        self.assertIn("dense_matmul/None/tenferro-cuda-eager: group is not a string", text)
+        self.assertEqual(status(result), 1)
+
     def test_a_case_that_disappears_from_the_candidate_is_named(self):
         # A baseline row the candidate run did not record at all used to leave
         # the table empty with no diagnostic: lost coverage read as no change.

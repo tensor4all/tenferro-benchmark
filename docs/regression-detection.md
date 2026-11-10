@@ -191,14 +191,16 @@ a repository that records no receipt at all, a sidecar revision is the published
 history by definition, because there is no acceptance signal to check. A row is
 compared only when the ingestion driver would accept it (status `ok`, a finite
 non-negative median and IQR, `verified: true`); a record the driver would reject
-as a whole (a repeated identity, a median or IQR that is not finite and
-non-negative) is refused by name with no table and exit 1 instead of one of its
-rows being overwritten. A row without a verified measurement — or one whose
-counterpart the other run did not record as a measurement — is named under the
-table instead of being compared or dropped silently. A row only one of the two runs
-recorded at all is named the same way, so a case that vanished from a week cannot
-read as no regression, and a candidate the driver would reject is named even when
-that week has no accepted run to compare it with. A shallow
+as a whole (a repeated identity, an identity field that is not a string, a median
+or IQR that is not a finite non-negative number — an integer too large for a float
+included — or a `measure_only` row marked verified) is refused by name with no
+table and exit 1 instead of one of its rows being overwritten. A row without a
+verified measurement — or one whose counterpart the other run did not record as
+a measurement — is named under the table instead of being compared or dropped
+silently. A row only one of the two runs recorded at all is named the same way, so
+a case that vanished from a week cannot read as no regression, and a candidate the
+driver would reject is named even when that week has no accepted run to compare
+it with. A shallow
 clone, an unreadable repository, and a `--threshold` outside 1 to 1000000 are
 errors (exit 2) and never read as "no baseline".
 
