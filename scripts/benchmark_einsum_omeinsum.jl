@@ -39,7 +39,10 @@ const DATA_DIR = joinpath(PROJECT_DIR, "data", "instances")
 const DEFAULT_WARMUPS = 3
 const DEFAULT_RUNS = 15
 
-bench_warmups() = parse(Int, get(ENV, "BENCH_WARMUPS", string(DEFAULT_WARMUPS)))
+# Untimed executions before the timed runs; at least one always runs, so lazy
+# first-execution setup is never timed (`BENCH_WARMUPS=0` runs one). The timing
+# header reports this executed count.
+bench_warmups() = max(parse(Int, get(ENV, "BENCH_WARMUPS", string(DEFAULT_WARMUPS))), 1)
 bench_runs() = parse(Int, get(ENV, "BENCH_RUNS", string(DEFAULT_RUNS)))
 
 # ---------------------------------------------------------------------------
@@ -287,7 +290,7 @@ function benchmark_instance(instance, strategy::String)
     try
         # Warmup (also triggers Julia JIT compilation of the contraction
         # kernels for this instance/strategy).
-        for _ in 1:max(bench_warmups(), 1)
+        for _ in 1:bench_warmups()
             r = run_plan(steps, n_inputs, operands)
             r === nothing && error("run_plan returned nothing")
         end

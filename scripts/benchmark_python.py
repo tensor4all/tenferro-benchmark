@@ -39,7 +39,12 @@ _PYTORCH_THREADS_CONFIGURED = False
 
 
 def bench_warmups() -> int:
-    return int(os.environ.get("BENCH_WARMUPS", NUM_WARMUP_DEFAULT))
+    """Untimed executions before the timed runs; at least one always runs.
+
+    The minimum keeps lazy first-execution setup out of the timed runs, so
+    ``BENCH_WARMUPS=0`` runs one, and the timing header reports that count.
+    """
+    return max(int(os.environ.get("BENCH_WARMUPS", NUM_WARMUP_DEFAULT)), 1)
 
 
 def bench_runs() -> int:
@@ -232,7 +237,7 @@ def benchmark_pytorch(
     try:
         expression = oe.contract_expression(fmt, *shapes, optimize=path)
         # Warmup
-        for _ in range(max(bench_warmups(), 1)):
+        for _ in range(bench_warmups()):
             expression(*operands, backend="torch")
 
         # Timed runs
@@ -282,7 +287,7 @@ def benchmark_jax(
     try:
         expression = oe.contract_expression(fmt, *shapes, optimize=path)
         # Warmup (first call includes JIT compilation)
-        for _ in range(max(bench_warmups(), 1)):
+        for _ in range(bench_warmups()):
             jax.block_until_ready(
                 expression(*operands, backend="jax")
             )
