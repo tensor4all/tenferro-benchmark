@@ -147,7 +147,8 @@ class PartialPageTest(unittest.TestCase):
             suite_file.write_text(json.dumps({
                 "suite_id": "gpu/linalg_jvp_vjp",
                 "backends": ["pytorch-cuda", "tenferro-cuda-trace"],
-                "problems": [{"id": "linalg_ad_large_grad_sum_qr_jvp_f64_256"}],
+                "problems": [{"id": "linalg_ad_large_grad_sum_qr_jvp_f64_256",
+                              "regime": "latency"}],
             }))
             metadata = {"suite_id": "gpu/linalg_jvp_vjp", "suite_file": str(suite_file)}
             page = format_markdown([ok], metadata, allow_partial=True)
@@ -166,6 +167,120 @@ class PartialPageTest(unittest.TestCase):
         self.assertIn("Rows with a failure status", page)
         self.assertIn("arm exited 3", page)
         self.assertIn("linalg_ad_large_grad_sum_qr_jvp_f64_256", page)
+
+
+class RegimeSectionTest(unittest.TestCase):
+    """A suite that holds both regimes publishes them in separate sections."""
+
+    def record(self, problem_id, backend="pytorch-cuda"):
+        import json
+        return dict(suite_id="gpu/linalg_jvp_vjp", problem_id=problem_id,
+                    backend=backend, status="ok",
+                    verification=dict(status="passed", reference_backend="fixture",
+                                      max_abs_error=0., max_rel_error=0., residual=0.),
+                    timing=dict(timing_scope="steady_state_host_api_plus_device_sync",
+                                timed_runs=1, median_ms=1., iqr_ms=0.),
+                    execution=dict(notes=json.dumps(dict(sampling=dict(
+                        operations_per_sample=1, batch_ms=[1.])))))
+
+    def test_a_mixed_suite_splits_the_table_by_declared_regime(self):
+        import json
+        import tempfile
+        from pathlib import Path
+        from format_gpu_linalg_ad_results import format_markdown
+
+        latency = "linalg_ad_large_grad_sum_qr_jvp_f64_256"
+        throughput = "linalg_ad_large_grad_sum_qr_jvp_f64_4096"
+        with tempfile.TemporaryDirectory() as tmp:
+            suite_file = Path(tmp) / "suite.yaml"
+            suite_file.write_text(json.dumps({
+                "suite_id": "gpu/linalg_jvp_vjp",
+                "backends": ["pytorch-cuda"],
+                "problems": [
+                    {"id": latency, "regime": "latency"},
+                    {"id": throughput, "regime": "throughput"},
+                ],
+            }))
+            metadata = {"suite_id": "gpu/linalg_jvp_vjp", "suite_file": str(suite_file)}
+            page = format_markdown([self.record(latency), self.record(throughput)], metadata)
+
+        # Two named sections, in that order, and each shape under its own. The
+        # table names a benchmark and a shape, so the shape is what tells the
+        # sections apart here.
+        throughput_at = page.index("### Throughput regime")
+        latency_at = page.index("### Latency regime")
+        self.assertLess(throughput_at, latency_at)
+        throughput_section = page[throughput_at:latency_at]
+        latency_section = page[latency_at:page.index("## Sampling")]
+        self.assertIn("`4096x4096`", throughput_section)
+        self.assertNotIn("`256x256`", throughput_section)
+        self.assertIn("`256x256`", latency_section)
+        self.assertNotIn("`4096x4096`", latency_section)
+        self.assertIn("not GPU throughput", latency_section)
+
+    def test_a_case_the_manifest_does_not_place_is_refused(self):
+        # Classifying an undeclared case by omission would put a compute-bound
+        # number in the latency table; the page refuses instead.
+        import json
+        import tempfile
+        from pathlib import Path
+        from format_gpu_linalg_ad_results import format_markdown
+
+        latency = "linalg_ad_large_grad_sum_qr_jvp_f64_256"
+        throughput = "linalg_ad_large_grad_sum_qr_jvp_f64_4096"
+        with tempfile.TemporaryDirectory() as tmp:
+            suite_file = Path(tmp) / "suite.yaml"
+            suite_file.write_text(json.dumps({
+                "suite_id": "gpu/linalg_jvp_vjp",
+                "backends": ["pytorch-cuda"],
+                "problems": [
+                    {"id": latency, "regime": "latency"},
+                    {"id": throughput},
+                ],
+            }))
+            metadata = {"suite_id": "gpu/linalg_jvp_vjp", "suite_file": str(suite_file)}
+            with self.assertRaisesRegex(ValueError, "cannot place these AD cases"):
+                format_markdown([self.record(latency), self.record(throughput)], metadata)
+
+    def test_a_suite_that_declares_no_regime_at_all_is_refused(self):
+        # The check must not depend on some case declaring a regime: a file that
+        # declares none is as broken as one that declares half, and both would
+        # otherwise file every row under latency.
+        import json
+        import tempfile
+        from pathlib import Path
+        from format_gpu_linalg_ad_results import format_markdown
+
+        case = "linalg_ad_large_grad_sum_qr_jvp_f64_256"
+        with tempfile.TemporaryDirectory() as tmp:
+            suite_file = Path(tmp) / "suite.yaml"
+            suite_file.write_text(json.dumps({
+                "suite_id": "gpu/linalg_jvp_vjp",
+                "backends": ["pytorch-cuda"],
+                "problems": [{"id": case}],
+            }))
+            metadata = {"suite_id": "gpu/linalg_jvp_vjp", "suite_file": str(suite_file)}
+            with self.assertRaisesRegex(ValueError, "cannot place these AD cases"):
+                format_markdown([self.record(case)], metadata)
+
+    def test_a_single_regime_suite_keeps_its_single_table(self):
+        import json
+        import tempfile
+        from pathlib import Path
+        from format_gpu_linalg_ad_results import format_markdown
+
+        latency = "linalg_ad_large_grad_sum_qr_jvp_f64_256"
+        with tempfile.TemporaryDirectory() as tmp:
+            suite_file = Path(tmp) / "suite.yaml"
+            suite_file.write_text(json.dumps({
+                "suite_id": "gpu/linalg_jvp_vjp",
+                "backends": ["pytorch-cuda"],
+                "problems": [{"id": latency, "regime": "latency"}],
+            }))
+            metadata = {"suite_id": "gpu/linalg_jvp_vjp", "suite_file": str(suite_file)}
+            page = format_markdown([self.record(latency)], metadata)
+        self.assertNotIn("### Throughput regime", page)
+        self.assertNotIn("### Latency regime", page)
 
 
 class AdVerification(unittest.TestCase):

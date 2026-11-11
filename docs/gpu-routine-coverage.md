@@ -81,8 +81,10 @@ naming it there again.
 - `gpu/linalg_ad_latency` keeps n=4 only (10 operations × one size). These rows
   measure call overhead, which barely depends on size, so one size keeps
   regression detection; n=2 and n=8 are the characterization sweep.
-- `gpu/linalg_jvp_vjp` keeps n=256 only (10 operations × one size); n=512 is the
-  sweep of the same GPU-sized AD workloads.
+- `gpu/linalg_jvp_vjp` keeps n=256 only (10 operations × one size, per-call
+  latency); n=4096 is the throughput end of the same AD workloads (per-call, and
+  over the `linalg_ad` floor), run on an explicit probe because one 4096 row is
+  ~0.1–3.5 s of GPU work before its check.
 - `gpu/elementwise` keeps both cases because they are different regimes, not a
   size sweep: 1k measures per-command overhead (latency), 1m the bandwidth cost.
   They are never averaged together.

@@ -15,7 +15,19 @@ import regime_policy  # noqa: E402
 ROOT = Path(__file__).resolve().parents[1]
 
 SMALL_SIZES = [2, 4, 8]
-LARGE_SIZES = [256, 512]
+# 512 was a size sweep of the same latency-sized workloads; the matrix is the
+# two ends of the range: n=256 (65,536 elements, per-call latency) and n=4096
+# (16,777,216 elements, over the `linalg_ad` floor: throughput).
+LARGE_SIZES = [256, 4096]
+
+# `cpu_reference` re-runs the whole loss through a second AD pass. At n=4096 it
+# was measured at 26.8 s for one case, which is more than the measurement it
+# checks, so the largest rows are held to a cheaper check of the same claim.
+# `analytic` exists only for losses with a closed form; everything else uses a
+# central difference of the primal loss at a derived step. Nothing is loosened:
+# every mode is judged at the suite's own rtol/atol.
+CPU_REFERENCE_MAX_ELEMENTS = 1_048_576
+ANALYTIC_LOSSES = {"grad_sum_svd_s", "grad_sum_eigh"}
 
 SEEDS = {
     "small": {
@@ -55,14 +67,32 @@ def generator_for(loss: str) -> str:
     return "well_conditioned"
 
 
+def verify_block(loss: str, n: int) -> dict:
+    """The check that backs this row, and why it is not the strongest one.
+
+    A row that cannot afford `cpu_reference` is not left unchecked and is not
+    silently marked verified: it names the check that actually ran. `analytic`
+    compares every output element; `finite_difference` compares the primal and
+    one projection of the derivative, and says so in its record. Both are judged
+    at the suite's own tolerances.
+    """
+    block = {"reference": "cpu_fp64", "rtol": 1.0e-5, "atol": 1.0e-8}
+    if n * n <= CPU_REFERENCE_MAX_ELEMENTS:
+        # The suite default already means this; stating it on every latency row
+        # would only churn the file.
+        return block
+    block["mode"] = "analytic" if loss in ANALYTIC_LOSSES else "finite_difference"
+    return block
+
+
 def build_problems(suite_id: str, size_class: str) -> list[dict]:
     problems: list[dict] = []
     sizes = SMALL_SIZES if size_class == "small" else LARGE_SIZES
     for n in sizes:
         # The regime is derived, not written by hand: `linalg_ad` has a floor of
-        # 1,048,576 elements, so n=256 and n=512 are per-call latency rows and a
-        # 4096-square row is throughput.  A hard-coded value would silently stop
-        # matching the policy when a size changes.
+        # 1,048,576 elements, so n=256 (and the n=2/4/8 sweep) stay per-call
+        # latency rows while a 4096-square row is throughput.  A hard-coded value
+        # would silently stop matching the policy when a size changes.
         regime = regime_policy.regime_for_case(
             suite_id, {"family": "linalg_ad", "linalg_ad": {"n": n}}
         )
@@ -101,11 +131,7 @@ def build_problems(suite_id: str, size_class: str) -> list[dict]:
                             "runs": 7,
                             "timing_scope": "steady_state_host_api_plus_device_sync",
                         },
-                        "verify": {
-                            "reference": "cpu_fp64",
-                            "rtol": 1.0e-5,
-                            "atol": 1.0e-8,
-                        },
+                        "verify": verify_block(loss, n),
                         "notes": f"shape={shape}",
                     }
                 )
@@ -138,6 +164,9 @@ def suite_document(
                 "runs": 7,
                 "timing_scope": "steady_state_host_api_plus_device_sync",
             },
+            # No suite-wide mode: `cpu_reference` is the default for the
+            # latency rows and would be wrong for every n=4096 row, each of
+            # which names the check that actually backs it.
             "verify": {"reference": "cpu_fp64", "rtol": 1.0e-5, "atol": 1.0e-8},
         },
         "backends": [
@@ -159,12 +188,19 @@ SUITES = {
         "GPU Linalg JVP/VJP Benchmarks",
         (
             "Trace-mode linalg automatic differentiation on CUDA for tenferro-rs "
-            "and PyTorch at GPU-sized matrices (n=256, 512). Every case here pays "
-            "one device retirement per call, so each row is a per-call latency row. "
-            "n=256 is 65,536 elements, below the linalg_ad floor, and even a 512x512 "
-            "QR JVP is dominated by the trace runtime's per-call cost. The same "
-            "cases measured with one retirement per K calls live in "
-            "`gpu/linalg_ad_throughput`."
+            "and PyTorch at n=256 and n=4096. Every case here pays one device "
+            "retirement per call. The n=256 rows are 65,536 elements, below the "
+            "linalg_ad floor, so they are per-call latency rows: even a 256x256 QR "
+            "JVP there is dominated by the trace runtime's per-call cost. The n=4096 "
+            "rows are 16,777,216 elements, over that floor, so they are declared "
+            "throughput rows: the first run is what will show how much of each row is "
+            "still fixed cost. The two sizes are published in separate sections and are "
+            "never compared or averaged together. The n=4096 rows cannot afford a second "
+            "CPU AD pass, so they state the check that backs them (analytic, or a "
+            "central difference) instead of the default cpu_reference. The QR cases "
+            "measured with one retirement per K calls -- 256 JVP/VJP and 4096 JVP -- "
+            "live in `gpu/linalg_ad_throughput`; its 4096 VJP is absent because it "
+            "retains a 128 MiB gradient per run and the retention budget pins K to 1."
         ),
         "large",
     ),

@@ -1,11 +1,19 @@
 schema_version: 1
 suite_id: gpu/linalg_jvp_vjp
 title: GPU Linalg JVP/VJP Benchmarks
-description: Trace-mode linalg automatic differentiation on CUDA for tenferro-rs and
-  PyTorch at GPU-sized matrices (n=256, 512). Every case here pays one device retirement
-  per call, so each row is a per-call latency row. n=256 is 65,536 elements, below
-  the linalg_ad floor, and even a 512x512 QR JVP is dominated by the trace runtime's
-  per-call cost. The same cases measured with one retirement per K calls live in `gpu/linalg_ad_throughput`.
+description: 'Trace-mode linalg automatic differentiation on CUDA for tenferro-rs
+  and PyTorch at n=256 and n=4096. Every case here pays one device retirement per
+  call. The n=256 rows are 65,536 elements, below the linalg_ad floor, so they are
+  per-call latency rows: even a 256x256 QR JVP there is dominated by the trace runtime''s
+  per-call cost. The n=4096 rows are 16,777,216 elements, over that floor, so they
+  are declared throughput rows: the first run is what will show how much of each row
+  is still fixed cost. The two sizes are published in separate sections and are never
+  compared or averaged together. The n=4096 rows cannot afford a second CPU AD pass,
+  so they state the check that backs them (analytic, or a central difference) instead
+  of the default cpu_reference. The QR cases measured with one retirement per K calls
+  -- 256 JVP/VJP and 4096 JVP -- live in `gpu/linalg_ad_throughput`; its 4096 VJP
+  is absent because it retains a 128 MiB gradient per run and the retention budget
+  pins K to 1.'
 defaults:
   measure: per_call
   device:
@@ -269,9 +277,9 @@ problems:
     rtol: 1.0e-05
     atol: 1.0e-08
   notes: shape=256x256,rhs=1
-- id: linalg_ad_large_grad_sum_svd_s_jvp_f64_512
+- id: linalg_ad_large_grad_sum_svd_s_jvp_f64_4096
   family: linalg_ad
-  regime: latency
+  regime: throughput
   op: jvp
   dtype:
     a: f64
@@ -284,7 +292,7 @@ problems:
   linalg_ad: &id006
     suite: large
     loss: grad_sum_svd_s
-    n: 512
+    n: 4096
     matrix_seed: 34
   run:
     warmups: 3
@@ -294,10 +302,11 @@ problems:
     reference: cpu_fp64
     rtol: 1.0e-05
     atol: 1.0e-08
-  notes: shape=512x512
-- id: linalg_ad_large_grad_sum_svd_s_vjp_f64_512
+    mode: analytic
+  notes: shape=4096x4096
+- id: linalg_ad_large_grad_sum_svd_s_vjp_f64_4096
   family: linalg_ad
-  regime: latency
+  regime: throughput
   op: vjp
   dtype:
     a: f64
@@ -316,10 +325,11 @@ problems:
     reference: cpu_fp64
     rtol: 1.0e-05
     atol: 1.0e-08
-  notes: shape=512x512
-- id: linalg_ad_large_grad_sum_qr_jvp_f64_512
+    mode: analytic
+  notes: shape=4096x4096
+- id: linalg_ad_large_grad_sum_qr_jvp_f64_4096
   family: linalg_ad
-  regime: latency
+  regime: throughput
   op: jvp
   dtype:
     a: f64
@@ -332,7 +342,7 @@ problems:
   linalg_ad: &id007
     suite: large
     loss: grad_sum_qr
-    n: 512
+    n: 4096
     matrix_seed: 26
   run:
     warmups: 3
@@ -342,10 +352,11 @@ problems:
     reference: cpu_fp64
     rtol: 1.0e-05
     atol: 1.0e-08
-  notes: shape=512x512
-- id: linalg_ad_large_grad_sum_qr_vjp_f64_512
+    mode: finite_difference
+  notes: shape=4096x4096
+- id: linalg_ad_large_grad_sum_qr_vjp_f64_4096
   family: linalg_ad
-  regime: latency
+  regime: throughput
   op: vjp
   dtype:
     a: f64
@@ -364,10 +375,11 @@ problems:
     reference: cpu_fp64
     rtol: 1.0e-05
     atol: 1.0e-08
-  notes: shape=512x512
-- id: linalg_ad_large_grad_sum_eigh_jvp_f64_512
+    mode: finite_difference
+  notes: shape=4096x4096
+- id: linalg_ad_large_grad_sum_eigh_jvp_f64_4096
   family: linalg_ad
-  regime: latency
+  regime: throughput
   op: jvp
   dtype:
     a: f64
@@ -380,7 +392,7 @@ problems:
   linalg_ad: &id008
     suite: large
     loss: grad_sum_eigh
-    n: 512
+    n: 4096
     matrix_seed: 27
   run:
     warmups: 3
@@ -390,10 +402,11 @@ problems:
     reference: cpu_fp64
     rtol: 1.0e-05
     atol: 1.0e-08
-  notes: shape=512x512
-- id: linalg_ad_large_grad_sum_eigh_vjp_f64_512
+    mode: analytic
+  notes: shape=4096x4096
+- id: linalg_ad_large_grad_sum_eigh_vjp_f64_4096
   family: linalg_ad
-  regime: latency
+  regime: throughput
   op: vjp
   dtype:
     a: f64
@@ -412,10 +425,11 @@ problems:
     reference: cpu_fp64
     rtol: 1.0e-05
     atol: 1.0e-08
-  notes: shape=512x512
-- id: linalg_ad_large_grad_sum_lu_jvp_f64_512
+    mode: analytic
+  notes: shape=4096x4096
+- id: linalg_ad_large_grad_sum_lu_jvp_f64_4096
   family: linalg_ad
-  regime: latency
+  regime: throughput
   op: jvp
   dtype:
     a: f64
@@ -428,7 +442,7 @@ problems:
   linalg_ad: &id009
     suite: large
     loss: grad_sum_lu
-    n: 512
+    n: 4096
     matrix_seed: 54
   run:
     warmups: 3
@@ -438,10 +452,11 @@ problems:
     reference: cpu_fp64
     rtol: 1.0e-05
     atol: 1.0e-08
-  notes: shape=512x512
-- id: linalg_ad_large_grad_sum_lu_vjp_f64_512
+    mode: finite_difference
+  notes: shape=4096x4096
+- id: linalg_ad_large_grad_sum_lu_vjp_f64_4096
   family: linalg_ad
-  regime: latency
+  regime: throughput
   op: vjp
   dtype:
     a: f64
@@ -460,10 +475,11 @@ problems:
     reference: cpu_fp64
     rtol: 1.0e-05
     atol: 1.0e-08
-  notes: shape=512x512
-- id: linalg_ad_large_grad_sum_solve_jvp_f64_512
+    mode: finite_difference
+  notes: shape=4096x4096
+- id: linalg_ad_large_grad_sum_solve_jvp_f64_4096
   family: linalg_ad
-  regime: latency
+  regime: throughput
   op: jvp
   dtype:
     a: f64
@@ -476,7 +492,7 @@ problems:
   linalg_ad: &id010
     suite: large
     loss: grad_sum_solve
-    n: 512
+    n: 4096
     matrix_seed: 35
     rhs_seed: 36
     rhs_cols: 1
@@ -488,10 +504,11 @@ problems:
     reference: cpu_fp64
     rtol: 1.0e-05
     atol: 1.0e-08
-  notes: shape=512x512,rhs=1
-- id: linalg_ad_large_grad_sum_solve_vjp_f64_512
+    mode: finite_difference
+  notes: shape=4096x4096,rhs=1
+- id: linalg_ad_large_grad_sum_solve_vjp_f64_4096
   family: linalg_ad
-  regime: latency
+  regime: throughput
   op: vjp
   dtype:
     a: f64
@@ -510,4 +527,5 @@ problems:
     reference: cpu_fp64
     rtol: 1.0e-05
     atol: 1.0e-08
-  notes: shape=512x512,rhs=1
+    mode: finite_difference
+  notes: shape=4096x4096,rhs=1
