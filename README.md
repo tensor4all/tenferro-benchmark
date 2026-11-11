@@ -109,13 +109,21 @@ All profiles:
 - Rust toolchain (`cargo`).
 - [uv](https://docs.astral.sh/uv/) for the Python environment (`uv sync`
   creates `.venv` from `pyproject.toml`).
-- External checkouts under `extern/` (tenferro-rs and problem
-  data), fetched by `./scripts/setup_extern_deps.sh`. Only tenferro-rs is
-  pinned by revision, in `pins/tenferro-rs.rev`: `TENFERRO_UPDATE=1` checks
-  out that revision (`TENFERRO_REF=<ref>` overrides the pin); without it the
-  script reuses or clones the checkout as it is. strided-perm / strided-view /
-  threadteam come from crates.io and are recorded in `run.yaml`
-  (`resolved_deps`).
+- A tenferro-rs checkout at `extern/tenferro-rs` (or `TENFERRO_RS_DIR`),
+  cloned by `./scripts/setup_extern_deps.sh`; every `tenferro-*` dependency in
+  `Cargo.toml` is a path into it, so nothing builds before the script has run.
+  Only tenferro-rs is pinned by revision, in `pins/tenferro-rs.rev`:
+  `TENFERRO_UPDATE=1` checks out that revision (`TENFERRO_REF=<ref>` overrides
+  the pin); without it the script reuses an existing checkout as it is, or
+  clones the default branch. strided-perm / strided-view / threadteam come
+  from crates.io (no strided-rs checkout is needed) and are recorded in
+  `run.yaml` (`resolved_deps`). With the default Linux provider
+  (`blas-openblas`) the script needs `OPENBLAS_ROOT` (the devcontainers set it);
+  `TENFERRO_CPU_FEATURES=native` needs no BLAS prefix.
+- The tensor-network problem data, `extern/TensorNetworkBenchmarks`, is a git
+  submodule. The setup script does not fetch it; clone with
+  `--recurse-submodules` or run
+  `git submodule update --init extern/TensorNetworkBenchmarks`.
 
 For `mac-cpu`, run the "All profiles" commands directly on the host. For the
 devcontainer profiles (`amd-cpu` / `nvidia-gpu`), run them
@@ -179,7 +187,7 @@ PERMUTATION_EXTRA_FEATURES=hptt \
 BENCHMARK_TARGET_PROFILE=mac-cpu ./scripts/run_all.sh 1 4
 ```
 
-Quick smoke (single small instance, one run, no warmup):
+Quick smoke (one einsum instance, one timed run):
 
 ```bash
 BENCHMARK_TARGET_PROFILE=mac-cpu \
@@ -190,8 +198,19 @@ PUBLICATION_GATE_SUITE=small \
   ./scripts/run_all.sh 1
 ```
 
+`BENCH_WARMUPS=0` does not remove the warmup: the einsum runners
+(`src/main.rs`, `scripts/benchmark_python.py`,
+`scripts/benchmark_einsum_omeinsum.jl`) always execute at least one untimed
+run, so lazy first-execution setup is never timed, and their timing header
+reports the count they executed. `BENCH_INSTANCE` narrows only the einsum
+suite; this command still runs the CPU ops suite (skip it with
+`SKIP_CPU_OPS=1`) and the follow-up suites that are on by default
+(`RUN_SMALL_WORK_SUITE=0`, `RUN_PERF_ISSUES_SUITE=0` and
+`RUN_OVERHEAD_SMOKE_SUITE=0` skip them).
+
 Useful environment variables: `BENCH_INSTANCE` (restrict to one einsum
-instance), `BENCH_RUNS` / `BENCH_WARMUPS` (iteration counts),
+instance), `BENCH_RUNS` / `BENCH_WARMUPS` (iteration counts; at least one
+warmup always runs),
 `TENFERRO_CPU_FEATURES` (`native` or a BLAS provider: `blas-openblas`,
 `blas-mkl`, `blas-accelerate`; **Linux defaults to `blas-openblas`**,
 macOS defaults to `blas-accelerate`), `RUN_FFT_SUITE=0`, `RUN_PUBLIC_API_SUITE=0`, `RUN_SMALL_WORK_SUITE=0`,
@@ -434,15 +453,31 @@ not see the GPU. Reinstall them inside the container and verify:
 ```bash
 devcontainer up --workspace-folder . --config .devcontainer/cuda/devcontainer.json
 
-# Normally done by postCreateCommand:
+# Reinstall the CUDA wheels (postCreateCommand does exactly these three steps):
 devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
   bash -lc '
     (uv sync --frozen || uv sync)
     uv pip install "torch>=2.12.0" --extra-index-url https://download.pytorch.org/whl/cu126
     uv pip install "jax[cuda12]"
-    ./scripts/setup_extern_deps.sh
     uv run python -c "import torch, jax; assert torch.cuda.is_available(); jax.devices(\"cuda\"); print(\"CUDA OK:\", torch.__version__)"'
 ```
+
+The container brings no tenferro-rs checkout, and `postCreateCommand` does not
+create one. Run the setup script once per workspace before the first GPU run
+(and initialize the submodule for the tensor-network suite):
+
+```bash
+devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
+  bash -lc '
+    ./scripts/setup_extern_deps.sh
+    git submodule update --init extern/TensorNetworkBenchmarks'
+```
+
+Without `extern/tenferro-rs`, `scripts/run_gpu_suite.sh` cannot build its Rust
+arm (every `tenferro-*` dependency is a path into the checkout), and its
+per-suite metadata step fails with
+`tenferro dir does not exist: .../extern/tenferro-rs`
+(`scripts/collect_run_metadata.py`), which marks the run as failed validation.
 
 A GPU node with a CUDA module and driver can also collect without a container;
 see "Host (non-container) runs" in that document for the required variables,
