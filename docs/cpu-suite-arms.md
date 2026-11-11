@@ -14,8 +14,8 @@ backend set of a committed `result/<profile>/cpu/<suite>.summary.json`.
 | suite (page) | declared backends (`*.yaml`) | eager rows in the committed summaries | eager status |
 |---|---|---|---|
 | `cpu/einsum` | `tenferro-trace, tenferro-eager, pytorch-cpu, jax-cpu, omeinsum-jl` | zen5 144 / amd 96 / mac 96 (every case) | **measured** |
-| `cpu/cpu_ops` | `tenferro-eager, tenferro-trace, pytorch-cpu, jax-cpu` | zen5 657 / amd 148 / mac 148; 18 cases have both arms, **10 have trace only** (the JVP/VJP cases, registered on eager since tenferro-benchmark #307 and awaiting the next collection) | **partial by design** (see below) |
-| `cpu/linalg_jvp_vjp` (derived from the CPU-ops CSV) | — (not a suite file; `render_run.py` selects the `_jvp`/`_vjp` rows) | **0** eager, 240 trace (zen5) / 100 (amd, mac); the committed summaries predate the eager registration | **registered, awaiting the next collection** |
+| `cpu/cpu_ops` | `tenferro-eager, tenferro-trace, pytorch-cpu, jax-cpu` | zen5 657 / amd 248 / mac 248; amd and mac have both arms on every case (28/28), zen5 has 18 and **10 trace only** (the JVP/VJP cases, which its last collection predates) | **partial by design** (see below) |
+| `cpu/linalg_jvp_vjp` (derived from the CPU-ops CSV) | — (not a suite file; `render_run.py` selects the `_jvp`/`_vjp` rows) | zen5 **0** eager / 240 trace; amd and mac **100 / 100** (all ten cases on both arms) | **measured** on amd and mac; zen5 awaits its next collection |
 | `cpu/public_api` | `tenferro-direct, tenferro-eager, tenferro-trace, pytorch-cpu, jax-cpu, julia-base, strided-jl` | zen5 117 / amd 78 / mac 78; 22 cases have both arms, **96 have trace only** | **partial by design** |
 | `cpu/permutation` | `tenferro-rs, hptt, strided-rs, julia-base, strided-jl, memcpy` | 0 (no `tenferro-eager`/`-trace` arm exists) | **not applicable**: the axis is different arms |
 | `cpu/fft` | `tenferro-fft-immediate, tenferro-fft-executor-cached, pytorch-cpu` | 0 | **not applicable** |
@@ -28,7 +28,7 @@ page) and `cpu/public_api`. In the other six the "missing eager bar" is not a mi
 suite pages measure other arms (`tenferro-rs`, `tenferro-fft-*`, `*-shared-session`, or a per-case
 reference), and the dashboard's default eager+trace rule does not describe them.
 
-## Why `linalg_jvp_vjp` had no eager arm
+## Why `linalg_jvp_vjp` gained an eager arm
 
 `src/bin/publication_gate.rs` registered the AD cases only through
 `push_linalg_jvp_vjp_trace_benches`. That was a **registration gap, not a capability gap**: every op
@@ -60,9 +60,10 @@ The raw sample record says it too: an eager AD row writes
 row writes `borrowed_session_outside_timing_for_primal`. The row is therefore self-describing
 rather than setup-inclusive by accident (`src/bin/publication_gate.rs`).
 
-The committed summaries still show **0 eager JVP/VJP rows** because they were collected before the
-registration. The next collection fills the eager column; this page states no eager-vs-trace
-numbers of its own.
+The amd-cpu and mac-cpu summaries now carry all ten eager JVP/VJP cases (100 rows each); they were
+collected after the registration, and `result/amd-cpu/cpu/linalg_jvp_vjp.md` and its mac counterpart
+show the column. The zen5-cpu summary still has none, because its last collection predates #311, so
+its next collection is the one that fills it. This page states no eager-vs-trace numbers of its own.
 
 The `_backward` cases (`grad_sum_matmul_backward`, `grad_sum_*_backward`) are the eager arm's
 reverse-mode counterpart. They record `unsupported: eager backward has no borrowed-session API`:
