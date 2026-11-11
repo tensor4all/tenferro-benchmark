@@ -20,11 +20,17 @@ use tenferro_tensor::TypedTensor;
 const DEFAULT_WARMUPS: usize = 3;
 const DEFAULT_RUNS: usize = 15;
 
+/// Untimed executions before the timed runs.
+///
+/// At least one always runs, so lazy first-execution setup is never timed
+/// (`BENCH_WARMUPS=0` therefore runs one). The timing header reports this
+/// executed count, not the requested one.
 fn bench_warmups() -> usize {
     std::env::var("BENCH_WARMUPS")
         .ok()
         .and_then(|value| value.parse().ok())
         .unwrap_or(DEFAULT_WARMUPS)
+        .max(1)
 }
 
 fn bench_runs() -> usize {
@@ -525,7 +531,7 @@ fn run_instance_trace(
 
     // Warmup (execution only, graph already compiled)
     // Use catch_unwind to handle panics from unsupported layouts
-    for _ in 0..bench_warmups().max(1) {
+    for _ in 0..bench_warmups() {
         let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
             runtime.run(&mut [&mut engine], &prepared, &reads)
         }));
@@ -723,7 +729,7 @@ fn run_instance_eager_in_scope(
     }
 
     ctx.with_eager_session(engine, |session| -> Result<_, tenferro_ad::Error> {
-        for _ in 0..bench_warmups().max(1) {
+        for _ in 0..bench_warmups() {
             let mut operands = source_operands.to_vec();
             let mut retained_inputs = Vec::with_capacity(path_meta.path.len());
             let eval = contract_once_eager(
