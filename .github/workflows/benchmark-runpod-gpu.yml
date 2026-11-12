@@ -33,7 +33,9 @@ on:
         default: ""
         type: string
       suite:
-        description: GPU suite YAML, all GPU suites, or perf-issues-readback
+        description: >-
+          GPU suite YAML, all GPU suites, perf-issues-readback, or throughput
+          (the deferred-batch lane, which is not a routine manifest suite)
         required: true
         default: all
         type: string
@@ -595,6 +597,13 @@ jobs:
             ./scripts/ci/run_gpu_readback.sh
             exit 0
           fi
+          if [[ "$REQUESTED_SUITE" == throughput ]]; then
+            # The deferred-batch lane is a standalone entry point: its suites
+            # are not in the routine manifest, and a routine selection cannot
+            # express their separate timing contract.
+            ./scripts/run_gpu_throughput.sh
+            exit 0
+          fi
           if [[ "$REQUESTED_SUITE" == all ]]; then
             ./scripts/run_gpu_suite.sh
           else
@@ -615,9 +624,13 @@ jobs:
           # `python` is the restored runtime interpreter (first on PATH), which already
           # carries PyYAML and jsonschema; prepare_result_bundle.py imports nothing else
           # beyond the repository's own stdlib-only modules.
+          suites="$REQUESTED_SUITE"
+          if [[ "$suites" == throughput ]]; then
+            suites="benchmarks/gpu/dense_throughput.yaml,benchmarks/gpu/linalg_ad_throughput.yaml"
+          fi
           python scripts/ci/prepare_result_bundle.py --profile nvidia-gpu --harness-commit "$GITHUB_SHA" \
             --started-at "$COLLECTION_STARTED_AT" --timestamp "$COLLECTION_TIMESTAMP" \
-            --backends "$GPU_BENCH_RUNTIME_BACKENDS" --suites "$REQUESTED_SUITE" --bundle-dir _benchmark_artifact
+            --backends "$GPU_BENCH_RUNTIME_BACKENDS" --suites "$suites" --bundle-dir _benchmark_artifact
 
       - name: Archive benchmark results
         timeout-minutes: 4
