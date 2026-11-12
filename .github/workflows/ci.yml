@@ -139,6 +139,12 @@ jobs:
       - name: Check the pins against the stack
         run: uv run campaign-sync-pins . --repo tenferro-benchmark --check
 
+      - name: The pin has a current recording
+        # Fails, with no exception, when pins/tenferro-rs.rev names a revision no published page
+        # summary was measured at, or when the newest published summary was measured elsewhere:
+        # record at the pin, or keep the pin at the last measured revision (campaign-toolkit#62).
+        run: uv run campaign-check-pin-recorded --pin pins/tenferro-rs.rev --evidence 'result/*/*/*.summary.json' --commit-field tenferro_commit
+
       - name: Validate results dashboard
         run: uv run python -m unittest tests.test_generate_dashboard tests.test_generate_history tests.test_result_pipeline tests.test_cpu_thread_reports tests.test_publish_runs tests.test_publish_gpu_page tests.test_report_summary_reasons tests.test_regime_policy tests.test_source_contract tests.test_verification_mode_contract tests.test_cpu_suite_arms_doc
 
