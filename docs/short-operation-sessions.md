@@ -40,8 +40,13 @@ Its eager runtime and prepared trace runtimes share clones of that exact backend
 witness. Prepared trace retains this execution scope. Eager primal operations now
 use the public borrowed EagerSession APIs, entering the session outside timing
 and reusing it across measured samples. Input handles and consumed operation
-descriptors are restored before each sample. Eager backward has no equivalent
-borrowed-session API and is reported as unsupported in standard operation tables.
+descriptors are restored before each sample. Eager backward rows use the same
+borrowed session: the reverse pass runs through `EagerSession::engine()`, the
+gradients are validated against scalar references before timing, and accumulated
+gradients are cleared after every sample outside timing. They time one operation
+per sample instead of a calibrated batch, because the reverse pass scans every
+live gradient slot of the runtime (#471; runs recorded before it report these
+rows as unsupported).
 The `cpu_ops` small suite is now included by default;
 its former isolated-call results remain diagnostics, not new scope measurements.
 
