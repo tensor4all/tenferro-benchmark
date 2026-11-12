@@ -881,7 +881,10 @@ fn eager_forward(
             let u_sum = session.reduce_sum(&u, Some(&[0, 1]))?;
             session.add(&l_sum, &u_sum)
         }
-        LossKind::Solve { .. } => session.solve(wrt, rhs.expect("solve fixture carries a rhs")),
+        LossKind::Solve { .. } => {
+            let x = session.solve(wrt, rhs.expect("solve fixture carries a rhs"))?;
+            session.reduce_sum(&x, Some(&[0, 1]))
+        }
     }
 }
 
