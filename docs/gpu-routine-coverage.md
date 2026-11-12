@@ -97,9 +97,15 @@ naming it there again.
     ./scripts/run_gpu_suite.sh
   ```
 
-  The selection plans the three arms of that one case and records them in
+  The selection plans the arms of that one case and records them in
   `run.yaml` `expected_case_ids`, so packaging treats them as planned rows and
   the weekly completeness check is unaffected.
+
+  The 4096 `grad_sum_svd_s` and `grad_sum_eigh` rows are recorded as
+  `unsupported` on CUDA: their cuSOLVER workspace (411 MB for SVD, 541 MB for
+  Eigh) exceeds the CUDA runtime's pending-resource budget, so the row states
+  the limit with its size instead of failing every probe. The 4096 QR, LU and
+  solve rows run and are checked with the suite's `finite_difference` mode.
 - `gpu/elementwise` keeps both cases because they are different regimes, not a
   size sweep: 1k measures per-command overhead (latency), 1m the bandwidth cost.
   They are never averaged together.

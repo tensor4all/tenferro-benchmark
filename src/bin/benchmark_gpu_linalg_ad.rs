@@ -677,29 +677,39 @@ fn run_eager_case(
 ) -> Result<EagerCase, String> {
     let ctx = EagerRuntime::new().map_err(|e| format!("eager runtime: {e}"))?;
 
-    // A device runtime cannot turn a host tensor into a leaf without an engine,
-    // so the fixture is built inside a session, before any clock starts.
+    // A device runtime does not accept an unpinned host tensor as an eager
+    // leaf's storage, so the fixture is uploaded first and the leaves are built
+    // from device tensors inside a session, before any clock starts.
+    let matrix = match *loss {
+        LossKind::SvdS { matrix_seed }
+        | LossKind::Qr { matrix_seed }
+        | LossKind::Lu { matrix_seed } => well_conditioned_matrix(n, matrix_seed),
+        LossKind::Eigh { matrix_seed } | LossKind::Solve { matrix_seed, .. } => {
+            spd_matrix(n, matrix_seed)
+        }
+    };
+    let matrix = upload_tensor(rt, &tensor_f64(&[n, n], matrix))
+        .map_err(|e| format!("eager fixture upload: {e}"))?;
+    let rhs = match *loss {
+        LossKind::Solve {
+            rhs_seed, rhs_cols, ..
+        } => Some(
+            upload_tensor(
+                rt,
+                &tensor_f64(&[n, rhs_cols], data_for_shape(&[n, rhs_cols], rhs_seed)),
+            )
+            .map_err(|e| format!("eager rhs upload: {e}"))?,
+        ),
+        _ => None,
+    };
     let (wrt, rhs) = ctx
         .with_eager_session(
             engine,
             |session| -> tenferro_ad::error::Result<(EagerTensor, Option<EagerTensor>)> {
-                let matrix = match *loss {
-                    LossKind::SvdS { matrix_seed }
-                    | LossKind::Qr { matrix_seed }
-                    | LossKind::Lu { matrix_seed } => well_conditioned_matrix(n, matrix_seed),
-                    LossKind::Eigh { matrix_seed } | LossKind::Solve { matrix_seed, .. } => {
-                        spd_matrix(n, matrix_seed)
-                    }
-                };
-                let wrt = session.variable_from(tensor_f64(&[n, n], matrix))?;
-                let rhs = match *loss {
-                    LossKind::Solve {
-                        rhs_seed, rhs_cols, ..
-                    } => Some(session.constant_from_host(tensor_f64(
-                        &[n, rhs_cols],
-                        data_for_shape(&[n, rhs_cols], rhs_seed),
-                    ))?),
-                    _ => None,
+                let wrt = session.variable_from(matrix)?;
+                let rhs = match rhs {
+                    Some(rhs) => Some(session.constant_from(rhs)?),
+                    None => None,
                 };
                 Ok((wrt, rhs))
             },
@@ -708,11 +718,13 @@ fn run_eager_case(
 
     let tangent = if phase == "jvp" {
         let seed = tangent_seed(loss.matrix_seed());
+        let tangent = upload_tensor(rt, &tensor_f64(&[n, n], data_for_shape(&[n, n], seed)))
+            .map_err(|e| format!("eager tangent upload: {e}"))?;
         Some(
             ctx.with_eager_session(
                 engine,
                 |session| -> tenferro_ad::error::Result<EagerTensor> {
-                    session.constant_from_host(tensor_f64(&[n, n], data_for_shape(&[n, n], seed)))
+                    session.constant_from(tangent)
                 },
             )
             .map_err(|e| format!("eager tangent: {e}"))?,
@@ -721,11 +733,13 @@ fn run_eager_case(
         None
     };
     let cotangent = if phase == "vjp" {
+        let cotangent = upload_tensor(rt, &tensor_f64(&[], vec![1.0]))
+            .map_err(|e| format!("eager cotangent upload: {e}"))?;
         Some(
             ctx.with_eager_session(
                 engine,
                 |session| -> tenferro_ad::error::Result<EagerTensor> {
-                    session.constant_from_host(tensor_f64(&[], vec![1.0]))
+                    session.constant_from(cotangent)
                 },
             )
             .map_err(|e| format!("eager cotangent: {e}"))?,
@@ -1144,6 +1158,16 @@ fn classify_linalg_ad_error(msg: &str) -> (&'static str, String) {
              broadcast semantics; the CUDA elementwise mul path does not yet match CPU \
              scalar broadcast for 0-D tensors"
                 .to_string(),
+        )
+    } else if msg.contains("insufficient pending-resource budget") {
+        // At n=4096 the cuSOLVER workspace (411 MB for svd, 541 MB for eigh)
+        // exceeds the CUDA runtime's pending budget, which is fixed by its
+        // default configuration. That is a capability limit of this runtime,
+        // not a measurement that failed: record it as unsupported with the
+        // size that hit it, instead of retrying the same case every week.
+        (
+            "unsupported",
+            format!("the CUDA runtime's pending-resource budget cannot admit the decomposition workspace at this size: {msg}"),
         )
     } else {
         ("runtime_failed", msg.to_string())
