@@ -67,9 +67,15 @@ three published pages. Before that collection the zen5 summary held the trace ar
 predated #311; nothing was dropped, the arm had never been measured.
 
 The `_backward` cases (`grad_sum_matmul_backward`, `grad_sum_*_backward`) are the eager arm's
-reverse-mode counterpart. They record `unsupported: eager backward has no borrowed-session API`:
-since tenferro-rs #2206 the reverse pass needs the engine that the entered session already borrows,
-so those cases are declared but not timed.
+reverse-mode counterpart. Since #471 they are timed like the primal rows: inside the borrowed
+session the closure runs the forward pass and then `loss.backward(session.engine())`, reborrowing
+the engine the session holds. Before timing, one pass on a fresh fixture must reproduce scalar
+reference gradients (`check_sum_*_grads` in `src/bin/publication_gate.rs`), otherwise the row is
+`error: gradient mismatch`; accumulated gradients are cleared after every sample, outside timing,
+and the row writes `borrowed_session_outside_timing_grads_cleared_outside_timing`. Runs recorded
+before #471 (including the zen5-cpu collection of 2026-11-12) still show
+`unsupported: eager backward has no borrowed-session API` for these cases until they are
+re-collected.
 
 ## Why `public_api` has eager for 22 cases and direct for the rest
 

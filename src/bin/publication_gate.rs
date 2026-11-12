@@ -565,11 +565,10 @@ fn run_small_latency(config: &BenchConfig, rows: &mut Vec<Row>) {
             ));
         }
 
-        rows.push(bench_row(
+        rows.push(bench_backward_row(
             config,
             "small",
             "grad_sum_matmul",
-            "backward",
             "f64",
             &format!("{n}x{n}"),
             || {
@@ -584,19 +583,15 @@ fn run_small_latency(config: &BenchConfig, rows: &mut Vec<Row>) {
             |session, (a, b)| {
                 let y = eager_session_ops::matmul(session, &a, &b)?;
                 let loss = eager_session_ops::reduce_sum(session, &y, &[0, 1])?;
-                // tenferro-rs #2206: the reverse pass needs the engine itself, which the
-                // entered session already borrows, so the backward rows stay
-                // unsupported (see `bench_row`) and only the forward pass is
-                // expressible inside the session.
-                Ok((loss, y))
+                Ok((loss.backward(session.engine())?, loss, y))
             },
+            |engine, (a, b)| check_sum_matmul_grads(engine, a, b, n, 1),
         ));
 
-        rows.push(bench_row(
+        rows.push(bench_backward_row(
             config,
             "small",
             "grad_sum_svd_s",
-            "backward",
             "f64",
             &format!("{n}x{n}"),
             || {
@@ -609,19 +604,15 @@ fn run_small_latency(config: &BenchConfig, rows: &mut Vec<Row>) {
             |session, (a,)| {
                 let (u, s, vt) = eager_linalg_tensor::svd(session, &a)?;
                 let loss = eager_session_ops::reduce_sum(session, &s, &[0])?;
-                // tenferro-rs #2206: the reverse pass needs the engine itself, which the
-                // entered session already borrows, so the backward rows stay
-                // unsupported (see `bench_row`) and only the forward pass is
-                // expressible inside the session.
-                Ok((loss, u, s, vt))
+                Ok((loss.backward(session.engine())?, loss, u, s, vt))
             },
+            |engine, (a,)| check_sum_svd_s_grad(engine, a, n),
         ));
 
-        rows.push(bench_row(
+        rows.push(bench_backward_row(
             config,
             "small",
             "grad_sum_solve",
-            "backward",
             "f64",
             &format!("{n}x{n},rhs=1"),
             || {
@@ -633,12 +624,9 @@ fn run_small_latency(config: &BenchConfig, rows: &mut Vec<Row>) {
             |session, (a, b)| {
                 let x = eager_linalg_tensor::solve(session, &a, &b)?;
                 let loss = eager_session_ops::reduce_sum(session, &x, &[0, 1])?;
-                // tenferro-rs #2206: the reverse pass needs the engine itself, which the
-                // entered session already borrows, so the backward rows stay
-                // unsupported (see `bench_row`) and only the forward pass is
-                // expressible inside the session.
-                Ok((loss, x))
+                Ok((loss.backward(session.engine())?, loss, x))
             },
+            |engine, (a, b)| check_sum_solve_grads(engine, a, b, n, 1),
         ));
         push_linalg_jvp_vjp_eager_benches(
             config,
@@ -854,11 +842,10 @@ fn run_large_throughput(config: &BenchConfig, rows: &mut Vec<Row>) {
                 Ok(loss)
             },
         ));
-        rows.push(bench_row(
+        rows.push(bench_backward_row(
             config,
             "large",
             "grad_sum_matmul",
-            "backward",
             "f64",
             &format!("{n}x{n}"),
             || {
@@ -873,18 +860,14 @@ fn run_large_throughput(config: &BenchConfig, rows: &mut Vec<Row>) {
             |session, (a, b)| {
                 let y = eager_session_ops::matmul(session, &a, &b)?;
                 let loss = eager_session_ops::reduce_sum(session, &y, &[0, 1])?;
-                // tenferro-rs #2206: the reverse pass needs the engine itself, which the
-                // entered session already borrows, so the backward rows stay
-                // unsupported (see `bench_row`) and only the forward pass is
-                // expressible inside the session.
-                Ok((loss, y))
+                Ok((loss.backward(session.engine())?, loss, y))
             },
+            |engine, (a, b)| check_sum_matmul_grads(engine, a, b, n, 1),
         ));
-        rows.push(bench_row(
+        rows.push(bench_backward_row(
             config,
             "large",
             "grad_sum_svd_s",
-            "backward",
             "f64",
             &format!("{n}x{n}"),
             || {
@@ -897,18 +880,14 @@ fn run_large_throughput(config: &BenchConfig, rows: &mut Vec<Row>) {
             |session, (a,)| {
                 let (u, s, vt) = eager_linalg_tensor::svd(session, &a)?;
                 let loss = eager_session_ops::reduce_sum(session, &s, &[0])?;
-                // tenferro-rs #2206: the reverse pass needs the engine itself, which the
-                // entered session already borrows, so the backward rows stay
-                // unsupported (see `bench_row`) and only the forward pass is
-                // expressible inside the session.
-                Ok((loss, u, s, vt))
+                Ok((loss.backward(session.engine())?, loss, u, s, vt))
             },
+            |engine, (a,)| check_sum_svd_s_grad(engine, a, n),
         ));
-        rows.push(bench_row(
+        rows.push(bench_backward_row(
             config,
             "large",
             "grad_sum_solve",
-            "backward",
             "f64",
             &format!("{n}x{n},rhs=1"),
             || {
@@ -920,12 +899,9 @@ fn run_large_throughput(config: &BenchConfig, rows: &mut Vec<Row>) {
             |session, (a, b)| {
                 let x = eager_linalg_tensor::solve(session, &a, &b)?;
                 let loss = eager_session_ops::reduce_sum(session, &x, &[0, 1])?;
-                // tenferro-rs #2206: the reverse pass needs the engine itself, which the
-                // entered session already borrows, so the backward rows stay
-                // unsupported (see `bench_row`) and only the forward pass is
-                // expressible inside the session.
-                Ok((loss, x))
+                Ok((loss.backward(session.engine())?, loss, x))
             },
+            |engine, (a, b)| check_sum_solve_grads(engine, a, b, n, 1),
         ));
     }
     // The linalg AD cases use the trace arm's size grid so that both arms of
@@ -1135,11 +1111,10 @@ fn run_batched_small(config: &BenchConfig, rows: &mut Vec<Row>) {
                     Ok(x)
                 },
             ));
-            rows.push(bench_row(
+            rows.push(bench_backward_row(
                 config,
                 "batched",
                 "grad_sum_batched_matmul",
-                "backward",
                 "f64",
                 &shape,
                 || {
@@ -1163,18 +1138,14 @@ fn run_batched_small(config: &BenchConfig, rows: &mut Vec<Row>) {
                         config.take().expect("prepared config"),
                     )?;
                     let loss = eager_session_ops::reduce_sum(session, &out, &[0, 1, 2])?;
-                    // tenferro-rs #2206: the reverse pass needs the engine itself, which the
-                    // entered session already borrows, so the backward rows stay
-                    // unsupported (see `bench_row`) and only the forward pass is
-                    // expressible inside the session.
-                    Ok((loss, out))
+                    Ok((loss.backward(session.engine())?, loss, out))
                 },
+                |engine, (a, rhs, _)| check_sum_matmul_grads(engine, a, rhs, n, b),
             ));
-            rows.push(bench_row(
+            rows.push(bench_backward_row(
                 config,
                 "batched",
                 "grad_sum_batched_solve",
-                "backward",
                 "f64",
                 &format!("{shape},rhs=1"),
                 || {
@@ -1192,12 +1163,9 @@ fn run_batched_small(config: &BenchConfig, rows: &mut Vec<Row>) {
                 |session, (a, rhs)| {
                     let x = eager_linalg_tensor::solve(session, &a, &rhs)?;
                     let loss = eager_session_ops::reduce_sum(session, &x, &[0, 1, 2])?;
-                    // tenferro-rs #2206: the reverse pass needs the engine itself, which the
-                    // entered session already borrows, so the backward rows stay
-                    // unsupported (see `bench_row`) and only the forward pass is
-                    // expressible inside the session.
-                    Ok((loss, x))
+                    Ok((loss.backward(session.engine())?, loss, x))
                 },
+                |engine, (a, rhs)| check_sum_solve_grads(engine, a, rhs, n, b),
             ));
         }
     }
@@ -1803,8 +1771,10 @@ fn measure<I, O>(
     })
 }
 
-// Primal fixtures are read-only and reusable. Prepare them before entering
-// the eager session; tensor wrapping itself may enter a backend session.
+// Fixtures are reusable: primal rows only read them, and backward rows only
+// accumulate into their gradient slots, which are cleared after every sample.
+// Prepare them before entering the eager session; tensor wrapping itself may
+// enter a backend session.
 fn measure_eager<I: Clone + Send + Sync, O>(
     config: &BenchConfig,
     shape: &str,
@@ -1831,6 +1801,12 @@ fn measure_eager<I: Clone + Send + Sync, O>(
                 times.push(start.elapsed());
                 black_box(&outputs);
                 // Output destruction is outside the clock, while fixtures persist.
+                drop(outputs);
+                drop(sample_inputs);
+                // Gradient reset is outside the clock too: a backward row would
+                // otherwise accumulate into the fixtures' slots across samples.
+                // Primal fixtures track no gradients, so this is a no-op for them.
+                ctx.clear_grads()?;
             }
             Ok::<_, Error>(times)
         })
@@ -1978,7 +1954,132 @@ fn record_cpu_runtime() -> Result<(), Error> {
     }))
 }
 
+fn status_row(
+    config: &BenchConfig,
+    suite: &'static str,
+    op: &'static str,
+    phase: &'static str,
+    dtype: &'static str,
+    shape: &str,
+    status: String,
+) -> Row {
+    Row {
+        suite,
+        op,
+        phase,
+        dtype,
+        shape: shape.to_string(),
+        backend: config.backend,
+        median_ms: None,
+        iqr_ms: None,
+        status,
+    }
+}
+
 fn bench_row<I: Clone + Send + Sync, O>(
+    config: &BenchConfig,
+    suite: &'static str,
+    op: &'static str,
+    phase: &'static str,
+    dtype: &'static str,
+    shape: &str,
+    setup: impl FnMut() -> tenferro_ad::error::Result<I> + Send,
+    execute: impl FnMut(&mut EagerSession<'_>, &mut I) -> tenferro_ad::error::Result<O> + Send,
+) -> Row {
+    if !benchmark_filter_matches(op, phase) {
+        return filtered_row(suite, op, phase, dtype, shape);
+    }
+    measure_eager_row(
+        config,
+        suite,
+        op,
+        phase,
+        dtype,
+        shape,
+        setup,
+        execute,
+        "borrowed_session_outside_timing_for_primal",
+    )
+}
+
+/// One eager `backward` row: forward pass plus `EagerTensor::backward` through
+/// the borrowed session's engine, timed by the same `measure_eager` path as the
+/// primal rows.
+///
+/// Before any timing, one untimed pass on a fresh fixture must reproduce the
+/// scalar reference gradients (`validate` reads the leaves' accumulated
+/// `grad()` slots); a mismatch is reported as an error row, never as `ok`.
+/// `measure_eager` clears the accumulated gradients after every sample, outside
+/// the clock, so every sample stores into empty slots and does the same work.
+fn bench_backward_row<I: Clone + Send + Sync, O>(
+    config: &BenchConfig,
+    suite: &'static str,
+    op: &'static str,
+    dtype: &'static str,
+    shape: &str,
+    mut setup: impl FnMut() -> tenferro_ad::error::Result<I> + Send,
+    mut execute: impl FnMut(&mut EagerSession<'_>, &mut I) -> tenferro_ad::error::Result<O> + Send,
+    validate: impl FnOnce(&mut CpuEngine, &I) -> Result<(), String>,
+) -> Row {
+    let phase = "backward";
+    if !benchmark_filter_matches(op, phase) {
+        return filtered_row(suite, op, phase, dtype, shape);
+    }
+
+    let checked = panic::catch_unwind(panic::AssertUnwindSafe(|| {
+        let ctx = cpu_ctx();
+        let mut input = setup()?;
+        ctx.clear_grads()?;
+        let mut engine = cpu_engine();
+        let outputs =
+            ctx.with_eager_session(&mut *engine, |session| execute(session, &mut input))?;
+        let verdict = validate(&mut engine, &input);
+        drop(outputs);
+        drop(engine);
+        ctx.clear_grads()?;
+        Ok::<_, Error>(verdict)
+    }));
+    match checked {
+        Ok(Ok(Ok(()))) => {}
+        Ok(Ok(Err(mismatch))) => {
+            return status_row(
+                config,
+                suite,
+                op,
+                phase,
+                dtype,
+                shape,
+                format!("error: gradient mismatch: {mismatch}"),
+            )
+        }
+        Ok(Err(err)) => {
+            return status_row(
+                config,
+                suite,
+                op,
+                phase,
+                dtype,
+                shape,
+                format!("error: {err}"),
+            )
+        }
+        Err(_) => return status_row(config, suite, op, phase, dtype, shape, "panic".into()),
+    }
+
+    measure_eager_row(
+        config,
+        suite,
+        op,
+        phase,
+        dtype,
+        shape,
+        setup,
+        execute,
+        "borrowed_session_outside_timing_grads_cleared_outside_timing",
+    )
+}
+
+fn measure_eager_row<I: Clone + Send + Sync, O>(
     config: &BenchConfig,
     suite: &'static str,
     op: &'static str,
@@ -1987,16 +2088,8 @@ fn bench_row<I: Clone + Send + Sync, O>(
     shape: &str,
     mut setup: impl FnMut() -> tenferro_ad::error::Result<I> + Send,
     mut execute: impl FnMut(&mut EagerSession<'_>, &mut I) -> tenferro_ad::error::Result<O> + Send,
+    eager_session_policy: &str,
 ) -> Row {
-    if !benchmark_filter_matches(op, phase) {
-        return filtered_row(suite, op, phase, dtype, shape);
-    }
-
-    if phase == "backward" {
-        return Row { suite, op, phase, dtype, shape: shape.to_string(), backend: config.backend,
-            median_ms: None, iqr_ms: None,
-            status: "unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled".into() };
-    }
     let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
         let measured = measure_eager(config, shape, &mut setup, &mut execute)?;
         summarize_measurement(
@@ -2006,7 +2099,7 @@ fn bench_row<I: Clone + Send + Sync, O>(
             phase,
             shape,
             "tenferro-eager",
-            "borrowed_session_outside_timing_for_primal",
+            eager_session_policy,
         )
     }));
 
@@ -2022,28 +2115,16 @@ fn bench_row<I: Clone + Send + Sync, O>(
             iqr_ms: Some(iqr),
             status: "ok".to_string(),
         },
-        Ok(Err(err)) => Row {
+        Ok(Err(err)) => status_row(
+            config,
             suite,
             op,
             phase,
             dtype,
-            shape: shape.to_string(),
-            backend: config.backend,
-            median_ms: None,
-            iqr_ms: None,
-            status: format!("error: {err}"),
-        },
-        Err(_) => Row {
-            suite,
-            op,
-            phase,
-            dtype,
-            shape: shape.to_string(),
-            backend: config.backend,
-            median_ms: None,
-            iqr_ms: None,
-            status: "panic".to_string(),
-        },
+            shape,
+            format!("error: {err}"),
+        ),
+        Err(_) => status_row(config, suite, op, phase, dtype, shape, "panic".into()),
     }
 }
 
@@ -2677,6 +2758,210 @@ fn batched_spd(n: usize, batch: usize, seed: u64) -> Vec<f64> {
     data
 }
 
+/// Relative tolerance of the untimed backward-row gradient checks. The fixtures
+/// are well conditioned, so rounding stays many orders of magnitude below it
+/// while a wrong rule (sign, transpose, missing term) is caught.
+const GRAD_CHECK_TOL: f64 = 1e-9;
+
+/// The value and accumulated gradient of a tracked leaf, read outside timing.
+fn leaf_value_and_grad(
+    engine: &mut CpuEngine,
+    leaf: &EagerTensor,
+) -> Result<(Vec<f64>, Vec<f64>), String> {
+    let value = leaf
+        .to_tensor(engine)
+        .map_err(|error| format!("read leaf value: {error}"))?;
+    let value = value
+        .as_slice::<f64>()
+        .map_err(|error| format!("leaf value is not f64: {error}"))?
+        .to_vec();
+    let grad = leaf
+        .grad()
+        .map_err(|error| format!("read leaf gradient: {error}"))?
+        .ok_or("tracked leaf has no accumulated gradient")?;
+    let grad = grad
+        .as_slice::<f64>()
+        .map_err(|error| format!("gradient is not f64: {error}"))?
+        .to_vec();
+    if grad.len() != value.len() {
+        return Err(format!(
+            "gradient has {} elements, leaf has {}",
+            grad.len(),
+            value.len()
+        ));
+    }
+    Ok((value, grad))
+}
+
+fn check_within(what: &str, residual: f64, scale: f64) -> Result<(), String> {
+    let bound = GRAD_CHECK_TOL * scale.max(1.0);
+    if residual.is_finite() && residual <= bound {
+        Ok(())
+    } else {
+        Err(format!("{what}: residual {residual:e} exceeds {bound:e}"))
+    }
+}
+
+fn max_abs(values: impl IntoIterator<Item = f64>) -> f64 {
+    values.into_iter().fold(0.0, |acc, v| acc.max(v.abs()))
+}
+
+/// Scalar reference for `d/dA, d/dB sum(A·B)` over `[n, n, batch]` column-major
+/// operands: `dA[i,k] = sum_j B[k,j]` and `dB[k,j] = sum_i A[i,k]`.
+fn check_sum_matmul_grads(
+    engine: &mut CpuEngine,
+    a: &EagerTensor,
+    b: &EagerTensor,
+    n: usize,
+    batch: usize,
+) -> Result<(), String> {
+    let (av, ga) = leaf_value_and_grad(engine, a)?;
+    let (bv, gb) = leaf_value_and_grad(engine, b)?;
+    if av.len() != n * n * batch || bv.len() != n * n * batch {
+        return Err("unexpected operand size".into());
+    }
+    let mut da = vec![0.0; av.len()];
+    let mut db = vec![0.0; bv.len()];
+    for z in 0..batch {
+        for k in 0..n {
+            let b_row: f64 = (0..n).map(|j| bv[k + n * (j + n * z)]).sum();
+            let a_col: f64 = (0..n).map(|i| av[i + n * (k + n * z)]).sum();
+            for i in 0..n {
+                da[i + n * (k + n * z)] = b_row;
+            }
+            for j in 0..n {
+                db[k + n * (j + n * z)] = a_col;
+            }
+        }
+    }
+    for (what, actual, expected) in [("dA", &ga, &da), ("dB", &gb, &db)] {
+        let residual = max_abs(actual.iter().zip(expected.iter()).map(|(x, y)| x - y));
+        check_within(what, residual, max_abs(expected.iter().copied()))?;
+    }
+    Ok(())
+}
+
+/// Scalar reference for `d/dA, d/db sum(solve(A, b))` with one right-hand side
+/// per batch element (`A: [n, n, batch]`, `b: [n, 1, batch]`).
+///
+/// The exact gradients are `db = A⁻ᵀ·1` and `dA = -db·xᵀ` with `x = A⁻¹b`.
+/// They are checked without a reference solver: `Aᵀ·db = 1`, `dA` is the rank-1
+/// matrix `-db·x̂ᵀ`, and the `x̂` recovered from it satisfies `A·x̂ = b`. For a
+/// nonsingular `A` these residual checks determine both gradients uniquely.
+fn check_sum_solve_grads(
+    engine: &mut CpuEngine,
+    a: &EagerTensor,
+    b: &EagerTensor,
+    n: usize,
+    batch: usize,
+) -> Result<(), String> {
+    let (av, ga) = leaf_value_and_grad(engine, a)?;
+    let (bv, gb) = leaf_value_and_grad(engine, b)?;
+    if av.len() != n * n * batch || bv.len() != n * batch {
+        return Err("unexpected operand size".into());
+    }
+    for z in 0..batch {
+        let at = |i: usize, j: usize| av[i + n * (j + n * z)];
+        let g_a = |i: usize, j: usize| ga[i + n * (j + n * z)];
+        let g_b = &gb[n * z..n * (z + 1)];
+        let rhs = &bv[n * z..n * (z + 1)];
+
+        let (mut residual, mut scale) = (0.0_f64, 0.0_f64);
+        for j in 0..n {
+            let terms = (0..n).map(|i| at(i, j) * g_b[i]);
+            residual = residual.max((terms.clone().sum::<f64>() - 1.0).abs());
+            scale = scale.max(terms.map(f64::abs).sum());
+        }
+        check_within(&format!("Aᵀ·db = 1 (batch {z})"), residual, scale)?;
+
+        let pivot = (0..n)
+            .max_by(|&p, &q| g_b[p].abs().total_cmp(&g_b[q].abs()))
+            .ok_or("empty right-hand side")?;
+        if g_b[pivot] == 0.0 {
+            return Err(format!("db is identically zero (batch {z})"));
+        }
+        let x: Vec<f64> = (0..n).map(|j| -g_a(pivot, j) / g_b[pivot]).collect();
+        let residual = max_abs(
+            (0..n)
+                .flat_map(|j| (0..n).map(move |i| (i, j)))
+                .map(|(i, j)| g_a(i, j) + g_b[i] * x[j]),
+        );
+        let scale = max_abs((0..n).flat_map(|j| (0..n).map(move |i| g_a(i, j))));
+        check_within(&format!("dA = -db·xᵀ (batch {z})"), residual, scale)?;
+
+        let (mut residual, mut scale) = (0.0_f64, 0.0_f64);
+        for i in 0..n {
+            let terms = (0..n).map(|j| at(i, j) * x[j]);
+            residual = residual.max((terms.clone().sum::<f64>() - rhs[i]).abs());
+            scale = scale.max(terms.map(f64::abs).sum::<f64>() + rhs[i].abs());
+        }
+        check_within(&format!("A·x = b (batch {z})"), residual, scale)?;
+    }
+    Ok(())
+}
+
+/// Scalar reference for `d/dA sum(svd(A).S)` of a square nonsingular `A` with
+/// distinct singular values: the polar factor `Q = U·Vᵀ`.
+///
+/// Checked by its defining properties: `QᵀQ = I`, and `H = QᵀA` is symmetric
+/// positive definite (a Cholesky factorisation succeeds). The polar
+/// decomposition of a nonsingular matrix is unique, so these pin `Q` down.
+fn check_sum_svd_s_grad(engine: &mut CpuEngine, a: &EagerTensor, n: usize) -> Result<(), String> {
+    let (av, q) = leaf_value_and_grad(engine, a)?;
+    if av.len() != n * n {
+        return Err("unexpected operand size".into());
+    }
+    let col = |m: &[f64], j: usize| m[n * j..n * (j + 1)].to_vec();
+    let dot = |x: &[f64], y: &[f64]| x.iter().zip(y).map(|(p, q)| p * q).sum::<f64>();
+    let q_cols: Vec<Vec<f64>> = (0..n).map(|j| col(&q, j)).collect();
+    let a_cols: Vec<Vec<f64>> = (0..n).map(|j| col(&av, j)).collect();
+
+    let mut residual = 0.0_f64;
+    for j in 0..n {
+        for i in 0..=j {
+            let identity = if i == j { 1.0 } else { 0.0 };
+            residual = residual.max((dot(&q_cols[i], &q_cols[j]) - identity).abs());
+        }
+    }
+    check_within("QᵀQ = I", residual, n as f64)?;
+
+    // h[i + n*j] = (QᵀA)[i, j]
+    let mut h = vec![0.0; n * n];
+    for j in 0..n {
+        for i in 0..n {
+            h[i + n * j] = dot(&q_cols[i], &a_cols[j]);
+        }
+    }
+    let asymmetry = max_abs(
+        (0..n)
+            .flat_map(|j| (0..n).map(move |i| (i, j)))
+            .map(|(i, j)| h[i + n * j] - h[j + n * i]),
+    );
+    check_within("QᵀA symmetric", asymmetry, max_abs(h.iter().copied()))?;
+
+    // Cholesky `H = RᵀR` of the symmetric part, upper triangle in place. Every
+    // inner product runs down two columns, which are contiguous in column major.
+    for j in 0..n {
+        for i in 0..j {
+            h[i + n * j] = 0.5 * (h[i + n * j] + h[j + n * i]);
+        }
+    }
+    for j in 0..n {
+        for i in 0..j {
+            let s = h[i + n * j] - dot(&h[n * i..n * i + i], &h[n * j..n * j + i]);
+            h[i + n * j] = s / h[i + n * i];
+        }
+        let pivot = h[j + n * j] - dot(&h[n * j..n * j + j], &h[n * j..n * j + j]);
+        if !(pivot > 0.0) {
+            return Err(format!(
+                "QᵀA is not positive definite (pivot {j} = {pivot:e})"
+            ));
+        }
+        h[j + n * j] = pivot.sqrt();
+    }
+    Ok(())
+}
+
 fn batched_matmul_config() -> DotGeneralConfig {
     DotGeneralConfig {
         lhs_contracting_dims: [1].into_iter().collect(),
@@ -2847,7 +3132,7 @@ mod timing_tests {
     }
 
     #[test]
-    fn primal_uses_borrowed_session_and_backward_is_explicitly_unsupported() {
+    fn primal_rows_use_the_borrowed_session() {
         let _guard = EAGER_TEST_LOCK.lock().unwrap();
         let config = BenchConfig {
             profile: Profile::Quick,
@@ -2897,20 +3182,186 @@ mod timing_tests {
             },
         );
         assert_eq!(row.status, "ok");
-        let row = bench_row(
-            &config,
+    }
+
+    fn test_config(runs: usize) -> BenchConfig {
+        BenchConfig {
+            profile: Profile::Quick,
+            suite: SuiteFilter::All,
+            runs,
+            warmups: 0,
+            backend: backend_name(),
+            include_eager: true,
+            include_trace: false,
+        }
+    }
+
+    /// The `grad_sum_matmul` closure of the published rows on a 2x2 fixture.
+    fn grad_sum_matmul_row(
+        config: &BenchConfig,
+        validate: impl FnOnce(&mut CpuEngine, &(EagerTensor, EagerTensor)) -> Result<(), String>,
+    ) -> Row {
+        bench_backward_row(
+            config,
             "small",
             "grad_sum_matmul",
-            "backward",
             "f64",
             "2x2",
-            || -> Result<(), Error> { panic!("unsupported operation must not prepare inputs") },
-            |_session, _input| -> Result<(), Error> {
-                panic!("unsupported operation must not execute")
+            || {
+                let ctx = cpu_ctx();
+                let a =
+                    eager_requires_grad_in(tensor(&[2, 2], vec![1.0, 2.0, 3.0, 4.0]), ctx.clone());
+                let b = eager_requires_grad_in(tensor(&[2, 2], vec![5.0, 6.0, 7.0, 8.0]), ctx);
+                Ok((a, b))
             },
+            |session, (a, b)| {
+                let y = eager_session_ops::matmul(session, a, b)?;
+                let loss = eager_session_ops::reduce_sum(session, &y, &[0, 1])?;
+                Ok((loss.backward(session.engine())?, loss, y))
+            },
+            validate,
+        )
+    }
+
+    #[test]
+    fn backward_rows_are_measured_with_validated_gradients() {
+        let _guard = EAGER_TEST_LOCK.lock().unwrap();
+        let config = test_config(3);
+        // Column-major A = [[1, 3], [2, 4]], B = [[5, 7], [6, 8]]:
+        // dA[i,k] = sum_j B[k,j] (12 for k = 0, 14 for k = 1) and
+        // dB[k,j] = sum_i A[i,k] (3 for k = 0, 7 for k = 1), in column-major order.
+        let mut grads = None;
+        let row = grad_sum_matmul_row(&config, |engine, (a, b)| {
+            grads = Some((
+                leaf_value_and_grad(engine, a)?.1,
+                leaf_value_and_grad(engine, b)?.1,
+            ));
+            check_sum_matmul_grads(engine, a, b, 2, 1)
+        });
+        assert_eq!(row.status, "ok");
+        assert_eq!(row.phase, "backward");
+        assert!(row.median_ms.is_some_and(|ms| ms > 0.0));
+        assert_eq!(
+            grads,
+            Some((vec![12.0, 12.0, 14.0, 14.0], vec![3.0, 7.0, 3.0, 7.0]))
         );
-        assert!(row.status.starts_with("unsupported:"));
+
+        // The reference check is what keeps a wrong gradient from reading `ok`.
+        let row = grad_sum_matmul_row(&config, |engine, (a, _)| {
+            leaf_value_and_grad(engine, a)?;
+            Err("forced mismatch".into())
+        });
+        assert_eq!(row.status, "error: gradient mismatch: forced mismatch");
         assert!(row.median_ms.is_none());
+    }
+
+    #[test]
+    fn backward_samples_do_not_accumulate_gradients() {
+        let _guard = EAGER_TEST_LOCK.lock().unwrap();
+        let ctx = cpu_ctx();
+        let leaf = eager_requires_grad_in(tensor(&[2], vec![1.0, 2.0]), ctx.clone());
+        let config = test_config(4);
+        let measured = measure_eager(
+            &config,
+            "2",
+            || Ok((leaf.clone(),)),
+            |session, (x,)| {
+                let loss = eager_session_ops::reduce_sum(session, x, &[0])?;
+                Ok((loss.backward(session.engine())?, loss))
+            },
+        )
+        .unwrap();
+        assert!(measured.times.len() == 4);
+        // Every sample was followed by an untimed reset, so nothing is left over.
+        assert!(leaf.grad().unwrap().is_none());
+        let mut engine = cpu_engine();
+        let loss = ctx
+            .with_eager_session(&mut *engine, |session| {
+                eager_session_ops::reduce_sum(session, &leaf, &[0])
+            })
+            .unwrap();
+        loss.backward(&mut *engine).unwrap();
+        assert_eq!(
+            leaf_value_and_grad(&mut engine, &leaf).unwrap().1,
+            vec![1.0, 1.0]
+        );
+    }
+
+    #[test]
+    fn gradient_references_accept_tenferro_and_reject_wrong_rules() {
+        let _guard = EAGER_TEST_LOCK.lock().unwrap();
+        let ctx = cpu_ctx();
+        let mut engine = cpu_engine();
+        let n = 6;
+        let backward = |engine: &mut CpuEngine, loss: EagerTensor| {
+            ctx.clear_grads().unwrap();
+            loss.backward(engine).unwrap();
+        };
+
+        let a =
+            eager_requires_grad_in(tensor(&[n, n], well_conditioned_matrix(n, 10)), ctx.clone());
+        let loss = ctx
+            .with_eager_session(&mut *engine, |session| {
+                let (_, s, _) = eager_linalg_tensor::svd(session, &a)?;
+                eager_session_ops::reduce_sum(session, &s, &[0])
+            })
+            .unwrap();
+        backward(&mut engine, loss);
+        check_sum_svd_s_grad(&mut engine, &a, n).unwrap();
+        // d(sum A)/dA = ones is not the polar factor.
+        let loss = ctx
+            .with_eager_session(&mut *engine, |session| {
+                eager_session_ops::reduce_sum(session, &a, &[0, 1])
+            })
+            .unwrap();
+        backward(&mut engine, loss);
+        assert!(check_sum_svd_s_grad(&mut engine, &a, n).is_err());
+
+        let (batch, b_data) = (3, data_for_shape(&[n, 1, 3], 51));
+        let a = eager_requires_grad_in(
+            tensor(&[n, n, batch], batched_spd(n, batch, 50)),
+            ctx.clone(),
+        );
+        let b = eager_requires_grad_in(tensor(&[n, 1, batch], b_data), ctx.clone());
+        let solve_loss = |engine: &mut CpuEngine, doubled: bool| {
+            ctx.with_eager_session(engine, |session| {
+                let x = eager_linalg_tensor::solve(session, &a, &b)?;
+                let x = if doubled {
+                    // A wrong rule stand-in: scale x so dA and db are off by 2.
+                    session.add(&x, &x)?
+                } else {
+                    x
+                };
+                eager_session_ops::reduce_sum(session, &x, &[0, 1, 2])
+            })
+            .unwrap()
+        };
+        let loss = solve_loss(&mut engine, false);
+        backward(&mut engine, loss);
+        check_sum_solve_grads(&mut engine, &a, &b, n, batch).unwrap();
+        let loss = solve_loss(&mut engine, true);
+        backward(&mut engine, loss);
+        assert!(check_sum_solve_grads(&mut engine, &a, &b, n, batch).is_err());
+
+        let a = eager_requires_grad_in(
+            tensor(&[n, n, batch], data_for_shape(&[n, n, batch], 48)),
+            ctx.clone(),
+        );
+        let b = eager_requires_grad_in(
+            tensor(&[n, n, batch], data_for_shape(&[n, n, batch], 49)),
+            ctx.clone(),
+        );
+        let loss = ctx
+            .with_eager_session(&mut *engine, |session| {
+                let y = eager_session_ops::dot_general(session, &a, &b, batched_matmul_config())?;
+                eager_session_ops::reduce_sum(session, &y, &[0, 1, 2])
+            })
+            .unwrap();
+        backward(&mut engine, loss);
+        check_sum_matmul_grads(&mut engine, &a, &b, n, batch).unwrap();
+        // Swapped operands give dA = column sums of A instead of row sums of B.
+        assert!(check_sum_matmul_grads(&mut engine, &b, &a, n, batch).is_err());
+        ctx.clear_grads().unwrap();
     }
 
     #[test]

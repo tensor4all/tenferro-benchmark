@@ -346,11 +346,24 @@ def physical_bound_findings(
     return findings
 
 
+# Status the harness gave every eager backward row before tenferro-benchmark#471.
+# Pages rendered from those runs keep the sentence that explains it.
+LEGACY_EAGER_BACKWARD_STATUS = "unsupported: eager backward has no borrowed-session API"
+
+EAGER_SESSION_POLICY_TEXT = (
+    "Eager primal and backward rows reuse a borrowed session entered before sampling. "
+    "A backward row times the forward pass plus `EagerTensor::backward` run through that "
+    "session's engine; its gradients are checked against scalar references before timing, "
+    "and accumulated gradients are cleared after every sample, outside timing."
+)
+
+
 def format_table(paths: list[Path]) -> str:
     by_key: dict[tuple[str, str, str, str, str], dict[str, str]] = defaultdict(dict)
     timings: dict[tuple[str, str, str, str, str], dict[str, float]] = defaultdict(dict)
     batch_timings = {}
     small_sampling_policies = []
+    legacy_unsupported_eager_backward = False
     for path in paths:
         with path.open(newline="") as f:
             for row in csv.DictReader(f):
@@ -358,6 +371,8 @@ def format_table(paths: list[Path]) -> str:
                 if backend:
                     if key[0] == "small":
                         small_sampling_policies.append(row.get("sampling_policy", ""))
+                    if row_value(row, "status").startswith(LEGACY_EAGER_BACKWARD_STATUS):
+                        legacy_unsupported_eager_backward = True
                     by_key[key][backend] = value
                     median_ms = row_value(row, "median_ms")
                     status = row_value(row, "status")
@@ -384,7 +399,11 @@ def format_table(paths: list[Path]) -> str:
 
     if small_sampling_policies:
         if all(policy in {"bounded_batch", "bounded_batch_shared_cpu"} for policy in small_sampling_policies):
-            lines[2:2] = ["Small rows use time/memory-bounded batches, normalized per operation. Tenferro eager/trace share a CPU execution scope outside timing. Eager primal rows reuse a borrowed session entered before sampling; eager backward rows without a borrowed-session API are unsupported. Raw JSONL records contain batch durations and operation counts.", ""]
+            if legacy_unsupported_eager_backward:
+                eager_policy = "Eager primal rows reuse a borrowed session entered before sampling; eager backward rows without a borrowed-session API are unsupported."
+            else:
+                eager_policy = EAGER_SESSION_POLICY_TEXT
+            lines[2:2] = [f"Small rows use time/memory-bounded batches, normalized per operation. Tenferro eager/trace share a CPU execution scope outside timing. {eager_policy} Raw JSONL records contain batch durations and operation counts.", ""]
         else:
             lines[2:2] = ["**Small rows are isolated-call diagnostics, not shared-session throughput. See cpu/session_matrix and cpu/small_work for standard short-operation results.**", ""]
 

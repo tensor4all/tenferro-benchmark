@@ -202,6 +202,36 @@ class TimingBoundaries(unittest.TestCase):
                 self.assertEqual("isolated-call diagnostics" in report, not bool(policy))
                 self.assertEqual("normalized per operation" in report, bool(policy))
 
+    def test_cpu_report_eager_backward_text_follows_the_recorded_rows(self):
+        # #471: runs recorded before the harness measured eager backward keep
+        # the sentence that explains their `unsupported` rows; measured runs
+        # describe how the reverse pass is timed instead.
+        import csv
+        import tempfile
+
+        legacy = cpu_formatter.LEGACY_EAGER_BACKWARD_STATUS + "; setup-inclusive timings disabled"
+        cases = {
+            legacy: "eager backward rows without a borrowed-session API are unsupported",
+            "ok": cpu_formatter.EAGER_SESSION_POLICY_TEXT,
+        }
+        for status, sentence in cases.items():
+            with self.subTest(status=status), tempfile.TemporaryDirectory() as directory:
+                path = Path(directory) / "cpu_ops.csv"
+                measured = status == "ok"
+                row = dict(suite="small", benchmark="grad_sum_matmul_backward", dtype="f64",
+                           threads="1", shape="2x2", backend="tenferro-eager",
+                           median_ms="0.09" if measured else "",
+                           iqr_ms="0.001" if measured else "",
+                           status=status, sampling_policy="bounded_batch_shared_cpu")
+                with path.open("w", newline="") as stream:
+                    writer = csv.DictWriter(stream, fieldnames=list(row))
+                    writer.writeheader()
+                    writer.writerow(row)
+                report = cpu_formatter.format_table([path])
+                self.assertIn(sentence, report)
+                self.assertEqual("borrowed-session API" in report, not measured)
+                self.assertEqual("0.090" in report, measured)
+
     def test_cpu_report_normalizes_historical_backend_labels(self):
         # Pre-#2004 raw runs under data/results/** spell the tenferro CPU rows
         # cpu-faer/system-*, so re-formatting them must still map them onto the
