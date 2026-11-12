@@ -114,9 +114,14 @@ The watchdog starts deleting after 7200 seconds (`POD_MAX_LIFETIME_SECONDS`). At
 rate of $1.79/h a full two-hour pod costs $3.58 of compute (extending 55 -> 120 min adds $1.94);
 a run that finishes early pays only for the time it used. That is the arithmetic, not a hard
 billing ceiling: deletion retries can add up to 180 s (~$0.09) and time before the watchdog is
-armed is billed too. The collection itself is not bounded inside the two hours yet: cutting it
-short can strand a suite after its run directory exists but before its reports are written, and
-packaging then refuses the whole bundle (see the follow-up issue). A run that does not finish
+armed is billed too. The budget is an enforced inequality, not a promise: the
+startup window (600 s) plus every bounded step of the `run-gpu-benchmark` job
+sums to less than `POD_MAX_LIFETIME_SECONDS`, and
+`scripts/ci/tests/test_runpod_http.py` asserts both the sum and that no step in
+that job is unbounded. The collection step is bounded at 42 minutes; a run that
+reaches the bound is cut, packaging still runs inside the lifetime, and
+`prepare_result_bundle.py` publishes the suites that completed while recording
+the interrupted one with its reason. A run that does not finish
 before the watchdog deletes the pod is billed for the time it used.
 If the provider cannot confirm deletion, manual cleanup is required:
 

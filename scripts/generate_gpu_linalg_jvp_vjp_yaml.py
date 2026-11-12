@@ -171,6 +171,11 @@ def suite_document(
         },
         "backends": [
             "tenferro-cuda-trace",
+            # The eager arm runs the same logical case (forward plus
+            # derivative) through the eager API, with its own AD preparation
+            # inside the sample. It is a separate backend identity, not a
+            # variant of the trace row.
+            "tenferro-cuda-eager",
             "pytorch-cuda",
             "jax-cuda",
         ],
@@ -187,9 +192,9 @@ SUITES = {
         "gpu/linalg_jvp_vjp",
         "GPU Linalg JVP/VJP Benchmarks",
         (
-            "Trace-mode linalg automatic differentiation on CUDA for tenferro-rs "
-            "and PyTorch at n=256 and n=4096. Every case here pays one device "
-            "retirement per call. The n=256 rows are 65,536 elements, below the "
+            "Trace-mode and eager linalg automatic differentiation on CUDA for "
+            "tenferro-rs, PyTorch and JAX at n=256 and n=4096. Every case here pays "
+            "one device retirement per call. The n=256 rows are 65,536 elements, below the "
             "linalg_ad floor, so they are per-call latency rows: even a 256x256 QR "
             "JVP there is dominated by the trace runtime's per-call cost. The n=4096 "
             "rows are 16,777,216 elements, over that floor, so they are declared "

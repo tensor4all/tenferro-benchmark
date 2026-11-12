@@ -71,6 +71,7 @@ The single routine set that replaced the earlier quick/full selection is
 documented in [gpu-routine-coverage.md](gpu-routine-coverage.md). An unfiltered
 routine command collects that set. A `GPU_BENCH_SUITE`/`GPU_BENCH_BACKENDS`/
 `GPU_BENCH_PROBLEM` filter only narrows it: naming a case the routine set leaves
-out requires adding that case to `benchmarks/gpu/manifests/routine.yaml` first.
-Repeating this broad baseline therefore means naming its per-suite run
-directories on the `format_gpu_command_wall.py` command line.
+out requires that case to be declared under the suite's `probe_problems` in
+`benchmarks/gpu/manifests/routine.yaml` first. Repeating this broad baseline
+therefore means naming its per-suite run directories on the
+`format_gpu_command_wall.py` command line.

@@ -21,6 +21,7 @@ from collect_gpu_info import markdown as gpu_info_markdown, resolve_gpu_info
 
 BACKEND_ORDER = [
     "tenferro-cuda-trace",
+    "tenferro-cuda-eager",
     "tenferro-cuda-trace-deferred-batch",
     "pytorch-cuda",
     "jax-cuda",
@@ -28,6 +29,7 @@ BACKEND_ORDER = [
 
 BACKEND_LABELS = {
     "tenferro-cuda-trace": "tenferro-rs CUDA trace",
+    "tenferro-cuda-eager": "tenferro-rs CUDA eager, per call, incl. AD prepare",
     "tenferro-cuda-trace-deferred-batch": "tenferro-rs CUDA trace (deferred batch throughput)",
     "pytorch-cuda": "PyTorch CUDA",
     "jax-cuda": "JAX CUDA JIT",
@@ -230,6 +232,8 @@ def format_markdown(
         "`torch.func.jvp` / `vjp` on CUDA."
     )
     lines.append("JAX uses an explicitly lowered/compiled whole-operation JIT; compilation and lazy initialization occur before sampling. Primal loss and first-order derivatives with respect to A are both returned; the check that backs each row is stated below, and a row that carries none is marked as not checked. RHS and derivative seeds are prepared before timing.")
+    if any(record["backend"] == "tenferro-cuda-eager" for record in records):
+        lines.append("The `tenferro-rs CUDA eager` column runs the same logical case through the eager API on one caller-held CUDA engine. Unlike the trace row, the eager API exposes no separate preparation step, so its own AD preparation is inside the sample together with the forward pass; the forward and derivative scope matches the trace column.")
     lines.append("Standard and latency AD rows time one prepared operation plus device completion per call on every backend, repeated in bounded batches. tenferro uses Runtime::run on a reusable caller-held CUDA engine. Fixtures, transfers, graph construction, compilation, preparation and initialization are untimed; output conversion and verification follow the stopped clock. Small rows measure API latency, not kernel throughput. Legacy session-entry measurements require recollection (issue #309). Any unsupported row retains its actual reason in the raw records.")
     if any(
         record["backend"] == "tenferro-cuda-trace-deferred-batch" for record in records

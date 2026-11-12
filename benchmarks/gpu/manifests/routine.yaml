@@ -25,7 +25,7 @@ issue: 107
 # | gpu/tensornetwork                | gpu_suite       |        1 |        4 |    4 |
 # | gpu/elementwise                  | gpu_suite       |        2 |        4 |    8 |
 # | gpu/linalg_ad_latency            | gpu_linalg_ad   |       10 |        3 |   30 |
-# | gpu/linalg_jvp_vjp               | gpu_linalg_ad   |       10 |        3 |   30 |
+# | gpu/linalg_jvp_vjp               | gpu_linalg_ad   |       10 |        4 |   40 |
 # | gpu/permutation                  | gpu_permutation |       10 |        6 |   44 |
 # | gpu/lstsq                        | gpu_public_api  |        1 |        4 |    4 |
 # | gpu/linalg_public_api_throughput | gpu_public_api  |       16 |        4 |   64 |
@@ -34,7 +34,7 @@ issue: 107
 # | gpu/structural                   | gpu_public_api  |       16 |        4 |   64 |
 # | gpu/isolated_ops                 | gpu_public_api  |       33 |        4 |  132 |
 # | gpu/reuse_contraction            | gpu_public_api  |       56 |        4 |  224 |
-# | Total                            |                 |      180 |       55 |  698 |
+# | Total                            |                 |      180 |       56 |  708 |
 #
 # Opt-in vendor arms add 164 rows: gpu/dense +21, gpu/einsum +2, gpu/sparse +4,
 # and the second JAX path jax-cuda-jit on the seven public-API families +137,
@@ -153,7 +153,10 @@ suites:
     # n=256 only (10 operations x 1 size). The n=4096 rows are the throughput
     # end of the same AD workloads (a per-call 4096 case is ~100 ms-3.5 s of
     # GPU work before its check); one size detects regressions and keeps the
-    # weekly AD cost bounded, so the 4096 rows are run on an explicit probe.
+    # weekly AD cost bounded. The 4096 rows stay out of the weekly set
+    # (`problems` above) and are named one at a time through `probe_problems`,
+    # so a probe run plans exactly the rows it asked for while a routine run
+    # never requires them.
     problems:
     - linalg_ad_large_grad_sum_svd_s_jvp_f64_256
     - linalg_ad_large_grad_sum_svd_s_vjp_f64_256
@@ -165,8 +168,20 @@ suites:
     - linalg_ad_large_grad_sum_lu_vjp_f64_256
     - linalg_ad_large_grad_sum_solve_jvp_f64_256
     - linalg_ad_large_grad_sum_solve_vjp_f64_256
+    probe_problems:
+    - linalg_ad_large_grad_sum_svd_s_jvp_f64_4096
+    - linalg_ad_large_grad_sum_svd_s_vjp_f64_4096
+    - linalg_ad_large_grad_sum_qr_jvp_f64_4096
+    - linalg_ad_large_grad_sum_qr_vjp_f64_4096
+    - linalg_ad_large_grad_sum_eigh_jvp_f64_4096
+    - linalg_ad_large_grad_sum_eigh_vjp_f64_4096
+    - linalg_ad_large_grad_sum_lu_jvp_f64_4096
+    - linalg_ad_large_grad_sum_lu_vjp_f64_4096
+    - linalg_ad_large_grad_sum_solve_jvp_f64_4096
+    - linalg_ad_large_grad_sum_solve_vjp_f64_4096
     backends:
     - tenferro-cuda-trace
+    - tenferro-cuda-eager
     - pytorch-cuda
     - jax-cuda
   gpu/permutation:

@@ -13,15 +13,15 @@ use std::time::{Duration, Instant};
 use serde_json::{json, Value};
 use tenferro_ad::{EagerRuntime, EagerSession, EagerTensor};
 use tenferro_cpu::CpuEngine;
-use tenferro_einsum_benchmark::spd_from_base;
-use tenferro_einsum_benchmark::verification_mode::{self, VerificationMode};
 use tenferro_einsum::{EagerSessionEinsumExt, TraceContextEinsumExt};
 use tenferro_einsum_benchmark::fingerprint::Fingerprint;
+use tenferro_einsum_benchmark::spd_from_base;
 use tenferro_einsum_benchmark::tensornetwork::{
     build_cpu_eager_inputs as build_tensor_network_cpu_inputs, contract_tree_eager,
     contract_tree_trace, load_tensor_network, scalar_f32, scalar_f32_tensor, tensor_f32_col_major,
     TensorNetworkFile, TensorNetworkSpec, TreeNode,
 };
+use tenferro_einsum_benchmark::verification_mode::{self, VerificationMode};
 use tenferro_gpu::cuda::{
     cuda_runtime_engine_registration, download_tensor, gpu_available, upload_tensor, CudaEngine,
     CudaRuntime,
@@ -103,7 +103,8 @@ fn main() {
     let args: Vec<String> = std::env::args().collect();
     let out_path = &args[1];
     let device_ordinal: usize = args[2].parse().expect("DEVICE_ORDINAL must be usize");
-    let problem_filter = &args[3];
+    // A probe may name one case or a comma-separated list of them.
+    let problem_filter: Vec<&str> = args[3].split(',').filter(|name| !name.is_empty()).collect();
     let sep = args.iter().position(|a| a == "--").expect("missing --");
     let backends: Vec<&str> = args[4..sep].iter().map(String::as_str).collect();
     let suite_paths: Vec<&str> = args[sep + 1..].iter().map(String::as_str).collect();
@@ -126,7 +127,7 @@ fn main() {
 
         for problem in suite["problems"].as_sequence().expect("problems list") {
             let pid = problem["id"].as_str().unwrap_or("");
-            if !problem_filter.is_empty() && pid != problem_filter {
+            if !problem_filter.is_empty() && !problem_filter.contains(&pid) {
                 continue;
             }
             // Resolve the verification contract before anything runs. This
@@ -530,7 +531,14 @@ fn run_eager_tensor_network(
             "input_generation_transfer_and_preparation":setup_end-backend_end,
             "validation":case_start.elapsed().as_nanos()-validation_start,
             "case_body_before_record_construction":case_start.elapsed().as_nanos()});
-        Ok((times_ms, ver_status, max_abs, max_rel, sampling, fingerprints))
+        Ok((
+            times_ms,
+            ver_status,
+            max_abs,
+            max_rel,
+            sampling,
+            fingerprints,
+        ))
     }));
 
     match result {
@@ -1136,7 +1144,14 @@ fn run_trace_tensor_network(
         // A scalar network result has no output vector to fingerprint.
         let fingerprints: Vec<Fingerprint> = Vec::new();
 
-        Ok((times_ms, ver_status, max_abs, max_rel, sampling, fingerprints))
+        Ok((
+            times_ms,
+            ver_status,
+            max_abs,
+            max_rel,
+            sampling,
+            fingerprints,
+        ))
     }));
 
     match result {
@@ -1386,7 +1401,14 @@ fn run_eager(
             "input_generation_transfer_reference_and_preparation":setup_end-backend_end,
             "validation":case_start.elapsed().as_nanos()-validation_start,
             "case_body_before_record_construction":case_start.elapsed().as_nanos()});
-        Ok((times_ms, ver_status, max_abs, max_rel, sampling, fingerprints))
+        Ok((
+            times_ms,
+            ver_status,
+            max_abs,
+            max_rel,
+            sampling,
+            fingerprints,
+        ))
     }));
 
     match result {
@@ -1586,7 +1608,14 @@ fn run_semantic_trace_einsum(
             )
         };
 
-        Ok((times_ms, ver_status, max_abs, max_rel, sampling, fingerprints))
+        Ok((
+            times_ms,
+            ver_status,
+            max_abs,
+            max_rel,
+            sampling,
+            fingerprints,
+        ))
     }));
 
     match result {
@@ -1820,7 +1849,14 @@ fn run_trace(
             verify_tensors(op, &gpu_tensors, &cpu_out, &cpu_inputs, rtol, atol)
         };
 
-        Ok((times_ms, ver_status, max_abs, max_rel, sampling, fingerprints))
+        Ok((
+            times_ms,
+            ver_status,
+            max_abs,
+            max_rel,
+            sampling,
+            fingerprints,
+        ))
     }));
 
     match result {

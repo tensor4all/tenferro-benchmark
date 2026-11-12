@@ -10,14 +10,14 @@ use std::sync::OnceLock;
 use std::time::{Duration, Instant};
 
 use serde_json::{json, Value};
-use tenferro_ad::AdContext;
+use tenferro_ad::{AdContext, EagerRuntime, EagerSession, EagerTensor};
 use tenferro_einsum_benchmark::spd_from_base;
 use tenferro_einsum_benchmark::verification_mode;
 use tenferro_gpu::cuda::{
     cuda_runtime_engine_registration, download_tensor, gpu_available, upload_tensor, CudaEngine,
     CudaRuntime,
 };
-use tenferro_linalg::TracedTensorLinalgExt;
+use tenferro_linalg::{EagerSessionLinalgExt, TracedTensorLinalgExt};
 use tenferro_runtime::{ExecutionEngine, GraphCompiler, Runtime, TraceContext, TracedTensor};
 use tenferro_tensor::{DeviceKind, GpuBackendKind, Tensor};
 
@@ -28,6 +28,21 @@ use tenferro_tensor::{DeviceKind, GpuBackendKind, Tensor};
 /// mode carries its own backend name.
 const DEFERRED_BATCH_BACKEND: &str = "tenferro-cuda-trace-deferred-batch";
 const LATENCY_BACKEND: &str = "tenferro-cuda-trace";
+/// The eager AD arm, selected per process by `GPU_BENCH_AD_ARM`.
+///
+/// It is a separate backend identity, not a variant of the trace row: the two
+/// paths enter different APIs, and the eager row states that its own AD
+/// preparation runs inside the sample.
+const EAGER_BACKEND: &str = "tenferro-cuda-eager";
+
+/// Which Rust AD path this process measures.
+///
+/// The collector starts one process per Rust arm, so the selection is
+/// process-wide. Unset means the trace path, which keeps every existing
+/// invocation unchanged.
+fn ad_arm() -> String {
+    std::env::var("GPU_BENCH_AD_ARM").unwrap_or_else(|_| LATENCY_BACKEND.to_string())
+}
 
 /// Deferred runs enqueued per timed throughput sample (one retirement per batch).
 fn deferred_batch_k() -> usize {
@@ -110,7 +125,8 @@ fn main() {
     let args: Vec<String> = std::env::args().collect();
     let out_path = &args[1];
     let device_ordinal: usize = args[2].parse().expect("DEVICE_ORDINAL must be usize");
-    let problem_filter = &args[3];
+    // A probe may name one case or a comma-separated list of them.
+    let problem_filter: Vec<&str> = args[3].split(',').filter(|name| !name.is_empty()).collect();
     let sep = args.iter().position(|a| a == "--").expect("missing --");
     let suite_paths: Vec<&str> = args[sep + 1..].iter().map(String::as_str).collect();
 
@@ -131,7 +147,7 @@ fn main() {
 
         for problem in suite["problems"].as_sequence().expect("problems list") {
             let pid = problem["id"].as_str().unwrap_or("");
-            if !problem_filter.is_empty() && pid != problem_filter {
+            if !problem_filter.is_empty() && !problem_filter.contains(&pid) {
                 continue;
             }
             // Resolve and enforce the verification contract before anything runs:
@@ -185,15 +201,51 @@ fn dispatch(
 ) -> Value {
     let phase = problem["op"].as_str().unwrap_or("");
     let throughput = deferred_route(problem, suite_measure);
-    let verify_mode = verification_mode::resolved_mode(problem).expect("verify.mode resolved at load");
-    let measure_only_reason = verification_mode::resolved_measure_only_reason(problem)
-        .map(str::to_string);
+    let arm = ad_arm();
+    let eager_arm = arm == EAGER_BACKEND;
+    let verify_mode =
+        verification_mode::resolved_mode(problem).expect("verify.mode resolved at load");
+    let measure_only_reason =
+        verification_mode::resolved_measure_only_reason(problem).map(str::to_string);
     let measure_only = verify_mode.is_measure_only();
-    let backend = if throughput {
+    let backend = if eager_arm {
+        EAGER_BACKEND
+    } else if throughput {
         DEFERRED_BATCH_BACKEND
     } else {
         LATENCY_BACKEND
     };
+    if arm != LATENCY_BACKEND && arm != EAGER_BACKEND {
+        return stub(
+            suite_id,
+            problem,
+            &arm,
+            device_ordinal,
+            "unsupported",
+            &format!("unknown Rust AD arm: {arm}"),
+            ts,
+            bc,
+            tc,
+        );
+    }
+    let eager_deferred = eager_arm && throughput;
+    if eager_deferred {
+        // The eager API has no deferred-batch route: each measured call is one
+        // forward plus one derivative on the caller-held engine, which is the
+        // per-call contract. Declaring it here keeps a throughput row from
+        // silently publishing a per-call number under the throughput name.
+        return stub(
+            suite_id,
+            problem,
+            backend,
+            device_ordinal,
+            "unsupported",
+            "the eager AD arm has no deferred-batch throughput route",
+            ts,
+            bc,
+            tc,
+        );
+    }
     if phase != "jvp" && phase != "vjp" {
         return stub(
             suite_id,
@@ -256,180 +308,207 @@ fn dispatch(
         let rhs_cols = yaml_usize(ad.get("rhs_cols").unwrap_or(&serde_yaml::Value::Null), 1);
 
         let loss_spec = parse_loss(loss, matrix_seed, rhs_seed, rhs_cols)?;
-        let outputs = build_ad_outputs(phase, n, &loss_spec, &transfer_rt)?;
-        sync_runtime(&transfer_rt)?;
-
-        let output_refs: Vec<&TracedTensor> = outputs.iter().collect();
-        let mut compiler = GraphCompiler::new();
-        let program = compiler
-            .compile_many(&output_refs)
-            .map_err(|e| format!("compile: {e}"))?;
-
-        let runtime = cuda_runtime_with_extensions(&compute_bk)?;
-        let target = ExecutionEngine::target(&compute_bk);
-        let prepared = runtime
-            .prepare(&program, &[], std::slice::from_ref(&target))
-            .map_err(|e| format!("prepare: {e}"))?;
 
         let mut times_ms = Vec::new();
         let mut batch_ms = Vec::new();
-        let mut count = 1;
+        let mut count = 1usize;
         let initial;
         let final_values;
-        if !throughput {
-            // Setup and the initial execution are untimed, including with zero
-            // warmups. Every measured call uses the same prepared program and
-            // caller-held engine and waits for device completion.
-            let probe = runtime
-                .run(&mut [&mut compute_bk], &prepared, &[])
-                .map_err(|e| format!("initial run: {e}"))?
-                .into_iter()
-                .map(|output| output.into_tensor(&mut compute_bk))
-                .collect::<tenferro_tensor::Result<Vec<_>>>()
-                .map_err(|e| format!("initial materialization: {e}"))?;
-            sync_runtime(&transfer_rt)?;
-            // A measure_only case runs no check, so it neither downloads nor
-            // serialises its outputs: the whole point of the mode is that the
-            // verification share of the case is zero, and the record says so.
-            initial = if measure_only {
-                Vec::new()
-            } else {
-                export_outputs(&transfer_rt, &probe, device_ordinal)?
-            };
-            let bytes = probe
-                .iter()
-                .map(|v| v.shape().iter().product::<usize>() * 8)
-                .sum::<usize>();
-            drop(probe);
-            if !verify_only {
-                let mut batch = |count: usize| -> Result<f64, String> {
-                    let mut retained = Vec::with_capacity(count);
-                    sync_runtime(&transfer_rt)?;
-                    let start = Instant::now();
-                    for _ in 0..count {
-                        retained.push(
-                            runtime
-                                .run(&mut [&mut compute_bk], &prepared, &[])
-                                .map_err(|e| format!("run: {e}"))?,
-                        );
-                        sync_runtime(&transfer_rt)?;
-                    }
-                    let elapsed = start.elapsed().as_secs_f64() * 1000.0;
-                    black_box(&retained);
-                    Ok(elapsed)
-                };
-                ramp_gpu_clocks(|| {
-                    let _ = batch(1)?;
-                    Ok(())
-                })?;
-                for _ in 0..n_warmup {
-                    batch(1)?;
-                }
-                let cap = ((256usize << 20) / bytes.max(1)).clamp(1, 4096);
-                while batch(count)? < 2.0 && count < cap {
-                    count = (count * 2).min(cap);
-                }
-                for _ in 0..n_runs {
-                    let duration = batch(count)?;
-                    batch_ms.push(duration);
-                    times_ms.push(duration / count as f64);
-                }
-            }
-            let final_outputs = runtime
-                .run(&mut [&mut compute_bk], &prepared, &[])
-                .map_err(|e| format!("final run: {e}"))?
-                .into_iter()
-                .map(|output| output.into_tensor(&mut compute_bk))
-                .collect::<tenferro_tensor::Result<Vec<_>>>()
-                .map_err(|e| format!("final materialization: {e}"))?;
-            sync_runtime(&transfer_rt)?;
-            final_values = if measure_only {
-                Vec::new()
-            } else {
-                export_outputs(&transfer_rt, &final_outputs, device_ordinal)?
-            };
+
+        if eager_arm {
+            let sampled = run_eager_case(
+                phase,
+                n,
+                &loss_spec,
+                &mut compute_bk,
+                &transfer_rt,
+                device_ordinal,
+                n_warmup,
+                n_runs,
+                verify_only,
+                measure_only,
+            )?;
+            times_ms = sampled.times_ms;
+            batch_ms = sampled.batch_ms;
+            initial = sampled.initial;
+            final_values = sampled.final_values;
         } else {
-            // Throughput mode: K prepared runs enqueued per timed sample on one
-            // caller-held engine, then one retirement. Per-call time is
-            // sample_ms / K, which is a throughput measurement and is never
-            // joined with the per-call latency rows.
-            let configured_k = deferred_batch_k();
-            let mut effective_k = configured_k;
-            let sampled = (|| -> Result<(Vec<Tensor>, Option<Vec<Tensor>>), String> {
-                // Probe batch outside the clocks: proves the route, bounds
-                // retention from one output set and supplies the initial
-                // verification outputs. One run is enough for the bound, so
-                // a large configured K cannot overshoot the retention budget
-                // before it is clamped.
-                let (_, mut probe) =
-                    run_deferred_batch(&runtime, &mut compute_bk, &transfer_rt, &prepared, 1)?;
-                let bytes: usize = probe
-                    .first()
-                    .map(|run| {
-                        run.iter()
-                            .map(|v| v.shape().iter().product::<usize>() * 8)
-                            .sum::<usize>()
-                    })
-                    .unwrap_or(1);
-                effective_k = configured_k.min(((256usize << 20) / bytes.max(1)).clamp(1, 4096));
-                // First probe run proves one run's outputs, the last one
-                // supplies the final verification outputs.
-                let initial_out = if probe.len() > 1 {
-                    probe.remove(0)
+            let outputs = build_ad_outputs(phase, n, &loss_spec, &transfer_rt)?;
+            sync_runtime(&transfer_rt)?;
+
+            let output_refs: Vec<&TracedTensor> = outputs.iter().collect();
+            let mut compiler = GraphCompiler::new();
+            let program = compiler
+                .compile_many(&output_refs)
+                .map_err(|e| format!("compile: {e}"))?;
+
+            let runtime = cuda_runtime_with_extensions(&compute_bk)?;
+            let target = ExecutionEngine::target(&compute_bk);
+            let prepared = runtime
+                .prepare(&program, &[], std::slice::from_ref(&target))
+                .map_err(|e| format!("prepare: {e}"))?;
+
+            if !throughput {
+                // Setup and the initial execution are untimed, including with zero
+                // warmups. Every measured call uses the same prepared program and
+                // caller-held engine and waits for device completion.
+                let probe = runtime
+                    .run(&mut [&mut compute_bk], &prepared, &[])
+                    .map_err(|e| format!("initial run: {e}"))?
+                    .into_iter()
+                    .map(|output| output.into_tensor(&mut compute_bk))
+                    .collect::<tenferro_tensor::Result<Vec<_>>>()
+                    .map_err(|e| format!("initial materialization: {e}"))?;
+                sync_runtime(&transfer_rt)?;
+                // A measure_only case runs no check, so it neither downloads nor
+                // serialises its outputs: the whole point of the mode is that the
+                // verification share of the case is zero, and the record says so.
+                initial = if measure_only {
+                    Vec::new()
                 } else {
-                    probe
-                        .pop()
-                        .ok_or_else(|| "deferred batch returned no run".to_string())?
+                    export_outputs(&transfer_rt, &probe, device_ordinal)?
                 };
-                let mut last_timed: Option<Vec<Tensor>> = probe.pop();
-                if verify_only {
-                    // Verification-only lane: no clocks, same route.
-                    let (_, runs) =
-                        run_deferred_batch(&runtime, &mut compute_bk, &transfer_rt, &prepared, 1)?;
-                    last_timed = runs.into_iter().last();
-                } else {
+                let bytes = probe
+                    .iter()
+                    .map(|v| v.shape().iter().product::<usize>() * 8)
+                    .sum::<usize>();
+                drop(probe);
+                if !verify_only {
+                    let mut batch = |count: usize| -> Result<f64, String> {
+                        let mut retained = Vec::with_capacity(count);
+                        sync_runtime(&transfer_rt)?;
+                        let start = Instant::now();
+                        for _ in 0..count {
+                            retained.push(
+                                runtime
+                                    .run(&mut [&mut compute_bk], &prepared, &[])
+                                    .map_err(|e| format!("run: {e}"))?,
+                            );
+                            sync_runtime(&transfer_rt)?;
+                        }
+                        let elapsed = start.elapsed().as_secs_f64() * 1000.0;
+                        black_box(&retained);
+                        Ok(elapsed)
+                    };
+                    ramp_gpu_clocks(|| {
+                        let _ = batch(1)?;
+                        Ok(())
+                    })?;
                     for _ in 0..n_warmup {
+                        batch(1)?;
+                    }
+                    let cap = ((256usize << 20) / bytes.max(1)).clamp(1, 4096);
+                    while batch(count)? < 2.0 && count < cap {
+                        count = (count * 2).min(cap);
+                    }
+                    for _ in 0..n_runs {
+                        let duration = batch(count)?;
+                        batch_ms.push(duration);
+                        times_ms.push(duration / count as f64);
+                    }
+                }
+                let final_outputs = runtime
+                    .run(&mut [&mut compute_bk], &prepared, &[])
+                    .map_err(|e| format!("final run: {e}"))?
+                    .into_iter()
+                    .map(|output| output.into_tensor(&mut compute_bk))
+                    .collect::<tenferro_tensor::Result<Vec<_>>>()
+                    .map_err(|e| format!("final materialization: {e}"))?;
+                sync_runtime(&transfer_rt)?;
+                final_values = if measure_only {
+                    Vec::new()
+                } else {
+                    export_outputs(&transfer_rt, &final_outputs, device_ordinal)?
+                };
+            } else {
+                // Throughput mode: K prepared runs enqueued per timed sample on one
+                // caller-held engine, then one retirement. Per-call time is
+                // sample_ms / K, which is a throughput measurement and is never
+                // joined with the per-call latency rows.
+                let configured_k = deferred_batch_k();
+                let mut effective_k = configured_k;
+                let sampled = (|| -> Result<(Vec<Tensor>, Option<Vec<Tensor>>), String> {
+                    // Probe batch outside the clocks: proves the route, bounds
+                    // retention from one output set and supplies the initial
+                    // verification outputs. One run is enough for the bound, so
+                    // a large configured K cannot overshoot the retention budget
+                    // before it is clamped.
+                    let (_, mut probe) =
+                        run_deferred_batch(&runtime, &mut compute_bk, &transfer_rt, &prepared, 1)?;
+                    let bytes: usize = probe
+                        .first()
+                        .map(|run| {
+                            run.iter()
+                                .map(|v| v.shape().iter().product::<usize>() * 8)
+                                .sum::<usize>()
+                        })
+                        .unwrap_or(1);
+                    effective_k =
+                        configured_k.min(((256usize << 20) / bytes.max(1)).clamp(1, 4096));
+                    // First probe run proves one run's outputs, the last one
+                    // supplies the final verification outputs.
+                    let initial_out = if probe.len() > 1 {
+                        probe.remove(0)
+                    } else {
+                        probe
+                            .pop()
+                            .ok_or_else(|| "deferred batch returned no run".to_string())?
+                    };
+                    let mut last_timed: Option<Vec<Tensor>> = probe.pop();
+                    if verify_only {
+                        // Verification-only lane: no clocks, same route.
                         let (_, runs) = run_deferred_batch(
                             &runtime,
                             &mut compute_bk,
                             &transfer_rt,
                             &prepared,
-                            effective_k,
+                            1,
                         )?;
                         last_timed = runs.into_iter().last();
-                        black_box(last_timed.as_ref().map(Vec::len));
+                    } else {
+                        for _ in 0..n_warmup {
+                            let (_, runs) = run_deferred_batch(
+                                &runtime,
+                                &mut compute_bk,
+                                &transfer_rt,
+                                &prepared,
+                                effective_k,
+                            )?;
+                            last_timed = runs.into_iter().last();
+                            black_box(last_timed.as_ref().map(Vec::len));
+                        }
+                        for _ in 0..n_runs {
+                            let (duration, runs) = run_deferred_batch(
+                                &runtime,
+                                &mut compute_bk,
+                                &transfer_rt,
+                                &prepared,
+                                effective_k,
+                            )?;
+                            batch_ms.push(duration);
+                            times_ms.push(duration / effective_k as f64);
+                            last_timed = runs.into_iter().last();
+                            black_box(last_timed.as_ref().map(Vec::len));
+                        }
                     }
-                    for _ in 0..n_runs {
-                        let (duration, runs) = run_deferred_batch(
-                            &runtime,
-                            &mut compute_bk,
-                            &transfer_rt,
-                            &prepared,
-                            effective_k,
-                        )?;
-                        batch_ms.push(duration);
-                        times_ms.push(duration / effective_k as f64);
-                        last_timed = runs.into_iter().last();
-                        black_box(last_timed.as_ref().map(Vec::len));
-                    }
-                }
-                Ok((initial_out, last_timed))
-            })();
-            count = effective_k;
-            let (initial_out, final_out) = sampled?;
-            initial = if measure_only {
-                Vec::new()
-            } else {
-                export_outputs(&transfer_rt, &initial_out, device_ordinal)?
-            };
-            let final_outputs =
-                final_out.ok_or("no deferred-batch result available for verification")?;
-            final_values = if measure_only {
-                Vec::new()
-            } else {
-                export_outputs(&transfer_rt, &final_outputs, device_ordinal)?
-            };
-        }
+                    Ok((initial_out, last_timed))
+                })();
+                count = effective_k;
+                let (initial_out, final_out) = sampled?;
+                initial = if measure_only {
+                    Vec::new()
+                } else {
+                    export_outputs(&transfer_rt, &initial_out, device_ordinal)?
+                };
+                let final_outputs =
+                    final_out.ok_or("no deferred-batch result available for verification")?;
+                final_values = if measure_only {
+                    Vec::new()
+                } else {
+                    export_outputs(&transfer_rt, &final_outputs, device_ordinal)?
+                };
+            }
+        } // end of the trace path; the eager path filled the same locals above
 
         Ok((
             times_ms,
@@ -454,6 +533,22 @@ fn dispatch(
                     });
                     sampling["scope"] =
                         json!("steady_state_batched_host_api_plus_one_retirement_per_k_samples");
+                }
+                if eager_arm {
+                    // The eager row times the same logical work as the trace
+                    // row (forward plus derivative), but its own AD preparation
+                    // is part of the sample: the eager API exposes no separate
+                    // prepare step, and the record says so instead of claiming
+                    // the trace policy.
+                    sampling["execution_mode"] = json!("eager");
+                    sampling["eager"] = json!({
+                        "forward_and_derivative_inside_timing": true,
+                        "ad_prepare_inside_timing": true,
+                        "policy": "forward_and_derivative_inside_timing_with_eager_ad_prepare"
+                    });
+                    sampling["setup"] = json!(
+                        "fixtures/transfers, eager leaves, engine/runtime initialization and initial execution outside clocks"
+                    );
                 }
                 sampling
             },
@@ -488,7 +583,9 @@ fn dispatch(
                     tc,
                 )
             };
-            rec["execution"]["execution_path"] = json!(if throughput {
+            rec["execution"]["execution_path"] = json!(if eager_arm {
+                "eager-runtime-forward-and-derivative-caller-held-engine-linalg-ad"
+            } else if throughput {
                 "trace-runtime-run-caller-held-engine-linalg-ad-deferred-batch"
             } else {
                 "trace-runtime-run-caller-held-engine-linalg-ad"
@@ -511,7 +608,9 @@ fn dispatch(
             }
             rec["execution"]["notes"] = json!(json!({"verification_outputs":if measure_only {Value::Null} else {verification_outputs},
                 "sampling":if verify_only {Value::Null} else {sampling},
-                "session_policy": if throughput {
+                "session_policy": if eager_arm {
+                    "one caller-held CUDA engine; each sample runs the eager forward and the eager jvp/vjp on it, and includes the eager API's own AD preparation"
+                } else if throughput {
                     "K Runtime::run calls are enqueued on one caller-held CUDA engine and paid one caller-side retirement barrier per K-run batch"
                 } else {
                     "Runtime::run executes on one caller-held CUDA engine; an explicit device synchronize after each call is the per-call barrier"
@@ -546,6 +645,225 @@ fn dispatch(
             bc,
             tc,
         ),
+    }
+}
+
+/// Timing and verification outputs of one eager AD case.
+struct EagerCase {
+    times_ms: Vec<f64>,
+    batch_ms: Vec<f64>,
+    initial: Vec<Value>,
+    final_values: Vec<Value>,
+}
+
+/// Measure one eager AD case: forward plus derivative, per call.
+///
+/// The boundary matches the CPU eager rows: the forward pass and the eager
+/// API's own AD preparation are inside the sample, because the eager surface
+/// has no separate prepare step. Leaves, seeds and the runtime are built before
+/// the clock; materialization and downloads happen after it.
+#[allow(clippy::too_many_arguments)]
+fn run_eager_case(
+    phase: &str,
+    n: usize,
+    loss: &LossKind,
+    engine: &mut CudaEngine,
+    rt: &CudaRuntime,
+    device_ordinal: usize,
+    n_warmup: usize,
+    n_runs: usize,
+    verify_only: bool,
+    measure_only: bool,
+) -> Result<EagerCase, String> {
+    let ctx = EagerRuntime::new().map_err(|e| format!("eager runtime: {e}"))?;
+
+    // A device runtime cannot turn a host tensor into a leaf without an engine,
+    // so the fixture is built inside a session, before any clock starts.
+    let (wrt, rhs) = ctx
+        .with_eager_session(
+            engine,
+            |session| -> tenferro_ad::error::Result<(EagerTensor, Option<EagerTensor>)> {
+                let matrix = match *loss {
+                    LossKind::SvdS { matrix_seed }
+                    | LossKind::Qr { matrix_seed }
+                    | LossKind::Lu { matrix_seed } => well_conditioned_matrix(n, matrix_seed),
+                    LossKind::Eigh { matrix_seed } | LossKind::Solve { matrix_seed, .. } => {
+                        spd_matrix(n, matrix_seed)
+                    }
+                };
+                let wrt = session.variable_from(tensor_f64(&[n, n], matrix))?;
+                let rhs = match *loss {
+                    LossKind::Solve {
+                        rhs_seed, rhs_cols, ..
+                    } => Some(session.constant_from_host(tensor_f64(
+                        &[n, rhs_cols],
+                        data_for_shape(&[n, rhs_cols], rhs_seed),
+                    ))?),
+                    _ => None,
+                };
+                Ok((wrt, rhs))
+            },
+        )
+        .map_err(|e| format!("eager fixture: {e}"))?;
+
+    let tangent = if phase == "jvp" {
+        let seed = tangent_seed(loss.matrix_seed());
+        Some(
+            ctx.with_eager_session(
+                engine,
+                |session| -> tenferro_ad::error::Result<EagerTensor> {
+                    session.constant_from_host(tensor_f64(&[n, n], data_for_shape(&[n, n], seed)))
+                },
+            )
+            .map_err(|e| format!("eager tangent: {e}"))?,
+        )
+    } else {
+        None
+    };
+    let cotangent = if phase == "vjp" {
+        Some(
+            ctx.with_eager_session(
+                engine,
+                |session| -> tenferro_ad::error::Result<EagerTensor> {
+                    session.constant_from_host(tensor_f64(&[], vec![1.0]))
+                },
+            )
+            .map_err(|e| format!("eager cotangent: {e}"))?,
+        )
+    } else {
+        None
+    };
+    sync_runtime(rt)?;
+
+    // One sample: `count` forward+derivative pairs, then one retirement. The
+    // outputs stay alive until the clock stops, like the trace route's batch.
+    let mut sample = |count: usize| -> Result<(f64, Vec<Tensor>), String> {
+        let mut retained: Vec<(EagerTensor, EagerTensor)> = Vec::with_capacity(count);
+        sync_runtime(rt)?;
+        let start = Instant::now();
+        for _ in 0..count {
+            let output = ctx
+                .with_eager_session(
+                    &mut *engine,
+                    |session| -> tenferro_ad::error::Result<EagerTensor> {
+                        eager_forward(session, loss, &wrt, rhs.as_ref())
+                    },
+                )
+                .map_err(|e| format!("eager forward: {e}"))?;
+            let derivative = match phase {
+                "jvp" => ctx.jvp(
+                    &mut *engine,
+                    &output,
+                    &wrt,
+                    tangent.as_ref().expect("jvp tangent prepared"),
+                ),
+                "vjp" => ctx.vjp(
+                    &mut *engine,
+                    &output,
+                    &wrt,
+                    cotangent.as_ref().expect("vjp cotangent prepared"),
+                ),
+                other => return Err(format!("unsupported phase: {other}")),
+            }
+            .map_err(|e| format!("eager {phase}: {e}"))?;
+            retained.push((output, derivative));
+        }
+        sync_runtime(rt)?;
+        let elapsed = start.elapsed().as_secs_f64() * 1000.0;
+        black_box(retained.len());
+        let (output, derivative) = retained
+            .pop()
+            .ok_or_else(|| "eager sample produced no result".to_string())?;
+        // Conversion is not part of the measured region.
+        let tensors = vec![
+            output
+                .to_tensor(&mut *engine)
+                .map_err(|e| format!("eager output materialization: {e}"))?,
+            derivative
+                .to_tensor(&mut *engine)
+                .map_err(|e| format!("eager derivative materialization: {e}"))?,
+        ];
+        Ok((elapsed, tensors))
+    };
+
+    let (_, initial_tensors) = sample(1)?;
+    let initial = if measure_only {
+        Vec::new()
+    } else {
+        export_outputs(rt, &initial_tensors, device_ordinal)?
+    };
+    let bytes = initial_tensors
+        .iter()
+        .map(|value| value.shape().iter().product::<usize>() * 8)
+        .sum::<usize>()
+        .max(1);
+    drop(initial_tensors);
+
+    let mut times_ms = Vec::new();
+    let mut batch_ms = Vec::new();
+    if !verify_only {
+        ramp_gpu_clocks(|| {
+            let _ = sample(1)?;
+            Ok(())
+        })?;
+        for _ in 0..n_warmup {
+            sample(1)?;
+        }
+        let cap = ((256usize << 20) / bytes).clamp(1, 4096);
+        let mut count = 1usize;
+        while sample(count)?.0 < 2.0 && count < cap {
+            count = (count * 2).min(cap);
+        }
+        for _ in 0..n_runs {
+            let (duration, _) = sample(count)?;
+            batch_ms.push(duration);
+            times_ms.push(duration / count as f64);
+        }
+    }
+
+    let (_, final_tensors) = sample(1)?;
+    let final_values = if measure_only {
+        Vec::new()
+    } else {
+        export_outputs(rt, &final_tensors, device_ordinal)?
+    };
+    Ok(EagerCase {
+        times_ms,
+        batch_ms,
+        initial,
+        final_values,
+    })
+}
+
+/// The same loss as [`build_loss`], computed through an eager session.
+fn eager_forward(
+    session: &mut EagerSession<'_>,
+    loss: &LossKind,
+    wrt: &EagerTensor,
+    rhs: Option<&EagerTensor>,
+) -> tenferro_ad::error::Result<EagerTensor> {
+    match *loss {
+        LossKind::SvdS { .. } => {
+            let (_, s, _) = session.svd(wrt)?;
+            session.reduce_sum(&s, Some(&[0]))
+        }
+        LossKind::Qr { .. } => {
+            let (q, r) = session.qr(wrt)?;
+            let q_sum = session.reduce_sum(&q, Some(&[0, 1]))?;
+            let r_sum = session.reduce_sum(&r, Some(&[0, 1]))?;
+            session.add(&q_sum, &r_sum)
+        }
+        LossKind::Eigh { .. } => {
+            let (w, _) = session.eigh(wrt)?;
+            session.reduce_sum(&w, Some(&[0]))
+        }
+        LossKind::Lu { .. } => {
+            let (_, l, u, _) = session.lu(wrt)?;
+            let l_sum = session.reduce_sum(&l, Some(&[0, 1]))?;
+            let u_sum = session.reduce_sum(&u, Some(&[0, 1]))?;
+            session.add(&l_sum, &u_sum)
+        }
+        LossKind::Solve { .. } => session.solve(wrt, rhs.expect("solve fixture carries a rhs")),
     }
 }
 

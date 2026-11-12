@@ -37,6 +37,13 @@ on:
         required: true
         default: all
         type: string
+      problem:
+        description: >-
+          Optional GPU_BENCH_PROBLEM filter: one case id or a comma-separated
+          list. A targeted probe, never a routine refresh.
+        required: false
+        default: ""
+        type: string
       backends:
         description: >-
           Comma-separated GPU backends; leave empty to collect the routine
@@ -80,10 +87,14 @@ env:
   # (suite=all, default backends, A100).
   BENCH_GPU_TYPE: ${{ inputs.gpu_type || 'a100' }}
   # Hard cap on one pod's lifetime, enforced by the pod itself (see startup).
-  # Budget: <=10 min startup (startup_timeout_seconds) + the collection, which is
-  # not bounded yet (the packaging step must keep running for one interrupted suite
-  # to stop taking the completed ones down with it: see the follow-up issue). The
-  # hosted-side timeouts below are the backstop, not the safety mechanism.
+  # Budget as an enforced inequality: the startup window
+  # (startup_timeout_seconds = 600 s in scripts/ci/runpod_config.json) plus every
+  # bounded step of the run-gpu-benchmark job must sum to less than
+  # POD_MAX_LIFETIME_SECONDS. scripts/ci/tests/test_runpod_http.py asserts both
+  # the sum and that no step in that job is unbounded, so deleting a bound fails
+  # the test instead of silently passing. The collection step is bounded at 42
+  # minutes: a run that reaches it is cut, and packaging still runs inside the
+  # lifetime and publishes the suites that completed.
   # Extension cost: 55 -> 120 min at the A100 PCIe rate ($1.79/h) is
   # (120-55)/60 * 1.79 = $1.94, and two hours of compute is $3.58. That is the
   # calculation, not a hard billing ceiling: watchdog deletion retries can add up to
@@ -460,6 +471,7 @@ jobs:
       GPU_RUNTIME_SHA256: ${{ needs.prepare-environment.outputs.sha256 }}
     steps:
       - name: Verify pod lifetime watchdog is armed
+        timeout-minutes: 2
         run: |
           set -euo pipefail
           cat /tmp/pod-watchdog.status
@@ -469,6 +481,7 @@ jobs:
           echo "Pod watchdog starts deletion after ${POD_MAX_LIFETIME_SECONDS}s (180s retry budget)."
 
       - name: Checkout benchmark harness
+        timeout-minutes: 3
         uses: actions/checkout@v4
         with:
           submodules: recursive
@@ -499,16 +512,20 @@ jobs:
             --github-env "$GITHUB_ENV"
           nvidia-smi --query-gpu=name,driver_version --format=csv,noheader
       - name: Pin benchmark dependency to hosted build revision
+        timeout-minutes: 2
         run: |
           set -euo pipefail
           ./scripts/setup_extern_deps.sh
           test "$(git -C extern/tenferro-rs rev-parse HEAD)" = "$TENFERRO_REF"
 
-      - uses: actions/download-artifact@v4
+      - name: Download hosted benchmark build
+        timeout-minutes: 3
+        uses: actions/download-artifact@v4
         with:
           name: gpu-benchmark-build-${{ github.run_id }}
           path: target/release
       - name: Verify hosted benchmark build
+        timeout-minutes: 3
         run: |
           set -euo pipefail
           # Each selected suite's driver names the binary it runs, so a binary
@@ -524,6 +541,7 @@ jobs:
           done <<< "$required"
 
       - name: Verify CUDA benchmark environment
+        timeout-minutes: 5
         run: |
           set -euo pipefail
           nvidia-smi
@@ -547,6 +565,13 @@ jobs:
 
       - name: Run GPU benchmark suite
         id: collect
+        # Bounded so packaging and upload still run before the pod's own
+        # watchdog deletes it: this step, every other step of this job and the
+        # startup window must sum to less than POD_MAX_LIFETIME_SECONDS
+        # (asserted by scripts/ci/tests/test_runpod_http.py). A collection that
+        # reaches the bound is cut, and the completed suites publish (see
+        # prepare_result_bundle.py's per-suite isolation).
+        timeout-minutes: 42
         # A red collection is normal: the script keeps measuring after a failing
         # case or suite, writes every row it did measure with the reason for the
         # ones it did not, and only then exits non-zero. The packaging and upload
@@ -556,6 +581,10 @@ jobs:
           # scheduled run on the routine manifest's own set, so it still runs the
           # routine controls and refreshes the routine reports.
           GPU_BENCH_BACKENDS: ${{ inputs.backends }}
+          # A named case (or comma-separated list) is a targeted probe: the
+          # routine manifest declares probe-only cases under `probe_problems`,
+          # and the selection plans exactly the rows this dispatch asked for.
+          GPU_BENCH_PROBLEM: ${{ inputs.problem }}
         run: |
           set -euo pipefail
           GPU_BENCH_TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
@@ -573,6 +602,7 @@ jobs:
           fi
 
       - name: Package this collection's GPU results
+        timeout-minutes: 8
         if: always() && inputs.suite != 'perf-issues-readback' && steps.collect.outputs.timestamp != ''
         env:
           COLLECTION_TIMESTAMP: ${{ steps.collect.outputs.timestamp }}
@@ -590,6 +620,7 @@ jobs:
             --backends "$GPU_BENCH_RUNTIME_BACKENDS" --suites "$REQUESTED_SUITE" --bundle-dir _benchmark_artifact
 
       - name: Archive benchmark results
+        timeout-minutes: 4
         if: always() && inputs.suite != 'perf-issues-readback' && hashFiles('_benchmark_artifact/publication.json') != ''
         uses: actions/upload-artifact@v4
         with:
@@ -600,6 +631,7 @@ jobs:
           retention-days: 90
 
       - name: Archive standalone readback results for review
+        timeout-minutes: 4
         if: always() && inputs.suite == 'perf-issues-readback' && steps.collect.outputs.readback_timestamp != ''
         uses: actions/upload-artifact@v4
         with:
@@ -613,6 +645,7 @@ jobs:
           retention-days: 90
 
       - name: Archive failed-run diagnostics
+        timeout-minutes: 5
         if: failure()
         uses: actions/upload-artifact@v4
         with:
