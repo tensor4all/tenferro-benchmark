@@ -34,6 +34,11 @@ fi
 source "$SCRIPT_DIR/cpu_blas_provider.sh"
 FEATURES="${TENFERRO_CPU_FEATURES:-native}"
 ensure_blas_env_for_features "$FEATURES"
+# shellcheck source=scripts/link_preflight.sh
+source "$SCRIPT_DIR/link_preflight.sh"
+case "$FEATURES" in
+    blas-mkl|blas-openblas) require_link_preflight "$FEATURES" >&2 ;;
+esac
 PROFILE="${BENCH_BUILD_PROFILE:-release}"
 LINK="$PROJECT_DIR/extern/tenferro-rs"
 

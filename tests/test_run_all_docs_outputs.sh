@@ -24,6 +24,12 @@ cp "$ROOT/scripts/render_run.py" "$TMP/scripts/render_run.py"
 cp "$ROOT/scripts/report_summary.py" "$TMP/scripts/report_summary.py"
 cp "$ROOT/scripts/regenerate_report_summaries.py" "$TMP/scripts/regenerate_report_summaries.py"
 cp "$ROOT/scripts/publish_run.sh" "$TMP/scripts/publish_run.sh"
+cp "$ROOT/scripts/link_preflight.sh" "$TMP/scripts/link_preflight.sh"
+# The vendor roots this fixture exports are fakes, so the link preflight run_all.sh starts with is stubbed here;
+# the real check is campaign-toolkit's, run by the validate CI job.
+printf '#!/usr/bin/env bash\nexit 0\n' > "$TMP/link-preflight-python"
+chmod +x "$TMP/link-preflight-python"
+export LINK_PREFLIGHT_PYTHON="$TMP/link-preflight-python"
 cp "$ROOT/scripts/finalize_run.py" "$TMP/scripts/finalize_run.py"
 cp "$ROOT/scripts/case_status.py" "$TMP/scripts/case_status.py"
 cp "$ROOT/scripts/benchmark_wall.py" "$TMP/scripts/benchmark_wall.py"

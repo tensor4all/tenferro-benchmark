@@ -13,7 +13,7 @@ mkdir -p "$TMP/project/scripts" "$TMP/project/mwe/cpu_followup" \
          "$TMP/project/.venv/bin" "$TMP/project/target"
 for name in scripts/run_cpu_followup.sh scripts/tenferro_checkout.sh \
             scripts/python_venv.sh scripts/thread_env.sh scripts/cpu_pinning.sh \
-            scripts/benchmark_host_idle.sh scripts/cpu_blas_provider.sh \
+            scripts/benchmark_host_idle.sh scripts/cpu_blas_provider.sh scripts/link_preflight.sh \
             scripts/collect_run_metadata.py scripts/collect_gpu_info.py \
             scripts/benchmark_layout.py scripts/validate_benchmark_suite.py \
             benchmarks/cpu_pinning_rows.tsv; do
@@ -80,6 +80,11 @@ PREPARED_COMMIT="$COMMIT"
 mkdir -p "$TMP/bin" "$TMP/project/target/followup-current"
 printf '#!/usr/bin/env bash\nexit 0\n' > "$TMP/bin/cargo"
 chmod +x "$TMP/bin/cargo"
+# The link preflight runs before the MWE build; here it is a stub that records how it was asked
+# (the real check is campaign-toolkit's, exercised by the validate CI job).
+printf '#!/usr/bin/env bash\nprintf "%%s\\n" "$*" >> "%s"\nexit 0\n' "$TMP/preflight.log" > "$TMP/bin/preflight-python"
+chmod +x "$TMP/bin/preflight-python"
+export LINK_PREFLIGHT_PYTHON="$TMP/bin/preflight-python"
 (
     cd "$TMP/project"
     # No uv on PATH, so the prepare step does not touch a Python environment.
@@ -87,6 +92,8 @@ chmod +x "$TMP/bin/cargo"
     export MKLROOT="$TMP/mkl" GPU_BENCH_NO_PULL=1
     bash scripts/run_cpu_followup.sh --prepare
 )
+grep -q -- '-m campaign_toolkit.link_preflight .*--arm followup-mwe' "$TMP/preflight.log" || {
+    echo "run_cpu_followup.sh --prepare built the MWE without the link preflight" >&2; exit 1; }
 STAMP="$TMP/project/target/followup-current/.tenferro-commit"
 test -s "$STAMP"
 test "$(cat "$STAMP")" = "$PREPARED_COMMIT"

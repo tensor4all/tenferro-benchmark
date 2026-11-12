@@ -145,6 +145,23 @@ jobs:
         # record at the pin, or keep the pin at the last measured revision (campaign-toolkit#62).
         run: uv run campaign-check-pin-recorded --pin pins/tenferro-rs.rev --evidence 'result/*/*/*.summary.json' --commit-field tenferro_commit
 
+      - name: Link preflight (declaration, a real link, and a hidden library)
+        # The preflight run_all.sh / build_for_tenferro_rev.sh / run_cpu_followup.sh call before any
+        # build. This runner has libopenblas-dev and no MKL: the OpenBLAS arms must pass, and the MKL
+        # arm with MKLROOT at an empty prefix must fail and name the library.
+        run: |
+          uv run python -m unittest tests.test_link_preflight_declaration
+          uv run campaign-link-preflight --config benchmarks/link-preflight.yaml --validate
+          OPENBLAS_ROOT=/usr uv run campaign-link-preflight --config benchmarks/link-preflight.yaml \
+            --arm blas-openblas --arm followup-mwe-openblas
+          empty="$(mktemp -d)"; mkdir -p "$empty/lib"
+          if MKLROOT="$empty" uv run campaign-link-preflight --config benchmarks/link-preflight.yaml \
+              --arm followup-mwe > /tmp/link-preflight-negative.txt; then
+            echo "the preflight passed with no MKL installed"; exit 1
+          fi
+          cat /tmp/link-preflight-negative.txt
+          grep -q 'the linker cannot find libmkl_intel_lp64.so (-lmkl_intel_lp64)' /tmp/link-preflight-negative.txt
+
       - name: Validate results dashboard
         run: uv run python -m unittest tests.test_generate_dashboard tests.test_generate_history tests.test_result_pipeline tests.test_cpu_thread_reports tests.test_publish_runs tests.test_publish_gpu_page tests.test_report_summary_reasons tests.test_regime_policy tests.test_source_contract tests.test_verification_mode_contract tests.test_cpu_suite_arms_doc
 

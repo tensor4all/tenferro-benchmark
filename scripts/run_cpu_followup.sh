@@ -6,6 +6,7 @@ cd "$(dirname "$0")/.."
 source scripts/tenferro_checkout.sh
 source scripts/thread_env.sh
 source scripts/benchmark_host_idle.sh
+source scripts/link_preflight.sh
 # Build the independent Rust MWE into the directory the collector defaults to
 # ($PWD/target/followup-current, see DEFAULT_MWE_BINARY in
 # scripts/cpu_followup_cases.py). --prepare does the full environment setup and
@@ -14,6 +15,9 @@ source scripts/benchmark_host_idle.sh
 build_followup_mwe() {
     : "${MKLROOT:?MKLROOT is required to build mwe/cpu_followup (system-mkl)}"
     test -d "$MKLROOT/include"
+    # The link this build makes (mwe/cpu_followup/build.rs), and the load the collector then needs,
+    # checked in a second before cargo spends minutes reaching it.
+    require_link_preflight followup-mwe
     export CARGO_TARGET_DIR="$PWD/target/followup-current"
     cargo build --release --locked --manifest-path mwe/cpu_followup/Cargo.toml
     # The binary just built is pinned to this revision, which the collection step
