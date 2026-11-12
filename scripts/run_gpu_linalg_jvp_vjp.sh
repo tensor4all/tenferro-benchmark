@@ -170,7 +170,7 @@ if [[ "$RUN_RUST" == 1 || "$RUN_RUST_EAGER" == 1 ]]; then
     # process-wide selection. Each arm's raw outputs are checked by the
     # backend-agnostic CPU reference pass before they reach the result stream.
     run_rust_arm() {
-        local backend="$1" raw="$2" rc=0 started verified
+        local backend="$1" raw="$2" verified="$3" rc=0 started
         echo "Running $backend linalg AD benchmarks..."
         : > "$raw"
         started="$(wall_now)"
@@ -186,7 +186,6 @@ if [[ "$RUN_RUST" == 1 || "$RUN_RUST_EAGER" == 1 ]]; then
         fi
         # The verification pass is a stage of the suite, not part of any arm's
         # clock; the raw file stays beside the verified one when it fails.
-        verified="${raw%.jsonl}_verified.jsonl"
         local verify_started
         verify_started="$(wall_now)"
         if ! "${PYTHON[@]}" "$SCRIPT_DIR/verify_gpu_linalg_ad_rust.py" \
@@ -199,8 +198,10 @@ if [[ "$RUN_RUST" == 1 || "$RUN_RUST_EAGER" == 1 ]]; then
         [[ ! -s "$verified" ]] || cat "$verified" >> "$RESULT_JSONL"
     }
 
-    [[ "$RUN_RUST" != 1 ]] || run_rust_arm tenferro-cuda-trace "$RUN_DIR/rust_records_unverified.jsonl"
-    [[ "$RUN_RUST_EAGER" != 1 ]] || run_rust_arm tenferro-cuda-eager "$RUN_DIR/rust_eager_records_unverified.jsonl"
+    [[ "$RUN_RUST" != 1 ]] || run_rust_arm tenferro-cuda-trace \
+        "$RUN_DIR/rust_records_unverified.jsonl" "$RUST_JSONL"
+    [[ "$RUN_RUST_EAGER" != 1 ]] || run_rust_arm tenferro-cuda-eager \
+        "$RUN_DIR/rust_eager_records_unverified.jsonl" "$RUN_DIR/rust_eager_records.jsonl"
     sleep "$GPU_BENCH_BACKEND_SLEEP"
 fi
 
