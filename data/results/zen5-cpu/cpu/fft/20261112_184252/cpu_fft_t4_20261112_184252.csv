@@ -1,0 +1,49 @@
+suite,benchmark,dtype,threads,shape,backend,median_ms,iqr_ms,status,notes
+cpu/fft,fft,c32,4,1d_n1048576,tenferro-fft-immediate,,,skipped,API includes per-call planning or session entry; use shared cached executor for short operation timing
+cpu/fft,fft,c32,4,1d_n1048576,tenferro-fft-read,,,skipped,API includes per-call planning or session entry; use shared cached executor for short operation timing
+cpu/fft,fft,c32,4,1d_n1048576,tenferro-fft-executor-cached,7.097455,0.031178,ok,"FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=7.097455"
+cpu/fft,fft,c32,4,1d_n1048576,tenferro-fft-eager,7.173708,0.032762,ok,"EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=7.173708"
+cpu/fft,fft,c32,4,1d_n1048576,tenferro-fft-trace,7.035910,0.061675,ok,"TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=7.035910"
+cpu/fft,fft,c64,4,1d_n1048576,tenferro-fft-immediate,,,skipped,API includes per-call planning or session entry; use shared cached executor for short operation timing
+cpu/fft,fft,c64,4,1d_n1048576,tenferro-fft-read,,,skipped,API includes per-call planning or session entry; use shared cached executor for short operation timing
+cpu/fft,fft,c64,4,1d_n1048576,tenferro-fft-executor-cached,13.045041,0.092773,ok,"FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=13.045041"
+cpu/fft,fft,c64,4,1d_n1048576,tenferro-fft-eager,13.194170,0.079238,ok,"EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=13.194170"
+cpu/fft,fft,c64,4,1d_n1048576,tenferro-fft-trace,12.981974,0.101630,ok,"TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=12.981974"
+cpu/fft,ifft,c32,4,1d_n1048576,tenferro-fft-immediate,,,skipped,API includes per-call planning or session entry; use shared cached executor for short operation timing
+cpu/fft,ifft,c32,4,1d_n1048576,tenferro-fft-read,,,skipped,API includes per-call planning or session entry; use shared cached executor for short operation timing
+cpu/fft,ifft,c32,4,1d_n1048576,tenferro-fft-executor-cached,7.095261,0.040094,ok,"FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=7.095261"
+cpu/fft,ifft,c32,4,1d_n1048576,tenferro-fft-eager,7.148851,0.034946,ok,"EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=7.148851"
+cpu/fft,ifft,c32,4,1d_n1048576,tenferro-fft-trace,7.043394,0.055955,ok,"TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=7.043394"
+cpu/fft,ifft,c64,4,1d_n1048576,tenferro-fft-immediate,,,skipped,API includes per-call planning or session entry; use shared cached executor for short operation timing
+cpu/fft,ifft,c64,4,1d_n1048576,tenferro-fft-read,,,skipped,API includes per-call planning or session entry; use shared cached executor for short operation timing
+cpu/fft,ifft,c64,4,1d_n1048576,tenferro-fft-executor-cached,13.270522,0.121196,ok,"FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=13.270522"
+cpu/fft,ifft,c64,4,1d_n1048576,tenferro-fft-eager,13.193828,0.148408,ok,"EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=13.193828"
+cpu/fft,ifft,c64,4,1d_n1048576,tenferro-fft-trace,12.984558,0.032712,ok,"TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=12.984558"
+cpu/fft,rfft,f32,4,1d_n1048576,tenferro-fft-immediate,,,skipped,API includes per-call planning or session entry; use shared cached executor for short operation timing
+cpu/fft,rfft,f32,4,1d_n1048576,tenferro-fft-read,,,skipped,API includes per-call planning or session entry; use shared cached executor for short operation timing
+cpu/fft,rfft,f32,4,1d_n1048576,tenferro-fft-executor-cached,4.261445,0.056405,ok,"FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=4.261445"
+cpu/fft,rfft,f32,4,1d_n1048576,tenferro-fft-eager,4.577154,0.099194,ok,"EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=4.577154"
+cpu/fft,rfft,f32,4,1d_n1048576,tenferro-fft-trace,4.525969,0.033382,ok,"TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=4.525969"
+cpu/fft,rfft,f64,4,1d_n1048576,tenferro-fft-immediate,,,skipped,API includes per-call planning or session entry; use shared cached executor for short operation timing
+cpu/fft,rfft,f64,4,1d_n1048576,tenferro-fft-read,,,skipped,API includes per-call planning or session entry; use shared cached executor for short operation timing
+cpu/fft,rfft,f64,4,1d_n1048576,tenferro-fft-executor-cached,6.845244,0.070873,ok,"FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=6.845244"
+cpu/fft,rfft,f64,4,1d_n1048576,tenferro-fft-eager,6.799578,0.064831,ok,"EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=6.799578"
+cpu/fft,rfft,f64,4,1d_n1048576,tenferro-fft-trace,6.782356,0.032481,ok,"TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=6.782356"
+cpu/fft,irfft,c32,4,1d_n1048576,tenferro-fft-immediate,,,skipped,API includes per-call planning or session entry; use shared cached executor for short operation timing
+cpu/fft,irfft,c32,4,1d_n1048576,tenferro-fft-read,,,skipped,API includes per-call planning or session entry; use shared cached executor for short operation timing
+cpu/fft,irfft,c32,4,1d_n1048576,tenferro-fft-executor-cached,4.388943,0.041357,ok,"FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=4.388943"
+cpu/fft,irfft,c32,4,1d_n1048576,tenferro-fft-eager,4.931347,0.034564,ok,"EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=4.931347"
+cpu/fft,irfft,c32,4,1d_n1048576,tenferro-fft-trace,4.953387,0.048130,ok,"TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=4.953387"
+cpu/fft,irfft,c64,4,1d_n1048576,tenferro-fft-immediate,,,skipped,API includes per-call planning or session entry; use shared cached executor for short operation timing
+cpu/fft,irfft,c64,4,1d_n1048576,tenferro-fft-read,,,skipped,API includes per-call planning or session entry; use shared cached executor for short operation timing
+cpu/fft,irfft,c64,4,1d_n1048576,tenferro-fft-executor-cached,6.977631,0.024666,ok,"FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=6.977631"
+cpu/fft,irfft,c64,4,1d_n1048576,tenferro-fft-eager,6.974315,0.075070,ok,"EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=6.974315"
+cpu/fft,irfft,c64,4,1d_n1048576,tenferro-fft-trace,7.002678,0.052057,ok,"TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=7.002678"
+cpu/fft,fft,c32,4,1d_n1048576,pytorch-cpu,5.612199,0.107992,ok,torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=1; median_batch_ms=5.612199
+cpu/fft,fft,c64,4,1d_n1048576,pytorch-cpu,19.978638,0.433279,ok,torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=1; median_batch_ms=19.978638
+cpu/fft,ifft,c32,4,1d_n1048576,pytorch-cpu,2.913956,0.082383,ok,torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=1; median_batch_ms=2.913956
+cpu/fft,ifft,c64,4,1d_n1048576,pytorch-cpu,20.667987,0.140714,ok,torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=1; median_batch_ms=20.667987
+cpu/fft,rfft,f32,4,1d_n1048576,pytorch-cpu,4.509708,0.030567,ok,torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=1; median_batch_ms=4.509708
+cpu/fft,rfft,f64,4,1d_n1048576,pytorch-cpu,21.629534,0.322834,ok,torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=1; median_batch_ms=21.629534
+cpu/fft,irfft,c32,4,1d_n1048576,pytorch-cpu,5.309433,0.023354,ok,torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=1; median_batch_ms=5.309433
+cpu/fft,irfft,c64,4,1d_n1048576,pytorch-cpu,17.562142,0.302776,ok,torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=1; median_batch_ms=17.562142

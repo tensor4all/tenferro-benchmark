@@ -1,0 +1,20 @@
+{
+  "collected_at": "2026-11-12T15:52:37Z",
+  "files": {
+    "result/zen5-cpu/cpu/session_matrix.md": "9f82fc75fa7a5432af2f0073e02e7630bca918f5dd50e6aeea7e90f0a9c06d9d",
+    "result/zen5-cpu/cpu/session_matrix.summary.json": "1e4284c78e248be655c4a3751db1a05d85482ef0f04ec565c280ca30692668d8"
+  },
+  "hardware": {
+    "cpu": "AMD Ryzen AI 9 HX 470 w/ Radeon 890M",
+    "host": "shinaoka-EVO-X1Pro",
+    "threads": [
+      1,
+      4,
+      8
+    ]
+  },
+  "schema_version": 1,
+  "suite_id": "cpu/session_matrix",
+  "target_profile": "zen5-cpu",
+  "tenferro_commit": "9a850b06155405acc99ecd0648829e9e6d3866ba"
+}

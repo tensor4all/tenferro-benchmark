@@ -14,9 +14,9 @@ backend set of a committed `result/<profile>/cpu/<suite>.summary.json`.
 | suite (page) | declared backends (`*.yaml`) | eager rows in the committed summaries | eager status |
 |---|---|---|---|
 | `cpu/einsum` | `tenferro-trace, tenferro-eager, pytorch-cpu, jax-cpu, omeinsum-jl` | zen5 144 / amd 96 / mac 96 (every case) | **measured** |
-| `cpu/cpu_ops` | `tenferro-eager, tenferro-trace, pytorch-cpu, jax-cpu` | zen5 657 / amd 248 / mac 248; amd and mac have both arms on every case (28/28), zen5 has 18 and **10 trace only** (the JVP/VJP cases, which its last collection predates) | **partial by design** (see below) |
-| `cpu/linalg_jvp_vjp` (derived from the CPU-ops CSV) | — (not a suite file; `render_run.py` selects the `_jvp`/`_vjp` rows) | zen5 **0** eager / 240 trace; amd and mac **100 / 100** (all ten cases on both arms) | **measured** on amd and mac; zen5 awaits its next collection |
-| `cpu/public_api` | `tenferro-direct, tenferro-eager, tenferro-trace, pytorch-cpu, jax-cpu, julia-base, strided-jl` | zen5 117 / amd 78 / mac 78; 22 cases have both arms, **96 have trace only** | **partial by design** |
+| `cpu/cpu_ops` | `tenferro-eager, tenferro-trace, pytorch-cpu, jax-cpu` | zen5 897 / amd 248 / mac 248 — all three carry both arms on every case (28/28); zen5 has three thread rows (1/4/8T), amd and mac two (1/4T) | **measured** |
+| `cpu/linalg_jvp_vjp` (derived from the CPU-ops CSV) | — (not a suite file; `render_run.py` selects the `_jvp`/`_vjp` rows) | zen5 **240** eager / 240 trace; amd and mac **100 / 100** (all ten cases on both arms) | **measured** on all three profiles |
+| `cpu/public_api` | `tenferro-direct, tenferro-eager, tenferro-trace, pytorch-cpu, jax-cpu, julia-base, strided-jl` | zen5 78 / amd 78 / mac 78; 22 cases have both arms, **96 have trace only** | **partial by design** |
 | `cpu/permutation` | `tenferro-rs, hptt, strided-rs, julia-base, strided-jl, memcpy` | 0 (no `tenferro-eager`/`-trace` arm exists) | **not applicable**: the axis is different arms |
 | `cpu/fft` | `tenferro-fft-immediate, tenferro-fft-executor-cached, pytorch-cpu` | 0 | **not applicable** |
 | `cpu/session_matrix` | `tenferro-blas-shared-session, tenferro-faer-shared-session, pytorch-python-loop` | 0 | **not applicable** |
@@ -60,10 +60,11 @@ The raw sample record says it too: an eager AD row writes
 row writes `borrowed_session_outside_timing_for_primal`. The row is therefore self-describing
 rather than setup-inclusive by accident (`src/bin/publication_gate.rs`).
 
-The amd-cpu and mac-cpu summaries now carry all ten eager JVP/VJP cases (100 rows each); they were
-collected after the registration, and `result/amd-cpu/cpu/linalg_jvp_vjp.md` and its mac counterpart
-show the column. The zen5-cpu summary still has none, because its last collection predates #311, so
-its next collection is the one that fills it. This page states no eager-vs-trace numbers of its own.
+The amd-cpu and mac-cpu summaries carry all ten eager JVP/VJP cases (100 rows each), and the
+zen5-cpu collection of 2026-11-12 at tenferro-rs `9a850b06` (v0.10.0-22) fills the column there too:
+240 eager / 240 trace rows, all ten cases on both arms, so the eager bar is on every case of all
+three published pages. Before that collection the zen5 summary held the trace arm only, because it
+predated #311; nothing was dropped, the arm had never been measured.
 
 The `_backward` cases (`grad_sum_matmul_backward`, `grad_sum_*_backward`) are the eager arm's
 reverse-mode counterpart. They record `unsupported: eager backward has no borrowed-session API`:

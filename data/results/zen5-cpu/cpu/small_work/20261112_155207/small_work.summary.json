@@ -1,0 +1,2131 @@
+{
+  "schema_version": 2,
+  "target_profile": "zen5-cpu",
+  "suite_id": "cpu/small_work",
+  "timestamp": "2026-11-12T15:52:07Z",
+  "tenferro_commit": "9a850b06155405acc99ecd0648829e9e6d3866ba",
+  "hardware": {
+    "cpu": "AMD Ryzen AI 9 HX 470 w/ Radeon 890M",
+    "host": "shinaoka-EVO-X1Pro",
+    "threads": [
+      1,
+      4,
+      8
+    ]
+  },
+  "unit": "ns",
+  "rows": [
+    {
+      "case": "add_f64_concrete-shared_size16_dependent10",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 11697.41015625,
+      "iqr": 36.8671875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "add_f64_concrete-shared_size16_dependent10",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 14735.6171875,
+      "iqr": 33.38671875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "add_f64_concrete-shared_size16_dependent10",
+      "group": "threads=8",
+      "backend": "tenferro-concrete-shared",
+      "median": 14985.5390625,
+      "iqr": 258.29296875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "add_f64_concrete-shared_size256_dependent10",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 12123.328125,
+      "iqr": 50.05078125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "add_f64_concrete-shared_size256_dependent10",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 15847.3828125,
+      "iqr": 107.93359375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "add_f64_concrete-shared_size256_dependent10",
+      "group": "threads=8",
+      "backend": "tenferro-concrete-shared",
+      "median": 16250.2421875,
+      "iqr": 115.72265625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "add_f64_concrete-shared_size256_single",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 1232.4755859375,
+      "iqr": 4.5791015625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "add_f64_concrete-shared_size256_single",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 1645.62890625,
+      "iqr": 29.88525390625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "add_f64_concrete-shared_size256_single",
+      "group": "threads=8",
+      "backend": "tenferro-concrete-shared",
+      "median": 1690.4384765625,
+      "iqr": 47.89697265625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "add_f64_concrete-shared_size4_dependent10",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 11289.30859375,
+      "iqr": 28.470703125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "add_f64_concrete-shared_size4_dependent10",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 14827.0,
+      "iqr": 24.986328125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "add_f64_concrete-shared_size4_dependent10",
+      "group": "threads=8",
+      "backend": "tenferro-concrete-shared",
+      "median": 14916.3515625,
+      "iqr": 300.5234375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "add_f64_concrete-shared_size4_single",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 1184.27490234375,
+      "iqr": 4.877197265625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "add_f64_concrete-shared_size4_single",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 1558.513671875,
+      "iqr": 16.4052734375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "add_f64_concrete-shared_size4_single",
+      "group": "threads=8",
+      "backend": "tenferro-concrete-shared",
+      "median": 1583.38916015625,
+      "iqr": 21.5810546875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "add_f64_concrete_shared",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 1165.88623046875,
+      "iqr": 2.942626953125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "add_f64_concrete_shared",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 1574.28955078125,
+      "iqr": 4.02587890625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "add_f64_concrete_shared",
+      "group": "threads=8",
+      "backend": "tenferro-concrete-shared",
+      "median": 1552.564453125,
+      "iqr": 6.895263671875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_c64_prepared-repeat_n16_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-repeat",
+      "median": 3236.390625,
+      "iqr": 8.2919921875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_c64_prepared-repeat_n16_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-repeat",
+      "median": 3576.037109375,
+      "iqr": 11.8671875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_c64_prepared-repeat_n16_single",
+      "group": "threads=8",
+      "backend": "tenferro-prepared-repeat",
+      "median": 3685.029296875,
+      "iqr": 24.71875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_c64_prepared-repeat_n2_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2099.4443359375,
+      "iqr": 7.841796875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_c64_prepared-repeat_n2_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2476.505859375,
+      "iqr": 13.6142578125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_c64_prepared-repeat_n2_single",
+      "group": "threads=8",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2621.4443359375,
+      "iqr": 9.9697265625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_c64_prepared-repeat_n32_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-repeat",
+      "median": 10934.5615234375,
+      "iqr": 57.26513671875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_c64_prepared-repeat_n32_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-repeat",
+      "median": 11939.533203125,
+      "iqr": 32.462890625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_c64_prepared-repeat_n32_single",
+      "group": "threads=8",
+      "backend": "tenferro-prepared-repeat",
+      "median": 12661.8857421875,
+      "iqr": 40.8671875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_c64_prepared-repeat_n4_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2133.306640625,
+      "iqr": 16.98486328125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_c64_prepared-repeat_n4_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2487.6591796875,
+      "iqr": 11.39306640625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_c64_prepared-repeat_n4_single",
+      "group": "threads=8",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2525.052734375,
+      "iqr": 12.24951171875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_c64_prepared-repeat_n8_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2229.5703125,
+      "iqr": 8.74169921875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_c64_prepared-repeat_n8_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2612.03125,
+      "iqr": 7.802734375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_c64_prepared-repeat_n8_single",
+      "group": "threads=8",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2648.8193359375,
+      "iqr": 9.21630859375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_dot-general-into-shared_abcd-dbef-acef_d4_single",
+      "group": "threads=1",
+      "backend": "tenferro-dot-general-into-shared",
+      "median": 3721.4658203125,
+      "iqr": 10.923828125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_dot-general-into-shared_abcd-dbef-acef_d4_single",
+      "group": "threads=4",
+      "backend": "tenferro-dot-general-into-shared",
+      "median": 4119.6396484375,
+      "iqr": 15.634765625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_dot-general-into-shared_abcd-dbef-acef_d4_single",
+      "group": "threads=8",
+      "backend": "tenferro-dot-general-into-shared",
+      "median": 4249.98046875,
+      "iqr": 16.353515625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_dot-general-into-shared_ax-asb-xsb_d4s2_single",
+      "group": "threads=1",
+      "backend": "tenferro-dot-general-into-shared",
+      "median": 2033.794921875,
+      "iqr": 11.232421875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_dot-general-into-shared_ax-asb-xsb_d4s2_single",
+      "group": "threads=4",
+      "backend": "tenferro-dot-general-into-shared",
+      "median": 2450.2939453125,
+      "iqr": 10.5087890625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_dot-general-into-shared_ax-asb-xsb_d4s2_single",
+      "group": "threads=8",
+      "backend": "tenferro-dot-general-into-shared",
+      "median": 2507.24609375,
+      "iqr": 21.98876953125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_dot-general-into-shared_ij-jk-ik_m95k95n1_single",
+      "group": "threads=1",
+      "backend": "tenferro-dot-general-into-shared",
+      "median": 4465.685546875,
+      "iqr": 5.1220703125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_dot-general-into-shared_ij-jk-ik_m95k95n1_single",
+      "group": "threads=4",
+      "backend": "tenferro-dot-general-into-shared",
+      "median": 4734.9189453125,
+      "iqr": 12.234375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_dot-general-into-shared_ij-jk-ik_m95k95n1_single",
+      "group": "threads=8",
+      "backend": "tenferro-dot-general-into-shared",
+      "median": 4879.896484375,
+      "iqr": 36.70947265625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_prepared-into-repeat_abcd-dbef-acef_d4_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-into-repeat",
+      "median": 3907.525390625,
+      "iqr": 5.1064453125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_prepared-into-repeat_abcd-dbef-acef_d4_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-into-repeat",
+      "median": 4236.8408203125,
+      "iqr": 7.91552734375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_prepared-into-repeat_abcd-dbef-acef_d4_single",
+      "group": "threads=8",
+      "backend": "tenferro-prepared-into-repeat",
+      "median": 4348.8759765625,
+      "iqr": 12.9580078125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_prepared-into-repeat_ax-asb-xsb_d4s2_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-into-repeat",
+      "median": 2143.1005859375,
+      "iqr": 7.85107421875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_prepared-into-repeat_ax-asb-xsb_d4s2_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-into-repeat",
+      "median": 2508.8603515625,
+      "iqr": 7.8515625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_prepared-into-repeat_ax-asb-xsb_d4s2_single",
+      "group": "threads=8",
+      "backend": "tenferro-prepared-into-repeat",
+      "median": 2586.720703125,
+      "iqr": 11.99560546875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_prepared-into-repeat_ij-jk-ik_m95k95n1_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-into-repeat",
+      "median": 4582.8271484375,
+      "iqr": 8.88427734375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_prepared-into-repeat_ij-jk-ik_m95k95n1_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-into-repeat",
+      "median": 4974.125,
+      "iqr": 14.3427734375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_prepared-into-repeat_ij-jk-ik_m95k95n1_single",
+      "group": "threads=8",
+      "backend": "tenferro-prepared-into-repeat",
+      "median": 4999.7578125,
+      "iqr": 16.5888671875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_abcd-dbef-acef_d4_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-repeat",
+      "median": 3850.2607421875,
+      "iqr": 22.46435546875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_abcd-dbef-acef_d4_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-repeat",
+      "median": 4195.9931640625,
+      "iqr": 6.94140625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_abcd-dbef-acef_d4_single",
+      "group": "threads=8",
+      "backend": "tenferro-prepared-repeat",
+      "median": 4313.966796875,
+      "iqr": 36.51806640625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_ax-asb-xsb_d4s2_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2296.9912109375,
+      "iqr": 15.00390625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_ax-asb-xsb_d4s2_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2648.0458984375,
+      "iqr": 6.8681640625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_ax-asb-xsb_d4s2_single",
+      "group": "threads=8",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2606.279296875,
+      "iqr": 15.19482421875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_ij-jk-ik_m95k95n1_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-repeat",
+      "median": 3561.7822265625,
+      "iqr": 9.587890625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_ij-jk-ik_m95k95n1_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-repeat",
+      "median": 3853.9287109375,
+      "iqr": 21.4951171875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_ij-jk-ik_m95k95n1_single",
+      "group": "threads=8",
+      "backend": "tenferro-prepared-repeat",
+      "median": 3902.0859375,
+      "iqr": 17.595703125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_n16_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2345.5283203125,
+      "iqr": 14.529296875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_n16_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2712.12109375,
+      "iqr": 16.0498046875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_n16_single",
+      "group": "threads=8",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2779.39453125,
+      "iqr": 13.74560546875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_n2_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2133.3359375,
+      "iqr": 12.89453125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_n2_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2491.0830078125,
+      "iqr": 23.98046875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_n2_single",
+      "group": "threads=8",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2526.2373046875,
+      "iqr": 16.0263671875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_n32_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-repeat",
+      "median": 4243.2197265625,
+      "iqr": 9.6171875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_n32_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-repeat",
+      "median": 4850.4658203125,
+      "iqr": 13.3603515625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_n32_single",
+      "group": "threads=8",
+      "backend": "tenferro-prepared-repeat",
+      "median": 4917.0458984375,
+      "iqr": 22.89404296875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_n4_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2110.51953125,
+      "iqr": 7.99853515625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_n4_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2476.162109375,
+      "iqr": 7.35791015625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_n4_single",
+      "group": "threads=8",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2494.0087890625,
+      "iqr": 12.17138671875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_n8_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2137.4453125,
+      "iqr": 9.99462890625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_n8_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2482.00390625,
+      "iqr": 6.46728515625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_n8_single",
+      "group": "threads=8",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2518.2724609375,
+      "iqr": 13.6630859375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gather_f64_concrete-shared_size256_single",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 1968.046875,
+      "iqr": 3.95263671875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gather_f64_concrete-shared_size256_single",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 2428.1728515625,
+      "iqr": 20.02294921875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gather_f64_concrete-shared_size256_single",
+      "group": "threads=8",
+      "backend": "tenferro-concrete-shared",
+      "median": 2432.9765625,
+      "iqr": 32.29638671875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gather_f64_concrete-shared_size4_single",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 1659.98193359375,
+      "iqr": 2.0009765625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gather_f64_concrete-shared_size4_single",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 2004.1201171875,
+      "iqr": 20.67822265625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gather_f64_concrete-shared_size4_single",
+      "group": "threads=8",
+      "backend": "tenferro-concrete-shared",
+      "median": 2060.8466796875,
+      "iqr": 25.59033203125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gather_f64_concrete_shared",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 1681.44775390625,
+      "iqr": 3.384765625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gather_f64_concrete_shared",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 2082.5380859375,
+      "iqr": 14.57763671875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gather_f64_concrete_shared",
+      "group": "threads=8",
+      "backend": "tenferro-concrete-shared",
+      "median": 2115.0693359375,
+      "iqr": 27.03759765625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum3_n2_col_major_contiguous_concrete-fresh",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-fresh",
+      "median": 30826.890625,
+      "iqr": 265.890625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum3_n2_col_major_contiguous_concrete-fresh",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-fresh",
+      "median": 31473.71875,
+      "iqr": 195.4375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum3_n2_col_major_contiguous_concrete-fresh",
+      "group": "threads=8",
+      "backend": "tenferro-concrete-fresh",
+      "median": 31597.078125,
+      "iqr": 156.625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum3_n2_col_major_contiguous_concrete-shared",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 31119.3125,
+      "iqr": 382.8203125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum3_n2_col_major_contiguous_concrete-shared",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 31590.96875,
+      "iqr": 315.203125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum3_n2_col_major_contiguous_concrete-shared",
+      "group": "threads=8",
+      "backend": "tenferro-concrete-shared",
+      "median": 31370.25,
+      "iqr": 311.0390625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum3_n2_col_major_contiguous_eager-no-ad",
+      "group": "threads=1",
+      "backend": "tenferro-eager-no-ad",
+      "median": 11774.3515625,
+      "iqr": 46.88671875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum3_n2_col_major_contiguous_eager-no-ad",
+      "group": "threads=4",
+      "backend": "tenferro-eager-no-ad",
+      "median": 12889.94921875,
+      "iqr": 40.935546875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum3_n2_col_major_contiguous_eager-no-ad",
+      "group": "threads=8",
+      "backend": "tenferro-eager-no-ad",
+      "median": 13425.75390625,
+      "iqr": 67.60546875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum3_n2_col_major_contiguous_eager-shared",
+      "group": "threads=1",
+      "backend": "tenferro-eager-shared",
+      "median": 11553.8203125,
+      "iqr": 39.861328125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum3_n2_col_major_contiguous_eager-shared",
+      "group": "threads=4",
+      "backend": "tenferro-eager-shared",
+      "median": 12864.08203125,
+      "iqr": 71.990234375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum3_n2_col_major_contiguous_eager-shared",
+      "group": "threads=8",
+      "backend": "tenferro-eager-shared",
+      "median": 12958.58984375,
+      "iqr": 66.74609375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum_n16_col_major_contiguous_concrete-fresh",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-fresh",
+      "median": 2821.92578125,
+      "iqr": 8.41943359375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum_n16_col_major_contiguous_concrete-fresh",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-fresh",
+      "median": 3145.595703125,
+      "iqr": 9.42236328125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum_n16_col_major_contiguous_concrete-fresh",
+      "group": "threads=8",
+      "backend": "tenferro-concrete-fresh",
+      "median": 3240.5,
+      "iqr": 21.0341796875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum_n16_col_major_contiguous_concrete-scoped",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-scoped",
+      "median": 2853.68359375,
+      "iqr": 18.98583984375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum_n16_col_major_contiguous_concrete-scoped",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-scoped",
+      "median": 3245.60546875,
+      "iqr": 10.7236328125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum_n16_col_major_contiguous_concrete-scoped",
+      "group": "threads=8",
+      "backend": "tenferro-concrete-scoped",
+      "median": 3236.859375,
+      "iqr": 34.908203125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum_n16_col_major_contiguous_concrete-shared",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 2807.11328125,
+      "iqr": 13.24755859375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum_n16_col_major_contiguous_concrete-shared",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 3168.01953125,
+      "iqr": 3.791015625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum_n16_col_major_contiguous_concrete-shared",
+      "group": "threads=8",
+      "backend": "tenferro-concrete-shared",
+      "median": 3221.98828125,
+      "iqr": 19.1669921875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum_n16_col_major_contiguous_eager-no-ad",
+      "group": "threads=1",
+      "backend": "tenferro-eager-no-ad",
+      "median": 4596.798828125,
+      "iqr": 13.1796875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum_n16_col_major_contiguous_eager-no-ad",
+      "group": "threads=4",
+      "backend": "tenferro-eager-no-ad",
+      "median": 4856.345703125,
+      "iqr": 8.4638671875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum_n16_col_major_contiguous_eager-no-ad",
+      "group": "threads=8",
+      "backend": "tenferro-eager-no-ad",
+      "median": 4942.81640625,
+      "iqr": 19.205078125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum_n16_col_major_contiguous_eager-shared",
+      "group": "threads=1",
+      "backend": "tenferro-eager-shared",
+      "median": 4440.921875,
+      "iqr": 10.322265625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum_n16_col_major_contiguous_eager-shared",
+      "group": "threads=4",
+      "backend": "tenferro-eager-shared",
+      "median": 4847.052734375,
+      "iqr": 17.630859375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum_n16_col_major_contiguous_eager-shared",
+      "group": "threads=8",
+      "backend": "tenferro-eager-shared",
+      "median": 4950.935546875,
+      "iqr": 15.7998046875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum_n2_col_major_contiguous_concrete-fresh",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-fresh",
+      "median": 2584.7548828125,
+      "iqr": 15.296875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum_n2_col_major_contiguous_concrete-fresh",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-fresh",
+      "median": 2959.53515625,
+      "iqr": 9.974609375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum_n2_col_major_contiguous_concrete-fresh",
+      "group": "threads=8",
+      "backend": "tenferro-concrete-fresh",
+      "median": 2960.396484375,
+      "iqr": 5.99755859375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum_n2_col_major_contiguous_concrete-scoped",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-scoped",
+      "median": 2595.4580078125,
+      "iqr": 12.142578125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum_n2_col_major_contiguous_concrete-scoped",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-scoped",
+      "median": 2951.208984375,
+      "iqr": 9.92041015625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum_n2_col_major_contiguous_concrete-scoped",
+      "group": "threads=8",
+      "backend": "tenferro-concrete-scoped",
+      "median": 3068.234375,
+      "iqr": 8.3115234375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum_n2_col_major_contiguous_concrete-shared",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 2560.5,
+      "iqr": 10.13671875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum_n2_col_major_contiguous_concrete-shared",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 2926.4072265625,
+      "iqr": 6.73681640625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum_n2_col_major_contiguous_concrete-shared",
+      "group": "threads=8",
+      "backend": "tenferro-concrete-shared",
+      "median": 3055.5537109375,
+      "iqr": 16.8427734375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum_n2_col_major_contiguous_eager-no-ad",
+      "group": "threads=1",
+      "backend": "tenferro-eager-no-ad",
+      "median": 4243.091796875,
+      "iqr": 19.8408203125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum_n2_col_major_contiguous_eager-no-ad",
+      "group": "threads=4",
+      "backend": "tenferro-eager-no-ad",
+      "median": 4640.533203125,
+      "iqr": 22.39453125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum_n2_col_major_contiguous_eager-no-ad",
+      "group": "threads=8",
+      "backend": "tenferro-eager-no-ad",
+      "median": 4728.29296875,
+      "iqr": 23.3837890625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum_n2_col_major_contiguous_eager-shared",
+      "group": "threads=1",
+      "backend": "tenferro-eager-shared",
+      "median": 4180.298828125,
+      "iqr": 10.546875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum_n2_col_major_contiguous_eager-shared",
+      "group": "threads=4",
+      "backend": "tenferro-eager-shared",
+      "median": 4571.029296875,
+      "iqr": 23.5498046875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_einsum_n2_col_major_contiguous_eager-shared",
+      "group": "threads=8",
+      "backend": "tenferro-eager-shared",
+      "median": 4584.119140625,
+      "iqr": 10.29296875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_qr_n16_col_major_contiguous_concrete-fresh",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-fresh",
+      "median": 11448.4296875,
+      "iqr": 15.2421875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_qr_n16_col_major_contiguous_concrete-fresh",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-fresh",
+      "median": 11933.83203125,
+      "iqr": 57.01953125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_qr_n16_col_major_contiguous_concrete-fresh",
+      "group": "threads=8",
+      "backend": "tenferro-concrete-fresh",
+      "median": 12486.4609375,
+      "iqr": 42.423828125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_qr_n16_col_major_contiguous_concrete-scoped",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-scoped",
+      "median": 11319.36328125,
+      "iqr": 63.361328125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_qr_n16_col_major_contiguous_concrete-scoped",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-scoped",
+      "median": 11884.3203125,
+      "iqr": 61.12890625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_qr_n16_col_major_contiguous_concrete-scoped",
+      "group": "threads=8",
+      "backend": "tenferro-concrete-scoped",
+      "median": 12039.609375,
+      "iqr": 23.287109375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_qr_n16_col_major_contiguous_concrete-shared",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 11273.4140625,
+      "iqr": 11.447265625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_qr_n16_col_major_contiguous_concrete-shared",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 11971.984375,
+      "iqr": 117.701171875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_qr_n16_col_major_contiguous_concrete-shared",
+      "group": "threads=8",
+      "backend": "tenferro-concrete-shared",
+      "median": 12062.78125,
+      "iqr": 53.673828125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_qr_n16_col_major_contiguous_eager-no-ad",
+      "group": "threads=1",
+      "backend": "tenferro-eager-no-ad",
+      "median": 15635.96875,
+      "iqr": 63.08203125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_qr_n16_col_major_contiguous_eager-no-ad",
+      "group": "threads=4",
+      "backend": "tenferro-eager-no-ad",
+      "median": 16327.578125,
+      "iqr": 122.4140625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_qr_n16_col_major_contiguous_eager-no-ad",
+      "group": "threads=8",
+      "backend": "tenferro-eager-no-ad",
+      "median": 16476.6015625,
+      "iqr": 189.87890625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_qr_n16_col_major_contiguous_eager-shared",
+      "group": "threads=1",
+      "backend": "tenferro-eager-shared",
+      "median": 15566.078125,
+      "iqr": 38.6640625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_qr_n16_col_major_contiguous_eager-shared",
+      "group": "threads=4",
+      "backend": "tenferro-eager-shared",
+      "median": 16146.0625,
+      "iqr": 148.09765625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_qr_n16_col_major_contiguous_eager-shared",
+      "group": "threads=8",
+      "backend": "tenferro-eager-shared",
+      "median": 16455.3125,
+      "iqr": 104.0625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_qr_n2_col_major_contiguous_concrete-fresh",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-fresh",
+      "median": 2208.162109375,
+      "iqr": 5.91943359375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_qr_n2_col_major_contiguous_concrete-fresh",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-fresh",
+      "median": 2739.779296875,
+      "iqr": 7.16650390625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_qr_n2_col_major_contiguous_concrete-fresh",
+      "group": "threads=8",
+      "backend": "tenferro-concrete-fresh",
+      "median": 2994.845703125,
+      "iqr": 24.1025390625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_qr_n2_col_major_contiguous_concrete-scoped",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-scoped",
+      "median": 2176.1591796875,
+      "iqr": 4.38916015625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_qr_n2_col_major_contiguous_concrete-scoped",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-scoped",
+      "median": 2686.14453125,
+      "iqr": 5.767578125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_qr_n2_col_major_contiguous_concrete-scoped",
+      "group": "threads=8",
+      "backend": "tenferro-concrete-scoped",
+      "median": 2966.9033203125,
+      "iqr": 16.19775390625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_qr_n2_col_major_contiguous_concrete-shared",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 2155.41796875,
+      "iqr": 5.13232421875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_qr_n2_col_major_contiguous_concrete-shared",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 2726.875,
+      "iqr": 3.4140625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_qr_n2_col_major_contiguous_concrete-shared",
+      "group": "threads=8",
+      "backend": "tenferro-concrete-shared",
+      "median": 2954.291015625,
+      "iqr": 17.45458984375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_qr_n2_col_major_contiguous_eager-no-ad",
+      "group": "threads=1",
+      "backend": "tenferro-eager-no-ad",
+      "median": 6348.173828125,
+      "iqr": 56.677734375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_qr_n2_col_major_contiguous_eager-no-ad",
+      "group": "threads=4",
+      "backend": "tenferro-eager-no-ad",
+      "median": 7026.509765625,
+      "iqr": 23.6376953125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_qr_n2_col_major_contiguous_eager-no-ad",
+      "group": "threads=8",
+      "backend": "tenferro-eager-no-ad",
+      "median": 7270.75,
+      "iqr": 84.904296875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_qr_n2_col_major_contiguous_eager-shared",
+      "group": "threads=1",
+      "backend": "tenferro-eager-shared",
+      "median": 6323.595703125,
+      "iqr": 38.8720703125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_qr_n2_col_major_contiguous_eager-shared",
+      "group": "threads=4",
+      "backend": "tenferro-eager-shared",
+      "median": 7045.841796875,
+      "iqr": 42.060546875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_qr_n2_col_major_contiguous_eager-shared",
+      "group": "threads=8",
+      "backend": "tenferro-eager-shared",
+      "median": 7126.8125,
+      "iqr": 206.8125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_solve_n16_col_major_contiguous_concrete-fresh",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-fresh",
+      "median": 5140.646484375,
+      "iqr": 12.298828125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_solve_n16_col_major_contiguous_concrete-fresh",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-fresh",
+      "median": 5690.44140625,
+      "iqr": 8.31640625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_solve_n16_col_major_contiguous_concrete-fresh",
+      "group": "threads=8",
+      "backend": "tenferro-concrete-fresh",
+      "median": 5843.1875,
+      "iqr": 45.064453125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_solve_n16_col_major_contiguous_concrete-scoped",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-scoped",
+      "median": 5171.69921875,
+      "iqr": 14.1484375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_solve_n16_col_major_contiguous_concrete-scoped",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-scoped",
+      "median": 5609.705078125,
+      "iqr": 14.7646484375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_solve_n16_col_major_contiguous_concrete-scoped",
+      "group": "threads=8",
+      "backend": "tenferro-concrete-scoped",
+      "median": 5774.564453125,
+      "iqr": 34.3310546875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_solve_n16_col_major_contiguous_concrete-shared",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 5141.0,
+      "iqr": 15.48828125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_solve_n16_col_major_contiguous_concrete-shared",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 5597.806640625,
+      "iqr": 36.9638671875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_solve_n16_col_major_contiguous_concrete-shared",
+      "group": "threads=8",
+      "backend": "tenferro-concrete-shared",
+      "median": 5841.0546875,
+      "iqr": 23.1494140625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_solve_n16_col_major_contiguous_eager-no-ad",
+      "group": "threads=1",
+      "backend": "tenferro-eager-no-ad",
+      "median": 12192.08203125,
+      "iqr": 36.28125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_solve_n16_col_major_contiguous_eager-no-ad",
+      "group": "threads=4",
+      "backend": "tenferro-eager-no-ad",
+      "median": 12601.48046875,
+      "iqr": 70.658203125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_solve_n16_col_major_contiguous_eager-no-ad",
+      "group": "threads=8",
+      "backend": "tenferro-eager-no-ad",
+      "median": 12825.01953125,
+      "iqr": 102.10546875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_solve_n16_col_major_contiguous_eager-shared",
+      "group": "threads=1",
+      "backend": "tenferro-eager-shared",
+      "median": 12245.54296875,
+      "iqr": 80.423828125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_solve_n16_col_major_contiguous_eager-shared",
+      "group": "threads=4",
+      "backend": "tenferro-eager-shared",
+      "median": 12554.7109375,
+      "iqr": 73.888671875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_solve_n16_col_major_contiguous_eager-shared",
+      "group": "threads=8",
+      "backend": "tenferro-eager-shared",
+      "median": 12857.73828125,
+      "iqr": 57.0234375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_solve_n2_col_major_contiguous_concrete-fresh",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-fresh",
+      "median": 2133.287109375,
+      "iqr": 12.07373046875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_solve_n2_col_major_contiguous_concrete-fresh",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-fresh",
+      "median": 2572.4755859375,
+      "iqr": 19.49951171875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_solve_n2_col_major_contiguous_concrete-fresh",
+      "group": "threads=8",
+      "backend": "tenferro-concrete-fresh",
+      "median": 2711.9248046875,
+      "iqr": 14.6171875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_solve_n2_col_major_contiguous_concrete-scoped",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-scoped",
+      "median": 2106.4306640625,
+      "iqr": 10.9482421875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_solve_n2_col_major_contiguous_concrete-scoped",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-scoped",
+      "median": 2619.349609375,
+      "iqr": 12.845703125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_solve_n2_col_major_contiguous_concrete-scoped",
+      "group": "threads=8",
+      "backend": "tenferro-concrete-scoped",
+      "median": 2737.5,
+      "iqr": 19.4560546875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_solve_n2_col_major_contiguous_concrete-shared",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 2110.28515625,
+      "iqr": 7.1083984375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_solve_n2_col_major_contiguous_concrete-shared",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 2552.7021484375,
+      "iqr": 5.982421875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_solve_n2_col_major_contiguous_concrete-shared",
+      "group": "threads=8",
+      "backend": "tenferro-concrete-shared",
+      "median": 2744.271484375,
+      "iqr": 22.86962890625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_solve_n2_col_major_contiguous_eager-no-ad",
+      "group": "threads=1",
+      "backend": "tenferro-eager-no-ad",
+      "median": 7582.859375,
+      "iqr": 70.484375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_solve_n2_col_major_contiguous_eager-no-ad",
+      "group": "threads=4",
+      "backend": "tenferro-eager-no-ad",
+      "median": 8034.01171875,
+      "iqr": 61.087890625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_solve_n2_col_major_contiguous_eager-no-ad",
+      "group": "threads=8",
+      "backend": "tenferro-eager-no-ad",
+      "median": 8193.44921875,
+      "iqr": 45.9453125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_solve_n2_col_major_contiguous_eager-shared",
+      "group": "threads=1",
+      "backend": "tenferro-eager-shared",
+      "median": 7493.19921875,
+      "iqr": 40.46484375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_solve_n2_col_major_contiguous_eager-shared",
+      "group": "threads=4",
+      "backend": "tenferro-eager-shared",
+      "median": 7966.50390625,
+      "iqr": 42.599609375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_solve_n2_col_major_contiguous_eager-shared",
+      "group": "threads=8",
+      "backend": "tenferro-eager-shared",
+      "median": 8202.4140625,
+      "iqr": 23.8515625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_svd_n2_col_major_contiguous_concrete-fresh",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-fresh",
+      "median": 3727.599609375,
+      "iqr": 31.15234375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_svd_n2_col_major_contiguous_concrete-fresh",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-fresh",
+      "median": 4350.87109375,
+      "iqr": 15.29296875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_svd_n2_col_major_contiguous_concrete-fresh",
+      "group": "threads=8",
+      "backend": "tenferro-concrete-fresh",
+      "median": 4556.431640625,
+      "iqr": 41.8359375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_svd_n2_col_major_contiguous_concrete-shared",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 3757.009765625,
+      "iqr": 13.78515625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_svd_n2_col_major_contiguous_concrete-shared",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 4254.28515625,
+      "iqr": 17.3662109375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_svd_n2_col_major_contiguous_concrete-shared",
+      "group": "threads=8",
+      "backend": "tenferro-concrete-shared",
+      "median": 4593.58984375,
+      "iqr": 19.724609375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_svd_n2_col_major_contiguous_eager-no-ad",
+      "group": "threads=1",
+      "backend": "tenferro-eager-no-ad",
+      "median": 8402.58984375,
+      "iqr": 54.33984375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_svd_n2_col_major_contiguous_eager-no-ad",
+      "group": "threads=4",
+      "backend": "tenferro-eager-no-ad",
+      "median": 8972.1328125,
+      "iqr": 105.060546875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_svd_n2_col_major_contiguous_eager-no-ad",
+      "group": "threads=8",
+      "backend": "tenferro-eager-no-ad",
+      "median": 9482.10546875,
+      "iqr": 71.9296875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_svd_n2_col_major_contiguous_eager-shared",
+      "group": "threads=1",
+      "backend": "tenferro-eager-shared",
+      "median": 8291.953125,
+      "iqr": 47.3125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_svd_n2_col_major_contiguous_eager-shared",
+      "group": "threads=4",
+      "backend": "tenferro-eager-shared",
+      "median": 8842.78515625,
+      "iqr": 77.76171875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nonad_svd_n2_col_major_contiguous_eager-shared",
+      "group": "threads=8",
+      "backend": "tenferro-eager-shared",
+      "median": 9138.6953125,
+      "iqr": 89.345703125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_sum_f64_concrete-shared_size16_single",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 1581.29052734375,
+      "iqr": 4.18017578125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_sum_f64_concrete-shared_size16_single",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 1992.125,
+      "iqr": 21.8515625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_sum_f64_concrete-shared_size16_single",
+      "group": "threads=8",
+      "backend": "tenferro-concrete-shared",
+      "median": 2054.791015625,
+      "iqr": 45.34765625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_sum_f64_concrete-shared_size256_single",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 1607.59375,
+      "iqr": 12.775390625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_sum_f64_concrete-shared_size256_single",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 2002.232421875,
+      "iqr": 32.4580078125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_sum_f64_concrete-shared_size256_single",
+      "group": "threads=8",
+      "backend": "tenferro-concrete-shared",
+      "median": 2066.5517578125,
+      "iqr": 32.1357421875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_sum_f64_concrete-shared_size4_single",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 1622.0205078125,
+      "iqr": 2.4970703125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_sum_f64_concrete-shared_size4_single",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 1940.80859375,
+      "iqr": 27.2236328125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_sum_f64_concrete-shared_size4_single",
+      "group": "threads=8",
+      "backend": "tenferro-concrete-shared",
+      "median": 2036.5048828125,
+      "iqr": 26.78759765625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "solve_f64_concrete-shared_n16_single",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 5253.111328125,
+      "iqr": 8.2822265625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "solve_f64_concrete-shared_n16_single",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 5660.4931640625,
+      "iqr": 29.78759765625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "solve_f64_concrete-shared_n16_single",
+      "group": "threads=8",
+      "backend": "tenferro-concrete-shared",
+      "median": 5786.75390625,
+      "iqr": 48.0244140625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "solve_f64_concrete-shared_n2_single",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 2108.7587890625,
+      "iqr": 9.740234375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "solve_f64_concrete-shared_n2_single",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 2601.5146484375,
+      "iqr": 10.2236328125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "solve_f64_concrete-shared_n2_single",
+      "group": "threads=8",
+      "backend": "tenferro-concrete-shared",
+      "median": 2725.3095703125,
+      "iqr": 17.5478515625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "solve_f64_concrete-shared_n4_single",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 2391.943359375,
+      "iqr": 8.08154296875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "solve_f64_concrete-shared_n4_single",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 2740.9931640625,
+      "iqr": 9.97900390625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "solve_f64_concrete-shared_n4_single",
+      "group": "threads=8",
+      "backend": "tenferro-concrete-shared",
+      "median": 2883.2900390625,
+      "iqr": 10.93798828125,
+      "status": "ok",
+      "verified": true
+    }
+  ],
+  "source_runs": [
+    {
+      "run": "data/results/zen5-cpu/cpu/small_work/20261112_155207",
+      "threads": [
+        1
+      ],
+      "host": {
+        "cpu": "AMD Ryzen AI 9 HX 470 w/ Radeon 890M",
+        "logical_cpus": 24,
+        "power": {
+          "cpufreq_boost": "0",
+          "amd_pstate_status": "active",
+          "governor": "performance",
+          "energy_performance_preference": "performance",
+          "scaling_max_freq_khz": "2000000",
+          "smt": {
+            "active": "1",
+            "control": "on"
+          }
+        },
+        "numa": {
+          "nodes": 1,
+          "cpulists": {
+            "0": "0-23"
+          }
+        },
+        "smt_siblings": [
+          "0,12",
+          "1,13",
+          "2,14",
+          "3,15",
+          "4,16",
+          "5,17",
+          "6,18",
+          "7,19",
+          "8,20",
+          "9,21",
+          "10,22",
+          "11,23"
+        ],
+        "l3_domains": [
+          "0-3,12-15",
+          "4-11,16-23"
+        ]
+      },
+      "toolchain": {
+        "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)\nbinary: rustc\ncommit-hash: b940084d7eb6a299eb4bfeb8e34901bc051e7ac4\ncommit-date: 2026-09-28\nhost: x86_64-unknown-linux-gnu\nrelease: 1.99.0\nLLVM version: 23.1.1\n",
+        "rustc_release": "1.99.0",
+        "rustflags": null,
+        "target_cpu": null
+      },
+      "power": "boost off, performance, epp performance, max 2000000 kHz, amd-pstate active, smt {'active': '1', 'control': 'on'}"
+    },
+    {
+      "run": "data/results/zen5-cpu/cpu/small_work/20261112_155207",
+      "threads": [
+        4
+      ],
+      "host": {
+        "cpu": "AMD Ryzen AI 9 HX 470 w/ Radeon 890M",
+        "logical_cpus": 24,
+        "power": {
+          "cpufreq_boost": "0",
+          "amd_pstate_status": "active",
+          "governor": "performance",
+          "energy_performance_preference": "performance",
+          "scaling_max_freq_khz": "2000000",
+          "smt": {
+            "active": "1",
+            "control": "on"
+          }
+        },
+        "numa": {
+          "nodes": 1,
+          "cpulists": {
+            "0": "0-23"
+          }
+        },
+        "smt_siblings": [
+          "0,12",
+          "1,13",
+          "2,14",
+          "3,15",
+          "4,16",
+          "5,17",
+          "6,18",
+          "7,19",
+          "8,20",
+          "9,21",
+          "10,22",
+          "11,23"
+        ],
+        "l3_domains": [
+          "0-3,12-15",
+          "4-11,16-23"
+        ]
+      },
+      "toolchain": {
+        "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)\nbinary: rustc\ncommit-hash: b940084d7eb6a299eb4bfeb8e34901bc051e7ac4\ncommit-date: 2026-09-28\nhost: x86_64-unknown-linux-gnu\nrelease: 1.99.0\nLLVM version: 23.1.1\n",
+        "rustc_release": "1.99.0",
+        "rustflags": null,
+        "target_cpu": null
+      },
+      "power": "boost off, performance, epp performance, max 2000000 kHz, amd-pstate active, smt {'active': '1', 'control': 'on'}"
+    },
+    {
+      "run": "data/results/zen5-cpu/cpu/small_work/20261112_155207",
+      "threads": [
+        8
+      ],
+      "host": {
+        "cpu": "AMD Ryzen AI 9 HX 470 w/ Radeon 890M",
+        "logical_cpus": 24,
+        "power": {
+          "cpufreq_boost": "0",
+          "amd_pstate_status": "active",
+          "governor": "performance",
+          "energy_performance_preference": "performance",
+          "scaling_max_freq_khz": "2000000",
+          "smt": {
+            "active": "1",
+            "control": "on"
+          }
+        },
+        "numa": {
+          "nodes": 1,
+          "cpulists": {
+            "0": "0-23"
+          }
+        },
+        "smt_siblings": [
+          "0,12",
+          "1,13",
+          "2,14",
+          "3,15",
+          "4,16",
+          "5,17",
+          "6,18",
+          "7,19",
+          "8,20",
+          "9,21",
+          "10,22",
+          "11,23"
+        ],
+        "l3_domains": [
+          "0-3,12-15",
+          "4-11,16-23"
+        ]
+      },
+      "toolchain": {
+        "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)\nbinary: rustc\ncommit-hash: b940084d7eb6a299eb4bfeb8e34901bc051e7ac4\ncommit-date: 2026-09-28\nhost: x86_64-unknown-linux-gnu\nrelease: 1.99.0\nLLVM version: 23.1.1\n",
+        "rustc_release": "1.99.0",
+        "rustflags": null,
+        "target_cpu": null
+      },
+      "power": "boost off, performance, epp performance, max 2000000 kHz, amd-pstate active, smt {'active': '1', 'control': 'on'}"
+    }
+  ],
+  "timing_policy": {
+    "version": 2,
+    "scope": "operation execution and completion synchronization",
+    "setup": "inputs, transfers, runtime/session/handles, plans and compilation outside timer",
+    "cleanup": "returned outputs retained until after timer stops",
+    "minimum_untimed_priming_runs": 1,
+    "short_operation_sampling": "many operations per interval; shared session where supported; see docs/short-operation-sessions.md",
+    "trace_execution": "prepare_compiled and caller-held session entry outside timing; run_prepared_in inside",
+    "setup_diagnostics": false
+  }
+}

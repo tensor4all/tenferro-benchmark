@@ -2,9 +2,9 @@
 
 - Suite: `cpu/overhead_smoke`
 - Target profile: `zen5-cpu`
-- Raw run: `data/results/zen5-cpu/cpu/overhead_smoke/20261028_011419`
-- tenferro-rs commit: `8fec1ca70852b930c092e7177c30bb8af7594a57`
-- Collection command: `BENCHMARK_TARGET_PROFILE=zen5-cpu TENFERRO_CPU_FEATURES=blas-mkl /workspaces/tenferro-benchmark/scripts/run_overhead_smoke.sh `
+- Raw run: `data/results/zen5-cpu/cpu/overhead_smoke/20261112_160628`
+- tenferro-rs commit: `9a850b06155405acc99ecd0648829e9e6d3866ba`
+- Collection command: `BENCHMARK_TARGET_PROFILE=zen5-cpu TENFERRO_CPU_FEATURES=native scripts/run_overhead_smoke.sh `
 
 Trend view for tenferro-rs #2178 (tenferro-benchmark #197); nothing here gates. Every row runs on one run thread; the prepared-runtime diagnostics set the CPU backend thread budget explicitly. **allocs/op** counts process-wide Rust allocator events over 64 calls after pool warmup, dropping outputs between calls. These observed counts include Rust workers and exclude foreign BLAS/C allocations; compare matching fixtures, thread budgets and execution scopes. **ns/op** is the median of retained-output batches, with destruction after the clock stops. Shared nightly runner timings are reference indicators only.
 
@@ -14,14 +14,14 @@ Inputs, entered reusable sessions, initialization, tracing and preparation are o
 
 | Case | Workload | Budget | Median ns/op | IQR ns | CoV | allocs/op | bytes/op | Refs |
 |---|---|---:|---:|---:|---:|---:|---:|---|
-| typed_elemwise_f64_add_bcast_n16 | typed add, rank-0 scalar rhs (stride-0 operand) | 1 | 762.6 | 2.7 | 1.0% | 0.00 | 0 | tenferro-rs#2178 |
-| typed_elemwise_f64_add_bcast_8x8x8 | typed add, rank-0 scalar rhs (stride-0 operand) | 1 | 900.3 | 8.4 | 2.3% | 0.00 | 0 | tenferro-rs#2178 |
-| typed_elemwise_f64_add_permuted_view_8x8x8 | add_read, lhs a permuted view (perm [2,0,1]) | 1 | 1065.1 | 2.5 | 1.4% | 0.06 | 102 | tenferro-rs#2178 |
-| permute_materialize_f64_r4_4x4x4x4 | materializing rank-4 transpose (perm [3,1,0,2]) | 1 | 1086.4 | 2.6 | 1.2% | 0.00 | 0 | tenferro-rs#2178 |
-| reduce_axis_f64_8x8x8 | typed reduce_sum over axis 1 | 1 | 1134.3 | 7.5 | 0.7% | 0.00 | 0 | tenferro-rs#2178 |
-| concatenate_axis1_f64_8x8x8 | concatenate two 8x8x8 tensors along axis 1 | 1 | 1336.9 | 15.7 | 2.8% | 0.00 | 0 | tenferro-rs#2178 |
-| einsum_prepared_f64_n2 | prepared ij,jk->ik execute_into a caller output (overlaps cpu/small_work) | 1 | 730.3 | 0.7 | 1.8% | 0.00 | 0 | tenferro-rs#2178 tenferro-rs#1899 |
-| einsum_prepared_f64_n4 | prepared ij,jk->ik execute_into a caller output (overlaps cpu/small_work) | 1 | 762.4 | 2.1 | 0.2% | 0.00 | 0 | tenferro-rs#2178 tenferro-rs#1899 |
+| typed_elemwise_f64_add_bcast_n16 | typed add, rank-0 scalar rhs (stride-0 operand) | 1 | 2062.9 | 10.4 | 0.9% | 0.00 | 0 | tenferro-rs#2178 |
+| typed_elemwise_f64_add_bcast_8x8x8 | typed add, rank-0 scalar rhs (stride-0 operand) | 1 | 2472.3 | 8.4 | 1.0% | 0.00 | 0 | tenferro-rs#2178 |
+| typed_elemwise_f64_add_permuted_view_8x8x8 | add_read, lhs a permuted view (perm [2,0,1]) | 1 | 2820.1 | 233.3 | 11.8% NOISY | 0.00 | 0 | tenferro-rs#2178 |
+| permute_materialize_f64_r4_4x4x4x4 | materializing rank-4 transpose (perm [3,1,0,2]) | 1 | 2892.3 | 27.1 | 1.0% | 0.00 | 0 | tenferro-rs#2178 |
+| reduce_axis_f64_8x8x8 | typed reduce_sum over axis 1 | 1 | 3049.7 | 22.1 | 0.6% | 0.06 | 102 | tenferro-rs#2178 |
+| concatenate_axis1_f64_8x8x8 | concatenate two 8x8x8 tensors along axis 1 | 1 | 2923.2 | 17.2 | 16.7% NOISY | 0.00 | 0 | tenferro-rs#2178 |
+| einsum_prepared_f64_n2 | prepared ij,jk->ik execute_into a caller output (overlaps cpu/small_work) | 1 | 1937.7 | 6.9 | 0.4% | 0.00 | 0 | tenferro-rs#2178 tenferro-rs#1899 |
+| einsum_prepared_f64_n4 | prepared ij,jk->ik execute_into a caller output (overlaps cpu/small_work) | 1 | 2072.6 | 6.3 | 0.3% | 0.00 | 0 | tenferro-rs#2178 tenferro-rs#1899 |
 
 ## Runtime session-entry diagnostics
 
@@ -29,8 +29,8 @@ These rows time public `Runtime::run_prepared`, including its internal session e
 
 | Case | Workload | Budget | Median ns/op | IQR ns | CoV | allocs/op | bytes/op | Refs |
 |---|---|---:|---:|---:|---:|---:|---:|---|
-| prepared_mul_add_f64_budget1_32x32x32_session_entry_diagnostic | run_prepared a*b+c including internal session entry/exit, backend thread budget 1 (diagnostic) | 1 | 20883.2 | 341.6 | 2.5% | 26.06 | 12758 | tenferro-rs#2178 strided-rs#305 |
-| prepared_mul_add_f64_budget2_32x32x32_session_entry_diagnostic | run_prepared a*b+c including internal session entry/exit, backend thread budget 2 (diagnostic) | 2 | 449313.9 | 452.1 | 0.3% | 26.00 | 12656 | tenferro-rs#2178 strided-rs#305 |
+| prepared_mul_add_f64_budget1_32x32x32_session_entry_diagnostic | run_prepared a*b+c including internal session entry/exit, backend thread budget 1 (diagnostic) | 1 | 34587.0 | 201.2 | 2.3% | 26.00 | 11968 | tenferro-rs#2178 strided-rs#305 |
+| prepared_mul_add_f64_budget2_32x32x32_session_entry_diagnostic | run_prepared a*b+c including internal session entry/exit, backend thread budget 2 (diagnostic) | 2 | 45476.0 | 610.7 | 2.2% | 26.00 | 11968 | tenferro-rs#2178 strided-rs#305 |
 
 Numerical checks: **10/10 rows passed** against independent host loops before counting and sampling.
 
@@ -40,8 +40,8 @@ Whether the runtime executed the traced region as one fused command or declined 
 
 | Case | Planned regions | Fused executions | Fallbacks |
 |---|---:|---:|---:|
-| prepared_mul_add_f64_budget1_32x32x32_session_entry_diagnostic | 1 | 1160 | 0 |
-| prepared_mul_add_f64_budget2_32x32x32_session_entry_diagnostic | 1 | 208 | 0 |
+| prepared_mul_add_f64_budget1_32x32x32_session_entry_diagnostic | 1 | 616 | 0 |
+| prepared_mul_add_f64_budget2_32x32x32_session_entry_diagnostic | 1 | 616 | 0 |
 
 ## CPU Information
 
@@ -52,30 +52,31 @@ Whether the runtime executed the traced region as one fused command or declined 
 - Cores per socket: `12`
 - Threads per core: `2`
 - NUMA nodes: `1`
+- Transparent huge pages: `madvise (always [madvise] never)`
+- Transparent huge page defrag: `madvise (always defer defer+madvise [madvise] never)`
 - Python platform: `Linux-7.0.0-38-generic-x86_64-with-glibc2.39`
 - L3 domains (shared CPUs): `0-3,12-15; 4-11,16-23`
-- CPU boost: `enabled`
+- CPU boost: `disabled`
+- Container: `none`
 
 ## Run metadata
 
-Full metadata: `data/results/zen5-cpu/cpu/overhead_smoke/20261028_011419/run.yaml`
+Full metadata: `data/results/zen5-cpu/cpu/overhead_smoke/20261112_160628/run.yaml`
 
 ```yaml
-timestamp: '2026-10-28T01:14:19Z'
+timestamp: '2026-11-12T16:06:29Z'
 tenferro_rs:
-  path: /workspaces/tenferro-benchmark/extern/tenferro-rs
-  commit: 8fec1ca70852b930c092e7177c30bb8af7594a57
+  path: /home/shinaoka/projects/tensor4all/tenferro-benchmark/extern/tenferro-rs
+  commit: 9a850b06155405acc99ecd0648829e9e6d3866ba
   dirty: false
   features:
-  - blas-mkl
-  resolved_path: /workspaces/tenferro-benchmark/extern/tenferro-rs
+  - native
+  resolved_path: /home/shinaoka/projects/tensor4all/tenferro-benchmark/extern/tenferro-rs
 blas:
-  implementation: mkl
-  version: 2026.0.2
-  root: /opt/intel/oneapi/mkl/latest
-  library: /opt/intel/oneapi/mkl/latest/lib/libmkl_rt.so
+  implementation: none
 environment:
-  hostname: bcfefbe95606
+  container: none
+  hostname: shinaoka-EVO-X1Pro
   os: Linux-7.0.0-38-generic-x86_64-with-glibc2.39
   arch: x86_64
   cpu: x86_64
@@ -89,7 +90,7 @@ environment:
     l3_domains:
     - 0-3,12-15
     - 4-11,16-23
-    cpu_boost: enabled
+    cpu_boost: disabled
     scaling_governor: performance
     scaling_driver: amd-pstate-epp
   env:
@@ -98,8 +99,8 @@ environment:
     OMP_DYNAMIC: 'FALSE'
     RAYON_NUM_THREADS: '1'
     BENCHMARK_TARGET_PROFILE: zen5-cpu
-    BENCHMARK_COMMIT: 3f31f38e0491084b9414035754a3809ef0f5ae94
-    OPENBLAS_ROOT: /opt/openblas
+    BENCHMARK_COMMIT: 918046a6065be464f13b727654679c3a00650c06
+    OPENBLAS_ROOT: /usr
     MKLROOT: /opt/intel/oneapi/mkl/latest
     OPENBLAS_NUM_THREADS: '1'
     GOTO_NUM_THREADS: '1'
@@ -114,12 +115,11 @@ environment:
       intra_op_parallelism_threads=1
     JULIA_NUM_THREADS: '1'
     PUBLICATION_GATE_PROFILE: full
-    USE_CUDA: '0'
     BENCHMARK_BUILD_PROFILE: release
-    RUSTC_VERSION: rustc 1.99.1 (58cf8f9c3 2026-10-13)
+    RUSTC_VERSION: rustc 1.99.0 (b940084d7 2026-09-28)
     BENCH_INSTANCE: null
 collection:
-  command: 'BENCHMARK_TARGET_PROFILE=zen5-cpu TENFERRO_CPU_FEATURES=blas-mkl /workspaces/tenferro-benchmark/scripts/run_overhead_smoke.sh '
+  command: 'BENCHMARK_TARGET_PROFILE=zen5-cpu TENFERRO_CPU_FEATURES=native scripts/run_overhead_smoke.sh '
   timing_scope: mixed; see timing_scopes_by_case
   timing_scopes_by_case:
     typed_elemwise_f64_add_bcast_n16: steady_state_host_api

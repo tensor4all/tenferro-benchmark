@@ -1,0 +1,20 @@
+{
+  "collected_at": "2026-11-12T15:54:54Z",
+  "files": {
+    "result/zen5-cpu/cpu/perf_issues.md": "fb73ec1d107638fe342d822d2e4cbfb05e4e49b87fefbfe341bcbd108247498d",
+    "result/zen5-cpu/cpu/perf_issues.summary.json": "ceeca6891d765060b4fffe80963a7ea3cf0549c1e2538ea59360c63c6d1df970"
+  },
+  "hardware": {
+    "cpu": "AMD Ryzen AI 9 HX 470 w/ Radeon 890M",
+    "host": "shinaoka-EVO-X1Pro",
+    "threads": [
+      1,
+      4,
+      8
+    ]
+  },
+  "schema_version": 1,
+  "suite_id": "cpu/perf_issues",
+  "target_profile": "zen5-cpu",
+  "tenferro_commit": "9a850b06155405acc99ecd0648829e9e6d3866ba"
+}
