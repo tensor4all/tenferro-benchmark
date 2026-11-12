@@ -196,6 +196,12 @@ if [[ "$RUN_RUST" == 1 || "$RUN_RUST_EAGER" == 1 ]]; then
         fi
         wall_phase "$RUN_DIR" rust_verification "$verify_started" "$(wall_now)"
         [[ ! -s "$verified" ]] || cat "$verified" >> "$RESULT_JSONL"
+        # The verified file carries every number the raw one did; the raw file
+        # additionally carries the downloaded outputs, which at n=4096 is
+        # ~1.3 GB per arm. Keeping it after a successful check doubled the
+        # published artifact and its upload timed out (run 43204958205). A
+        # failed check still keeps it beside the reason, above.
+        rm -f "$raw"
     }
 
     [[ "$RUN_RUST" != 1 ]] || run_rust_arm tenferro-cuda-trace \
