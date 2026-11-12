@@ -295,5 +295,41 @@ class WatchdogTests(unittest.TestCase):
         for job in ("start-runpod", "run-gpu-benchmark"):
             self.assertGreater(workflow["jobs"][job]["timeout-minutes"], minutes, job)
 
+    def test_the_pod_job_budget_is_bounded_below_the_watchdog(self):
+        import json
+        import yaml
+
+        root = Path(__file__).resolve().parents[3]
+        workflow = yaml.safe_load(
+            (root / ".github/workflows/benchmark-runpod-gpu.yml").read_text()
+        )
+        lifetime_minutes = int(workflow["env"]["POD_MAX_LIFETIME_SECONDS"]) // 60
+        startup_seconds = json.loads(
+            (root / "scripts/ci/runpod_config.json").read_text()
+        )["startup_timeout_seconds"]
+        job = workflow["jobs"]["run-gpu-benchmark"]
+        steps = job["steps"]
+        # A step without a bound is not budgeted: `timeout-minutes` defaults to
+        # unlimited, so a missing value would have summed to zero and let the
+        # inequality pass while the step could still run past the watchdog.
+        unbounded = [step.get("name") or step.get("id") for step in steps
+                     if not isinstance(step.get("timeout-minutes"), int)]
+        self.assertEqual(unbounded, [], "every pod step must carry timeout-minutes")
+        collection = next(step for step in steps if step.get("id") == "collect")
+        self.assertEqual(collection["name"], "Run GPU benchmark suite")
+        total = sum(step["timeout-minutes"] for step in steps)
+        startup_minutes = -(-startup_seconds // 60)
+        self.assertLess(
+            total + startup_minutes, lifetime_minutes,
+            "startup plus the bounded pod steps must finish before the watchdog deletes the pod",
+        )
+        # The bound has to target the collection, and the steps that publish what
+        # it measured stay outside it.
+        packaging = next(step for step in steps
+                         if step.get("name") == "Package this collection's GPU results")
+        self.assertIsInstance(packaging.get("timeout-minutes"), int)
+        self.assertEqual(max(step["timeout-minutes"] for step in steps),
+                         collection["timeout-minutes"])
+
 if __name__ == '__main__':
     unittest.main()

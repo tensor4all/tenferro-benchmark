@@ -121,12 +121,18 @@ def materialize(manifest_path, requested, output, backend_override="", problem="
     skipped_unfiltered = []
     requested = {(Path(path).resolve().relative_to(root).as_posix() if Path(path).is_absolute()
                   else Path(path).as_posix()) for path in requested}
+    problem_set = {name.strip() for name in problem.split(",") if name.strip()}
     known_files = {spec["file"] for spec in manifest["suites"].values()}
     if requested - known_files:
         raise ValueError(f"suites absent from routine manifest: {sorted(requested-known_files)}")
     for suite_id, spec in manifest["suites"].items():
         source, problems, instances = suite_problems(root, spec)
-        if not set(spec["problems"]) <= problems.keys():
+        # Probe cases are declared next to the routine set but are never part of
+        # it: a weekly run must keep producing the same matrix, while a named
+        # probe (`--problem`) can select one of them. They are validated here so
+        # a stale probe list cannot name a case the suite no longer has.
+        probe_ids = list(spec.get("probe_problems") or [])
+        if not set(spec["problems"]) <= problems.keys() or not set(probe_ids) <= problems.keys():
             raise ValueError(f"stale routine problem manifest: {suite_id}")
         backends = list(spec["backends"])
         if vendor_arms:
@@ -175,7 +181,21 @@ def materialize(manifest_path, requested, output, backend_override="", problem="
             continue
         if spec["file"] not in requested or not backends:
             continue
-        ids = [pid for pid in routine_ids if not problem or pid == problem]
+        # `--problem` names one or more cases, comma separated. Routine ids and
+        # probe-only ids are both allowed, but only the latter are outside the
+        # weekly set.
+        allowed = set(routine_ids) | (set() if unfiltered else set(probe_ids) - excluded)
+        if problem_set:
+            ids = [pid for pid in problems if pid in problem_set and pid in allowed]
+        else:
+            ids = list(routine_ids)
+        # A probe-only case becomes part of this plan's expected rows only when
+        # this dispatch names it. The weekly expected set above is unchanged, so
+        # a routine run still never requires the probe matrix to finish.
+        probe_selected = [pid for pid in ids if pid in probe_ids] if spec["file"] in requested else []
+        if probe_selected:
+            expected.extend(f"{suite_id}:{pid}:{backend}"
+                            for pid in probe_selected for backend in arms_for(pid))
         if not ids:
             continue
         selected.extend(f"{suite_id}:{pid}:{backend}" for pid in ids for backend in arms_for(pid))

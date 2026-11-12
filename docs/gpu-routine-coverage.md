@@ -30,7 +30,7 @@ change.
 | `gpu/tensornetwork` | `gpu_suite` | 1 | 4 | 4 |
 | `gpu/elementwise` | `gpu_suite` | 2 | 4 | 8 |
 | `gpu/linalg_ad_latency` | `gpu_linalg_ad` | 10 | 3 | 30 |
-| `gpu/linalg_jvp_vjp` | `gpu_linalg_ad` | 10 | 3 | 30 |
+| `gpu/linalg_jvp_vjp` | `gpu_linalg_ad` | 10 | 4 | 40 |
 | `gpu/permutation` | `gpu_permutation` | 10 | 6 | 44 |
 | `gpu/lstsq` | `gpu_public_api` | 1 | 4 | 4 |
 | `gpu/linalg_public_api_throughput` | `gpu_public_api` | 16 | 4 | 64 |
@@ -39,7 +39,7 @@ change.
 | `gpu/structural` | `gpu_public_api` | 16 | 4 | 64 |
 | `gpu/isolated_ops` | `gpu_public_api` | 33 | 4 | 132 |
 | `gpu/reuse_contraction` | `gpu_public_api` | 56 | 4 | 224 |
-| **Total** | | **180** | **55** | **698** |
+| **Total** | | **180** | **56** | **708** |
 
 The opt-in vendor arms add 164 rows (`gpu/dense` cublaslt/cutlass/cusolver,
 `gpu/einsum` cublaslt/cutlass, `gpu/sparse` cusparse/ginkgo, and the second JAX
@@ -82,9 +82,24 @@ naming it there again.
   measure call overhead, which barely depends on size, so one size keeps
   regression detection; n=2 and n=8 are the characterization sweep.
 - `gpu/linalg_jvp_vjp` keeps n=256 only (10 operations × one size, per-call
-  latency); n=4096 is the throughput end of the same AD workloads (per-call, and
-  over the `linalg_ad` floor), run on an explicit probe because one 4096 row is
-  ~0.1–3.5 s of GPU work before its check.
+  latency) on four arms: trace, eager, PyTorch and JAX. The eager arm runs the
+  same logical case on the same caller-held CUDA engine, with its own AD
+  preparation inside the sample (the eager API has no separate prepare step), and
+  is a separate backend identity. n=4096 is the throughput end of the same AD
+  workloads (per-call, and over the `linalg_ad` floor), run on an explicit probe
+  because one 4096 row is ~0.1–3.5 s of GPU work before its check. The probe cases
+  are declared under `probe_problems` in `routine.yaml` and selected by name; they
+  are never part of the weekly plan:
+
+  ```bash
+  GPU_BENCH_PROBLEM=linalg_ad_large_grad_sum_qr_jvp_f64_4096 \
+  GPU_BENCH_SUITE=benchmarks/gpu/linalg_jvp_vjp.yaml \
+    ./scripts/run_gpu_suite.sh
+  ```
+
+  The selection plans the three arms of that one case and records them in
+  `run.yaml` `expected_case_ids`, so packaging treats them as planned rows and
+  the weekly completeness check is unaffected.
 - `gpu/elementwise` keeps both cases because they are different regimes, not a
   size sweep: 1k measures per-command overhead (latency), 1m the bandwidth cost.
   They are never averaged together.
@@ -105,7 +120,7 @@ naming it there again.
 The weekly run collects the manifest in order: the core five, both AD suites,
 `permutation`, `lstsq`, `linalg_public_api_throughput`, `fft`, `nn`, `structural`,
 `isolated_ops`, `reuse_contraction`. A night that runs out of budget therefore
-loses the cheapest-signal-per-row tail last. The 698-row set is 6.6x the previous
+loses the cheapest-signal-per-row tail last. The 708-row set is 6.6x the previous
 routine matrix; it has not been measured on A100 yet. If the first complete
 collection does not fit the pod window, the documented fallback is to drop
 `gpu/isolated_ops` and `gpu/reuse_contraction` (356 rows of per-operation API

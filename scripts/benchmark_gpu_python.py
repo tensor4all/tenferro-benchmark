@@ -47,7 +47,8 @@ _GINKGO_OPS = {"spmv", "spmm"}
 def main() -> None:
     out = Path(sys.argv[1])
     device_ordinal = int(sys.argv[2])
-    problem_filter = sys.argv[3]
+    # A probe may name one case or a comma-separated list of them.
+    problem_filter = {name.strip() for name in sys.argv[3].split(",") if name.strip()}
     sep = sys.argv.index("--")
     backends = sys.argv[4:sep]
     suites = [Path(p) for p in sys.argv[sep + 1:]]
@@ -62,7 +63,7 @@ def main() -> None:
             suite = yaml.safe_load(sp.read_text())
             suite_backends = suite.get("backends", [])
             for prob in suite["problems"]:
-                if problem_filter and prob["id"] != problem_filter:
+                if problem_filter and prob["id"] not in problem_filter:
                     continue
                 for backend in backends:
                     rec = _run_one(suite["suite_id"], prob, backend, device_ordinal,

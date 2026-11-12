@@ -25,14 +25,15 @@ from scripts.ci.check_gpu_run import bundle_run, planned_rows, routine_suite_fil
 TIMESTAMP = "20000101_000000"
 
 FAKE_RUNNER = '''
-import json, sys
+import json, os, sys
 from pathlib import Path
 import yaml
 
 out = Path(sys.argv[1])
 problem_filter = sys.argv[3]
 sep = sys.argv.index("--")
-backends = sys.argv[4:sep] or ["tenferro-cuda-trace"]
+# The real Rust runner selects its AD arm per process through this variable.
+backends = sys.argv[4:sep] or [os.environ.get("GPU_BENCH_AD_ARM", "tenferro-cuda-trace")]
 rows = []
 for suite_path in [Path(p) for p in sys.argv[sep + 1:]]:
     suite = yaml.safe_load(suite_path.read_text())
@@ -251,11 +252,11 @@ class WeeklyRoutineRunTest(unittest.TestCase):
         self.assertEqual(process.returncode, 0, process.stdout + process.stderr)
         selection = self.root / f"data/results/nvidia-gpu/gpu/routine_selection/{TIMESTAMP}"
         plan = json.loads((selection / "selection.json").read_text())
-        self.assertEqual(len(plan["selected"]), 698)
+        self.assertEqual(len(plan["selected"]), 708)
         self.assertNotIn("coverage", plan)
         status = json.loads((selection / "case_status.json").read_text())
         self.assertTrue(status["complete"], status)
-        self.assertEqual(len(status["executed"]), 698)
+        self.assertEqual(len(status["executed"]), 708)
         self.assertEqual(status["counts"]["unexpected"], 0)
 
         # Every suite recorded its own wall clock, which is what fills the
@@ -302,7 +303,7 @@ class WeeklyRoutineRunTest(unittest.TestCase):
         publication = json.loads((bundle / "publication.json").read_text())
         self.assertEqual({entry["suite_id"]: len(entry["expected_rows"]) for entry in publication["suites"]},
                          {"gpu/dense": 28, "gpu/einsum": 4, "gpu/sparse": 2, "gpu/tensornetwork": 4,
-                          "gpu/elementwise": 8, "gpu/linalg_ad_latency": 30, "gpu/linalg_jvp_vjp": 30,
+                          "gpu/elementwise": 8, "gpu/linalg_ad_latency": 30, "gpu/linalg_jvp_vjp": 40,
                           "gpu/permutation": 44, "gpu/lstsq": 4, "gpu/linalg_public_api_throughput": 64,
                           "gpu/fft": 16, "gpu/nn": 44, "gpu/structural": 64, "gpu/isolated_ops": 132,
                           "gpu/reuse_contraction": 224})

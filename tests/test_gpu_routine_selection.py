@@ -28,7 +28,7 @@ class RoutineSelectionTest(unittest.TestCase):
     def test_one_set_selects_every_routine_suite_once(self):
         with tempfile.TemporaryDirectory() as tmp:
             plan = self.plan(Path(tmp))
-            self.assertEqual(len(plan["selected"]), 698)
+            self.assertEqual(len(plan["selected"]), 708)
             self.assertEqual(plan["expected"], plan["selected"])
             for suite in ("dense", "einsum", "sparse", "tensornetwork", "elementwise",
                           "linalg_ad_latency", "linalg_jvp_vjp", "permutation", "lstsq",
@@ -62,7 +62,7 @@ class RoutineSelectionTest(unittest.TestCase):
     def test_vendor_arms_are_opt_in(self):
         with tempfile.TemporaryDirectory() as tmp:
             plan = self.plan(Path(tmp), vendor_arms=True)
-            self.assertEqual(len(plan["selected"]), 862)
+            self.assertEqual(len(plan["selected"]), 872)
             self.assertTrue(plan["vendor_arms"])
             dense = [key for key in plan["selected"] if key.startswith("gpu/dense:")]
             self.assertEqual(len(dense), 49)
@@ -148,6 +148,63 @@ class RoutineSelectionTest(unittest.TestCase):
             self.assertEqual(plan["selected"],["gpu/dense:dense_matmul_f64_3072:pytorch-cuda"])
             with self.assertRaisesRegex(ValueError,"no GPU cases"):
                 self.plan(Path(tmp)/"bad",problem="dense_solve_f64_4096_rhs16")
+
+    def test_a_named_probe_case_plans_its_own_rows(self):
+        # n=4096 AD rows are declared beside the routine set, not in it: a named
+        # probe must plan the rows it asked for (three arms, one case) while the
+        # weekly set keeps planning only n=256.
+        with tempfile.TemporaryDirectory() as tmp:
+            plan = self.plan(Path(tmp), problem="linalg_ad_large_grad_sum_qr_jvp_f64_4096")
+            expected = [
+                f"gpu/linalg_jvp_vjp:linalg_ad_large_grad_sum_qr_jvp_f64_4096:{arm}"
+                for arm in ("tenferro-cuda-trace", "tenferro-cuda-eager",
+                            "pytorch-cuda", "jax-cuda")
+            ]
+            self.assertEqual(plan["selected"], expected)
+            # The probe's rows join this plan's expected set, so packaging can
+            # treat them as planned rather than `unexpected`.
+            self.assertEqual([key for key in plan["expected"] if "4096" in key], expected)
+            self.assertEqual(len(plan["expected"]), 708 + len(expected))
+            self.assertEqual(plan["problem_filter"], "linalg_ad_large_grad_sum_qr_jvp_f64_4096")
+            materialized = yaml.safe_load(Path(plan["suite_files"][0]).read_text())
+            self.assertEqual([item["id"] for item in materialized["problems"]],
+                             ["linalg_ad_large_grad_sum_qr_jvp_f64_4096"])
+
+    def test_a_comma_separated_probe_selects_each_named_case(self):
+        # Two dispatches run the 4096 matrix without ten separate pods: the
+        # filter names every case, and each becomes part of this plan's rows.
+        names = (
+            "linalg_ad_large_grad_sum_qr_jvp_f64_4096,"
+            "linalg_ad_large_grad_sum_lu_vjp_f64_4096"
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            plan = self.plan(Path(tmp), problem=names)
+            selected = [key for key in plan["selected"] if "4096" in key]
+            self.assertEqual(len(selected), 8)  # two cases x four arms
+            self.assertEqual({key.split(":")[1] for key in selected},
+                             set(names.split(",")))
+            materialized = yaml.safe_load(Path(plan["suite_files"][0]).read_text())
+            self.assertEqual({item["id"] for item in materialized["problems"]},
+                             set(names.split(",")))
+
+    def test_probe_cases_stay_out_of_the_weekly_plan(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            plan = self.plan(Path(tmp))
+            self.assertFalse([key for key in plan["expected"] if key.endswith("_4096")])
+            self.assertFalse([key for key in plan["selected"] if key.endswith("_4096")])
+            self.assertEqual(len(plan["selected"]), 708)
+
+    def test_a_stale_probe_case_is_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            shutil.copytree(ROOT/"benchmarks/gpu", root/"benchmarks/gpu")
+            path = root/"benchmarks/gpu/manifests/routine.yaml"
+            manifest = yaml.safe_load(path.read_text())
+            manifest["suites"]["gpu/linalg_jvp_vjp"]["probe_problems"].append(
+                "linalg_ad_large_grad_sum_absent_f64_4096")
+            path.write_text(yaml.safe_dump(manifest, sort_keys=False))
+            with self.assertRaisesRegex(ValueError, "stale routine problem manifest"):
+                selection.materialize(path, ["benchmarks/gpu/linalg_jvp_vjp.yaml"], root/"out")
 
     def test_a_filtered_probe_leaves_out_the_suite_whose_runner_takes_no_filter(self):
         # gpu/permutation's runner emits its own arms over its own patterns and

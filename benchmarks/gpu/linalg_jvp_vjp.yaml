@@ -1,19 +1,19 @@
 schema_version: 1
 suite_id: gpu/linalg_jvp_vjp
 title: GPU Linalg JVP/VJP Benchmarks
-description: 'Trace-mode linalg automatic differentiation on CUDA for tenferro-rs
-  and PyTorch at n=256 and n=4096. Every case here pays one device retirement per
-  call. The n=256 rows are 65,536 elements, below the linalg_ad floor, so they are
-  per-call latency rows: even a 256x256 QR JVP there is dominated by the trace runtime''s
-  per-call cost. The n=4096 rows are 16,777,216 elements, over that floor, so they
-  are declared throughput rows: the first run is what will show how much of each row
-  is still fixed cost. The two sizes are published in separate sections and are never
-  compared or averaged together. The n=4096 rows cannot afford a second CPU AD pass,
-  so they state the check that backs them (analytic, or a central difference) instead
-  of the default cpu_reference. The QR cases measured with one retirement per K calls
-  -- 256 JVP/VJP and 4096 JVP -- live in `gpu/linalg_ad_throughput`; its 4096 VJP
-  is absent because it retains a 128 MiB gradient per run and the retention budget
-  pins K to 1.'
+description: 'Trace-mode and eager linalg automatic differentiation on CUDA for tenferro-rs,
+  PyTorch and JAX at n=256 and n=4096. Every case here pays one device retirement
+  per call. The n=256 rows are 65,536 elements, below the linalg_ad floor, so they
+  are per-call latency rows: even a 256x256 QR JVP there is dominated by the trace
+  runtime''s per-call cost. The n=4096 rows are 16,777,216 elements, over that floor,
+  so they are declared throughput rows: the first run is what will show how much of
+  each row is still fixed cost. The two sizes are published in separate sections and
+  are never compared or averaged together. The n=4096 rows cannot afford a second
+  CPU AD pass, so they state the check that backs them (analytic, or a central difference)
+  instead of the default cpu_reference. The QR cases measured with one retirement
+  per K calls -- 256 JVP/VJP and 4096 JVP -- live in `gpu/linalg_ad_throughput`; its
+  4096 VJP is absent because it retains a 128 MiB gradient per run and the retention
+  budget pins K to 1.'
 defaults:
   measure: per_call
   device:
@@ -32,6 +32,7 @@ defaults:
     atol: 1.0e-08
 backends:
 - tenferro-cuda-trace
+- tenferro-cuda-eager
 - pytorch-cuda
 - jax-cuda
 problems:

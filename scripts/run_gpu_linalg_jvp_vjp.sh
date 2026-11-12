@@ -141,14 +141,18 @@ PY
 )
 [[ ${#AD_BACKENDS[@]} -gt 0 ]] || { echo "No linalg AD backends selected" >&2; exit 1; }
 RUN_RUST=0
+RUN_RUST_EAGER=0
 for backend in "${AD_BACKENDS[@]}"; do
-    [[ "$backend" == "tenferro-cuda-trace" ]] && RUN_RUST=1
+    case "$backend" in
+        tenferro-cuda-trace) RUN_RUST=1 ;;
+        tenferro-cuda-eager) RUN_RUST_EAGER=1 ;;
+    esac
 done
 rust_build_seconds=0.0
 # A run with a dead arm still renders the rows that ran; the exit status below
 # is what tells the caller the matrix is incomplete.
 PARTIAL_ARGS=()
-if [[ "$RUN_RUST" == 1 ]]; then
+if [[ "$RUN_RUST" == 1 || "$RUN_RUST_EAGER" == 1 ]]; then
     rust_build_started="$(wall_now)"
     if [[ "${GPU_BENCH_PREBUILT_RUST:-0}" == "1" ]]; then
         # The hosted build job ships this binary; the benchmark pod has no Rust toolchain.
@@ -162,32 +166,42 @@ if [[ "$RUN_RUST" == 1 ]]; then
     wall_phase "$RUN_DIR" rust_build "$rust_build_started" "$(wall_now)"
     rust_build_seconds="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["phases_seconds"]["rust_build"])' "$RUN_DIR/wall_phases.json")"
 
-    echo "Running tenferro-cuda-trace linalg AD benchmarks..."
-    : > "$RUST_JSONL"
-    rust_arm_started="$(wall_now)"
-    CUBECL_DEBUG_LOG=0 \
-    RUST_MIN_STACK="$RUST_MIN_STACK" \
-    rust_rc=0
-    CUBECL_DEBUG_LOG=0 \
-    RUST_MIN_STACK="$RUST_MIN_STACK" \
-        "$RUST_BIN" "$RUST_JSONL" "$DEVICE_ORDINAL" "" -- "$SUITE_FILE" || rust_rc=$?
-    wall_arm "$RUN_DIR" tenferro-cuda-trace "$rust_arm_started" "$(wall_now)" "$rust_build_seconds"
-    mv "$RUST_JSONL" "$RUN_DIR/rust_records_unverified.jsonl"
-    if [[ "$rust_rc" != 0 ]]; then
-        echo "ARM FAILED: tenferro-cuda-trace exited $rust_rc; its rows stay in $RUN_DIR/rust_records_unverified.jsonl" >&2
-        ARM_FAILED=1
-    else
-        # The Rust arm ships raw outputs and the CPU reference runs in a separate
-        # process; that pass is a stage of the suite, not part of any arm's clock.
-        rust_verify_started="$(wall_now)"
-        if ! "${PYTHON[@]}" "$SCRIPT_DIR/verify_gpu_linalg_ad_rust.py" \
-                "$RUN_DIR/rust_records_unverified.jsonl" "$RUST_JSONL" "$SUITE_FILE"; then
-            echo "ARM FAILED: tenferro-cuda-trace verification failed; its rows stay unverified" >&2
+    # Every Rust arm is one process behind the same binary; the arm name is the
+    # process-wide selection. Each arm's raw outputs are checked by the
+    # backend-agnostic CPU reference pass before they reach the result stream.
+    run_rust_arm() {
+        local backend="$1" raw="$2" verified="$3" rc=0 started
+        echo "Running $backend linalg AD benchmarks..."
+        : > "$raw"
+        started="$(wall_now)"
+        GPU_BENCH_AD_ARM="$backend" \
+        CUBECL_DEBUG_LOG=0 \
+        RUST_MIN_STACK="$RUST_MIN_STACK" \
+            "$RUST_BIN" "$raw" "$DEVICE_ORDINAL" "" -- "$SUITE_FILE" || rc=$?
+        wall_arm "$RUN_DIR" "$backend" "$started" "$(wall_now)" "$rust_build_seconds"
+        if [[ "$rc" != 0 ]]; then
+            echo "ARM FAILED: $backend exited $rc; its rows stay in $raw" >&2
             ARM_FAILED=1
+            return 0
         fi
-        wall_phase "$RUN_DIR" rust_verification "$rust_verify_started" "$(wall_now)"
-    fi
-    [[ ! -s "$RUST_JSONL" ]] || cat "$RUST_JSONL" >> "$RESULT_JSONL"
+        # The verification pass is a stage of the suite, not part of any arm's
+        # clock; the raw file stays beside the verified one when it fails.
+        local verify_started
+        verify_started="$(wall_now)"
+        if ! "${PYTHON[@]}" "$SCRIPT_DIR/verify_gpu_linalg_ad_rust.py" \
+                "$raw" "$verified" "$SUITE_FILE"; then
+            echo "ARM FAILED: $backend verification failed; its rows stay unverified" >&2
+            ARM_FAILED=1
+            return 0
+        fi
+        wall_phase "$RUN_DIR" rust_verification "$verify_started" "$(wall_now)"
+        [[ ! -s "$verified" ]] || cat "$verified" >> "$RESULT_JSONL"
+    }
+
+    [[ "$RUN_RUST" != 1 ]] || run_rust_arm tenferro-cuda-trace \
+        "$RUN_DIR/rust_records_unverified.jsonl" "$RUST_JSONL"
+    [[ "$RUN_RUST_EAGER" != 1 ]] || run_rust_arm tenferro-cuda-eager \
+        "$RUN_DIR/rust_eager_records_unverified.jsonl" "$RUN_DIR/rust_eager_records.jsonl"
     sleep "$GPU_BENCH_BACKEND_SLEEP"
 fi
 
@@ -208,7 +222,9 @@ run_python_arm() {
 }
 
 for backend in "${AD_BACKENDS[@]}"; do
-    [[ "$backend" == "tenferro-cuda-trace" ]] && continue
+    case "$backend" in
+        tenferro-cuda-trace|tenferro-cuda-eager) continue ;;
+    esac
     echo "Running $backend linalg AD benchmarks..."
     chunk="$RUN_DIR/chunk_${backend}.jsonl"
     : > "$chunk"

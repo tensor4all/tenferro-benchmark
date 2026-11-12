@@ -57,7 +57,8 @@ LOSS_JAX = {
 def main() -> None:
     out = Path(sys.argv[1])
     device_ordinal = int(sys.argv[2])
-    problem_filter = sys.argv[3]
+    # A probe may name one case or a comma-separated list of them.
+    problem_filter = {name.strip() for name in sys.argv[3].split(",") if name.strip()}
     sep = sys.argv.index("--")
     backends = sys.argv[4:sep]
     suites = [Path(p) for p in sys.argv[sep + 1 :]]
@@ -72,7 +73,7 @@ def main() -> None:
             suite = yaml.safe_load(suite_path.read_text())
             suite_backends = suite.get("backends", [])
             for problem in suite["problems"]:
-                if problem_filter and problem["id"] != problem_filter:
+                if problem_filter and problem["id"] not in problem_filter:
                     continue
                 for backend in backends:
                     if backend not in suite_backends:
