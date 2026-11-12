@@ -59,6 +59,21 @@ export BENCH_COMMAND_START_NS="$(python3 -c 'import time; print(time.monotonic_n
 
 # shellcheck source=scripts/publish_run.sh
 source "$SCRIPT_DIR/publish_run.sh"
+# shellcheck source=scripts/link_preflight.sh
+source "$SCRIPT_DIR/link_preflight.sh"
+
+# Before any suite: every library this run will link -- the harness's vendor arm and, when
+# perf_issues runs with MKLROOT set, the follow-up MWE it builds at the very end -- has to link and
+# load here. Checked once by the outermost invocation (the per-thread re-invocations skip it).
+if [[ "${RUN_ALL_MAIN_ONLY:-0}" != "1" ]]; then
+    # shellcheck source=scripts/cpu_blas_provider.sh
+    source "$SCRIPT_DIR/cpu_blas_provider.sh"
+    if ! require_link_preflight_for_run \
+        "$(normalize_cpu_blas_features "${TENFERRO_CPU_FEATURES:-}")" "${RUN_PERF_ISSUES_SUITE:-1}"; then
+        echo "ERROR: link preflight failed; nothing was built or measured." >&2
+        exit 1
+    fi
+fi
 
 if [[ $# -gt 1 && "${RUN_ALL_MAIN_ONLY:-0}" != "1" ]]; then
     THREAD_COUNTS=("$@")

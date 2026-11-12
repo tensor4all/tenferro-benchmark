@@ -1,0 +1,50 @@
+# The shared libraries this repository's CPU harnesses link, checked by campaign-toolkit's link
+# preflight (campaign-toolkit README, "The link preflight") before any build or timing.
+#
+#   scripts/run_all.sh            the arms this run will link, once, before the first suite
+#   scripts/build_for_tenferro_rev.sh   the arm of TENFERRO_CPU_FEATURES, before `cargo build`
+#   scripts/run_cpu_followup.sh   followup-mwe, before the MWE build
+#   a periodic refresh            every arm, once per host and profile, at its start
+#
+# Each arm mirrors one link line; keep it in step with the file named in `source`
+# (tests/test_link_preflight_declaration.py checks that every library those files link is listed).
+# Run time: the loader paths are the ones scripts/cpu_blas_provider.sh prepends.
+arms:
+  blas-mkl:
+    source: build.rs configure_mkl (feature blas-mkl)
+    env:
+      MKLROOT: {required: true, hint_glob: "/opt/intel/oneapi/mkl/*"}
+    search: ["$MKLROOT/lib", "$MKLROOT/lib/intel64"]
+    libs: [mkl_intel_lp64, mkl_intel_thread, mkl_core, iomp5]
+    loader_paths: ["$MKLROOT/lib", "$MKLROOT/lib/intel64", "/opt/intel/oneapi/compiler/latest/lib"]
+    fix:
+      mkl_intel_lp64: "export MKLROOT={prefix}"
+      mkl_intel_thread: "export MKLROOT={prefix}"
+      mkl_core: "export MKLROOT={prefix}"
+    # libiomp5 is not under MKLROOT on oneAPI 2024+; the build finds it only through LIBRARY_PATH
+    # (what `setvars.sh` exports). The default fix line names that variable and the directory.
+  blas-openblas:
+    source: build.rs configure_openblas (feature blas-openblas)
+    env:
+      OPENBLAS_ROOT: {required: true, fix: "export OPENBLAS_ROOT=/usr   (the distribution's libopenblas-dev)"}
+    search: ["$OPENBLAS_ROOT/lib"]
+    libs: [openblas]
+    loader_paths: ["$OPENBLAS_ROOT/lib"]
+  followup-mwe:
+    source: mwe/cpu_followup/build.rs (feature system-mkl, the default)
+    env:
+      MKLROOT: {required: true, hint_glob: "/opt/intel/oneapi/mkl/*"}
+    search: ["$MKLROOT/lib"]
+    libs: [mkl_intel_lp64, mkl_intel_thread, mkl_core, iomp5]
+    loader_paths: ["$MKLROOT/lib", "$MKLROOT/lib/intel64", "/opt/intel/oneapi/compiler/latest/lib"]
+    fix:
+      mkl_intel_lp64: "export MKLROOT={prefix}"
+      mkl_intel_thread: "export MKLROOT={prefix}"
+      mkl_core: "export MKLROOT={prefix}"
+  followup-mwe-openblas:
+    source: mwe/cpu_followup/build.rs (feature system-openblas; the CI correctness build)
+    env:
+      OPENBLAS_ROOT: {required: true, fix: "export OPENBLAS_ROOT=/usr   (the distribution's libopenblas-dev)"}
+    search: ["$OPENBLAS_ROOT/lib"]
+    libs: [openblas]
+    loader_paths: ["$OPENBLAS_ROOT/lib"]
