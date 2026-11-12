@@ -47,6 +47,12 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v3
 
+      - name: The pin has a current recording
+        # Refuse to deploy pages whose pin no published summary was measured at.
+        run: |
+          uv run --no-project --python 3.12 --with-requirements scripts/dashboard-requirements.txt \
+            campaign-check-pin-recorded --pin pins/tenferro-rs.rev --evidence 'result/*/*/*.summary.json' --commit-field tenferro_commit
+
       - name: Export trend points and render the trend chart
         # The points come from the published summary sidecars in git history and are
         # drawn by the toolkit's trend renderer; nothing is committed. The CPU family
