@@ -675,7 +675,11 @@ fn run_eager_case(
     verify_only: bool,
     measure_only: bool,
 ) -> Result<EagerCase, String> {
-    let ctx = EagerRuntime::new().map_err(|e| format!("eager runtime: {e}"))?;
+    // The eager runtime needs the same semantic extension rules the trace path
+    // registers: without them, `jvp`/`vjp` on a linalg op fails with "family
+    // tenferro-linalg.linalg.v1 has no Linearize AD rule".
+    let ctx =
+        EagerRuntime::with_ad_context(ad_context()).map_err(|e| format!("eager runtime: {e}"))?;
 
     // A device runtime does not accept an unpinned host tensor as an eager
     // leaf's storage, so the fixture is uploaded first and the leaves are built
