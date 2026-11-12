@@ -1701,6 +1701,14 @@ fn run_batched_small_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
 }
 
 const SAMPLE_TARGET_NS: u128 = 5_000_000;
+/// Upper bound on the operations one bounded-batch sample may hold.
+const MAX_BATCH_OPERATIONS: usize = 65_536;
+/// Eager backward rows time one operation per sample. `EagerTensor::backward`
+/// scans every live gradient slot of the shared runtime, so in a batch of N
+/// retained fixtures each call costs O(N) extra and the per-operation time
+/// would depend on the batch size the calibration picked (measured: 2x2
+/// `grad_sum_matmul` ~87 us/op at N = 128 against ~37 us/op at N = 1).
+const BACKWARD_OPERATIONS_PER_SAMPLE: usize = 1;
 const RETENTION_BUDGET_BYTES: usize = 64 * 1024 * 1024;
 
 // Conservative logical-buffer reservation for this f64 matrix suite: sixteen
@@ -1780,9 +1788,10 @@ fn measure_eager<I: Clone + Send + Sync, O>(
     shape: &str,
     mut setup: impl FnMut() -> Result<I, Error>,
     mut execute: impl FnMut(&mut EagerSession<'_>, &mut I) -> Result<O, Error> + Send,
+    max_operations: usize,
 ) -> Result<Measurement, Error> {
     let estimated_bytes = retention_estimate(shape);
-    let cap = (RETENTION_BUDGET_BYTES / estimated_bytes).clamp(1, 65_536);
+    let cap = (RETENTION_BUDGET_BYTES / estimated_bytes).clamp(1, max_operations);
     let ctx = cpu_ctx();
     // One caller-held engine for every sample of this case (tenferro-rs #2206).
     let mut engine = cpu_engine();
@@ -1999,6 +2008,7 @@ fn bench_row<I: Clone + Send + Sync, O>(
         setup,
         execute,
         "borrowed_session_outside_timing_for_primal",
+        MAX_BATCH_OPERATIONS,
     )
 }
 
@@ -2011,6 +2021,9 @@ fn bench_row<I: Clone + Send + Sync, O>(
 /// `grad()` slots); a mismatch is reported as an error row, never as `ok`.
 /// `measure_eager` clears the accumulated gradients after every sample, outside
 /// the clock, so every sample stores into empty slots and does the same work.
+/// Each sample holds one operation (`BACKWARD_OPERATIONS_PER_SAMPLE`), so the
+/// reverse pass never scans the gradient slots of other retained fixtures.
+#[allow(clippy::too_many_arguments)]
 fn bench_backward_row<I: Clone + Send + Sync, O>(
     config: &BenchConfig,
     suite: &'static str,
@@ -2076,9 +2089,11 @@ fn bench_backward_row<I: Clone + Send + Sync, O>(
         setup,
         execute,
         "borrowed_session_outside_timing_grads_cleared_outside_timing",
+        BACKWARD_OPERATIONS_PER_SAMPLE,
     )
 }
 
+#[allow(clippy::too_many_arguments)]
 fn measure_eager_row<I: Clone + Send + Sync, O>(
     config: &BenchConfig,
     suite: &'static str,
@@ -2089,9 +2104,10 @@ fn measure_eager_row<I: Clone + Send + Sync, O>(
     mut setup: impl FnMut() -> tenferro_ad::error::Result<I> + Send,
     mut execute: impl FnMut(&mut EagerSession<'_>, &mut I) -> tenferro_ad::error::Result<O> + Send,
     eager_session_policy: &str,
+    max_operations: usize,
 ) -> Row {
     let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
-        let measured = measure_eager(config, shape, &mut setup, &mut execute)?;
+        let measured = measure_eager(config, shape, &mut setup, &mut execute, max_operations)?;
         summarize_measurement(
             measured,
             suite,
@@ -2790,6 +2806,11 @@ fn leaf_value_and_grad(
             value.len()
         ));
     }
+    // `f64::max` drops NaN, so a non-finite gradient must be rejected here
+    // before any residual is folded.
+    if let Some(index) = grad.iter().position(|v| !v.is_finite()) {
+        return Err(format!("gradient element {index} is {}", grad[index]));
+    }
     Ok((value, grad))
 }
 
@@ -2802,8 +2823,17 @@ fn check_within(what: &str, residual: f64, scale: f64) -> Result<(), String> {
     }
 }
 
+/// `max(acc, |v|)` that propagates NaN (`f64::max` would discard it).
+fn worst(acc: f64, v: f64) -> f64 {
+    if acc.is_nan() || v.is_nan() {
+        f64::NAN
+    } else {
+        acc.max(v.abs())
+    }
+}
+
 fn max_abs(values: impl IntoIterator<Item = f64>) -> f64 {
-    values.into_iter().fold(0.0, |acc, v| acc.max(v.abs()))
+    values.into_iter().fold(0.0, worst)
 }
 
 /// Scalar reference for `d/dA, d/dB sum(A·B)` over `[n, n, batch]` column-major
@@ -2869,7 +2899,7 @@ fn check_sum_solve_grads(
         let (mut residual, mut scale) = (0.0_f64, 0.0_f64);
         for j in 0..n {
             let terms = (0..n).map(|i| at(i, j) * g_b[i]);
-            residual = residual.max((terms.clone().sum::<f64>() - 1.0).abs());
+            residual = worst(residual, terms.clone().sum::<f64>() - 1.0);
             scale = scale.max(terms.map(f64::abs).sum());
         }
         check_within(&format!("Aᵀ·db = 1 (batch {z})"), residual, scale)?;
@@ -2890,10 +2920,10 @@ fn check_sum_solve_grads(
         check_within(&format!("dA = -db·xᵀ (batch {z})"), residual, scale)?;
 
         let (mut residual, mut scale) = (0.0_f64, 0.0_f64);
-        for i in 0..n {
+        for (i, &rhs_i) in rhs.iter().enumerate() {
             let terms = (0..n).map(|j| at(i, j) * x[j]);
-            residual = residual.max((terms.clone().sum::<f64>() - rhs[i]).abs());
-            scale = scale.max(terms.map(f64::abs).sum::<f64>() + rhs[i].abs());
+            residual = worst(residual, terms.clone().sum::<f64>() - rhs_i);
+            scale = scale.max(terms.map(f64::abs).sum::<f64>() + rhs_i.abs());
         }
         check_within(&format!("A·x = b (batch {z})"), residual, scale)?;
     }
@@ -2920,7 +2950,7 @@ fn check_sum_svd_s_grad(engine: &mut CpuEngine, a: &EagerTensor, n: usize) -> Re
     for j in 0..n {
         for i in 0..=j {
             let identity = if i == j { 1.0 } else { 0.0 };
-            residual = residual.max((dot(&q_cols[i], &q_cols[j]) - identity).abs());
+            residual = worst(residual, dot(&q_cols[i], &q_cols[j]) - identity);
         }
     }
     check_within("QᵀQ = I", residual, n as f64)?;
@@ -2952,7 +2982,8 @@ fn check_sum_svd_s_grad(engine: &mut CpuEngine, a: &EagerTensor, n: usize) -> Re
             h[i + n * j] = s / h[i + n * i];
         }
         let pivot = h[j + n * j] - dot(&h[n * j..n * j + j], &h[n * j..n * j + j]);
-        if !(pivot > 0.0) {
+        // A NaN pivot is rejected too.
+        if pivot.is_nan() || pivot <= 0.0 {
             return Err(format!(
                 "QᵀA is not positive definite (pivot {j} = {pivot:e})"
             ));
@@ -3196,9 +3227,11 @@ mod timing_tests {
         }
     }
 
-    /// The `grad_sum_matmul` closure of the published rows on a 2x2 fixture.
+    /// The `grad_sum_matmul` closure of the published rows on a 2x2 fixture;
+    /// `doubled` sums `2·A·B` instead, a wrong gradient for the reference.
     fn grad_sum_matmul_row(
         config: &BenchConfig,
+        doubled: bool,
         validate: impl FnOnce(&mut CpuEngine, &(EagerTensor, EagerTensor)) -> Result<(), String>,
     ) -> Row {
         bench_backward_row(
@@ -3215,7 +3248,10 @@ mod timing_tests {
                 Ok((a, b))
             },
             |session, (a, b)| {
-                let y = eager_session_ops::matmul(session, a, b)?;
+                let mut y = eager_session_ops::matmul(session, a, b)?;
+                if doubled {
+                    y = session.add(&y, &y)?;
+                }
                 let loss = eager_session_ops::reduce_sum(session, &y, &[0, 1])?;
                 Ok((loss.backward(session.engine())?, loss, y))
             },
@@ -3231,7 +3267,7 @@ mod timing_tests {
         // dA[i,k] = sum_j B[k,j] (12 for k = 0, 14 for k = 1) and
         // dB[k,j] = sum_i A[i,k] (3 for k = 0, 7 for k = 1), in column-major order.
         let mut grads = None;
-        let row = grad_sum_matmul_row(&config, |engine, (a, b)| {
+        let row = grad_sum_matmul_row(&config, false, |engine, (a, b)| {
             grads = Some((
                 leaf_value_and_grad(engine, a)?.1,
                 leaf_value_and_grad(engine, b)?.1,
@@ -3247,12 +3283,44 @@ mod timing_tests {
         );
 
         // The reference check is what keeps a wrong gradient from reading `ok`.
-        let row = grad_sum_matmul_row(&config, |engine, (a, _)| {
-            leaf_value_and_grad(engine, a)?;
-            Err("forced mismatch".into())
+        let row = grad_sum_matmul_row(&config, true, |engine, (a, b)| {
+            check_sum_matmul_grads(engine, a, b, 2, 1)
         });
-        assert_eq!(row.status, "error: gradient mismatch: forced mismatch");
+        assert!(
+            row.status.starts_with("error: gradient mismatch: dA"),
+            "{}",
+            row.status
+        );
         assert!(row.median_ms.is_none());
+    }
+
+    #[test]
+    fn backward_rows_time_one_operation_per_sample() {
+        let _guard = EAGER_TEST_LOCK.lock().unwrap();
+        let path = std::env::temp_dir().join(format!(
+            "publication_gate_backward_raw_{}.jsonl",
+            std::process::id()
+        ));
+        let _ = std::fs::remove_file(&path);
+        // Every measuring test holds EAGER_TEST_LOCK, so no other row writes here.
+        env::set_var("CPU_OPS_RAW_SAMPLES", &path);
+        let row = grad_sum_matmul_row(&test_config(2), false, |engine, (a, b)| {
+            check_sum_matmul_grads(engine, a, b, 2, 1)
+        });
+        env::remove_var("CPU_OPS_RAW_SAMPLES");
+        assert_eq!(row.status, "ok");
+        let raw = std::fs::read_to_string(&path).unwrap();
+        let _ = std::fs::remove_file(&path);
+        let record: serde_json::Value = raw
+            .lines()
+            .map(|line| serde_json::from_str(line).unwrap())
+            .find(|record: &serde_json::Value| record["record_type"] == "samples")
+            .unwrap();
+        assert_eq!(record["operations_per_sample"], 1);
+        assert_eq!(
+            record["eager_session_policy"],
+            "borrowed_session_outside_timing_grads_cleared_outside_timing"
+        );
     }
 
     #[test]
@@ -3269,6 +3337,7 @@ mod timing_tests {
                 let loss = eager_session_ops::reduce_sum(session, x, &[0])?;
                 Ok((loss.backward(session.engine())?, loss))
             },
+            MAX_BATCH_OPERATIONS,
         )
         .unwrap();
         assert!(measured.times.len() == 4);
@@ -3316,6 +3385,17 @@ mod timing_tests {
             .unwrap();
         backward(&mut engine, loss);
         assert!(check_sum_svd_s_grad(&mut engine, &a, n).is_err());
+        // -U·Vᵀ is orthogonal with QᵀA symmetric, but negative definite.
+        let loss = ctx
+            .with_eager_session(&mut *engine, |session| {
+                let (_, s, _) = eager_linalg_tensor::svd(session, &a)?;
+                let total = eager_session_ops::reduce_sum(session, &s, &[0])?;
+                session.neg(&total)
+            })
+            .unwrap();
+        backward(&mut engine, loss);
+        let error = check_sum_svd_s_grad(&mut engine, &a, n).unwrap_err();
+        assert!(error.contains("positive definite"), "{error}");
 
         let (batch, b_data) = (3, data_for_shape(&[n, 1, 3], 51));
         let a = eager_requires_grad_in(
@@ -3361,6 +3441,32 @@ mod timing_tests {
         check_sum_matmul_grads(&mut engine, &a, &b, n, batch).unwrap();
         // Swapped operands give dA = column sums of A instead of row sums of B.
         assert!(check_sum_matmul_grads(&mut engine, &b, &a, n, batch).is_err());
+        ctx.clear_grads().unwrap();
+    }
+
+    #[test]
+    fn gradient_checks_reject_nan() {
+        // `f64::max` would silently drop these.
+        assert!(max_abs([0.0, f64::NAN, 1.0]).is_nan());
+        assert!(worst(f64::NAN, 0.0).is_nan());
+        assert!(check_within("nan", f64::NAN, 1.0).is_err());
+
+        let _guard = EAGER_TEST_LOCK.lock().unwrap();
+        let ctx = cpu_ctx();
+        let mut engine = cpu_engine();
+        let x = eager_requires_grad_in(tensor(&[2], vec![1.0, 2.0]), ctx.clone());
+        // d/dx sum(x / 0) = [inf, inf]: a non-finite gradient is never accepted.
+        let zero = eager_from_tensor_in(tensor(&[2], vec![0.0, 0.0]), ctx.clone());
+        ctx.clear_grads().unwrap();
+        ctx.with_eager_session(&mut *engine, |session| {
+            let y = session.div(&x, &zero)?;
+            eager_session_ops::reduce_sum(session, &y, &[0])
+        })
+        .unwrap()
+        .backward(&mut *engine)
+        .unwrap();
+        let error = leaf_value_and_grad(&mut engine, &x).unwrap_err();
+        assert!(error.contains("gradient element 0 is inf"), "{error}");
         ctx.clear_grads().unwrap();
     }
 

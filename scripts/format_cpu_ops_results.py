@@ -353,8 +353,14 @@ LEGACY_EAGER_BACKWARD_STATUS = "unsupported: eager backward has no borrowed-sess
 EAGER_SESSION_POLICY_TEXT = (
     "Eager primal and backward rows reuse a borrowed session entered before sampling. "
     "A backward row times the forward pass plus `EagerTensor::backward` run through that "
-    "session's engine; its gradients are checked against scalar references before timing, "
-    "and accumulated gradients are cleared after every sample, outside timing."
+    "session's engine, one operation per sample; its gradients are checked against scalar "
+    "references before timing, and accumulated gradients are cleared after every sample, "
+    "outside timing."
+)
+
+LEGACY_EAGER_BACKWARD_TEXT = (
+    "Eager primal rows reuse a borrowed session entered before sampling; eager backward rows "
+    "without a borrowed-session API are unsupported."
 )
 
 
@@ -364,6 +370,7 @@ def format_table(paths: list[Path]) -> str:
     batch_timings = {}
     small_sampling_policies = []
     legacy_unsupported_eager_backward = False
+    measured_eager_backward = False
     for path in paths:
         with path.open(newline="") as f:
             for row in csv.DictReader(f):
@@ -373,6 +380,12 @@ def format_table(paths: list[Path]) -> str:
                         small_sampling_policies.append(row.get("sampling_policy", ""))
                     if row_value(row, "status").startswith(LEGACY_EAGER_BACKWARD_STATUS):
                         legacy_unsupported_eager_backward = True
+                    elif (
+                        backend == "tenferro-eager"
+                        and key[1].endswith("_backward")
+                        and row_value(row, "status") == "ok"
+                    ):
+                        measured_eager_backward = True
                     by_key[key][backend] = value
                     median_ms = row_value(row, "median_ms")
                     status = row_value(row, "status")
@@ -399,8 +412,13 @@ def format_table(paths: list[Path]) -> str:
 
     if small_sampling_policies:
         if all(policy in {"bounded_batch", "bounded_batch_shared_cpu"} for policy in small_sampling_policies):
-            if legacy_unsupported_eager_backward:
-                eager_policy = "Eager primal rows reuse a borrowed session entered before sampling; eager backward rows without a borrowed-session API are unsupported."
+            if legacy_unsupported_eager_backward and measured_eager_backward:
+                eager_policy = (
+                    f"{EAGER_SESSION_POLICY_TEXT} Eager backward rows shown as unsupported come "
+                    "from runs recorded before the harness measured them."
+                )
+            elif legacy_unsupported_eager_backward:
+                eager_policy = LEGACY_EAGER_BACKWARD_TEXT
             else:
                 eager_policy = EAGER_SESSION_POLICY_TEXT
             lines[2:2] = [f"Small rows use time/memory-bounded batches, normalized per operation. Tenferro eager/trace share a CPU execution scope outside timing. {eager_policy} Raw JSONL records contain batch durations and operation counts.", ""]

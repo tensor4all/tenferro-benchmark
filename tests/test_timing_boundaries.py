@@ -205,32 +205,40 @@ class TimingBoundaries(unittest.TestCase):
     def test_cpu_report_eager_backward_text_follows_the_recorded_rows(self):
         # #471: runs recorded before the harness measured eager backward keep
         # the sentence that explains their `unsupported` rows; measured runs
-        # describe how the reverse pass is timed instead.
+        # describe how the reverse pass is timed; a page mixing both says so.
         import csv
         import tempfile
 
         legacy = cpu_formatter.LEGACY_EAGER_BACKWARD_STATUS + "; setup-inclusive timings disabled"
+        measured_text = cpu_formatter.EAGER_SESSION_POLICY_TEXT
+        legacy_text = cpu_formatter.LEGACY_EAGER_BACKWARD_TEXT
+        mixed_note = "come from runs recorded before the harness measured them"
         cases = {
-            legacy: "eager backward rows without a borrowed-session API are unsupported",
-            "ok": cpu_formatter.EAGER_SESSION_POLICY_TEXT,
+            "legacy": ([legacy], legacy_text, [measured_text, mixed_note]),
+            "measured": (["ok"], measured_text, [legacy_text, mixed_note]),
+            "mixed": ([legacy, "ok"], measured_text + " Eager backward rows shown as unsupported " + mixed_note, [legacy_text]),
         }
-        for status, sentence in cases.items():
-            with self.subTest(status=status), tempfile.TemporaryDirectory() as directory:
-                path = Path(directory) / "cpu_ops.csv"
-                measured = status == "ok"
-                row = dict(suite="small", benchmark="grad_sum_matmul_backward", dtype="f64",
-                           threads="1", shape="2x2", backend="tenferro-eager",
-                           median_ms="0.09" if measured else "",
-                           iqr_ms="0.001" if measured else "",
-                           status=status, sampling_policy="bounded_batch_shared_cpu")
-                with path.open("w", newline="") as stream:
-                    writer = csv.DictWriter(stream, fieldnames=list(row))
-                    writer.writeheader()
-                    writer.writerow(row)
-                report = cpu_formatter.format_table([path])
+        for name, (statuses, sentence, absent) in cases.items():
+            with self.subTest(case=name), tempfile.TemporaryDirectory() as directory:
+                paths = []
+                for threads, status in enumerate(statuses, start=1):
+                    path = Path(directory) / f"cpu_ops_t{threads}.csv"
+                    measured = status == "ok"
+                    row = dict(suite="small", benchmark="grad_sum_matmul_backward", dtype="f64",
+                               threads=str(threads), shape="2x2", backend="tenferro-eager",
+                               median_ms="0.09" if measured else "",
+                               iqr_ms="0.001" if measured else "",
+                               status=status, sampling_policy="bounded_batch_shared_cpu")
+                    with path.open("w", newline="") as stream:
+                        writer = csv.DictWriter(stream, fieldnames=list(row))
+                        writer.writeheader()
+                        writer.writerow(row)
+                    paths.append(path)
+                report = cpu_formatter.format_table(paths)
                 self.assertIn(sentence, report)
-                self.assertEqual("borrowed-session API" in report, not measured)
-                self.assertEqual("0.090" in report, measured)
+                for text in absent:
+                    self.assertNotIn(text, report)
+                self.assertEqual("0.090" in report, "ok" in statuses)
 
     def test_cpu_report_normalizes_historical_backend_labels(self):
         # Pre-#2004 raw runs under data/results/** spell the tenferro CPU rows
