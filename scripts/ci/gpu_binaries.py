@@ -22,6 +22,12 @@ import yaml
 
 MANIFEST = Path('benchmarks/gpu/manifests/routine.yaml')
 READBACK = 'perf-issues-readback'
+# The deferred-batch throughput collector is a standalone entry point
+# (`scripts/run_gpu_throughput.sh`), not a routine manifest suite. Its two
+# suites run through two binaries, so the workflow names the lane rather than a
+# suite file.
+THROUGHPUT = 'throughput'
+THROUGHPUT_BINARIES = ('benchmark_gpu_rust', 'benchmark_gpu_linalg_ad')
 PERF_ISSUES_BINARY = 'benchmark_gpu_perf_issues'
 # The lane the unfiltered weekly command collects after the routine set. It is
 # a manifest the workflow never names as a suite, so it is attributed by lane.
@@ -56,6 +62,8 @@ def required_binaries(selection, manifest=MANIFEST):
     selection = (selection or 'all').strip()
     if selection == READBACK:
         return {PERF_ISSUES_BINARY: [READBACK]}
+    if selection == THROUGHPUT:
+        return {binary: [THROUGHPUT] for binary in THROUGHPUT_BINARIES}
     suites = yaml.safe_load(Path(manifest).read_text())['suites']
     drivers = {spec['file']: spec.get('driver') or DEFAULT_DRIVER for spec in suites.values()}
     selected = (list(drivers) if selection == 'all'

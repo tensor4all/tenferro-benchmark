@@ -93,6 +93,14 @@ class RequiredBinariesTest(unittest.TestCase):
         self.assertEqual(required_binaries(READBACK), {
             'benchmark_gpu_perf_issues': [READBACK]})
 
+    def test_throughput_lane_ships_both_streams(self):
+        # The deferred-batch lane is a standalone entry point over two suite
+        # files, not a routine manifest entry, so the workflow names the lane.
+        self.assertEqual(required_binaries('throughput'), {
+            'benchmark_gpu_rust': ['throughput'],
+            'benchmark_gpu_linalg_ad': ['throughput'],
+        })
+
     def test_unknown_suite_and_unknown_driver_fail_closed(self):
         with tempfile.TemporaryDirectory() as directory:
             manifest = self.manifest(directory)
