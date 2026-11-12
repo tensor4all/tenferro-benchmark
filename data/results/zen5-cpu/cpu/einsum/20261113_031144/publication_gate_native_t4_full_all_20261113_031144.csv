@@ -1,0 +1,599 @@
+suite,op,phase,dtype,backend,profile,shape,warmups,runs,median_ms,iqr_ms,status
+small,matmul,primal,f64,native,full,64x64,3,15,0.015831,0.000058,ok
+small,matmul,primal,f64,native,full,2x2,3,15,0.004348,0.000013,ok
+small,einsum_ij_jk_ik,primal,f64,native,full,2x2,3,15,0.004706,0.000005,ok
+small,svd,primal,f64,native,full,2x2,3,15,0.008861,0.000039,ok
+small,qr,primal,f64,native,full,2x2,3,15,0.007129,0.000044,ok
+small,eigh,primal,f64,native,full,2x2,3,15,0.007482,0.000073,ok
+small,solve,primal,f64,native,full,"2x2,rhs=1",3,15,0.008047,0.000026,ok
+small,solve,primal,f64,native,full,"2x2,rhs=4",3,15,0.008206,0.000011,ok
+small,grad_sum_matmul,backward,f64,native,full,2x2,3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+small,grad_sum_svd_s,backward,f64,native,full,2x2,3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+small,grad_sum_solve,backward,f64,native,full,"2x2,rhs=1",3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+small,grad_sum_svd_s,jvp,f64,native,full,2x2,3,15,0.192247,0.001926,ok
+small,grad_sum_svd_s,vjp,f64,native,full,2x2,3,15,0.059558,0.001138,ok
+small,grad_sum_qr,jvp,f64,native,full,2x2,3,15,1.254923,0.011725,ok
+small,grad_sum_qr,vjp,f64,native,full,2x2,3,15,0.145652,0.001983,ok
+small,grad_sum_eigh,jvp,f64,native,full,2x2,3,15,0.234223,0.003491,ok
+small,grad_sum_eigh,vjp,f64,native,full,2x2,3,15,0.062790,0.000348,ok
+small,grad_sum_lu,jvp,f64,native,full,2x2,3,15,0.900301,0.016645,ok
+small,grad_sum_lu,vjp,f64,native,full,2x2,3,15,0.168863,0.001698,ok
+small,grad_sum_solve,jvp,f64,native,full,"2x2,rhs=1",3,15,0.156511,0.004238,ok
+small,grad_sum_solve,vjp,f64,native,full,"2x2,rhs=1",3,15,0.067040,0.000957,ok
+small,matmul,primal,f64,native,full,4x4,3,15,0.004439,0.000029,ok
+small,einsum_ij_jk_ik,primal,f64,native,full,4x4,3,15,0.004800,0.000027,ok
+small,svd,primal,f64,native,full,4x4,3,15,0.011705,0.000035,ok
+small,qr,primal,f64,native,full,4x4,3,15,0.007567,0.000011,ok
+small,eigh,primal,f64,native,full,4x4,3,15,0.009377,0.000014,ok
+small,solve,primal,f64,native,full,"4x4,rhs=1",3,15,0.008162,0.000017,ok
+small,solve,primal,f64,native,full,"4x4,rhs=4",3,15,0.008420,0.000016,ok
+small,grad_sum_matmul,backward,f64,native,full,4x4,3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+small,grad_sum_svd_s,backward,f64,native,full,4x4,3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+small,grad_sum_solve,backward,f64,native,full,"4x4,rhs=1",3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+small,grad_sum_svd_s,jvp,f64,native,full,4x4,3,15,0.204920,0.002841,ok
+small,grad_sum_svd_s,vjp,f64,native,full,4x4,3,15,0.063096,0.000983,ok
+small,grad_sum_qr,jvp,f64,native,full,4x4,3,15,1.290913,0.023133,ok
+small,grad_sum_qr,vjp,f64,native,full,4x4,3,15,0.146280,0.001143,ok
+small,grad_sum_eigh,jvp,f64,native,full,4x4,3,15,0.245367,0.001541,ok
+small,grad_sum_eigh,vjp,f64,native,full,4x4,3,15,0.066040,0.000396,ok
+small,grad_sum_lu,jvp,f64,native,full,4x4,3,15,0.902780,0.005612,ok
+small,grad_sum_lu,vjp,f64,native,full,4x4,3,15,0.170681,0.001466,ok
+small,grad_sum_solve,jvp,f64,native,full,"4x4,rhs=1",3,15,0.162053,0.005441,ok
+small,grad_sum_solve,vjp,f64,native,full,"4x4,rhs=1",3,15,0.067354,0.001122,ok
+small,matmul,primal,f64,native,full,8x8,3,15,0.004537,0.000034,ok
+small,einsum_ij_jk_ik,primal,f64,native,full,8x8,3,15,0.004779,0.000016,ok
+small,svd,primal,f64,native,full,8x8,3,15,0.021711,0.000092,ok
+small,qr,primal,f64,native,full,8x8,3,15,0.009434,0.000016,ok
+small,eigh,primal,f64,native,full,8x8,3,15,0.015370,0.000033,ok
+small,solve,primal,f64,native,full,"8x8,rhs=1",3,15,0.009013,0.000025,ok
+small,solve,primal,f64,native,full,"8x8,rhs=4",3,15,0.009173,0.000029,ok
+small,grad_sum_matmul,backward,f64,native,full,8x8,3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+small,grad_sum_svd_s,backward,f64,native,full,8x8,3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+small,grad_sum_solve,backward,f64,native,full,"8x8,rhs=1",3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+small,grad_sum_svd_s,jvp,f64,native,full,8x8,3,15,0.228635,0.003480,ok
+small,grad_sum_svd_s,vjp,f64,native,full,8x8,3,15,0.073731,0.001971,ok
+small,grad_sum_qr,jvp,f64,native,full,8x8,3,15,1.298785,0.010099,ok
+small,grad_sum_qr,vjp,f64,native,full,8x8,3,15,0.150368,0.001727,ok
+small,grad_sum_eigh,jvp,f64,native,full,8x8,3,15,0.262625,0.002120,ok
+small,grad_sum_eigh,vjp,f64,native,full,8x8,3,15,0.072041,0.000324,ok
+small,grad_sum_lu,jvp,f64,native,full,8x8,3,15,0.918755,0.011395,ok
+small,grad_sum_lu,vjp,f64,native,full,8x8,3,15,0.174006,0.001642,ok
+small,grad_sum_solve,jvp,f64,native,full,"8x8,rhs=1",3,15,0.165264,0.001738,ok
+small,grad_sum_solve,vjp,f64,native,full,"8x8,rhs=1",3,15,0.069137,0.001104,ok
+small,matmul,primal,f64,native,full,16x16,3,15,0.004805,0.000046,ok
+small,einsum_ij_jk_ik,primal,f64,native,full,16x16,3,15,0.005175,0.000014,ok
+small,svd,primal,f64,native,full,16x16,3,15,0.062605,0.000235,ok
+small,qr,primal,f64,native,full,16x16,3,15,0.016219,0.000033,ok
+small,eigh,primal,f64,native,full,16x16,3,15,0.036978,0.000053,ok
+small,solve,primal,f64,native,full,"16x16,rhs=1",3,15,0.010840,0.000021,ok
+small,solve,primal,f64,native,full,"16x16,rhs=4",3,15,0.011148,0.000058,ok
+small,grad_sum_matmul,backward,f64,native,full,16x16,3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+small,grad_sum_svd_s,backward,f64,native,full,16x16,3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+small,grad_sum_solve,backward,f64,native,full,"16x16,rhs=1",3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+small,grad_sum_svd_s,jvp,f64,native,full,16x16,3,15,0.320543,0.006622,ok
+small,grad_sum_svd_s,vjp,f64,native,full,16x16,3,15,0.116947,0.000486,ok
+small,grad_sum_qr,jvp,f64,native,full,16x16,3,15,1.335341,0.005049,ok
+small,grad_sum_qr,vjp,f64,native,full,16x16,3,15,0.163555,0.002156,ok
+small,grad_sum_eigh,jvp,f64,native,full,16x16,3,15,0.309405,0.003603,ok
+small,grad_sum_eigh,vjp,f64,native,full,16x16,3,15,0.096323,0.001435,ok
+small,grad_sum_lu,jvp,f64,native,full,16x16,3,15,0.931132,0.010710,ok
+small,grad_sum_lu,vjp,f64,native,full,16x16,3,15,0.185074,0.001557,ok
+small,grad_sum_solve,jvp,f64,native,full,"16x16,rhs=1",3,15,0.171886,0.004849,ok
+small,grad_sum_solve,vjp,f64,native,full,"16x16,rhs=1",3,15,0.072218,0.000954,ok
+small,matmul,primal,f64,native,full,32x32,3,15,0.007477,0.000024,ok
+small,einsum_ij_jk_ik,primal,f64,native,full,32x32,3,15,0.007827,0.000050,ok
+small,svd,primal,f64,native,full,32x32,3,15,0.213069,0.000438,ok
+small,qr,primal,f64,native,full,32x32,3,15,0.039679,0.000389,ok
+small,eigh,primal,f64,native,full,32x32,3,15,0.123324,0.000133,ok
+small,solve,primal,f64,native,full,"32x32,rhs=1",3,15,0.015126,0.000063,ok
+small,solve,primal,f64,native,full,"32x32,rhs=4",3,15,0.015585,0.000103,ok
+small,grad_sum_matmul,backward,f64,native,full,32x32,3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+small,grad_sum_svd_s,backward,f64,native,full,32x32,3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+small,grad_sum_solve,backward,f64,native,full,"32x32,rhs=1",3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+small,grad_sum_svd_s,jvp,f64,native,full,32x32,3,15,0.640080,0.003476,ok
+small,grad_sum_svd_s,vjp,f64,native,full,32x32,3,15,0.276539,0.003490,ok
+small,grad_sum_qr,jvp,f64,native,full,32x32,3,15,1.398213,0.015133,ok
+small,grad_sum_qr,vjp,f64,native,full,32x32,3,15,0.224827,0.001616,ok
+small,grad_sum_eigh,jvp,f64,native,full,32x32,3,15,0.501098,0.002594,ok
+small,grad_sum_eigh,vjp,f64,native,full,32x32,3,15,0.192370,0.001469,ok
+small,grad_sum_lu,jvp,f64,native,full,32x32,3,15,0.984074,0.009896,ok
+small,grad_sum_lu,vjp,f64,native,full,32x32,3,15,0.227502,0.001546,ok
+small,grad_sum_solve,jvp,f64,native,full,"32x32,rhs=1",3,15,0.181469,0.004215,ok
+small,grad_sum_solve,vjp,f64,native,full,"32x32,rhs=1",3,15,0.079575,0.000575,ok
+large,matmul,primal,f64,native,full,128x128,3,15,0.051397,0.000194,ok
+large,matmul,primal,f64,native,full,256x256,3,15,0.298766,0.000880,ok
+large,matmul,primal,f64,native,full,512x512,3,15,2.193228,0.006643,ok
+large,matmul,primal,f64,native,full,1024x1024,3,15,17.458008,0.025148,ok
+large,matmul_rect,primal,f64,native,full,1024x256 * 256x1024,3,15,4.331836,0.013445,ok
+large,matmul_rect,primal,f64,native,full,256x1024 * 1024x256,3,15,1.169045,0.004618,ok
+large,svd,primal,f64,native,full,64x64,3,15,0.828914,0.001480,ok
+large,qr,primal,f64,native,full,64x64,3,15,0.136209,0.000748,ok
+large,eigh,primal,f64,native,full,64x64,3,15,0.448946,0.000807,ok
+large,solve,primal,f64,native,full,"64x64,rhs=1",3,15,0.034152,0.000132,ok
+large,solve,primal,f64,native,full,"64x64,rhs=16",3,15,0.043705,0.000228,ok
+large,solve,primal,f64,native,full,"64x64,rhs=64",3,15,0.081192,0.000531,ok
+large,svd,primal,f64,native,full,128x128,3,15,3.291622,0.006803,ok
+large,qr,primal,f64,native,full,128x128,3,15,0.557015,0.000480,ok
+large,eigh,primal,f64,native,full,128x128,3,15,2.211413,0.007006,ok
+large,solve,primal,f64,native,full,"128x128,rhs=1",3,15,0.107554,0.000440,ok
+large,solve,primal,f64,native,full,"128x128,rhs=16",3,15,0.134411,0.003096,ok
+large,solve,primal,f64,native,full,"128x128,rhs=64",3,15,0.223397,0.005841,ok
+large,svd,primal,f64,native,full,256x256,3,15,17.938536,0.072866,ok
+large,qr,primal,f64,native,full,256x256,3,15,1.397014,0.004145,ok
+large,eigh,primal,f64,native,full,256x256,3,15,9.503271,0.034084,ok
+large,solve,primal,f64,native,full,"256x256,rhs=1",3,15,0.404002,0.000744,ok
+large,solve,primal,f64,native,full,"256x256,rhs=16",3,15,0.485838,0.005490,ok
+large,solve,primal,f64,native,full,"256x256,rhs=64",3,15,0.731387,0.008957,ok
+large,svd,primal,f64,native,full,512x512,3,15,44.769941,0.103293,ok
+large,qr,primal,f64,native,full,512x512,3,15,7.147698,0.007786,ok
+large,eigh,primal,f64,native,full,512x512,3,15,23.378031,0.032310,ok
+large,solve,primal,f64,native,full,"512x512,rhs=1",3,15,1.781660,0.033063,ok
+large,solve,primal,f64,native,full,"512x512,rhs=16",3,15,2.007722,0.014807,ok
+large,solve,primal,f64,native,full,"512x512,rhs=64",3,15,2.777320,0.047931,ok
+large,svd,primal,f64,native,full,1024x1024,3,15,257.153439,0.689596,ok
+large,qr,primal,f64,native,full,1024x1024,3,15,42.902239,0.112580,ok
+large,eigh,primal,f64,native,full,1024x1024,3,15,111.910464,0.279923,ok
+large,solve,primal,f64,native,full,"1024x1024,rhs=1",3,15,9.102522,0.037380,ok
+large,solve,primal,f64,native,full,"1024x1024,rhs=16",3,15,9.786670,0.043802,ok
+large,solve,primal,f64,native,full,"1024x1024,rhs=64",3,15,11.712468,0.023445,ok
+large,grad_sum_matmul,primal,f64,native,full,64x64,3,15,0.030594,0.000500,ok
+large,grad_sum_matmul,backward,f64,native,full,64x64,3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+large,grad_sum_svd_s,backward,f64,native,full,64x64,3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+large,grad_sum_solve,backward,f64,native,full,"64x64,rhs=1",3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+large,grad_sum_matmul,primal,f64,native,full,128x128,3,15,0.079136,0.003342,ok
+large,grad_sum_matmul,backward,f64,native,full,128x128,3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+large,grad_sum_svd_s,backward,f64,native,full,128x128,3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+large,grad_sum_solve,backward,f64,native,full,"128x128,rhs=1",3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+large,grad_sum_matmul,primal,f64,native,full,256x256,3,15,0.392273,0.001529,ok
+large,grad_sum_matmul,backward,f64,native,full,256x256,3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+large,grad_sum_svd_s,backward,f64,native,full,256x256,3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+large,grad_sum_solve,backward,f64,native,full,"256x256,rhs=1",3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+large,grad_sum_matmul,primal,f64,native,full,512x512,3,15,2.515962,0.038993,ok
+large,grad_sum_matmul,backward,f64,native,full,512x512,3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+large,grad_sum_svd_s,backward,f64,native,full,512x512,3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+large,grad_sum_solve,backward,f64,native,full,"512x512,rhs=1",3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+large,grad_sum_matmul,primal,f64,native,full,1024x1024,3,15,19.179293,0.031789,ok
+large,grad_sum_matmul,backward,f64,native,full,1024x1024,3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+large,grad_sum_svd_s,backward,f64,native,full,1024x1024,3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+large,grad_sum_solve,backward,f64,native,full,"1024x1024,rhs=1",3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+large,grad_sum_svd_s,jvp,f64,native,full,256x256,3,15,37.515800,0.071022,ok
+large,grad_sum_svd_s,vjp,f64,native,full,256x256,3,15,18.816935,0.074800,ok
+large,grad_sum_qr,jvp,f64,native,full,256x256,3,15,7.913008,0.029004,ok
+large,grad_sum_qr,vjp,f64,native,full,256x256,3,15,5.056900,0.016290,ok
+large,grad_sum_eigh,jvp,f64,native,full,256x256,3,15,20.388803,0.062837,ok
+large,grad_sum_eigh,vjp,f64,native,full,256x256,3,15,10.416045,0.032119,ok
+large,grad_sum_lu,jvp,f64,native,full,256x256,3,15,5.794488,0.071554,ok
+large,grad_sum_lu,vjp,f64,native,full,256x256,3,15,4.400659,0.055504,ok
+large,grad_sum_solve,jvp,f64,native,full,"256x256,rhs=1",3,15,1.158409,0.041918,ok
+large,grad_sum_solve,vjp,f64,native,full,"256x256,rhs=1",3,15,0.605058,0.016270,ok
+large,grad_sum_svd_s,jvp,f64,native,full,512x512,3,15,95.203232,0.301213,ok
+large,grad_sum_svd_s,vjp,f64,native,full,512x512,3,15,50.124370,0.208981,ok
+large,grad_sum_qr,jvp,f64,native,full,512x512,3,15,40.770019,0.173334,ok
+large,grad_sum_qr,vjp,f64,native,full,512x512,3,15,31.902637,0.061244,ok
+large,grad_sum_eigh,jvp,f64,native,full,512x512,3,15,53.203904,0.194054,ok
+large,grad_sum_eigh,vjp,f64,native,full,512x512,3,15,29.360987,0.223297,ok
+large,grad_sum_lu,jvp,f64,native,full,512x512,3,15,29.778477,0.105437,ok
+large,grad_sum_lu,vjp,f64,native,full,512x512,3,15,27.230485,0.112891,ok
+large,grad_sum_solve,jvp,f64,native,full,"512x512,rhs=1",3,15,4.340882,0.133210,ok
+large,grad_sum_solve,vjp,f64,native,full,"512x512,rhs=1",3,15,2.345713,0.088155,ok
+large,grad_sum_svd_s,jvp,f64,native,full,1024x1024,3,15,567.499714,11.753539,ok
+large,grad_sum_svd_s,vjp,f64,native,full,1024x1024,3,15,295.188544,0.525044,ok
+large,grad_sum_qr,jvp,f64,native,full,1024x1024,3,15,279.669699,0.611855,ok
+large,grad_sum_qr,vjp,f64,native,full,1024x1024,3,15,233.670573,0.668466,ok
+large,grad_sum_eigh,jvp,f64,native,full,1024x1024,3,15,264.628833,0.985253,ok
+large,grad_sum_eigh,vjp,f64,native,full,1024x1024,3,15,150.893240,0.325462,ok
+large,grad_sum_lu,jvp,f64,native,full,1024x1024,3,15,214.406417,0.982496,ok
+large,grad_sum_lu,vjp,f64,native,full,1024x1024,3,15,199.116489,0.376934,ok
+large,grad_sum_solve,jvp,f64,native,full,"1024x1024,rhs=1",3,15,21.910563,0.170678,ok
+large,grad_sum_solve,vjp,f64,native,full,"1024x1024,rhs=1",3,15,11.595560,0.106438,ok
+batched,batched_matmul_ikb_kjb_ijb,primal,f64,native,full,2x2xbatch16 (native batch layout),3,15,0.006862,0.000053,ok
+batched,batched_svd,primal,f64,native,full,2x2xbatch16 (native batch layout),3,15,0.027224,0.000049,ok
+batched,batched_qr,primal,f64,native,full,2x2xbatch16 (native batch layout),3,15,0.011466,0.000020,ok
+batched,batched_eigh,primal,f64,native,full,2x2xbatch16 (native batch layout),3,15,0.014918,0.000079,ok
+batched,batched_solve,primal,f64,native,full,"2x2xbatch16 (native batch layout),rhs=1",3,15,0.011124,0.000091,ok
+batched,grad_sum_batched_matmul,backward,f64,native,full,2x2xbatch16 (native batch layout),3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+batched,grad_sum_batched_solve,backward,f64,native,full,"2x2xbatch16 (native batch layout),rhs=1",3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+batched,batched_matmul_ikb_kjb_ijb,primal,f64,native,full,4x4xbatch16 (native batch layout),3,15,0.008955,0.002583,ok
+batched,batched_svd,primal,f64,native,full,4x4xbatch16 (native batch layout),3,15,0.087161,0.023652,ok
+batched,batched_qr,primal,f64,native,full,4x4xbatch16 (native batch layout),3,15,0.019230,0.000832,ok
+batched,batched_eigh,primal,f64,native,full,4x4xbatch16 (native batch layout),3,15,0.049632,0.000230,ok
+batched,batched_solve,primal,f64,native,full,"4x4xbatch16 (native batch layout),rhs=1",3,15,0.012881,0.000045,ok
+batched,grad_sum_batched_matmul,backward,f64,native,full,4x4xbatch16 (native batch layout),3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+batched,grad_sum_batched_solve,backward,f64,native,full,"4x4xbatch16 (native batch layout),rhs=1",3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+batched,batched_matmul_ikb_kjb_ijb,primal,f64,native,full,8x8xbatch16 (native batch layout),3,15,0.007812,0.000077,ok
+batched,batched_svd,primal,f64,native,full,8x8xbatch16 (native batch layout),3,15,0.239577,0.000522,ok
+batched,batched_qr,primal,f64,native,full,8x8xbatch16 (native batch layout),3,15,0.054895,0.017985,ok
+batched,batched_eigh,primal,f64,native,full,8x8xbatch16 (native batch layout),3,15,0.159906,0.037275,ok
+batched,batched_solve,primal,f64,native,full,"8x8xbatch16 (native batch layout),rhs=1",3,15,0.026273,0.010551,ok
+batched,grad_sum_batched_matmul,backward,f64,native,full,8x8xbatch16 (native batch layout),3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+batched,grad_sum_batched_solve,backward,f64,native,full,"8x8xbatch16 (native batch layout),rhs=1",3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+batched,batched_matmul_ikb_kjb_ijb,primal,f64,native,full,16x16xbatch16 (native batch layout),3,15,0.007628,0.000135,ok
+batched,batched_svd,primal,f64,native,full,16x16xbatch16 (native batch layout),3,15,0.230901,0.000740,ok
+batched,batched_qr,primal,f64,native,full,16x16xbatch16 (native batch layout),3,15,0.045847,0.000826,ok
+batched,batched_eigh,primal,f64,native,full,16x16xbatch16 (native batch layout),3,15,0.133728,0.000481,ok
+batched,batched_solve,primal,f64,native,full,"16x16xbatch16 (native batch layout),rhs=1",3,15,0.044606,0.000106,ok
+batched,grad_sum_batched_matmul,backward,f64,native,full,16x16xbatch16 (native batch layout),3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+batched,grad_sum_batched_solve,backward,f64,native,full,"16x16xbatch16 (native batch layout),rhs=1",3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+batched,batched_matmul_ikb_kjb_ijb,primal,f64,native,full,2x2xbatch64 (native batch layout),3,15,0.013865,0.000319,ok
+batched,batched_svd,primal,f64,native,full,2x2xbatch64 (native batch layout),3,15,0.086760,0.000204,ok
+batched,batched_qr,primal,f64,native,full,2x2xbatch64 (native batch layout),3,15,0.026168,0.000382,ok
+batched,batched_eigh,primal,f64,native,full,2x2xbatch64 (native batch layout),3,15,0.039084,0.000101,ok
+batched,batched_solve,primal,f64,native,full,"2x2xbatch64 (native batch layout),rhs=1",3,15,0.020685,0.000095,ok
+batched,grad_sum_batched_matmul,backward,f64,native,full,2x2xbatch64 (native batch layout),3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+batched,grad_sum_batched_solve,backward,f64,native,full,"2x2xbatch64 (native batch layout),rhs=1",3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+batched,batched_matmul_ikb_kjb_ijb,primal,f64,native,full,4x4xbatch64 (native batch layout),3,15,0.014881,0.000135,ok
+batched,batched_svd,primal,f64,native,full,4x4xbatch64 (native batch layout),3,15,0.295088,0.001100,ok
+batched,batched_qr,primal,f64,native,full,4x4xbatch64 (native batch layout),3,15,0.057215,0.000099,ok
+batched,batched_eigh,primal,f64,native,full,4x4xbatch64 (native batch layout),3,15,0.188339,0.000424,ok
+batched,batched_solve,primal,f64,native,full,"4x4xbatch64 (native batch layout),rhs=1",3,15,0.027672,0.000073,ok
+batched,grad_sum_batched_matmul,backward,f64,native,full,4x4xbatch64 (native batch layout),3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+batched,grad_sum_batched_solve,backward,f64,native,full,"4x4xbatch64 (native batch layout),rhs=1",3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+batched,batched_matmul_ikb_kjb_ijb,primal,f64,native,full,8x8xbatch64 (native batch layout),3,15,0.008619,0.000088,ok
+batched,batched_svd,primal,f64,native,full,8x8xbatch64 (native batch layout),3,15,0.244382,0.001629,ok
+batched,batched_qr,primal,f64,native,full,8x8xbatch64 (native batch layout),3,15,0.165120,0.000251,ok
+batched,batched_eigh,primal,f64,native,full,8x8xbatch64 (native batch layout),3,15,0.146023,0.000361,ok
+batched,batched_solve,primal,f64,native,full,"8x8xbatch64 (native batch layout),rhs=1",3,15,0.062920,0.000279,ok
+batched,grad_sum_batched_matmul,backward,f64,native,full,8x8xbatch64 (native batch layout),3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+batched,grad_sum_batched_solve,backward,f64,native,full,"8x8xbatch64 (native batch layout),rhs=1",3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+batched,batched_matmul_ikb_kjb_ijb,primal,f64,native,full,16x16xbatch64 (native batch layout),3,15,0.012778,0.000285,ok
+batched,batched_svd,primal,f64,native,full,16x16xbatch64 (native batch layout),3,15,0.909422,0.001133,ok
+batched,batched_qr,primal,f64,native,full,16x16xbatch64 (native batch layout),3,15,0.157272,0.000929,ok
+batched,batched_eigh,primal,f64,native,full,16x16xbatch64 (native batch layout),3,15,0.520349,0.000793,ok
+batched,batched_solve,primal,f64,native,full,"16x16xbatch64 (native batch layout),rhs=1",3,15,0.045826,0.000254,ok
+batched,grad_sum_batched_matmul,backward,f64,native,full,16x16xbatch64 (native batch layout),3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+batched,grad_sum_batched_solve,backward,f64,native,full,"16x16xbatch64 (native batch layout),rhs=1",3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+batched,batched_matmul_ikb_kjb_ijb,primal,f64,native,full,2x2xbatch256 (native batch layout),3,15,0.040128,0.000099,ok
+batched,batched_svd,primal,f64,native,full,2x2xbatch256 (native batch layout),3,15,0.323441,0.000402,ok
+batched,batched_qr,primal,f64,native,full,2x2xbatch256 (native batch layout),3,15,0.083835,0.000154,ok
+batched,batched_eigh,primal,f64,native,full,2x2xbatch256 (native batch layout),3,15,0.135761,0.000195,ok
+batched,batched_solve,primal,f64,native,full,"2x2xbatch256 (native batch layout),rhs=1",3,15,0.058848,0.000238,ok
+batched,grad_sum_batched_matmul,backward,f64,native,full,2x2xbatch256 (native batch layout),3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+batched,grad_sum_batched_solve,backward,f64,native,full,"2x2xbatch256 (native batch layout),rhs=1",3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+batched,batched_matmul_ikb_kjb_ijb,primal,f64,native,full,4x4xbatch256 (native batch layout),3,15,0.044585,0.000578,ok
+batched,batched_svd,primal,f64,native,full,4x4xbatch256 (native batch layout),3,15,1.154212,0.003198,ok
+batched,batched_qr,primal,f64,native,full,4x4xbatch256 (native batch layout),3,15,0.206412,0.000390,ok
+batched,batched_eigh,primal,f64,native,full,4x4xbatch256 (native batch layout),3,15,0.735459,0.001211,ok
+batched,batched_solve,primal,f64,native,full,"4x4xbatch256 (native batch layout),rhs=1",3,15,0.087160,0.000306,ok
+batched,grad_sum_batched_matmul,backward,f64,native,full,4x4xbatch256 (native batch layout),3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+batched,grad_sum_batched_solve,backward,f64,native,full,"4x4xbatch256 (native batch layout),rhs=1",3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+batched,batched_matmul_ikb_kjb_ijb,primal,f64,native,full,8x8xbatch256 (native batch layout),3,15,0.017307,0.000181,ok
+batched,batched_svd,primal,f64,native,full,8x8xbatch256 (native batch layout),3,15,0.953696,0.005443,ok
+batched,batched_qr,primal,f64,native,full,8x8xbatch256 (native batch layout),3,15,0.169559,0.000454,ok
+batched,batched_eigh,primal,f64,native,full,8x8xbatch256 (native batch layout),3,15,0.563744,0.002130,ok
+batched,batched_solve,primal,f64,native,full,"8x8xbatch256 (native batch layout),rhs=1",3,15,0.064731,0.000473,ok
+batched,grad_sum_batched_matmul,backward,f64,native,full,8x8xbatch256 (native batch layout),3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+batched,grad_sum_batched_solve,backward,f64,native,full,"8x8xbatch256 (native batch layout),rhs=1",3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+batched,batched_matmul_ikb_kjb_ijb,primal,f64,native,full,16x16xbatch256 (native batch layout),3,15,0.033288,0.000863,ok
+batched,batched_svd,primal,f64,native,full,16x16xbatch256 (native batch layout),3,15,3.613690,0.011176,ok
+batched,batched_qr,primal,f64,native,full,16x16xbatch256 (native batch layout),3,15,0.604382,0.001527,ok
+batched,batched_eigh,primal,f64,native,full,16x16xbatch256 (native batch layout),3,15,2.072396,0.005217,ok
+batched,batched_solve,primal,f64,native,full,"16x16xbatch256 (native batch layout),rhs=1",3,15,0.157388,0.000940,ok
+batched,grad_sum_batched_matmul,backward,f64,native,full,16x16xbatch256 (native batch layout),3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+batched,grad_sum_batched_solve,backward,f64,native,full,"16x16xbatch256 (native batch layout),rhs=1",3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+batched,batched_matmul_ikb_kjb_ijb,primal,f64,native,full,2x2xbatch1024 (native batch layout),3,15,0.145541,0.000753,ok
+batched,batched_svd,primal,f64,native,full,2x2xbatch1024 (native batch layout),3,15,1.270897,0.001741,ok
+batched,batched_qr,primal,f64,native,full,2x2xbatch1024 (native batch layout),3,15,0.314299,0.000701,ok
+batched,batched_eigh,primal,f64,native,full,2x2xbatch1024 (native batch layout),3,15,0.520737,0.001103,ok
+batched,batched_solve,primal,f64,native,full,"2x2xbatch1024 (native batch layout),rhs=1",3,15,0.209379,0.000520,ok
+batched,grad_sum_batched_matmul,backward,f64,native,full,2x2xbatch1024 (native batch layout),3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+batched,grad_sum_batched_solve,backward,f64,native,full,"2x2xbatch1024 (native batch layout),rhs=1",3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+batched,batched_matmul_ikb_kjb_ijb,primal,f64,native,full,4x4xbatch1024 (native batch layout),3,15,0.044989,0.000189,ok
+batched,batched_svd,primal,f64,native,full,4x4xbatch1024 (native batch layout),3,15,1.165196,0.008612,ok
+batched,batched_qr,primal,f64,native,full,4x4xbatch1024 (native batch layout),3,15,0.212428,0.001623,ok
+batched,batched_eigh,primal,f64,native,full,4x4xbatch1024 (native batch layout),3,15,0.736712,0.001622,ok
+batched,batched_solve,primal,f64,native,full,"4x4xbatch1024 (native batch layout),rhs=1",3,15,0.089598,0.000428,ok
+batched,grad_sum_batched_matmul,backward,f64,native,full,4x4xbatch1024 (native batch layout),3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+batched,grad_sum_batched_solve,backward,f64,native,full,"4x4xbatch1024 (native batch layout),rhs=1",3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+batched,batched_matmul_ikb_kjb_ijb,primal,f64,native,full,8x8xbatch1024 (native batch layout),3,15,0.050021,0.000673,ok
+batched,batched_svd,primal,f64,native,full,8x8xbatch1024 (native batch layout),3,15,3.771625,0.005916,ok
+batched,batched_qr,primal,f64,native,full,8x8xbatch1024 (native batch layout),3,15,0.647882,0.001244,ok
+batched,batched_eigh,primal,f64,native,full,8x8xbatch1024 (native batch layout),3,15,2.230942,0.003055,ok
+batched,batched_solve,primal,f64,native,full,"8x8xbatch1024 (native batch layout),rhs=1",3,15,0.246200,0.000949,ok
+batched,grad_sum_batched_matmul,backward,f64,native,full,8x8xbatch1024 (native batch layout),3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+batched,grad_sum_batched_solve,backward,f64,native,full,"8x8xbatch1024 (native batch layout),rhs=1",3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+batched,batched_matmul_ikb_kjb_ijb,primal,f64,native,full,16x16xbatch1024 (native batch layout),3,15,0.115546,0.000772,ok
+batched,batched_svd,primal,f64,native,full,16x16xbatch1024 (native batch layout),3,15,14.608398,0.013756,ok
+batched,batched_qr,primal,f64,native,full,16x16xbatch1024 (native batch layout),3,15,2.487597,0.006633,ok
+batched,batched_eigh,primal,f64,native,full,16x16xbatch1024 (native batch layout),3,15,8.380544,1.032238,ok
+batched,batched_solve,primal,f64,native,full,"16x16xbatch1024 (native batch layout),rhs=1",3,15,0.870857,0.008757,ok
+batched,grad_sum_batched_matmul,backward,f64,native,full,16x16xbatch1024 (native batch layout),3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+batched,grad_sum_batched_solve,backward,f64,native,full,"16x16xbatch1024 (native batch layout),rhs=1",3,15,,,unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled
+small,matmul,primal,f64,tenferro-trace,full,64x64,3,15,0.016668,0.000424,ok
+small,matmul,primal,f64,tenferro-trace,full,2x2,3,15,0.005116,0.000035,ok
+small,einsum_ij_jk_ik,primal,f64,tenferro-trace,full,2x2,3,15,0.009643,0.000015,ok
+small,svd,primal,f64,tenferro-trace,full,2x2,3,15,0.007755,0.000023,ok
+small,qr,primal,f64,tenferro-trace,full,2x2,3,15,0.005733,0.000027,ok
+small,eigh,primal,f64,tenferro-trace,full,2x2,3,15,0.006088,0.000010,ok
+small,solve,primal,f64,tenferro-trace,full,"2x2,rhs=1",3,15,0.010124,0.000028,ok
+small,solve,primal,f64,tenferro-trace,full,"2x2,rhs=4",3,15,0.010235,0.000023,ok
+small,grad_sum_matmul,backward,f64,tenferro-trace,full,2x2,3,15,0.015835,0.000055,ok
+small,grad_sum_svd_s,backward,f64,tenferro-trace,full,2x2,3,15,0.022628,0.000190,ok
+small,grad_sum_solve,backward,f64,tenferro-trace,full,"2x2,rhs=1",3,15,0.048017,0.000111,ok
+small,grad_sum_svd_s,jvp,f64,tenferro-trace,full,2x2,3,15,0.023249,0.000083,ok
+small,grad_sum_svd_s,vjp,f64,tenferro-trace,full,2x2,3,15,0.022334,0.000072,ok
+small,grad_sum_qr,jvp,f64,tenferro-trace,full,2x2,3,15,0.054071,0.000308,ok
+small,grad_sum_qr,vjp,f64,tenferro-trace,full,2x2,3,15,0.053213,0.000056,ok
+small,grad_sum_eigh,jvp,f64,tenferro-trace,full,2x2,3,15,0.032707,0.000076,ok
+small,grad_sum_eigh,vjp,f64,tenferro-trace,full,2x2,3,15,0.031900,0.000085,ok
+small,grad_sum_lu,jvp,f64,tenferro-trace,full,2x2,3,15,0.041886,0.000082,ok
+small,grad_sum_lu,vjp,f64,tenferro-trace,full,2x2,3,15,0.038433,0.000350,ok
+small,grad_sum_solve,jvp,f64,tenferro-trace,full,"2x2,rhs=1",3,15,0.032872,0.000032,ok
+small,grad_sum_solve,vjp,f64,tenferro-trace,full,"2x2,rhs=1",3,15,0.033037,0.000058,ok
+small,matmul,primal,f64,tenferro-trace,full,4x4,3,15,0.005122,0.000015,ok
+small,einsum_ij_jk_ik,primal,f64,tenferro-trace,full,4x4,3,15,0.009809,0.000043,ok
+small,svd,primal,f64,tenferro-trace,full,4x4,3,15,0.010568,0.000029,ok
+small,qr,primal,f64,tenferro-trace,full,4x4,3,15,0.006299,0.000013,ok
+small,eigh,primal,f64,tenferro-trace,full,4x4,3,15,0.008170,0.000016,ok
+small,solve,primal,f64,tenferro-trace,full,"4x4,rhs=1",3,15,0.010275,0.000022,ok
+small,solve,primal,f64,tenferro-trace,full,"4x4,rhs=4",3,15,0.010306,0.000011,ok
+small,grad_sum_matmul,backward,f64,tenferro-trace,full,4x4,3,15,0.015954,0.000058,ok
+small,grad_sum_svd_s,backward,f64,tenferro-trace,full,4x4,3,15,0.028050,0.000192,ok
+small,grad_sum_solve,backward,f64,tenferro-trace,full,"4x4,rhs=1",3,15,0.047578,0.000106,ok
+small,grad_sum_svd_s,jvp,f64,tenferro-trace,full,4x4,3,15,0.028773,0.000117,ok
+small,grad_sum_svd_s,vjp,f64,tenferro-trace,full,4x4,3,15,0.027788,0.000175,ok
+small,grad_sum_qr,jvp,f64,tenferro-trace,full,4x4,3,15,0.055380,0.000115,ok
+small,grad_sum_qr,vjp,f64,tenferro-trace,full,4x4,3,15,0.054775,0.000058,ok
+small,grad_sum_eigh,jvp,f64,tenferro-trace,full,4x4,3,15,0.036737,0.000105,ok
+small,grad_sum_eigh,vjp,f64,tenferro-trace,full,4x4,3,15,0.035763,0.000078,ok
+small,grad_sum_lu,jvp,f64,tenferro-trace,full,4x4,3,15,0.042621,0.000421,ok
+small,grad_sum_lu,vjp,f64,tenferro-trace,full,4x4,3,15,0.039354,0.000125,ok
+small,grad_sum_solve,jvp,f64,tenferro-trace,full,"4x4,rhs=1",3,15,0.033289,0.000044,ok
+small,grad_sum_solve,vjp,f64,tenferro-trace,full,"4x4,rhs=1",3,15,0.033249,0.000059,ok
+small,matmul,primal,f64,tenferro-trace,full,8x8,3,15,0.005187,0.000014,ok
+small,einsum_ij_jk_ik,primal,f64,tenferro-trace,full,8x8,3,15,0.009787,0.000028,ok
+small,svd,primal,f64,tenferro-trace,full,8x8,3,15,0.020645,0.000037,ok
+small,qr,primal,f64,tenferro-trace,full,8x8,3,15,0.008205,0.000024,ok
+small,eigh,primal,f64,tenferro-trace,full,8x8,3,15,0.014150,0.000069,ok
+small,solve,primal,f64,tenferro-trace,full,"8x8,rhs=1",3,15,0.010975,0.000041,ok
+small,solve,primal,f64,tenferro-trace,full,"8x8,rhs=4",3,15,0.010997,0.000024,ok
+small,grad_sum_matmul,backward,f64,tenferro-trace,full,8x8,3,15,0.015954,0.000044,ok
+small,grad_sum_svd_s,backward,f64,tenferro-trace,full,8x8,3,15,0.043838,0.000111,ok
+small,grad_sum_solve,backward,f64,tenferro-trace,full,"8x8,rhs=1",3,15,0.051958,0.000111,ok
+small,grad_sum_svd_s,jvp,f64,tenferro-trace,full,8x8,3,15,0.044288,0.000039,ok
+small,grad_sum_svd_s,vjp,f64,tenferro-trace,full,8x8,3,15,0.043397,0.000085,ok
+small,grad_sum_qr,jvp,f64,tenferro-trace,full,8x8,3,15,0.059519,0.000118,ok
+small,grad_sum_qr,vjp,f64,tenferro-trace,full,8x8,3,15,0.058775,0.000140,ok
+small,grad_sum_eigh,jvp,f64,tenferro-trace,full,8x8,3,15,0.047865,0.000296,ok
+small,grad_sum_eigh,vjp,f64,tenferro-trace,full,8x8,3,15,0.047184,0.000346,ok
+small,grad_sum_lu,jvp,f64,tenferro-trace,full,8x8,3,15,0.044514,0.000047,ok
+small,grad_sum_lu,vjp,f64,tenferro-trace,full,8x8,3,15,0.041273,0.000126,ok
+small,grad_sum_solve,jvp,f64,tenferro-trace,full,"8x8,rhs=1",3,15,0.034709,0.000040,ok
+small,grad_sum_solve,vjp,f64,tenferro-trace,full,"8x8,rhs=1",3,15,0.034809,0.000093,ok
+small,matmul,primal,f64,tenferro-trace,full,16x16,3,15,0.005460,0.000016,ok
+small,einsum_ij_jk_ik,primal,f64,tenferro-trace,full,16x16,3,15,0.010141,0.000051,ok
+small,svd,primal,f64,tenferro-trace,full,16x16,3,15,0.061190,0.000204,ok
+small,qr,primal,f64,tenferro-trace,full,16x16,3,15,0.015049,0.000099,ok
+small,eigh,primal,f64,tenferro-trace,full,16x16,3,15,0.035763,0.000170,ok
+small,solve,primal,f64,tenferro-trace,full,"16x16,rhs=1",3,15,0.012588,0.000024,ok
+small,solve,primal,f64,tenferro-trace,full,"16x16,rhs=4",3,15,0.012486,0.000028,ok
+small,grad_sum_matmul,backward,f64,tenferro-trace,full,16x16,3,15,0.017037,0.000076,ok
+small,grad_sum_svd_s,backward,f64,tenferro-trace,full,16x16,3,15,0.100487,0.000378,ok
+small,grad_sum_solve,backward,f64,tenferro-trace,full,"16x16,rhs=1",3,15,0.057747,0.000085,ok
+small,grad_sum_svd_s,jvp,f64,tenferro-trace,full,16x16,3,15,0.100435,0.000292,ok
+small,grad_sum_svd_s,vjp,f64,tenferro-trace,full,16x16,3,15,0.099563,0.000247,ok
+small,grad_sum_qr,jvp,f64,tenferro-trace,full,16x16,3,15,0.076966,0.000499,ok
+small,grad_sum_qr,vjp,f64,tenferro-trace,full,16x16,3,15,0.075429,0.000145,ok
+small,grad_sum_eigh,jvp,f64,tenferro-trace,full,16x16,3,15,0.086237,0.000371,ok
+small,grad_sum_eigh,vjp,f64,tenferro-trace,full,16x16,3,15,0.085443,0.000234,ok
+small,grad_sum_lu,jvp,f64,tenferro-trace,full,16x16,3,15,0.051341,0.000086,ok
+small,grad_sum_lu,vjp,f64,tenferro-trace,full,16x16,3,15,0.048279,0.000145,ok
+small,grad_sum_solve,jvp,f64,tenferro-trace,full,"16x16,rhs=1",3,15,0.038771,0.000125,ok
+small,grad_sum_solve,vjp,f64,tenferro-trace,full,"16x16,rhs=1",3,15,0.038601,0.000129,ok
+small,matmul,primal,f64,tenferro-trace,full,32x32,3,15,0.007660,0.000028,ok
+small,einsum_ij_jk_ik,primal,f64,tenferro-trace,full,32x32,3,15,0.012289,0.000048,ok
+small,svd,primal,f64,tenferro-trace,full,32x32,3,15,0.211517,0.001092,ok
+small,qr,primal,f64,tenferro-trace,full,32x32,3,15,0.039109,0.000282,ok
+small,eigh,primal,f64,tenferro-trace,full,32x32,3,15,0.121652,0.000213,ok
+small,solve,primal,f64,tenferro-trace,full,"32x32,rhs=1",3,15,0.016970,0.000107,ok
+small,solve,primal,f64,tenferro-trace,full,"32x32,rhs=4",3,15,0.016715,0.000153,ok
+small,grad_sum_matmul,backward,f64,tenferro-trace,full,32x32,3,15,0.024047,0.000033,ok
+small,grad_sum_svd_s,backward,f64,tenferro-trace,full,32x32,3,15,0.312138,0.000476,ok
+small,grad_sum_solve,backward,f64,tenferro-trace,full,"32x32,rhs=1",3,15,0.073239,0.000180,ok
+small,grad_sum_svd_s,jvp,f64,tenferro-trace,full,32x32,3,15,0.312635,0.000686,ok
+small,grad_sum_svd_s,vjp,f64,tenferro-trace,full,32x32,3,15,0.312353,0.000457,ok
+small,grad_sum_qr,jvp,f64,tenferro-trace,full,32x32,3,15,0.140252,0.000925,ok
+small,grad_sum_qr,vjp,f64,tenferro-trace,full,32x32,3,15,0.138703,0.000223,ok
+small,grad_sum_eigh,jvp,f64,tenferro-trace,full,32x32,3,15,0.242764,0.000543,ok
+small,grad_sum_eigh,vjp,f64,tenferro-trace,full,32x32,3,15,0.238458,0.000298,ok
+small,grad_sum_lu,jvp,f64,tenferro-trace,full,32x32,3,15,0.078012,0.000246,ok
+small,grad_sum_lu,vjp,f64,tenferro-trace,full,32x32,3,15,0.076366,0.000059,ok
+small,grad_sum_solve,jvp,f64,tenferro-trace,full,"32x32,rhs=1",3,15,0.049540,0.000104,ok
+small,grad_sum_solve,vjp,f64,tenferro-trace,full,"32x32,rhs=1",3,15,0.048148,0.000234,ok
+large,matmul,primal,f64,tenferro-trace,full,128x128,3,15,0.051975,0.000472,ok
+large,matmul,primal,f64,tenferro-trace,full,256x256,3,15,0.298085,0.001175,ok
+large,matmul,primal,f64,tenferro-trace,full,512x512,3,15,2.192436,0.005029,ok
+large,matmul,primal,f64,tenferro-trace,full,1024x1024,3,15,17.455505,0.008756,ok
+large,matmul_rect,primal,f64,tenferro-trace,full,1024x256 * 256x1024,3,15,4.326422,0.008425,ok
+large,matmul_rect,primal,f64,tenferro-trace,full,256x1024 * 1024x256,3,15,1.164946,0.003516,ok
+large,svd,primal,f64,tenferro-trace,full,64x64,3,15,0.824190,0.001554,ok
+large,qr,primal,f64,tenferro-trace,full,64x64,3,15,0.134367,0.000466,ok
+large,eigh,primal,f64,tenferro-trace,full,64x64,3,15,0.446961,0.000644,ok
+large,solve,primal,f64,tenferro-trace,full,"64x64,rhs=1",3,15,0.035476,0.000146,ok
+large,solve,primal,f64,tenferro-trace,full,"64x64,rhs=16",3,15,0.039289,0.000701,ok
+large,solve,primal,f64,tenferro-trace,full,"64x64,rhs=64",3,15,0.058469,0.000691,ok
+large,svd,primal,f64,tenferro-trace,full,128x128,3,15,3.271882,0.005395,ok
+large,qr,primal,f64,tenferro-trace,full,128x128,3,15,0.554516,0.002259,ok
+large,eigh,primal,f64,tenferro-trace,full,128x128,3,15,2.214391,0.024391,ok
+large,solve,primal,f64,tenferro-trace,full,"128x128,rhs=1",3,15,0.106531,0.000719,ok
+large,solve,primal,f64,tenferro-trace,full,"128x128,rhs=16",3,15,0.124533,0.002574,ok
+large,solve,primal,f64,tenferro-trace,full,"128x128,rhs=64",3,15,0.176520,0.002294,ok
+large,svd,primal,f64,tenferro-trace,full,256x256,3,15,17.913420,0.019927,ok
+large,qr,primal,f64,tenferro-trace,full,256x256,3,15,1.368098,0.003990,ok
+large,eigh,primal,f64,tenferro-trace,full,256x256,3,15,9.445493,0.013655,ok
+large,solve,primal,f64,tenferro-trace,full,"256x256,rhs=1",3,15,0.375999,0.009229,ok
+large,solve,primal,f64,tenferro-trace,full,"256x256,rhs=16",3,15,0.432829,0.011130,ok
+large,solve,primal,f64,tenferro-trace,full,"256x256,rhs=64",3,15,0.596604,0.003145,ok
+large,svd,primal,f64,tenferro-trace,full,512x512,3,15,44.735622,0.078317,ok
+large,qr,primal,f64,tenferro-trace,full,512x512,3,15,7.168690,0.106940,ok
+large,eigh,primal,f64,tenferro-trace,full,512x512,3,15,23.238677,0.048159,ok
+large,solve,primal,f64,tenferro-trace,full,"512x512,rhs=1",3,15,1.617802,0.016922,ok
+large,solve,primal,f64,tenferro-trace,full,"512x512,rhs=16",3,15,1.801034,0.021641,ok
+large,solve,primal,f64,tenferro-trace,full,"512x512,rhs=64",3,15,2.452541,0.012724,ok
+large,svd,primal,f64,tenferro-trace,full,1024x1024,3,15,241.401089,1.013606,ok
+large,qr,primal,f64,tenferro-trace,full,1024x1024,3,15,43.113971,0.887328,ok
+large,eigh,primal,f64,tenferro-trace,full,1024x1024,3,15,111.791210,0.407432,ok
+large,solve,primal,f64,tenferro-trace,full,"1024x1024,rhs=1",3,15,8.994460,0.028553,ok
+large,solve,primal,f64,tenferro-trace,full,"1024x1024,rhs=16",3,15,9.571618,0.041748,ok
+large,solve,primal,f64,tenferro-trace,full,"1024x1024,rhs=64",3,15,11.335123,0.039154,ok
+large,grad_sum_matmul,primal,f64,tenferro-trace,full,64x64,3,15,0.019315,0.000085,ok
+large,grad_sum_matmul,backward,f64,tenferro-trace,full,64x64,3,15,0.052950,0.000423,ok
+large,grad_sum_svd_s,backward,f64,tenferro-trace,full,64x64,3,15,1.215929,0.002707,ok
+large,grad_sum_solve,backward,f64,tenferro-trace,full,"64x64,rhs=1",3,15,0.138165,0.000517,ok
+large,grad_sum_matmul,primal,f64,tenferro-trace,full,128x128,3,15,0.055560,0.000161,ok
+large,grad_sum_matmul,backward,f64,tenferro-trace,full,128x128,3,15,0.157620,0.000286,ok
+large,grad_sum_svd_s,backward,f64,tenferro-trace,full,128x128,3,15,4.850124,0.010585,ok
+large,grad_sum_solve,backward,f64,tenferro-trace,full,"128x128,rhs=1",3,15,0.378985,0.001079,ok
+large,grad_sum_matmul,primal,f64,tenferro-trace,full,256x256,3,15,0.304264,0.000565,ok
+large,grad_sum_matmul,backward,f64,tenferro-trace,full,256x256,3,15,0.919538,0.001491,ok
+large,grad_sum_svd_s,backward,f64,tenferro-trace,full,256x256,3,15,27.137749,0.058279,ok
+large,grad_sum_solve,backward,f64,tenferro-trace,full,"256x256,rhs=1",3,15,1.249383,0.011316,ok
+large,grad_sum_matmul,primal,f64,tenferro-trace,full,512x512,3,15,2.204828,0.005490,ok
+large,grad_sum_matmul,backward,f64,tenferro-trace,full,512x512,3,15,6.700275,0.013906,ok
+large,grad_sum_svd_s,backward,f64,tenferro-trace,full,512x512,3,15,77.782104,0.197960,ok
+large,grad_sum_solve,backward,f64,tenferro-trace,full,"512x512,rhs=1",3,15,5.175186,0.041828,ok
+large,grad_sum_matmul,primal,f64,tenferro-trace,full,1024x1024,3,15,17.522138,0.027772,ok
+large,grad_sum_matmul,backward,f64,tenferro-trace,full,1024x1024,3,15,52.604125,0.084638,ok
+large,grad_sum_svd_s,backward,f64,tenferro-trace,full,1024x1024,3,15,429.050213,1.373177,ok
+large,grad_sum_solve,backward,f64,tenferro-trace,full,"1024x1024,rhs=1",3,15,29.585640,0.088336,ok
+large,grad_sum_svd_s,jvp,f64,tenferro-trace,full,256x256,3,15,27.124412,0.077736,ok
+large,grad_sum_svd_s,vjp,f64,tenferro-trace,full,256x256,3,15,27.136476,0.040215,ok
+large,grad_sum_qr,jvp,f64,tenferro-trace,full,256x256,3,15,4.234695,0.026429,ok
+large,grad_sum_qr,vjp,f64,tenferro-trace,full,256x256,3,15,4.230371,0.032109,ok
+large,grad_sum_eigh,jvp,f64,tenferro-trace,full,256x256,3,15,15.246768,0.035626,ok
+large,grad_sum_eigh,vjp,f64,tenferro-trace,full,256x256,3,15,15.264541,0.009798,ok
+large,grad_sum_lu,jvp,f64,tenferro-trace,full,256x256,3,15,2.885881,0.015805,ok
+large,grad_sum_lu,vjp,f64,tenferro-trace,full,256x256,3,15,2.980657,0.012543,ok
+large,grad_sum_solve,jvp,f64,tenferro-trace,full,"256x256,rhs=1",3,15,0.808998,0.005880,ok
+large,grad_sum_solve,vjp,f64,tenferro-trace,full,"256x256,rhs=1",3,15,0.818132,0.006150,ok
+large,grad_sum_svd_s,jvp,f64,tenferro-trace,full,512x512,3,15,77.584371,0.267069,ok
+large,grad_sum_svd_s,vjp,f64,tenferro-trace,full,512x512,3,15,77.900852,0.283319,ok
+large,grad_sum_qr,jvp,f64,tenferro-trace,full,512x512,3,15,25.082909,0.505835,ok
+large,grad_sum_qr,vjp,f64,tenferro-trace,full,512x512,3,15,24.122295,0.157154,ok
+large,grad_sum_eigh,jvp,f64,tenferro-trace,full,512x512,3,15,45.631811,1.081981,ok
+large,grad_sum_eigh,vjp,f64,tenferro-trace,full,512x512,3,15,45.188221,0.428040,ok
+large,grad_sum_lu,jvp,f64,tenferro-trace,full,512x512,3,15,16.219896,0.359872,ok
+large,grad_sum_lu,vjp,f64,tenferro-trace,full,512x512,3,15,16.692428,0.172744,ok
+large,grad_sum_solve,jvp,f64,tenferro-trace,full,"512x512,rhs=1",3,15,3.454913,0.056656,ok
+large,grad_sum_solve,vjp,f64,tenferro-trace,full,"512x512,rhs=1",3,15,3.476173,0.049493,ok
+large,grad_sum_svd_s,jvp,f64,tenferro-trace,full,1024x1024,3,15,406.783531,2.792204,ok
+large,grad_sum_svd_s,vjp,f64,tenferro-trace,full,1024x1024,3,15,429.215507,0.860846,ok
+large,grad_sum_qr,jvp,f64,tenferro-trace,full,1024x1024,3,15,159.958118,0.395689,ok
+large,grad_sum_qr,vjp,f64,tenferro-trace,full,1024x1024,3,15,159.224236,4.442288,ok
+large,grad_sum_eigh,jvp,f64,tenferro-trace,full,1024x1024,3,15,212.833799,0.509871,ok
+large,grad_sum_eigh,vjp,f64,tenferro-trace,full,1024x1024,3,15,212.407461,0.761251,ok
+large,grad_sum_lu,jvp,f64,tenferro-trace,full,1024x1024,3,15,104.322962,0.686353,ok
+large,grad_sum_lu,vjp,f64,tenferro-trace,full,1024x1024,3,15,107.345036,0.292647,ok
+large,grad_sum_solve,jvp,f64,tenferro-trace,full,"1024x1024,rhs=1",3,15,20.287270,0.034935,ok
+large,grad_sum_solve,vjp,f64,tenferro-trace,full,"1024x1024,rhs=1",3,15,19.584848,0.065973,ok
+batched,batched_matmul_ikb_kjb_ijb,primal,f64,tenferro-trace,full,2x2xbatch16 (native batch layout),3,15,0.007334,0.000016,ok
+batched,batched_svd,primal,f64,tenferro-trace,full,2x2xbatch16 (native batch layout),3,15,0.025680,0.000026,ok
+batched,batched_qr,primal,f64,tenferro-trace,full,2x2xbatch16 (native batch layout),3,15,0.009873,0.000033,ok
+batched,batched_eigh,primal,f64,tenferro-trace,full,2x2xbatch16 (native batch layout),3,15,0.013261,0.000038,ok
+batched,batched_solve,primal,f64,tenferro-trace,full,"2x2xbatch16 (native batch layout),rhs=1",3,15,0.012336,0.000027,ok
+batched,grad_sum_batched_matmul,backward,f64,tenferro-trace,full,2x2xbatch16 (native batch layout),3,15,0.022739,0.000048,ok
+batched,grad_sum_batched_solve,backward,f64,tenferro-trace,full,"2x2xbatch16 (native batch layout),rhs=1",3,15,0.059994,0.000113,ok
+batched,batched_matmul_ikb_kjb_ijb,primal,f64,tenferro-trace,full,4x4xbatch16 (native batch layout),3,15,0.007567,0.000023,ok
+batched,batched_svd,primal,f64,tenferro-trace,full,4x4xbatch16 (native batch layout),3,15,0.076476,0.000177,ok
+batched,batched_qr,primal,f64,tenferro-trace,full,4x4xbatch16 (native batch layout),3,15,0.017764,0.000012,ok
+batched,batched_eigh,primal,f64,tenferro-trace,full,4x4xbatch16 (native batch layout),3,15,0.049923,0.000066,ok
+batched,batched_solve,primal,f64,tenferro-trace,full,"4x4xbatch16 (native batch layout),rhs=1",3,15,0.014202,0.000029,ok
+batched,grad_sum_batched_matmul,backward,f64,tenferro-trace,full,4x4xbatch16 (native batch layout),3,15,0.023388,0.000033,ok
+batched,grad_sum_batched_solve,backward,f64,tenferro-trace,full,"4x4xbatch16 (native batch layout),rhs=1",3,15,0.065324,0.000098,ok
+batched,batched_matmul_ikb_kjb_ijb,primal,f64,tenferro-trace,full,8x8xbatch16 (native batch layout),3,15,0.007920,0.000030,ok
+batched,batched_svd,primal,f64,tenferro-trace,full,8x8xbatch16 (native batch layout),3,15,0.238306,0.000918,ok
+batched,batched_qr,primal,f64,tenferro-trace,full,8x8xbatch16 (native batch layout),3,15,0.044829,0.000101,ok
+batched,batched_eigh,primal,f64,tenferro-trace,full,8x8xbatch16 (native batch layout),3,15,0.140538,0.000188,ok
+batched,batched_solve,primal,f64,tenferro-trace,full,"8x8xbatch16 (native batch layout),rhs=1",3,15,0.023102,0.000057,ok
+batched,grad_sum_batched_matmul,backward,f64,tenferro-trace,full,8x8xbatch16 (native batch layout),3,15,0.025121,0.000052,ok
+batched,grad_sum_batched_solve,backward,f64,tenferro-trace,full,"8x8xbatch16 (native batch layout),rhs=1",3,15,0.096837,0.000173,ok
+batched,batched_matmul_ikb_kjb_ijb,primal,f64,tenferro-trace,full,16x16xbatch16 (native batch layout),3,15,0.007908,0.000043,ok
+batched,batched_svd,primal,f64,tenferro-trace,full,16x16xbatch16 (native batch layout),3,15,0.229701,0.000400,ok
+batched,batched_qr,primal,f64,tenferro-trace,full,16x16xbatch16 (native batch layout),3,15,0.043741,0.000225,ok
+batched,batched_eigh,primal,f64,tenferro-trace,full,16x16xbatch16 (native batch layout),3,15,0.131700,0.000679,ok
+batched,batched_solve,primal,f64,tenferro-trace,full,"16x16xbatch16 (native batch layout),rhs=1",3,15,0.044305,0.000311,ok
+batched,grad_sum_batched_matmul,backward,f64,tenferro-trace,full,16x16xbatch16 (native batch layout),3,15,0.025942,0.000224,ok
+batched,grad_sum_batched_solve,backward,f64,tenferro-trace,full,"16x16xbatch16 (native batch layout),rhs=1",3,15,0.179873,0.001202,ok
+batched,batched_matmul_ikb_kjb_ijb,primal,f64,tenferro-trace,full,2x2xbatch64 (native batch layout),3,15,0.014151,0.000097,ok
+batched,batched_svd,primal,f64,tenferro-trace,full,2x2xbatch64 (native batch layout),3,15,0.084993,0.000222,ok
+batched,batched_qr,primal,f64,tenferro-trace,full,2x2xbatch64 (native batch layout),3,15,0.024576,0.000076,ok
+batched,batched_eigh,primal,f64,tenferro-trace,full,2x2xbatch64 (native batch layout),3,15,0.037618,0.000031,ok
+batched,batched_solve,primal,f64,tenferro-trace,full,"2x2xbatch64 (native batch layout),rhs=1",3,15,0.019503,0.000033,ok
+batched,grad_sum_batched_matmul,backward,f64,tenferro-trace,full,2x2xbatch64 (native batch layout),3,15,0.044555,0.000063,ok
+batched,grad_sum_batched_solve,backward,f64,tenferro-trace,full,"2x2xbatch64 (native batch layout),rhs=1",3,15,0.093859,0.000353,ok
+batched,batched_matmul_ikb_kjb_ijb,primal,f64,tenferro-trace,full,4x4xbatch64 (native batch layout),3,15,0.014703,0.000036,ok
+batched,batched_svd,primal,f64,tenferro-trace,full,4x4xbatch64 (native batch layout),3,15,0.293630,0.001693,ok
+batched,batched_qr,primal,f64,tenferro-trace,full,4x4xbatch64 (native batch layout),3,15,0.055089,0.000635,ok
+batched,batched_eigh,primal,f64,tenferro-trace,full,4x4xbatch64 (native batch layout),3,15,0.187196,0.000518,ok
+batched,batched_solve,primal,f64,tenferro-trace,full,"4x4xbatch64 (native batch layout),rhs=1",3,15,0.026564,0.000048,ok
+batched,grad_sum_batched_matmul,backward,f64,tenferro-trace,full,4x4xbatch64 (native batch layout),3,15,0.046253,0.000167,ok
+batched,grad_sum_batched_solve,backward,f64,tenferro-trace,full,"4x4xbatch64 (native batch layout),rhs=1",3,15,0.118154,0.000287,ok
+batched,batched_matmul_ikb_kjb_ijb,primal,f64,tenferro-trace,full,8x8xbatch64 (native batch layout),3,15,0.009147,0.000091,ok
+batched,batched_svd,primal,f64,tenferro-trace,full,8x8xbatch64 (native batch layout),3,15,0.243077,0.000499,ok
+batched,batched_qr,primal,f64,tenferro-trace,full,8x8xbatch64 (native batch layout),3,15,0.163637,0.000804,ok
+batched,batched_eigh,primal,f64,tenferro-trace,full,8x8xbatch64 (native batch layout),3,15,0.143675,0.000313,ok
+batched,batched_solve,primal,f64,tenferro-trace,full,"8x8xbatch64 (native batch layout),rhs=1",3,15,0.062623,0.001115,ok
+batched,grad_sum_batched_matmul,backward,f64,tenferro-trace,full,8x8xbatch64 (native batch layout),3,15,0.029816,0.000235,ok
+batched,grad_sum_batched_solve,backward,f64,tenferro-trace,full,"8x8xbatch64 (native batch layout),rhs=1",3,15,0.239702,0.000345,ok
+batched,batched_matmul_ikb_kjb_ijb,primal,f64,tenferro-trace,full,16x16xbatch64 (native batch layout),3,15,0.012957,0.000132,ok
+batched,batched_svd,primal,f64,tenferro-trace,full,16x16xbatch64 (native batch layout),3,15,0.901486,0.002389,ok
+batched,batched_qr,primal,f64,tenferro-trace,full,16x16xbatch64 (native batch layout),3,15,0.155993,0.000657,ok
+batched,batched_eigh,primal,f64,tenferro-trace,full,16x16xbatch64 (native batch layout),3,15,0.515798,0.000448,ok
+batched,batched_solve,primal,f64,tenferro-trace,full,"16x16xbatch64 (native batch layout),rhs=1",3,15,0.055286,0.000279,ok
+batched,grad_sum_batched_matmul,backward,f64,tenferro-trace,full,16x16xbatch64 (native batch layout),3,15,0.046813,0.000240,ok
+batched,grad_sum_batched_solve,backward,f64,tenferro-trace,full,"16x16xbatch64 (native batch layout),rhs=1",3,15,0.306227,0.001141,ok
+batched,batched_matmul_ikb_kjb_ijb,primal,f64,tenferro-trace,full,2x2xbatch256 (native batch layout),3,15,0.040791,0.000063,ok
+batched,batched_svd,primal,f64,tenferro-trace,full,2x2xbatch256 (native batch layout),3,15,0.321325,0.000399,ok
+batched,batched_qr,primal,f64,tenferro-trace,full,2x2xbatch256 (native batch layout),3,15,0.082475,0.000306,ok
+batched,batched_eigh,primal,f64,tenferro-trace,full,2x2xbatch256 (native batch layout),3,15,0.134185,0.001168,ok
+batched,batched_solve,primal,f64,tenferro-trace,full,"2x2xbatch256 (native batch layout),rhs=1",3,15,0.048100,0.000369,ok
+batched,grad_sum_batched_matmul,backward,f64,tenferro-trace,full,2x2xbatch256 (native batch layout),3,15,0.131348,0.000147,ok
+batched,grad_sum_batched_solve,backward,f64,tenferro-trace,full,"2x2xbatch256 (native batch layout),rhs=1",3,15,0.232460,0.003403,ok
+batched,batched_matmul_ikb_kjb_ijb,primal,f64,tenferro-trace,full,4x4xbatch256 (native batch layout),3,15,0.042989,0.000068,ok
+batched,batched_svd,primal,f64,tenferro-trace,full,4x4xbatch256 (native batch layout),3,15,1.153561,0.002070,ok
+batched,batched_qr,primal,f64,tenferro-trace,full,4x4xbatch256 (native batch layout),3,15,0.213010,0.000171,ok
+batched,batched_eigh,primal,f64,tenferro-trace,full,4x4xbatch256 (native batch layout),3,15,0.735376,0.001798,ok
+batched,batched_solve,primal,f64,tenferro-trace,full,"4x4xbatch256 (native batch layout),rhs=1",3,15,0.075428,0.000298,ok
+batched,grad_sum_batched_matmul,backward,f64,tenferro-trace,full,4x4xbatch256 (native batch layout),3,15,0.137198,0.000351,ok
+batched,grad_sum_batched_solve,backward,f64,tenferro-trace,full,"4x4xbatch256 (native batch layout),rhs=1",3,15,0.323296,0.000292,ok
+batched,batched_matmul_ikb_kjb_ijb,primal,f64,tenferro-trace,full,8x8xbatch256 (native batch layout),3,15,0.017293,0.000191,ok
+batched,batched_svd,primal,f64,tenferro-trace,full,8x8xbatch256 (native batch layout),3,15,0.951796,0.005570,ok
+batched,batched_qr,primal,f64,tenferro-trace,full,8x8xbatch256 (native batch layout),3,15,0.167502,0.000460,ok
+batched,batched_eigh,primal,f64,tenferro-trace,full,8x8xbatch256 (native batch layout),3,15,0.562092,0.000835,ok
+batched,batched_solve,primal,f64,tenferro-trace,full,"8x8xbatch256 (native batch layout),rhs=1",3,15,0.074253,0.000236,ok
+batched,grad_sum_batched_matmul,backward,f64,tenferro-trace,full,8x8xbatch256 (native batch layout),3,15,0.061167,0.000199,ok
+batched,grad_sum_batched_solve,backward,f64,tenferro-trace,full,"8x8xbatch256 (native batch layout),rhs=1",3,15,0.438968,0.002014,ok
+batched,batched_matmul_ikb_kjb_ijb,primal,f64,tenferro-trace,full,16x16xbatch256 (native batch layout),3,15,0.032751,0.000614,ok
+batched,batched_svd,primal,f64,tenferro-trace,full,16x16xbatch256 (native batch layout),3,15,3.614015,0.003762,ok
+batched,batched_qr,primal,f64,tenferro-trace,full,16x16xbatch256 (native batch layout),3,15,0.603610,0.003840,ok
+batched,batched_eigh,primal,f64,tenferro-trace,full,16x16xbatch256 (native batch layout),3,15,2.079276,0.016608,ok
+batched,batched_solve,primal,f64,tenferro-trace,full,"16x16xbatch256 (native batch layout),rhs=1",3,15,0.173895,0.001926,ok
+batched,grad_sum_batched_matmul,backward,f64,tenferro-trace,full,16x16xbatch256 (native batch layout),3,15,0.123021,0.000720,ok
+batched,grad_sum_batched_solve,backward,f64,tenferro-trace,full,"16x16xbatch256 (native batch layout),rhs=1",3,15,0.709079,0.006225,ok
+batched,batched_matmul_ikb_kjb_ijb,primal,f64,tenferro-trace,full,2x2xbatch1024 (native batch layout),3,15,0.147704,0.001843,ok
+batched,batched_svd,primal,f64,tenferro-trace,full,2x2xbatch1024 (native batch layout),3,15,1.266292,0.002642,ok
+batched,batched_qr,primal,f64,tenferro-trace,full,2x2xbatch1024 (native batch layout),3,15,0.314089,0.000587,ok
+batched,batched_eigh,primal,f64,tenferro-trace,full,2x2xbatch1024 (native batch layout),3,15,0.520267,0.001905,ok
+batched,batched_solve,primal,f64,tenferro-trace,full,"2x2xbatch1024 (native batch layout),rhs=1",3,15,0.161089,0.000656,ok
+batched,grad_sum_batched_matmul,backward,f64,tenferro-trace,full,2x2xbatch1024 (native batch layout),3,15,0.479779,0.000571,ok
+batched,grad_sum_batched_solve,backward,f64,tenferro-trace,full,"2x2xbatch1024 (native batch layout),rhs=1",3,15,0.771475,0.002595,ok
+batched,batched_matmul_ikb_kjb_ijb,primal,f64,tenferro-trace,full,4x4xbatch1024 (native batch layout),3,15,0.044470,0.000476,ok
+batched,batched_svd,primal,f64,tenferro-trace,full,4x4xbatch1024 (native batch layout),3,15,1.159409,0.006606,ok
+batched,batched_qr,primal,f64,tenferro-trace,full,4x4xbatch1024 (native batch layout),3,15,0.207574,0.001056,ok
+batched,batched_eigh,primal,f64,tenferro-trace,full,4x4xbatch1024 (native batch layout),3,15,0.735355,0.001463,ok
+batched,batched_solve,primal,f64,tenferro-trace,full,"4x4xbatch1024 (native batch layout),rhs=1",3,15,0.114471,0.001052,ok
+batched,grad_sum_batched_matmul,backward,f64,tenferro-trace,full,4x4xbatch1024 (native batch layout),3,15,0.150013,0.000385,ok
+batched,grad_sum_batched_solve,backward,f64,tenferro-trace,full,"4x4xbatch1024 (native batch layout),rhs=1",3,15,0.678424,0.003029,ok
+batched,batched_matmul_ikb_kjb_ijb,primal,f64,tenferro-trace,full,8x8xbatch1024 (native batch layout),3,15,0.050427,0.000471,ok
+batched,batched_svd,primal,f64,tenferro-trace,full,8x8xbatch1024 (native batch layout),3,15,3.771834,0.005019,ok
+batched,batched_qr,primal,f64,tenferro-trace,full,8x8xbatch1024 (native batch layout),3,15,0.642995,0.001168,ok
+batched,batched_eigh,primal,f64,tenferro-trace,full,8x8xbatch1024 (native batch layout),3,15,2.225481,0.003316,ok
+batched,batched_solve,primal,f64,tenferro-trace,full,"8x8xbatch1024 (native batch layout),rhs=1",3,15,0.262900,0.000966,ok
+batched,grad_sum_batched_matmul,backward,f64,tenferro-trace,full,8x8xbatch1024 (native batch layout),3,15,0.170723,0.000258,ok
+batched,grad_sum_batched_solve,backward,f64,tenferro-trace,full,"8x8xbatch1024 (native batch layout),rhs=1",3,15,1.043618,0.006199,ok
+batched,batched_matmul_ikb_kjb_ijb,primal,f64,tenferro-trace,full,16x16xbatch1024 (native batch layout),3,15,0.114284,0.000381,ok
+batched,batched_svd,primal,f64,tenferro-trace,full,16x16xbatch1024 (native batch layout),3,15,14.461670,0.015148,ok
+batched,batched_qr,primal,f64,tenferro-trace,full,16x16xbatch1024 (native batch layout),3,15,2.381398,0.003877,ok
+batched,batched_eigh,primal,f64,tenferro-trace,full,16x16xbatch1024 (native batch layout),3,15,8.396090,0.011201,ok
+batched,batched_solve,primal,f64,tenferro-trace,full,"16x16xbatch1024 (native batch layout),rhs=1",3,15,0.665924,0.006141,ok
+batched,grad_sum_batched_matmul,backward,f64,tenferro-trace,full,16x16xbatch1024 (native batch layout),3,15,0.437507,0.004348,ok
+batched,grad_sum_batched_solve,backward,f64,tenferro-trace,full,"16x16xbatch1024 (native batch layout),rhs=1",3,15,2.610065,0.008567,ok

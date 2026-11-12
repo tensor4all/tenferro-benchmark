@@ -47,6 +47,7 @@ first:
 | `zen5-cpu` | `cpu/permutation` | [result/zen5-cpu/cpu/permutation.md](result/zen5-cpu/cpu/permutation.md) |
 | `zen5-cpu` | `cpu/public_api` | [result/zen5-cpu/cpu/public_api.md](result/zen5-cpu/cpu/public_api.md) |
 | `zen5-cpu` | `cpu/overhead_smoke` | [result/zen5-cpu/cpu/overhead_smoke.md](result/zen5-cpu/cpu/overhead_smoke.md) |
+| `zen5-cpu` | `cpu/perf_issues` | [result/zen5-cpu/cpu/perf_issues.md](result/zen5-cpu/cpu/perf_issues.md) |
 | `zen5-cpu` | `cpu/session_matrix` | [result/zen5-cpu/cpu/session_matrix.md](result/zen5-cpu/cpu/session_matrix.md) |
 | `zen5-cpu` | `cpu/small_work` | [result/zen5-cpu/cpu/small_work.md](result/zen5-cpu/cpu/small_work.md) |
 | `nvidia-gpu` | `gpu/dense` | [result/nvidia-gpu/gpu/dense.md](result/nvidia-gpu/gpu/dense.md) |

@@ -1,12 +1,12 @@
 {
-  "collected_at": "2026-10-28T00:16:12.734135+00:00",
+  "collected_at": "2026-11-12T18:55:59.554485+00:00",
   "files": {
-    "result/zen5-cpu/cpu/einsum.md": "816a68396ee4a446828cce905b4622ce99813e92f7a1e63872c0627fa2277d7e",
-    "result/zen5-cpu/cpu/einsum.summary.json": "7f1ba53aaba23c0d5714ce05173be8b7d4ffea4876e42c2ffa66abf6df5972eb"
+    "result/zen5-cpu/cpu/einsum.md": "2560decaa3cfa480659f4a0df2024294a96d856c6e5a136c0ad9a6c65bfb07f6",
+    "result/zen5-cpu/cpu/einsum.summary.json": "52ac9aa55893ca8dc55208dc8f4451164223c064e972b996041ba25ac607a90d"
   },
   "hardware": {
-    "cpu": "x86_64",
-    "host": "bcfefbe95606",
+    "cpu": "AMD Ryzen AI 9 HX 470 w/ Radeon 890M",
+    "host": "shinaoka-EVO-X1Pro",
     "threads": [
       1,
       4,
@@ -16,5 +16,5 @@
   "schema_version": 1,
   "suite_id": "cpu/einsum",
   "target_profile": "zen5-cpu",
-  "tenferro_commit": "8fec1ca70852b930c092e7177c30bb8af7594a57"
+  "tenferro_commit": "9a850b06155405acc99ecd0648829e9e6d3866ba"
 }

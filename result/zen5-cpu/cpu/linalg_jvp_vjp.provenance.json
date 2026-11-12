@@ -1,12 +1,12 @@
 {
-  "collected_at": "2026-10-28T00:16:12.734135+00:00",
+  "collected_at": "2026-11-12T18:55:59.554485+00:00",
   "files": {
-    "result/zen5-cpu/cpu/linalg_jvp_vjp.md": "2e2d8ef670b6b098f2cff13b28160ab86a4d1b9b84fa654967b2152733ae00fe",
-    "result/zen5-cpu/cpu/linalg_jvp_vjp.summary.json": "8ec94e7fefb1583bca29b6259035a702f869bf7aff36085129c1789de7172ffe"
+    "result/zen5-cpu/cpu/linalg_jvp_vjp.md": "f6d9c15d184fee7d030043df71fd27fedd5470ba19181e65500a67268f483199",
+    "result/zen5-cpu/cpu/linalg_jvp_vjp.summary.json": "f673347a7abe9a87c271be913b95d96fa343dafd6560372d3c5837ebfad7bb9b"
   },
   "hardware": {
-    "cpu": "x86_64",
-    "host": "bcfefbe95606",
+    "cpu": "AMD Ryzen AI 9 HX 470 w/ Radeon 890M",
+    "host": "shinaoka-EVO-X1Pro",
     "threads": [
       1,
       4,
@@ -16,5 +16,5 @@
   "schema_version": 1,
   "suite_id": "cpu/linalg_jvp_vjp",
   "target_profile": "zen5-cpu",
-  "tenferro_commit": "8fec1ca70852b930c092e7177c30bb8af7594a57"
+  "tenferro_commit": "9a850b06155405acc99ecd0648829e9e6d3866ba"
 }
