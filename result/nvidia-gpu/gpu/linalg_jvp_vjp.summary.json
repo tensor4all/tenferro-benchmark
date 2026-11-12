@@ -2,12 +2,12 @@
   "schema_version": 1,
   "target_profile": "nvidia-gpu",
   "suite_id": "gpu/linalg_jvp_vjp",
-  "timestamp": "2026-11-08T11:52:37+00:00",
+  "timestamp": "2026-11-12T07:59:24+00:00",
   "tenferro_commit": "9a850b06155405acc99ecd0648829e9e6d3866ba",
   "hardware": {
     "gpu": "NVIDIA A100 80GB PCIe",
     "cpu": "AMD EPYC 7763 64-Core Processor",
-    "host": "941a9a84f64c"
+    "host": "4a36c3550bca"
   },
   "unit": "ms",
   "rows": [
@@ -15,301 +15,801 @@
       "case": "linalg_ad_large_grad_sum_eigh_jvp_f64_256",
       "group": "grad_sum_eigh_jvp",
       "backend": "jax-cuda",
-      "median": 3.072499,
-      "iqr": 0.03176900000000016,
+      "median": 3.009343,
+      "iqr": 0.07422100000000009,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 1
+      "operations_per_sample": 1,
+      "verification": "cpu_reference"
     },
     {
       "case": "linalg_ad_large_grad_sum_eigh_jvp_f64_256",
       "group": "grad_sum_eigh_jvp",
       "backend": "pytorch-cuda",
-      "median": 3.154154,
-      "iqr": 0.055693000000000215,
+      "median": 3.178122,
+      "iqr": 0.06537499999999996,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 1
+      "operations_per_sample": 1,
+      "verification": "cpu_reference"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_eigh_jvp_f64_256",
+      "group": "grad_sum_eigh_jvp",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
     },
     {
       "case": "linalg_ad_large_grad_sum_eigh_jvp_f64_256",
       "group": "grad_sum_eigh_jvp",
       "backend": "tenferro-cuda-trace",
-      "median": 5.564236,
-      "iqr": 0.09053900000000059,
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_eigh_jvp_f64_4096",
+      "group": "grad_sum_eigh_jvp",
+      "backend": "jax-cuda",
+      "median": 229.742281,
+      "iqr": 0.8243869999999731,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 1
+      "operations_per_sample": 1,
+      "verification": "analytic"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_eigh_jvp_f64_4096",
+      "group": "grad_sum_eigh_jvp",
+      "backend": "pytorch-cuda",
+      "median": 236.418023,
+      "iqr": 0.7931279999999958,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 1,
+      "verification": "analytic"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_eigh_jvp_f64_4096",
+      "group": "grad_sum_eigh_jvp",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_eigh_jvp_f64_4096",
+      "group": "grad_sum_eigh_jvp",
+      "backend": "tenferro-cuda-trace",
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
     },
     {
       "case": "linalg_ad_large_grad_sum_eigh_vjp_f64_256",
       "group": "grad_sum_eigh_vjp",
       "backend": "jax-cuda",
-      "median": 3.068482,
-      "iqr": 0.06067400000000012,
+      "median": 3.049811,
+      "iqr": 0.511936,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 1
+      "operations_per_sample": 1,
+      "verification": "cpu_reference"
     },
     {
       "case": "linalg_ad_large_grad_sum_eigh_vjp_f64_256",
       "group": "grad_sum_eigh_vjp",
       "backend": "pytorch-cuda",
-      "median": 3.193708,
-      "iqr": 0.09639199999999981,
+      "median": 3.250751,
+      "iqr": 0.04164000000000012,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 1
+      "operations_per_sample": 1,
+      "verification": "cpu_reference"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_eigh_vjp_f64_256",
+      "group": "grad_sum_eigh_vjp",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
     },
     {
       "case": "linalg_ad_large_grad_sum_eigh_vjp_f64_256",
       "group": "grad_sum_eigh_vjp",
       "backend": "tenferro-cuda-trace",
-      "median": 5.6467,
-      "iqr": 0.059623000000000204,
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_eigh_vjp_f64_4096",
+      "group": "grad_sum_eigh_vjp",
+      "backend": "jax-cuda",
+      "median": 228.540682,
+      "iqr": 0.8743419999999844,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 1
+      "operations_per_sample": 1,
+      "verification": "analytic"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_eigh_vjp_f64_4096",
+      "group": "grad_sum_eigh_vjp",
+      "backend": "pytorch-cuda",
+      "median": 221.203363,
+      "iqr": 0.9706839999999772,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 1,
+      "verification": "analytic"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_eigh_vjp_f64_4096",
+      "group": "grad_sum_eigh_vjp",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_eigh_vjp_f64_4096",
+      "group": "grad_sum_eigh_vjp",
+      "backend": "tenferro-cuda-trace",
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
     },
     {
       "case": "linalg_ad_large_grad_sum_lu_jvp_f64_256",
       "group": "grad_sum_lu_jvp",
       "backend": "jax-cuda",
-      "median": 0.966182,
-      "iqr": 0.041458000000000106,
+      "median": 0.96688625,
+      "iqr": 0.022219749999999983,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 2
+      "operations_per_sample": 4,
+      "verification": "cpu_reference"
     },
     {
       "case": "linalg_ad_large_grad_sum_lu_jvp_f64_256",
       "group": "grad_sum_lu_jvp",
       "backend": "pytorch-cuda",
-      "median": 1.18539,
-      "iqr": 0.01400649999999981,
+      "median": 1.2024715,
+      "iqr": 0.021405499999999966,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 2
+      "operations_per_sample": 2,
+      "verification": "cpu_reference"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_lu_jvp_f64_256",
+      "group": "grad_sum_lu_jvp",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
     },
     {
       "case": "linalg_ad_large_grad_sum_lu_jvp_f64_256",
       "group": "grad_sum_lu_jvp",
       "backend": "tenferro-cuda-trace",
-      "median": 1.6800005,
-      "iqr": 0.050515499999999935,
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_lu_jvp_f64_4096",
+      "group": "grad_sum_lu_jvp",
+      "backend": "jax-cuda",
+      "median": 49.330896,
+      "iqr": 0.296599999999998,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 2
+      "operations_per_sample": 1,
+      "verification": "finite_difference"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_lu_jvp_f64_4096",
+      "group": "grad_sum_lu_jvp",
+      "backend": "pytorch-cuda",
+      "median": 92.684865,
+      "iqr": 0.4957780000000014,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 1,
+      "verification": "finite_difference"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_lu_jvp_f64_4096",
+      "group": "grad_sum_lu_jvp",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_lu_jvp_f64_4096",
+      "group": "grad_sum_lu_jvp",
+      "backend": "tenferro-cuda-trace",
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
     },
     {
       "case": "linalg_ad_large_grad_sum_lu_vjp_f64_256",
       "group": "grad_sum_lu_vjp",
       "backend": "jax-cuda",
-      "median": 1.023039,
-      "iqr": 0.0457209999999999,
+      "median": 0.98478525,
+      "iqr": 0.007599499999999981,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 2
+      "operations_per_sample": 4,
+      "verification": "cpu_reference"
     },
     {
       "case": "linalg_ad_large_grad_sum_lu_vjp_f64_256",
       "group": "grad_sum_lu_vjp",
       "backend": "pytorch-cuda",
-      "median": 0.93793675,
-      "iqr": 0.012601249999999897,
+      "median": 0.95772875,
+      "iqr": 0.03955474999999997,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 4
+      "operations_per_sample": 4,
+      "verification": "cpu_reference"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_lu_vjp_f64_256",
+      "group": "grad_sum_lu_vjp",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
     },
     {
       "case": "linalg_ad_large_grad_sum_lu_vjp_f64_256",
       "group": "grad_sum_lu_vjp",
       "backend": "tenferro-cuda-trace",
-      "median": 1.721132,
-      "iqr": 0.0811980000000001,
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_lu_vjp_f64_4096",
+      "group": "grad_sum_lu_vjp",
+      "backend": "jax-cuda",
+      "median": 48.839739,
+      "iqr": 0.4934119999999993,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 2
+      "operations_per_sample": 1,
+      "verification": "finite_difference"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_lu_vjp_f64_4096",
+      "group": "grad_sum_lu_vjp",
+      "backend": "pytorch-cuda",
+      "median": 56.98796,
+      "iqr": 0.7355400000000003,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 1,
+      "verification": "finite_difference"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_lu_vjp_f64_4096",
+      "group": "grad_sum_lu_vjp",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_lu_vjp_f64_4096",
+      "group": "grad_sum_lu_vjp",
+      "backend": "tenferro-cuda-trace",
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
     },
     {
       "case": "linalg_ad_large_grad_sum_qr_jvp_f64_256",
       "group": "grad_sum_qr_jvp",
       "backend": "jax-cuda",
-      "median": 1.5521795,
-      "iqr": 0.019331500000000057,
+      "median": 1.542679,
+      "iqr": 0.09601149999999992,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 2
+      "operations_per_sample": 2,
+      "verification": "cpu_reference"
     },
     {
       "case": "linalg_ad_large_grad_sum_qr_jvp_f64_256",
       "group": "grad_sum_qr_jvp",
       "backend": "pytorch-cuda",
-      "median": 1.520084,
-      "iqr": 0.01646100000000006,
+      "median": 1.5226215,
+      "iqr": 0.022512499999999935,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 2
+      "operations_per_sample": 2,
+      "verification": "cpu_reference"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_qr_jvp_f64_256",
+      "group": "grad_sum_qr_jvp",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
     },
     {
       "case": "linalg_ad_large_grad_sum_qr_jvp_f64_256",
       "group": "grad_sum_qr_jvp",
       "backend": "tenferro-cuda-trace",
-      "median": 2.874657,
-      "iqr": 0.022400999999999893,
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_qr_jvp_f64_4096",
+      "group": "grad_sum_qr_jvp",
+      "backend": "jax-cuda",
+      "median": 88.050893,
+      "iqr": 0.5651179999999982,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 1
+      "operations_per_sample": 1,
+      "verification": "finite_difference"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_qr_jvp_f64_4096",
+      "group": "grad_sum_qr_jvp",
+      "backend": "pytorch-cuda",
+      "median": 89.249236,
+      "iqr": 0.5874210000000062,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 1,
+      "verification": "finite_difference"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_qr_jvp_f64_4096",
+      "group": "grad_sum_qr_jvp",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_qr_jvp_f64_4096",
+      "group": "grad_sum_qr_jvp",
+      "backend": "tenferro-cuda-trace",
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
     },
     {
       "case": "linalg_ad_large_grad_sum_qr_vjp_f64_256",
       "group": "grad_sum_qr_vjp",
       "backend": "jax-cuda",
-      "median": 1.5866845,
-      "iqr": 0.020042499999999963,
+      "median": 1.554496,
+      "iqr": 0.1177824999999999,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 2
+      "operations_per_sample": 2,
+      "verification": "cpu_reference"
     },
     {
       "case": "linalg_ad_large_grad_sum_qr_vjp_f64_256",
       "group": "grad_sum_qr_vjp",
       "backend": "pytorch-cuda",
-      "median": 1.486791,
-      "iqr": 0.011006500000000141,
+      "median": 1.5080485,
+      "iqr": 0.01942099999999991,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 2
+      "operations_per_sample": 2,
+      "verification": "cpu_reference"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_qr_vjp_f64_256",
+      "group": "grad_sum_qr_vjp",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
     },
     {
       "case": "linalg_ad_large_grad_sum_qr_vjp_f64_256",
       "group": "grad_sum_qr_vjp",
       "backend": "tenferro-cuda-trace",
-      "median": 2.858948,
-      "iqr": 0.035978000000000065,
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_qr_vjp_f64_4096",
+      "group": "grad_sum_qr_vjp",
+      "backend": "jax-cuda",
+      "median": 84.728026,
+      "iqr": 1.3198330000000027,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 1
+      "operations_per_sample": 1,
+      "verification": "finite_difference"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_qr_vjp_f64_4096",
+      "group": "grad_sum_qr_vjp",
+      "backend": "pytorch-cuda",
+      "median": 86.796163,
+      "iqr": 1.0239930000000044,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 1,
+      "verification": "finite_difference"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_qr_vjp_f64_4096",
+      "group": "grad_sum_qr_vjp",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_qr_vjp_f64_4096",
+      "group": "grad_sum_qr_vjp",
+      "backend": "tenferro-cuda-trace",
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
     },
     {
       "case": "linalg_ad_large_grad_sum_solve_jvp_f64_256",
       "group": "grad_sum_solve_jvp",
       "backend": "jax-cuda",
-      "median": 0.93528675,
-      "iqr": 0.011289249999999917,
+      "median": 0.913135,
+      "iqr": 0.04088700000000001,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 4
+      "operations_per_sample": 4,
+      "verification": "cpu_reference"
     },
     {
       "case": "linalg_ad_large_grad_sum_solve_jvp_f64_256",
       "group": "grad_sum_solve_jvp",
       "backend": "pytorch-cuda",
-      "median": 1.004735,
-      "iqr": 0.04724375000000003,
+      "median": 0.997885,
+      "iqr": 0.01668599999999998,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 4
+      "operations_per_sample": 2,
+      "verification": "cpu_reference"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_solve_jvp_f64_256",
+      "group": "grad_sum_solve_jvp",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
     },
     {
       "case": "linalg_ad_large_grad_sum_solve_jvp_f64_256",
       "group": "grad_sum_solve_jvp",
       "backend": "tenferro-cuda-trace",
-      "median": 1.5701185,
-      "iqr": 0.05083000000000015,
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_solve_jvp_f64_4096",
+      "group": "grad_sum_solve_jvp",
+      "backend": "jax-cuda",
+      "median": 21.775299,
+      "iqr": 0.2110990000000008,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 2
+      "operations_per_sample": 1,
+      "verification": "finite_difference"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_solve_jvp_f64_4096",
+      "group": "grad_sum_solve_jvp",
+      "backend": "pytorch-cuda",
+      "median": 22.021666,
+      "iqr": 0.08938799999999958,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 1,
+      "verification": "finite_difference"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_solve_jvp_f64_4096",
+      "group": "grad_sum_solve_jvp",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_solve_jvp_f64_4096",
+      "group": "grad_sum_solve_jvp",
+      "backend": "tenferro-cuda-trace",
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
     },
     {
       "case": "linalg_ad_large_grad_sum_solve_vjp_f64_256",
       "group": "grad_sum_solve_vjp",
       "backend": "jax-cuda",
-      "median": 0.950926,
-      "iqr": 0.02813549999999998,
+      "median": 0.983675,
+      "iqr": 0.10160475000000002,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 4
+      "operations_per_sample": 4,
+      "verification": "cpu_reference"
     },
     {
       "case": "linalg_ad_large_grad_sum_solve_vjp_f64_256",
       "group": "grad_sum_solve_vjp",
       "backend": "pytorch-cuda",
-      "median": 1.753498,
-      "iqr": 0.0410569999999999,
+      "median": 1.8578445,
+      "iqr": 0.10046049999999984,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 2
+      "operations_per_sample": 2,
+      "verification": "cpu_reference"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_solve_vjp_f64_256",
+      "group": "grad_sum_solve_vjp",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
     },
     {
       "case": "linalg_ad_large_grad_sum_solve_vjp_f64_256",
       "group": "grad_sum_solve_vjp",
       "backend": "tenferro-cuda-trace",
-      "median": 1.5526155,
-      "iqr": 0.030682499999999946,
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_solve_vjp_f64_4096",
+      "group": "grad_sum_solve_vjp",
+      "backend": "jax-cuda",
+      "median": 21.973834,
+      "iqr": 0.18496800000000135,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 2
+      "operations_per_sample": 1,
+      "verification": "finite_difference"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_solve_vjp_f64_4096",
+      "group": "grad_sum_solve_vjp",
+      "backend": "pytorch-cuda",
+      "median": 41.916453,
+      "iqr": 0.5916170000000065,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 1,
+      "verification": "finite_difference"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_solve_vjp_f64_4096",
+      "group": "grad_sum_solve_vjp",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_solve_vjp_f64_4096",
+      "group": "grad_sum_solve_vjp",
+      "backend": "tenferro-cuda-trace",
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
     },
     {
       "case": "linalg_ad_large_grad_sum_svd_s_jvp_f64_256",
       "group": "grad_sum_svd_s_jvp",
       "backend": "jax-cuda",
-      "median": 11.990052,
-      "iqr": 0.02102900000000041,
+      "median": 11.936024,
+      "iqr": 0.4072280000000017,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 1
+      "operations_per_sample": 1,
+      "verification": "cpu_reference"
     },
     {
       "case": "linalg_ad_large_grad_sum_svd_s_jvp_f64_256",
       "group": "grad_sum_svd_s_jvp",
       "backend": "pytorch-cuda",
-      "median": 12.820775,
-      "iqr": 0.051927000000000945,
+      "median": 12.952785,
+      "iqr": 0.3064,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 1
+      "operations_per_sample": 1,
+      "verification": "cpu_reference"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_svd_s_jvp_f64_256",
+      "group": "grad_sum_svd_s_jvp",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
     },
     {
       "case": "linalg_ad_large_grad_sum_svd_s_jvp_f64_256",
       "group": "grad_sum_svd_s_jvp",
       "backend": "tenferro-cuda-trace",
-      "median": 23.673239,
-      "iqr": 0.07407899999999756,
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_svd_s_jvp_f64_4096",
+      "group": "grad_sum_svd_s_jvp",
+      "backend": "jax-cuda",
+      "median": 3536.500073,
+      "iqr": 12.554622999999992,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 1
+      "operations_per_sample": 1,
+      "verification": "analytic"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_svd_s_jvp_f64_4096",
+      "group": "grad_sum_svd_s_jvp",
+      "backend": "pytorch-cuda",
+      "median": 3442.921239,
+      "iqr": 10.790883000000122,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 1,
+      "verification": "analytic"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_svd_s_jvp_f64_4096",
+      "group": "grad_sum_svd_s_jvp",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_svd_s_jvp_f64_4096",
+      "group": "grad_sum_svd_s_jvp",
+      "backend": "tenferro-cuda-trace",
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
     },
     {
       "case": "linalg_ad_large_grad_sum_svd_s_vjp_f64_256",
       "group": "grad_sum_svd_s_vjp",
       "backend": "jax-cuda",
-      "median": 11.98894,
-      "iqr": 0.04897299999999838,
+      "median": 11.86958,
+      "iqr": 0.1597919999999995,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 1
+      "operations_per_sample": 1,
+      "verification": "cpu_reference"
     },
     {
       "case": "linalg_ad_large_grad_sum_svd_s_vjp_f64_256",
       "group": "grad_sum_svd_s_vjp",
       "backend": "pytorch-cuda",
-      "median": 12.758237,
-      "iqr": 0.0639820000000011,
+      "median": 12.729393,
+      "iqr": 0.09323599999999921,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 1
+      "operations_per_sample": 1,
+      "verification": "cpu_reference"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_svd_s_vjp_f64_256",
+      "group": "grad_sum_svd_s_vjp",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
     },
     {
       "case": "linalg_ad_large_grad_sum_svd_s_vjp_f64_256",
       "group": "grad_sum_svd_s_vjp",
       "backend": "tenferro-cuda-trace",
-      "median": 23.713835,
-      "iqr": 0.06716699999999776,
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_svd_s_vjp_f64_4096",
+      "group": "grad_sum_svd_s_vjp",
+      "backend": "jax-cuda",
+      "median": 3520.631724,
+      "iqr": 11.338956000000053,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 1
+      "operations_per_sample": 1,
+      "verification": "analytic"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_svd_s_vjp_f64_4096",
+      "group": "grad_sum_svd_s_vjp",
+      "backend": "pytorch-cuda",
+      "median": 3420.950271,
+      "iqr": 4.181046000000151,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 1,
+      "verification": "analytic"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_svd_s_vjp_f64_4096",
+      "group": "grad_sum_svd_s_vjp",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_svd_s_vjp_f64_4096",
+      "group": "grad_sum_svd_s_vjp",
+      "backend": "tenferro-cuda-trace",
+      "median": null,
+      "status": "missing",
+      "verified": false,
+      "reason": "no measurement row was written for this case; the runner produced no result for it (see this run's raw records and log)"
     }
   ]
 }
