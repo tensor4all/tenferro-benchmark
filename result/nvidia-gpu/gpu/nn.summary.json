@@ -2,12 +2,12 @@
   "schema_version": 1,
   "target_profile": "nvidia-gpu",
   "suite_id": "gpu/nn",
-  "timestamp": "2026-11-08T11:52:37+00:00",
+  "timestamp": "2026-11-14T08:28:52+00:00",
   "tenferro_commit": "9a850b06155405acc99ecd0648829e9e6d3866ba",
   "hardware": {
     "gpu": "NVIDIA A100 80GB PCIe",
-    "cpu": "AMD EPYC 7763 64-Core Processor",
-    "host": "941a9a84f64c"
+    "cpu": "AMD EPYC-Genoa Processor",
+    "host": "dba65816ff33"
   },
   "unit": "ms",
   "rows": [
@@ -15,18 +15,18 @@
       "case": "gelu_f64_n1048576",
       "group": "gelu",
       "backend": "jax-cuda",
-      "median": 0.81624275,
-      "iqr": 0.06342549999999991,
+      "median": 1.855264,
+      "iqr": 0.3697400000000002,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 4
+      "operations_per_sample": 1
     },
     {
       "case": "gelu_f64_n1048576",
       "group": "gelu",
       "backend": "pytorch-cuda",
-      "median": 0.015249625,
-      "iqr": 0.00010645312499999934,
+      "median": 0.0167008125,
+      "iqr": 0.0016631093750000027,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -53,18 +53,18 @@
       "case": "gelu_tanh_f64_n1048576",
       "group": "gelu_tanh",
       "backend": "jax-cuda",
-      "median": 1.2335655,
-      "iqr": 0.07474824999999985,
+      "median": 4.146617,
+      "iqr": 0.6263364999999999,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 2
+      "operations_per_sample": 1
     },
     {
       "case": "gelu_tanh_f64_n1048576",
       "group": "gelu_tanh",
       "backend": "pytorch-cuda",
-      "median": 0.00966884375,
-      "iqr": 5.717187500000123e-05,
+      "median": 0.010677,
+      "iqr": 0.0022218281250000003,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -91,18 +91,18 @@
       "case": "layer_norm_f64_n1048576",
       "group": "layer_norm",
       "backend": "jax-cuda",
-      "median": 0.206057625,
-      "iqr": 0.005188125000000016,
+      "median": 1.045105,
+      "iqr": 0.8442415,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 16
+      "operations_per_sample": 1
     },
     {
       "case": "layer_norm_f64_n1048576",
       "group": "layer_norm",
       "backend": "pytorch-cuda",
-      "median": 0.0308505625,
-      "iqr": 7.828124999999936e-05,
+      "median": 0.0432405,
+      "iqr": 0.032092046874999995,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -129,18 +129,18 @@
       "case": "log_softmax_f64_n1048576",
       "group": "log_softmax",
       "backend": "jax-cuda",
-      "median": 0.07661221875,
-      "iqr": 0.010164890625000006,
+      "median": 0.20138725,
+      "iqr": 0.0376445,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 32
+      "operations_per_sample": 8
     },
     {
       "case": "log_softmax_f64_n1048576",
       "group": "log_softmax",
       "backend": "pytorch-cuda",
-      "median": 0.0135539375,
-      "iqr": 6.765624999999914e-05,
+      "median": 0.01505953125,
+      "iqr": 0.002601593749999999,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -167,11 +167,11 @@
       "case": "masked_log_softmax_f64_n1048576",
       "group": "masked_log_softmax",
       "backend": "jax-cuda",
-      "median": 0.06786859375,
-      "iqr": 0.0006779843749999959,
+      "median": 0.14203975,
+      "iqr": 0.046627812500000004,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 32
+      "operations_per_sample": 16
     },
     {
       "case": "masked_log_softmax_f64_n1048576",
@@ -204,11 +204,11 @@
       "case": "masked_softmax_f64_n1048576",
       "group": "masked_softmax",
       "backend": "jax-cuda",
-      "median": 1.006348,
-      "iqr": 0.13271350000000015,
+      "median": 2.497803,
+      "iqr": 1.605092,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 4
+      "operations_per_sample": 1
     },
     {
       "case": "masked_softmax_f64_n1048576",
@@ -250,8 +250,8 @@
       "case": "rms_norm_f64_n1048576",
       "group": "rms_norm",
       "backend": "pytorch-cuda",
-      "median": 0.03072278125,
-      "iqr": 8.703125000000117e-05,
+      "median": 0.0319873125,
+      "iqr": 0.0004321562499999959,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -278,21 +278,21 @@
       "case": "sigmoid_f64_n1048576",
       "group": "sigmoid",
       "backend": "jax-cuda",
-      "median": 0.08174153125,
-      "iqr": 0.0032426718749999917,
+      "median": 0.5274415,
+      "iqr": 0.09868549999999993,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 32
+      "operations_per_sample": 2
     },
     {
       "case": "sigmoid_f64_n1048576",
       "group": "sigmoid",
       "backend": "pytorch-cuda",
-      "median": 0.010243,
-      "iqr": 8.734374999999975e-05,
+      "median": 0.0350605,
+      "iqr": 0.008381000000000007,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 32
+      "operations_per_sample": 2
     },
     {
       "case": "sigmoid_f64_n1048576",
@@ -316,18 +316,18 @@
       "case": "silu_f64_n1048576",
       "group": "silu",
       "backend": "jax-cuda",
-      "median": 0.06835075,
-      "iqr": 0.001549796875000009,
+      "median": 1.044546,
+      "iqr": 0.6791360000000002,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 32
+      "operations_per_sample": 1
     },
     {
       "case": "silu_f64_n1048576",
       "group": "silu",
       "backend": "pytorch-cuda",
-      "median": 0.011408625,
-      "iqr": 6.123437500000009e-05,
+      "median": 0.01225715625,
+      "iqr": 0.0001964374999999987,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -354,56 +354,56 @@
       "case": "softmax_f64_n1048576",
       "group": "softmax",
       "backend": "jax-cuda",
-      "median": 0.523392,
-      "iqr": 0.01187862499999992,
+      "median": 1.3658165,
+      "iqr": 0.21336525000000006,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 2
+    },
+    {
+      "case": "softmax_f64_n1048576",
+      "group": "softmax",
+      "backend": "pytorch-cuda",
+      "median": 0.017879375,
+      "iqr": 0.000462687500000003,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "softmax_f64_n1048576",
+      "group": "softmax",
+      "backend": "tenferro-cuda-direct",
+      "median": null,
+      "status": "unsupported",
+      "verified": true,
+      "reason": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+    },
+    {
+      "case": "softmax_f64_n1048576",
+      "group": "softmax",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": true,
+      "reason": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+    },
+    {
+      "case": "softplus_f64_n1048576",
+      "group": "softplus",
+      "backend": "jax-cuda",
+      "median": 0.25422225,
+      "iqr": 0.11733325000000006,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 4
     },
     {
-      "case": "softmax_f64_n1048576",
-      "group": "softmax",
-      "backend": "pytorch-cuda",
-      "median": 0.016750875,
-      "iqr": 9.75312499999978e-05,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "softmax_f64_n1048576",
-      "group": "softmax",
-      "backend": "tenferro-cuda-direct",
-      "median": null,
-      "status": "unsupported",
-      "verified": true,
-      "reason": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-    },
-    {
-      "case": "softmax_f64_n1048576",
-      "group": "softmax",
-      "backend": "tenferro-cuda-eager",
-      "median": null,
-      "status": "unsupported",
-      "verified": true,
-      "reason": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-    },
-    {
-      "case": "softplus_f64_n1048576",
-      "group": "softplus",
-      "backend": "jax-cuda",
-      "median": 0.078621,
-      "iqr": 0.010144718750000004,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
       "case": "softplus_f64_n1048576",
       "group": "softplus",
       "backend": "pytorch-cuda",
-      "median": 0.02599675,
-      "iqr": 8.560937500000365e-05,
+      "median": 0.0290714375,
+      "iqr": 0.002234921874999997,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -412,8 +412,8 @@
       "case": "softplus_f64_n1048576",
       "group": "softplus",
       "backend": "tenferro-cuda-direct",
-      "median": 0.2067275,
-      "iqr": 0.0027401875000000186,
+      "median": 0.386082625,
+      "iqr": 0.03247618750000003,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 8
@@ -422,8 +422,8 @@
       "case": "softplus_f64_n1048576",
       "group": "softplus",
       "backend": "tenferro-cuda-eager",
-      "median": 0.34373675,
-      "iqr": 0.008787875,
+      "median": 0.51368275,
+      "iqr": 0.0332095,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 4

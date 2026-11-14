@@ -2,12 +2,12 @@
   "schema_version": 1,
   "target_profile": "nvidia-gpu",
   "suite_id": "gpu/tensornetwork",
-  "timestamp": "2026-11-08T11:52:37+00:00",
+  "timestamp": "2026-11-14T08:28:52+00:00",
   "tenferro_commit": "9a850b06155405acc99ecd0648829e9e6d3866ba",
   "hardware": {
     "gpu": "NVIDIA A100 80GB PCIe",
-    "cpu": "AMD EPYC 7763 64-Core Processor",
-    "host": "941a9a84f64c"
+    "cpu": "AMD EPYC-Genoa Processor",
+    "host": "dba65816ff33"
   },
   "unit": "ms",
   "rows": [
@@ -15,8 +15,8 @@
       "case": "tensornetwork_permutation_optimized_f32",
       "group": "tensor_network_contract",
       "backend": "jax-cuda-tree-jit",
-      "median": 132.34603099999998,
-      "iqr": 3.5095819999999947,
+      "median": 180.190087,
+      "iqr": 23.79352800000001,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 1
@@ -25,8 +25,8 @@
       "case": "tensornetwork_permutation_optimized_f32",
       "group": "tensor_network_contract",
       "backend": "pytorch-cuda",
-      "median": 111.32978,
-      "iqr": 0.6921400000000091,
+      "median": 105.0248045,
+      "iqr": 1.445993999999999,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 1
@@ -35,21 +35,23 @@
       "case": "tensornetwork_permutation_optimized_f32",
       "group": "tensor_network_contract",
       "backend": "tenferro-cuda-eager",
-      "median": 101.8613355,
-      "iqr": 43.07266799999998,
+      "median": 225.414272,
+      "iqr": 50.38545500000001,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 1
+      "operations_per_sample": 1,
+      "verification": "cpu_reference"
     },
     {
       "case": "tensornetwork_permutation_optimized_f32",
       "group": "tensor_network_contract",
       "backend": "tenferro-cuda-trace",
-      "median": 82.80314849999999,
-      "iqr": 12.738679999999988,
+      "median": 116.02997500000001,
+      "iqr": 70.361739,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 1
+      "operations_per_sample": 1,
+      "verification": "cpu_reference"
     }
   ]
 }

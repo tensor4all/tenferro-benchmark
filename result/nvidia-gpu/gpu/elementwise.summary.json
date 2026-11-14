@@ -2,12 +2,12 @@
   "schema_version": 1,
   "target_profile": "nvidia-gpu",
   "suite_id": "gpu/elementwise",
-  "timestamp": "2026-11-08T11:52:37+00:00",
+  "timestamp": "2026-11-14T08:28:52+00:00",
   "tenferro_commit": "9a850b06155405acc99ecd0648829e9e6d3866ba",
   "hardware": {
     "gpu": "NVIDIA A100 80GB PCIe",
-    "cpu": "AMD EPYC 7763 64-Core Processor",
-    "host": "941a9a84f64c"
+    "cpu": "AMD EPYC-Genoa Processor",
+    "host": "dba65816ff33"
   },
   "unit": "ms",
   "rows": [
@@ -15,18 +15,18 @@
       "case": "elementwise_chain_f64_1k",
       "group": "elementwise_chain",
       "backend": "jax-cuda",
-      "median": 0.089405375,
-      "iqr": 0.0028566250000000015,
+      "median": 0.313028625,
+      "iqr": 0.208161875,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 32
+      "operations_per_sample": 8
     },
     {
       "case": "elementwise_chain_f64_1k",
       "group": "elementwise_chain",
       "backend": "pytorch-cuda",
-      "median": 0.1504035625,
-      "iqr": 0.0017627499999999796,
+      "median": 0.12794925,
+      "iqr": 0.04145081249999999,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 16
@@ -35,38 +35,40 @@
       "case": "elementwise_chain_f64_1k",
       "group": "elementwise_chain",
       "backend": "tenferro-cuda-eager",
-      "median": 0.8236195,
-      "iqr": 0.005867999999999984,
+      "median": 2.030985,
+      "iqr": 0.12822900000000015,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 4
+      "operations_per_sample": 1,
+      "verification": "cpu_reference"
     },
     {
       "case": "elementwise_chain_f64_1k",
       "group": "elementwise_chain",
       "backend": "tenferro-cuda-trace",
-      "median": 0.23764375000000001,
-      "iqr": 0.0022217499999999946,
+      "median": 0.23201275000000002,
+      "iqr": 0.040822250000000004,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 16
+      "operations_per_sample": 16,
+      "verification": "cpu_reference"
     },
     {
       "case": "elementwise_chain_f64_1m",
       "group": "elementwise_chain",
       "backend": "jax-cuda",
-      "median": 0.0884138125,
-      "iqr": 0.0004928125000000089,
+      "median": 0.36289525,
+      "iqr": 1.96260975,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 16
+      "operations_per_sample": 4
     },
     {
       "case": "elementwise_chain_f64_1m",
       "group": "elementwise_chain",
       "backend": "pytorch-cuda",
-      "median": 0.31510275,
-      "iqr": 0.002522124999999986,
+      "median": 0.3152985,
+      "iqr": 0.005028625000000009,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 8
@@ -75,21 +77,23 @@
       "case": "elementwise_chain_f64_1m",
       "group": "elementwise_chain",
       "backend": "tenferro-cuda-eager",
-      "median": 1.3306475,
-      "iqr": 0.03315250000000014,
+      "median": 2.284927,
+      "iqr": 0.2802030000000002,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 2
+      "operations_per_sample": 1,
+      "verification": "cpu_reference"
     },
     {
       "case": "elementwise_chain_f64_1m",
       "group": "elementwise_chain",
       "backend": "tenferro-cuda-trace",
-      "median": 0.5079655000000001,
-      "iqr": 0.0018080000000000318,
+      "median": 0.5192,
+      "iqr": 0.03785399999999994,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 4
+      "operations_per_sample": 4,
+      "verification": "cpu_reference"
     }
   ]
 }
