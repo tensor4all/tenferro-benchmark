@@ -2,11 +2,12 @@
   "schema_version": 1,
   "target_profile": "nvidia-gpu",
   "suite_id": "gpu/dense_throughput",
-  "timestamp": "2026-10-19T09:28:49.176769+00:00",
-  "tenferro_commit": "e921b059a5e3c41ea76002553cbb9415d4b5e58d",
+  "timestamp": "2026-11-14T04:48:55.118647+00:00",
+  "tenferro_commit": "9a850b06155405acc99ecd0648829e9e6d3866ba",
   "hardware": {
     "gpu": "NVIDIA A100 80GB PCIe",
-    "host": "8b14bb26e819"
+    "cpu": "AMD EPYC 7543 32-Core Processor",
+    "host": "77ffb28739dd"
   },
   "unit": "ms",
   "rows": [
@@ -14,28 +15,34 @@
       "case": "dense_batched_matmul_f64_b16_32_throughput",
       "group": "batched_matmul",
       "backend": "tenferro-cuda-trace-deferred-batch",
-      "median": 0.0326428125,
-      "iqr": 0.0005476874999999978,
+      "median": 0.024045515625,
+      "iqr": 0.00037110937499999774,
       "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 64,
+      "verification": "cpu_reference"
     },
     {
       "case": "elementwise_chain_f64_1k_throughput",
       "group": "elementwise_chain",
       "backend": "tenferro-cuda-trace-deferred-batch",
-      "median": 0.069585203125,
-      "iqr": 0.0001970312500000071,
+      "median": 0.208466046875,
+      "iqr": 0.0008881250000000174,
       "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 64,
+      "verification": "cpu_reference"
     },
     {
       "case": "elementwise_chain_f64_1m_throughput",
       "group": "elementwise_chain",
       "backend": "tenferro-cuda-trace-deferred-batch",
-      "median": 0.09963321875,
-      "iqr": 0.00031034374999999725,
+      "median": 0.50292571875,
+      "iqr": 0.0020359374999999735,
       "status": "ok",
-      "verified": true
+      "verified": true,
+      "operations_per_sample": 32,
+      "verification": "cpu_reference"
     }
   ]
 }
