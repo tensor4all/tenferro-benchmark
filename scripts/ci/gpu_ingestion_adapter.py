@@ -12,6 +12,12 @@ if __package__:
 else:
     from result_ingestion import FAILED_STATUSES, digest, instant, safe_file
 
+# Suites whose page and summary are written by the AD formatter. Rebuilding
+# them with the generic family formatter produces a different summary and
+# refuses the bundle (run 43557493461: "GPU summary differs from raw records").
+AD_SUMMARY_SUITES = ('gpu/linalg_jvp_vjp', 'gpu/linalg_ad_latency',
+                     'gpu/linalg_ad_throughput')
+
 
 def adapt_publication(bundle: Path, source: dict, only_suite: str | None = None) -> dict:
     """Return ingestion entries for an existing schema-2 GPU artifact.
@@ -77,7 +83,7 @@ def adapt_publication(bundle: Path, source: dict, only_suite: str | None = None)
         scripts = str(Path(__file__).resolve().parents[1])
         if scripts not in sys.path:
             sys.path.insert(0, scripts)
-        if suite in ('gpu/linalg_jvp_vjp', 'gpu/linalg_ad_latency'):
+        if suite in AD_SUMMARY_SUITES:
             from format_gpu_linalg_ad_results import build_summary
         else:
             # The routine path folds every family into the shared record contract.

@@ -14,6 +14,16 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from format_gpu_results import build_summary
 
 
+class SummaryFormatterSelectionTest(unittest.TestCase):
+    def test_the_ad_throughput_suite_uses_the_ad_formatter(self):
+        from scripts.ci.gpu_ingestion_adapter import AD_SUMMARY_SUITES
+        self.assertIn('gpu/linalg_ad_throughput', AD_SUMMARY_SUITES)
+        self.assertIn('gpu/linalg_jvp_vjp', AD_SUMMARY_SUITES)
+        self.assertIn('gpu/linalg_ad_latency', AD_SUMMARY_SUITES)
+        # The dense throughput suite is written by the family formatter.
+        self.assertNotIn('gpu/dense_throughput', AD_SUMMARY_SUITES)
+
+
 class GPUIngestionTest(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
