@@ -111,11 +111,18 @@ MODE_JSON="$(printf '{"mode":"throughput","execution_mode":"deferred-batch","def
 
 RUST_BIN="${CARGO_TARGET_DIR:-$PROJECT_DIR/target}/release/benchmark_gpu_rust"
 AD_BIN="${CARGO_TARGET_DIR:-$PROJECT_DIR/target}/release/benchmark_gpu_linalg_ad"
-echo "Building benchmark_gpu_rust and benchmark_gpu_linalg_ad..."
-CUBECL_DEBUG_LOG=0 \
-RUST_MIN_STACK="$RUST_MIN_STACK" \
-    cargo build --release --features cuda \
-        --bin benchmark_gpu_rust --bin benchmark_gpu_linalg_ad
+if [[ "${GPU_BENCH_PREBUILT_RUST:-0}" == "1" ]]; then
+    # The hosted build job ships both binaries; the benchmark pod has no Rust
+    # toolchain, so a `cargo build` here exits 127 before any collection.
+    python3 "$SCRIPT_DIR/ci/gpu_artifact.py" "$RUST_BIN"
+    python3 "$SCRIPT_DIR/ci/gpu_artifact.py" "$AD_BIN"
+else
+    echo "Building benchmark_gpu_rust and benchmark_gpu_linalg_ad..."
+    CUBECL_DEBUG_LOG=0 \
+    RUST_MIN_STACK="$RUST_MIN_STACK" \
+        cargo build --release --features cuda \
+            --bin benchmark_gpu_rust --bin benchmark_gpu_linalg_ad
+fi
 
 publish_report() {
     local markdown="$1"

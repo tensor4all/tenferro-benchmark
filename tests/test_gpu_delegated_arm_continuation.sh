@@ -97,3 +97,8 @@ done
 [[ "$(wc -l < "$RESULT_JSONL")" == 3 ]] || fail "every AD arm's rows reach the suite: $(wc -l < "$RESULT_JSONL")"
 
 echo "delegated arm continuation test passed"
+
+# A delegated collector must install the hosted binaries when the pod has no
+# Rust toolchain. The throughput entry point is checked here, by the test CI
+# already runs, so wiring it does not need a workflow-file edit.
+bash "$(dirname "$0")/test_gpu_throughput_runner_contract.sh"
