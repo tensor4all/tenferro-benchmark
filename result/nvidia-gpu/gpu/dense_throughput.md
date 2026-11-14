@@ -2,31 +2,41 @@
 
 - Target profile: `nvidia-gpu`
 - Suite: `gpu/dense_throughput`
-- Suite file: `/workspaces/gpu-throughput/benchmarks/gpu/dense_throughput.yaml`
-- Timestamp: `2026-10-19T09:28:49.176769+00:00`
-- tenferro-rs commit: `e921b059a5e3c41ea76002553cbb9415d4b5e58d`
+- Suite file: `/tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/benchmarks/gpu/dense_throughput.yaml`
+- Timestamp: `2026-11-14T04:48:55.118647+00:00`
+- tenferro-rs commit: `9a850b06155405acc99ecd0648829e9e6d3866ba`
 
 ## GPU Information
 
 - Device: `cuda:0`
 - Name: `NVIDIA A100 80GB PCIe`
-- UUID: `GPU-530977e1-4968-9283-4129-9fbec3e66542`
+- UUID: `GPU-8bbec783-3700-cc48-166d-a285d3458d82`
 - Memory: `80 GiB`
-- Driver version: `580.126.09`
-- CUDA version: `13.0`
-- CUDA runtime: `12.9`
-- cuDNN version: `92700`
+- Driver version: `595.91.07`
+- CUDA version: `13.2`
+- CUDA runtime: `12.8`
+- cuDNN version: `91900`
+- Container: `devcontainer`
+- CUDA toolkit: `unknown`
+- CUDA toolkit root: `/opt/tenferro-benchmark-ci/cuda`
+- cuTENSOR version: `2.2.0`
+- cuSOLVER version: `11.7.3`
 
 ## CPU Information
 
-- Model: `AMD EPYC 7713P 64-Core Processor`
+- Model: `AMD EPYC 7543 32-Core Processor`
 - Vendor: `AuthenticAMD`
-- Logical CPUs: `64`
-- Sockets: `1`
-- Cores per socket: `64`
-- Threads per core: `1`
-- NUMA nodes: `1`
-- Python platform: `Linux-6.8.0-101-generic-x86_64-with-glibc2.39`
+- Logical CPUs: `128`
+- Sockets: `2`
+- Cores per socket: `32`
+- Threads per core: `2`
+- NUMA nodes: `2`
+- Transparent huge pages: `madvise (always [madvise] never)`
+- Transparent huge page defrag: `madvise (always defer defer+madvise [madvise] never)`
+- Python platform: `Linux-6.8.0-138-generic-x86_64-with-glibc2.39`
+- L3 domains (shared CPUs): `0-3,64-67; 4-7,68-71; 8-11,72-75; 12-15,76-79; 16-19,80-83; 20-23,84-87; 24-27,88-91; 28-31,92-95; 32-35,96-99; 36-39,100-103; 40-43,104-107; 44-47,108-111; 48-51,112-115; 52-55,116-119; 56-59,120-123; 60-63,124-127`
+- CPU boost: `enabled`
+- Container: `devcontainer`
 
 Median time is reported in milliseconds for `ok` records.
 Inputs are prepared on the GPU before timed runs; initial host-to-device transfer is outside the timed region.
@@ -41,14 +51,14 @@ Rows whose backend name ends in `-deferred-batch` are **throughput mode**: each 
 
 | Problem | tenferro-rs CUDA trace (deferred batch throughput) |
 |---|---:|
-| dense_batched_matmul_f64_b16_32_throughput | 0.033 |
+| dense_batched_matmul_f64_b16_32_throughput | 0.024 |
 
 ## gpu/dense_throughput / elementwise_chain / allocating output
 
 | Problem | tenferro-rs CUDA trace (deferred batch throughput) |
 |---|---:|
-| elementwise_chain_f64_1k_throughput | 0.070 |
-| elementwise_chain_f64_1m_throughput | 0.100 |
+| elementwise_chain_f64_1k_throughput | 0.208 |
+| elementwise_chain_f64_1m_throughput | 0.503 |
 
 ## Sampling
 
@@ -56,6 +66,6 @@ JAX uses compiled JIT execution; compilation, planning and numerical checks are 
 
 | Problem | Backend | Ops/sample | Raw batch ms | Setup and precision |
 | --- | --- | ---: | --- | --- |
-| dense_batched_matmul_f64_b16_32_throughput | tenferro-cuda-trace-deferred-batch | 64 | 2.10304, 2.08914, 2.1065, 2.08775, 2.06799, 2.08976, 2.04949 | one caller-held CUDA session entered before sampling; each timed sample enqueues K deferred prepared runs (Runtime::run_prepared_deferred) and pays one retirement barrier in a single finish_prepared; per-call time is sample_ms / K; inputs, plans, compilation, guard entry and session entry outside clocks; native declared dtype; no AD recording |
-| elementwise_chain_f64_1k_throughput | tenferro-cuda-trace-deferred-batch | 64 | 4.44892, 4.46153, 4.44963, 4.45863, 4.46369, 4.44391, 4.45345 | one caller-held CUDA session entered before sampling; each timed sample enqueues K deferred prepared runs (Runtime::run_prepared_deferred) and pays one retirement barrier in a single finish_prepared; per-call time is sample_ms / K; inputs, plans, compilation, guard entry and session entry outside clocks; native declared dtype; no AD recording |
-| elementwise_chain_f64_1m_throughput | tenferro-cuda-trace-deferred-batch | 32 | 3.19234, 3.1951, 3.18698, 3.18241, 3.18826, 3.18058, 3.19073 | one caller-held CUDA session entered before sampling; each timed sample enqueues K deferred prepared runs (Runtime::run_prepared_deferred) and pays one retirement barrier in a single finish_prepared; per-call time is sample_ms / K; inputs, plans, compilation, guard entry and session entry outside clocks; native declared dtype; no AD recording |
+| dense_batched_matmul_f64_b16_32_throughput | tenferro-cuda-trace-deferred-batch | 64 | 1.50762, 1.61578, 1.53633, 1.53891, 1.54825, 1.52558, 1.54933 | one caller-held CUDA engine for every sample; each timed sample enqueues K prepared Runtime::run calls and pays one caller-side retirement barrier; per-call time is sample_ms / K; inputs, plans and compilation outside clocks; native declared dtype; no AD recording |
+| elementwise_chain_f64_1k_throughput | tenferro-cuda-trace-deferred-batch | 64 | 13.4325, 13.3263, 13.3244, 13.3519, 13.297, 13.3418, 13.3813 | one caller-held CUDA engine for every sample; each timed sample enqueues K prepared Runtime::run calls and pays one caller-side retirement barrier; per-call time is sample_ms / K; inputs, plans and compilation outside clocks; native declared dtype; no AD recording |
+| elementwise_chain_f64_1m_throughput | tenferro-cuda-trace-deferred-batch | 32 | 16.2928, 16.0854, 16.0772, 16.1, 16.0936, 16.0812, 16.1463 | one caller-held CUDA engine for every sample; each timed sample enqueues K prepared Runtime::run calls and pays one caller-side retirement barrier; per-call time is sample_ms / K; inputs, plans and compilation outside clocks; native declared dtype; no AD recording |
