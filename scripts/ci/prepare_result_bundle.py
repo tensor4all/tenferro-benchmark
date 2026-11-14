@@ -120,8 +120,15 @@ def package_gpu_suite(root: Path, profile: str, output: Path, suite_file: str, s
     expected = planned_rows(run, suite)
     if expected is None:
         declared = declaration.get('backends', backends.split(','))
+        # A suite that declares its own arms and a run that recorded no plan is
+        # expected to carry exactly those arms. The workflow's runtime arm set
+        # is a different contract: the throughput lane declares only
+        # `tenferro-cuda-trace-deferred-batch`, which the runtime set never
+        # contains, so intersecting first planned zero rows and refused every
+        # throughput bundle (run 43553702617).
+        selected = [backend for backend in backends.split(',') if backend in declared]
         expected = {(problem['id'], backend) for problem in declaration['problems']
-                    for backend in backends.split(',') if backend in declared}
+                    for backend in (selected or list(declared))}
     expected = sorted(expected)
     # Recorded, and refused at ingestion: a run that dropped a routine arm
     # is not the weekly matrix, however complete its own rows look.

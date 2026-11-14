@@ -236,6 +236,24 @@ class PackagePartialGPUTest(unittest.TestCase):
             with self.subTest(metric=metric), self.assertRaisesRegex(ValueError, 'failed row has timing'):
                 self.package()
 
+    def test_a_declared_arm_outside_the_runtime_set_plans_its_own_rows(self):
+        # The throughput lane declares only the deferred-batch arm, which the
+        # workflow's runtime arm set never contains. The suite declaration is
+        # the authority when the run records no plan.
+        fixture = self.fixture
+        arm = 'tenferro-cuda-trace-deferred-batch'
+        (fixture.root/'dense.yaml').write_text(
+            f'suite_id: gpu/dense\nbackends: [{arm}]\nproblems: [{{id: matmul}}]\n')
+        row = dict(fixture.row, backend=arm)
+        (fixture.run/'records.jsonl').write_text(json.dumps(row)+'\n')
+        (fixture.run/'report.summary.json').write_text(
+            json.dumps(test_gpu_ingestion.build_summary([row], fixture.metadata)))
+        self.package()
+        publication = json.loads(
+            (self.fixture.root/'partial-bundle/publication.json').read_text())
+        self.assertEqual([tuple(item) for item in publication['suites'][0]['expected_rows']],
+                         [('matmul', arm)])
+
     def test_missing_gpu_row_or_missing_required_report_rejects(self):
         self.add_failure()
         fixture = self.fixture
