@@ -17,6 +17,22 @@ else:
 # refuses the bundle (run 43557493461: "GPU summary differs from raw records").
 AD_SUMMARY_SUITES = ('gpu/linalg_jvp_vjp', 'gpu/linalg_ad_latency',
                      'gpu/linalg_ad_throughput')
+ROOT = Path(__file__).resolve().parents[2]
+
+
+def repo_suite_file(metadata: dict, suite: str) -> Path:
+    """The suite declaration to rebuild a summary from.
+
+    A run records the absolute path it collected from (the pod's checkout).
+    That path does not exist on the ingestion runner, so a suite whose id names
+    a declaration in this checkout falls back to it. A path that does exist
+    wins, because a routine run's materialised selection is the plan it ran.
+    """
+    recorded = Path(str(metadata.get('suite_file') or ''))
+    if recorded.is_file():
+        return recorded
+    candidate = ROOT / 'benchmarks' / 'gpu' / f'{suite.split("/", 1)[1]}.yaml'
+    return candidate if candidate.is_file() else recorded
 
 
 def adapt_publication(bundle: Path, source: dict, only_suite: str | None = None) -> dict:
@@ -88,7 +104,9 @@ def adapt_publication(bundle: Path, source: dict, only_suite: str | None = None)
         else:
             # The routine path folds every family into the shared record contract.
             from format_gpu_results import build_summary
-        rebuilt = build_summary(records, metadata)
+        # Rebuild from the declaration this checkout can read; see
+        # repo_suite_file. The bundled run.yaml is not rewritten.
+        rebuilt = build_summary(records, dict(metadata, suite_file=str(repo_suite_file(metadata, suite))))
         if rebuilt != summary:
             raise ValueError(f'{suite}: GPU summary differs from raw records')
         # Attribution is established by the API-selected run. Some legacy GPU

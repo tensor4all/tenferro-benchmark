@@ -14,6 +14,21 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from format_gpu_results import build_summary
 
 
+class SuiteFileResolutionTest(unittest.TestCase):
+    def test_a_pod_path_falls_back_to_this_checkout(self):
+        from scripts.ci.gpu_ingestion_adapter import repo_suite_file
+        resolved = repo_suite_file(
+            {'suite_file': '/tmp/actions-runner/x/benchmarks/gpu/linalg_ad_throughput.yaml'},
+            'gpu/linalg_ad_throughput')
+        self.assertTrue(resolved.is_file())
+        self.assertEqual(resolved.name, 'linalg_ad_throughput.yaml')
+
+    def test_an_existing_recorded_path_wins(self):
+        from scripts.ci.gpu_ingestion_adapter import repo_suite_file
+        existing = Path(__file__).resolve()
+        self.assertEqual(repo_suite_file({'suite_file': str(existing)}, 'gpu/dense'), existing)
+
+
 class SummaryFormatterSelectionTest(unittest.TestCase):
     def test_the_ad_throughput_suite_uses_the_ad_formatter(self):
         from scripts.ci.gpu_ingestion_adapter import AD_SUMMARY_SUITES
