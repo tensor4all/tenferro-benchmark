@@ -2,24 +2,24 @@
 
 - Target profile: `mac-cpu`
 - tenferro-rs commit: `9a850b06155405acc99ecd0648829e9e6d3866ba`
-- Benchmark commit: `89c207f1ca97cde3ae0f31586747a039ca4e5cc6`
+- Benchmark commit: `9e383937df4e365bd68bf5b16dbfcaaa269bcc82`
 
 Generated from the explicit runs below; each section retains its own provenance and thread settings.
 
 ## Threads: 1
 
-Source report: `data/results/mac-cpu/cpu/einsum/20261114_172310/cpu_ops_report.md`.
+Source report: `data/results/mac-cpu/cpu/einsum/20261115_172247/cpu_ops_report.md`.
 
 
 - Suite: `cpu/cpu_ops`
 - Target profile: `mac-cpu`
 - Suite file: `benchmarks/cpu/einsum.yaml`
-- Run metadata: `data/results/mac-cpu/cpu/einsum/20261114_172310/run.yaml`
-- Timestamp: `2026-11-14T17:23:10.539309+00:00`
+- Run metadata: `data/results/mac-cpu/cpu/einsum/20261115_172247/run.yaml`
+- Timestamp: `2026-11-15T17:22:47.463268+00:00`
 
 Latest run: `./scripts/run_all.sh 1`.
 
-This file is generated from one CPU ops run under `data/results/mac-cpu/cpu/einsum/20261114_172310`.
+This file is generated from one CPU ops run under `data/results/mac-cpu/cpu/einsum/20261115_172247`.
 
 - tenferro-rs commit: `9a850b06155405acc99ecd0648829e9e6d3866ba`
 
@@ -67,7 +67,7 @@ This file is generated from one CPU ops run under `data/results/mac-cpu/cpu/eins
   - linked LAPACK libs: `bazel-out/darwin_arm64-opt/bin/jaxlib/cpu/_lapack.so`
 
 
-- CSV: `data/results/mac-cpu/cpu/einsum/20261114_172310/cpu_ops_t1_20261114_172310.csv`
+- CSV: `data/results/mac-cpu/cpu/einsum/20261115_172247/cpu_ops_t1_20261115_172247.csv`
 
 ### CPU Benchmark Items
 
@@ -77,191 +77,176 @@ Median ± IQR (ms). Missing backends are shown as `-`.
 
 | suite | benchmark | dtype | threads | shape | tenferro-rs direct API (ms) | tenferro-rs eager mode (ms) | tenferro-rs trace mode (ms) | PyTorch Python (ms) | JAX Python (XLA CPU) (ms) | Julia (Base/LinearAlgebra) (ms) | Julia (Strided.jl) (ms) |
 |---|---|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|
-| batched | `batched_eigh` | f64 | 1 | `2x2xbatch16 (native batch layout)` | - | 0.009 ± 0.000 | 0.007 ± 0.000 | 0.009 ± 0.002 | 0.018 ± 0.008 | - | - |
-| batched | `batched_eigh` | f64 | 1 | `2x2xbatch64 (native batch layout)` | - | 0.022 ± 0.004 | 0.022 ± 0.001 | 0.034 ± 0.018 | 0.046 ± 0.001 | - | - |
-| batched | `batched_eigh` | f64 | 1 | `4x4xbatch16 (native batch layout)` | - | 0.030 ± 0.003 | 0.030 ± 0.003 | 0.028 ± 0.004 | 0.036 ± 0.004 | - | - |
-| batched | `batched_eigh` | f64 | 1 | `4x4xbatch64 (native batch layout)` | - | 0.102 ± 0.014 | 0.098 ± 0.012 | 0.087 ± 0.017 | 0.184 ± 0.083 | - | - |
-| batched | `batched_matmul_ikb_kjb_ijb` | f64 | 1 | `2x2xbatch16 (native batch layout)` | - | 0.003 ± 0.000 | 0.003 ± 0.000 | 0.009 ± 0.002 | 0.082 ± 0.018 | - | - |
-| batched | `batched_matmul_ikb_kjb_ijb` | f64 | 1 | `2x2xbatch64 (native batch layout)` | - | 0.006 ± 0.000 | 0.006 ± 0.001 | 0.010 ± 0.001 | 0.109 ± 0.024 | - | - |
-| batched | `batched_matmul_ikb_kjb_ijb` | f64 | 1 | `4x4xbatch1024 (native batch layout)` | - | 0.058 ± 0.014 | 0.056 ± 0.001 | 0.041 ± 0.004 | 0.160 ± 0.094 | - | - |
-| batched | `batched_matmul_ikb_kjb_ijb` | f64 | 1 | `4x4xbatch16 (native batch layout)` | - | 0.004 ± 0.002 | 0.003 ± 0.000 | 0.010 ± 0.001 | 0.120 ± 0.053 | - | - |
-| batched | `batched_matmul_ikb_kjb_ijb` | f64 | 1 | `4x4xbatch64 (native batch layout)` | - | 0.006 ± 0.000 | 0.007 ± 0.001 | 0.012 ± 0.002 | 0.107 ± 0.020 | - | - |
-| batched | `batched_qr` | f64 | 1 | `2x2xbatch16 (native batch layout)` | - | 0.008 ± 0.000 | 0.007 ± 0.000 | 0.008 ± 0.004 | 0.014 ± 0.002 | - | - |
-| batched | `batched_qr` | f64 | 1 | `2x2xbatch64 (native batch layout)` | - | 0.020 ± 0.003 | 0.019 ± 0.002 | 0.023 ± 0.002 | 0.029 ± 0.003 | - | - |
-| batched | `batched_qr` | f64 | 1 | `4x4xbatch16 (native batch layout)` | - | 0.015 ± 0.001 | 0.012 ± 0.003 | 0.014 ± 0.006 | 0.017 ± 0.003 | - | - |
-| batched | `batched_qr` | f64 | 1 | `4x4xbatch64 (native batch layout)` | - | 0.047 ± 0.003 | 0.040 ± 0.005 | 0.042 ± 0.010 | 0.059 ± 0.017 | - | - |
-| batched | `batched_solve` | f64 | 1 | `2x2xbatch16 (native batch layout),rhs=1` | - | 0.007 ± 0.000 | 0.006 ± 0.001 | 0.012 ± 0.001 | 0.012 ± 0.007 | - | - |
-| batched | `batched_solve` | f64 | 1 | `2x2xbatch64 (native batch layout),rhs=1` | - | 0.013 ± 0.001 | 0.011 ± 0.001 | 0.018 ± 0.002 | 0.015 ± 0.003 | - | - |
-| batched | `batched_solve` | f64 | 1 | `4x4xbatch16 (native batch layout),rhs=1` | - | 0.008 ± 0.001 | 0.008 ± 0.000 | 0.016 ± 0.005 | 0.012 ± 0.003 | - | - |
-| batched | `batched_solve` | f64 | 1 | `4x4xbatch64 (native batch layout),rhs=1` | - | 0.019 ± 0.001 | 0.016 ± 0.001 | 0.021 ± 0.003 | 0.021 ± 0.002 | - | - |
-| batched | `batched_svd` | f64 | 1 | `2x2xbatch16 (native batch layout)` | - | 0.017 ± 0.002 | 0.015 ± 0.001 | 0.020 ± 0.003 | 0.047 ± 0.010 | - | - |
-| batched | `batched_svd` | f64 | 1 | `2x2xbatch64 (native batch layout)` | - | 0.055 ± 0.004 | 0.057 ± 0.009 | 0.051 ± 0.006 | 0.151 ± 0.021 | - | - |
-| batched | `batched_svd` | f64 | 1 | `4x4xbatch16 (native batch layout)` | - | 0.057 ± 0.005 | 0.050 ± 0.003 | 0.052 ± 0.011 | 0.111 ± 0.054 | - | - |
-| batched | `batched_svd` | f64 | 1 | `4x4xbatch64 (native batch layout)` | - | 0.213 ± 0.011 | 0.189 ± 0.021 | 0.203 ± 0.040 | 0.268 ± 0.037 | - | - |
-| batched | `grad_sum_batched_matmul_backward` | f64 | 1 | `2x2xbatch16 (native batch layout)` | - | 0.039 ± 0.003 | 0.010 ± 0.001 | 0.074 ± 0.011 | 0.009 ± 0.003 | - | - |
-| batched | `grad_sum_batched_matmul_backward` | f64 | 1 | `2x2xbatch64 (native batch layout)` | - | 0.048 ± 0.001 | 0.016 ± 0.001 | 0.067 ± 0.009 | 0.009 ± 0.002 | - | - |
-| batched | `grad_sum_batched_matmul_backward` | f64 | 1 | `4x4xbatch16 (native batch layout)` | - | 0.043 ± 0.003 | 0.012 ± 0.000 | 0.088 ± 0.040 | 0.013 ± 0.005 | - | - |
-| batched | `grad_sum_batched_matmul_backward` | f64 | 1 | `4x4xbatch64 (native batch layout)` | - | 0.053 ± 0.002 | 0.023 ± 0.004 | 0.073 ± 0.011 | 0.033 ± 0.007 | - | - |
-| batched | `grad_sum_batched_solve_backward` | f64 | 1 | `2x2xbatch16 (native batch layout),rhs=1` | - | 0.060 ± 0.017 | 0.032 ± 0.001 | 0.072 ± 0.038 | 0.013 ± 0.003 | - | - |
-| batched | `grad_sum_batched_solve_backward` | f64 | 1 | `2x2xbatch64 (native batch layout),rhs=1` | - | 0.067 ± 0.002 | 0.059 ± 0.012 | 0.073 ± 0.031 | 0.020 ± 0.004 | - | - |
-| batched | `grad_sum_batched_solve_backward` | f64 | 1 | `4x4xbatch16 (native batch layout),rhs=1` | - | 0.061 ± 0.008 | 0.040 ± 0.001 | 0.061 ± 0.011 | 0.013 ± 0.011 | - | - |
-| batched | `grad_sum_batched_solve_backward` | f64 | 1 | `4x4xbatch64 (native batch layout),rhs=1` | - | 0.083 ± 0.094 | 0.073 ± 0.003 | 0.090 ± 0.054 | 0.030 ± 0.005 | - | - |
-| large | `eigh` | f64 | 1 | `64x64` | - | 0.358 ± 0.062 | 0.363 ± 0.058 | 0.318 ± 0.010 | 0.345 ± 0.023 | - | - |
-| large | `grad_sum_eigh_jvp` | f64 | 1 | `256x256` | - | 12.255 ± 0.498 | 9.389 ± 0.625 | 6.449 ± 1.293 | 7.259 ± 0.529 | - | - |
-| large | `grad_sum_eigh_jvp` | f64 | 1 | `512x512` | - | 90.071 ± 18.023 | 54.490 ± 2.465 | 32.597 ± 0.772 | 58.667 ± 14.537 | - | - |
-| large | `grad_sum_eigh_vjp` | f64 | 1 | `256x256` | - | 6.035 ± 0.263 | 9.138 ± 0.212 | 6.241 ± 0.919 | 7.106 ± 0.530 | - | - |
-| large | `grad_sum_eigh_vjp` | f64 | 1 | `512x512` | - | 45.810 ± 9.098 | 53.964 ± 3.711 | 30.992 ± 0.658 | 43.401 ± 4.135 | - | - |
-| large | `grad_sum_lu_jvp` | f64 | 1 | `256x256` | - | 3.608 ± 0.454 | 1.416 ± 0.198 | 3.063 ± 0.271 | 4.084 ± 0.894 | - | - |
-| large | `grad_sum_lu_jvp` | f64 | 1 | `512x512` | - | 32.337 ± 7.579 | 10.192 ± 0.969 | 19.139 ± 1.295 | 20.580 ± 1.086 | - | - |
-| large | `grad_sum_lu_vjp` | f64 | 1 | `256x256` | - | 2.869 ± 0.207 | 1.648 ± 0.093 | 1.988 ± 0.833 | 2.755 ± 0.464 | - | - |
-| large | `grad_sum_lu_vjp` | f64 | 1 | `512x512` | - | 24.249 ± 11.935 | 9.946 ± 1.339 | 10.633 ± 0.850 | 21.258 ± 1.295 | - | - |
-| large | `grad_sum_matmul` | f64 | 1 | `64x64` | - | 0.019 ± 0.006 | 0.008 ± 0.001 | 0.013 ± 0.005 | 0.036 ± 0.009 | - | - |
-| large | `grad_sum_matmul_backward` | f64 | 1 | `64x64` | - | 0.214 ± 0.039 | 0.028 ± 0.001 | 0.051 ± 0.003 | 0.072 ± 0.007 | - | - |
-| large | `grad_sum_qr_jvp` | f64 | 1 | `256x256` | - | 6.447 ± 0.784 | 4.793 ± 0.801 | 3.337 ± 0.498 | 4.954 ± 0.419 | - | - |
-| large | `grad_sum_qr_jvp` | f64 | 1 | `512x512` | - | 35.756 ± 1.531 | 25.999 ± 1.314 | 19.798 ± 1.755 | 35.518 ± 6.476 | - | - |
-| large | `grad_sum_qr_vjp` | f64 | 1 | `256x256` | - | 4.337 ± 0.343 | 4.303 ± 0.499 | 3.010 ± 0.310 | 5.215 ± 0.698 | - | - |
-| large | `grad_sum_qr_vjp` | f64 | 1 | `512x512` | - | 25.520 ± 1.860 | 26.584 ± 2.358 | 17.222 ± 0.876 | 41.845 ± 13.957 | - | - |
-| large | `grad_sum_solve_backward` | f64 | 1 | `64x64,rhs=1` | - | 0.074 ± 0.008 | 0.090 ± 0.002 | 0.095 ± 0.014 | 0.057 ± 0.026 | - | - |
-| large | `grad_sum_solve_jvp` | f64 | 1 | `256x256,rhs=1` | - | 0.881 ± 0.134 | 0.609 ± 0.090 | 0.543 ± 0.136 | 0.403 ± 0.284 | - | - |
-| large | `grad_sum_solve_jvp` | f64 | 1 | `512x512,rhs=1` | - | 4.069 ± 0.619 | 3.103 ± 0.507 | 2.551 ± 0.616 | 2.147 ± 0.816 | - | - |
-| large | `grad_sum_solve_vjp` | f64 | 1 | `256x256,rhs=1` | - | 0.462 ± 0.027 | 0.583 ± 0.212 | 0.624 ± 0.061 | 0.382 ± 0.110 | - | - |
-| large | `grad_sum_solve_vjp` | f64 | 1 | `512x512,rhs=1` | - | 2.273 ± 0.369 | 2.894 ± 0.131 | 4.206 ± 1.541 | 1.638 ± 0.336 | - | - |
-| large | `grad_sum_svd_s_backward` | f64 | 1 | `64x64` | - | 0.540 ± 0.121 | 0.690 ± 0.046 | 0.538 ± 0.075 | 0.552 ± 0.061 | - | - |
-| large | `grad_sum_svd_s_jvp` | f64 | 1 | `256x256` | - | 21.577 ± 0.428 | 16.691 ± 0.704 | 11.782 ± 1.997 | 11.528 ± 1.537 | - | - |
-| large | `grad_sum_svd_s_jvp` | f64 | 1 | `512x512` | - | 124.030 ± 2.993 | 101.907 ± 8.137 | 76.212 ± 5.742 | 79.624 ± 7.114 | - | - |
-| large | `grad_sum_svd_s_vjp` | f64 | 1 | `256x256` | - | 10.572 ± 0.466 | 17.381 ± 0.801 | 10.149 ± 1.144 | 11.054 ± 0.299 | - | - |
-| large | `grad_sum_svd_s_vjp` | f64 | 1 | `512x512` | - | 63.164 ± 1.205 | 107.224 ± 5.688 | 58.541 ± 6.449 | 80.074 ± 5.570 | - | - |
-| large | `matmul` | f64 | 1 | `128x128` | - | 0.029 ± 0.009 | 0.019 ± 0.000 | 0.027 ± 0.007 | 0.132 ± 0.033 | - | - |
-| large | `matmul` | f64 | 1 | `256x256` | - | 0.204 ± 0.067 | 0.127 ± 0.036 | 0.209 ± 0.036 | 1.024 ± 0.242 | - | - |
-| large | `matmul_rect` | f64 | 1 | `256x1024 * 1024x256` | - | 0.525 ± 0.021 | 0.513 ± 0.012 | 0.728 ± 0.121 | 3.801 ± 0.351 | - | - |
-| large | `qr` | f64 | 1 | `64x64` | - | 0.076 ± 0.011 | 0.068 ± 0.008 | 0.081 ± 0.012 | 0.081 ± 0.008 | - | - |
-| large | `solve` | f64 | 1 | `64x64,rhs=1` | - | 0.022 ± 0.002 | 0.022 ± 0.002 | 0.036 ± 0.007 | 0.041 ± 0.006 | - | - |
-| large | `solve` | f64 | 1 | `64x64,rhs=16` | - | 0.022 ± 0.000 | 0.025 ± 0.001 | 0.050 ± 0.003 | 0.059 ± 0.004 | - | - |
-| large | `solve` | f64 | 1 | `64x64,rhs=64` | - | 0.027 ± 0.000 | 0.031 ± 0.001 | 0.088 ± 0.049 | 0.188 ± 0.063 | - | - |
-| large | `svd` | f64 | 1 | `64x64` | - | 0.493 ± 0.063 | 0.449 ± 0.028 | 0.483 ± 0.048 | 0.505 ± 0.079 | - | - |
-| small | `eigh` | f64 | 1 | `2x2` | - | 0.004 ± 0.001 | 0.003 ± 0.000 | 0.005 ± 0.001 | 0.008 ± 0.001 | - | - |
-| small | `eigh` | f64 | 1 | `4x4` | - | 0.006 ± 0.001 | 0.004 ± 0.000 | 0.011 ± 0.006 | 0.011 ± 0.003 | - | - |
-| small | `eigh` | f64 | 1 | `8x8` | - | 0.012 ± 0.001 | 0.008 ± 0.003 | 0.011 ± 0.002 | 0.016 ± 0.003 | - | - |
-| small | `einsum_ij_jk_ik` | f64 | 1 | `2x2` | - | 0.002 ± 0.000 | 0.006 ± 0.001 | 0.009 ± 0.002 | 0.083 ± 0.014 | - | - |
-| small | `einsum_ij_jk_ik` | f64 | 1 | `4x4` | - | 0.002 ± 0.000 | 0.005 ± 0.000 | 0.010 ± 0.002 | 0.084 ± 0.045 | - | - |
-| small | `einsum_ij_jk_ik` | f64 | 1 | `8x8` | - | 0.003 ± 0.002 | 0.007 ± 0.007 | 0.009 ± 0.001 | 0.138 ± 0.087 | - | - |
-| small | `grad_sum_eigh_jvp` | f64 | 1 | `2x2` | - | 0.122 ± 0.008 | 0.020 ± 0.003 | 0.077 ± 0.015 | 0.008 ± 0.001 | - | - |
-| small | `grad_sum_eigh_jvp` | f64 | 1 | `4x4` | - | 0.186 ± 0.037 | 0.026 ± 0.033 | 0.092 ± 0.021 | 0.011 ± 0.001 | - | - |
-| small | `grad_sum_eigh_jvp` | f64 | 1 | `8x8` | - | 0.161 ± 0.080 | 0.034 ± 0.002 | 0.121 ± 0.064 | 0.010 ± 0.002 | - | - |
-| small | `grad_sum_eigh_vjp` | f64 | 1 | `2x2` | - | 0.042 ± 0.003 | 0.018 ± 0.006 | 0.069 ± 0.046 | 0.008 ± 0.001 | - | - |
-| small | `grad_sum_eigh_vjp` | f64 | 1 | `4x4` | - | 0.065 ± 0.014 | 0.029 ± 0.012 | 0.074 ± 0.012 | 0.012 ± 0.003 | - | - |
-| small | `grad_sum_eigh_vjp` | f64 | 1 | `8x8` | - | 0.047 ± 0.024 | 0.028 ± 0.002 | 0.121 ± 0.089 | 0.010 ± 0.002 | - | - |
-| small | `grad_sum_lu_jvp` | f64 | 1 | `2x2` | - | 0.577 ± 0.256 | 0.023 ± 0.003 | 0.127 ± 0.038 | 0.007 ± 0.001 | - | - |
-| small | `grad_sum_lu_jvp` | f64 | 1 | `4x4` | - | 0.482 ± 0.063 | 0.023 ± 0.007 | 0.121 ± 0.022 | 0.009 ± 0.001 | - | - |
-| small | `grad_sum_lu_jvp` | f64 | 1 | `8x8` | - | 0.604 ± 0.183 | 0.023 ± 0.003 | 0.283 ± 0.267 | 0.008 ± 0.002 | - | - |
-| small | `grad_sum_lu_vjp` | f64 | 1 | `2x2` | - | 0.111 ± 0.009 | 0.022 ± 0.003 | 0.104 ± 0.015 | 0.009 ± 0.002 | - | - |
-| small | `grad_sum_lu_vjp` | f64 | 1 | `4x4` | - | 0.129 ± 0.028 | 0.020 ± 0.007 | 0.085 ± 0.022 | 0.010 ± 0.004 | - | - |
-| small | `grad_sum_lu_vjp` | f64 | 1 | `8x8` | - | 0.147 ± 0.113 | 0.022 ± 0.001 | 0.230 ± 0.120 | 0.020 ± 0.016 | - | - |
-| small | `grad_sum_matmul_backward` | f64 | 1 | `2x2` | - | 0.040 ± 0.007 | 0.009 ± 0.001 | 0.029 ± 0.004 | 0.007 ± 0.002 | - | - |
-| small | `grad_sum_matmul_backward` | f64 | 1 | `4x4` | - | 0.121 ± 0.030 | 0.007 ± 0.009 | 0.032 ± 0.005 | 0.010 ± 0.001 | - | - |
-| small | `grad_sum_matmul_backward` | f64 | 1 | `8x8` | - | 0.101 ± 0.020 | 0.018 ± 0.005 | 0.033 ± 0.003 | 0.010 ± 0.001 | - | - |
-| small | `grad_sum_qr_jvp` | f64 | 1 | `2x2` | - | 0.749 ± 0.293 | 0.034 ± 0.003 | 0.091 ± 0.009 | 0.008 ± 0.001 | - | - |
-| small | `grad_sum_qr_jvp` | f64 | 1 | `4x4` | - | 1.015 ± 0.389 | 0.036 ± 0.003 | 0.095 ± 0.022 | 0.009 ± 0.001 | - | - |
-| small | `grad_sum_qr_jvp` | f64 | 1 | `8x8` | - | 0.909 ± 0.200 | 0.032 ± 0.002 | 0.147 ± 0.033 | 0.006 ± 0.002 | - | - |
-| small | `grad_sum_qr_vjp` | f64 | 1 | `2x2` | - | 0.081 ± 0.014 | 0.034 ± 0.007 | 0.094 ± 0.019 | 0.009 ± 0.001 | - | - |
-| small | `grad_sum_qr_vjp` | f64 | 1 | `4x4` | - | 0.123 ± 0.008 | 0.055 ± 0.007 | 0.120 ± 0.030 | 0.010 ± 0.001 | - | - |
-| small | `grad_sum_qr_vjp` | f64 | 1 | `8x8` | - | 0.122 ± 0.007 | 0.042 ± 0.009 | 0.157 ± 0.039 | 0.008 ± 0.003 | - | - |
-| small | `grad_sum_solve_backward` | f64 | 1 | `2x2,rhs=1` | - | 0.053 ± 0.003 | 0.023 ± 0.001 | 0.051 ± 0.005 | 0.011 ± 0.003 | - | - |
-| small | `grad_sum_solve_backward` | f64 | 1 | `4x4,rhs=1` | - | 0.050 ± 0.002 | 0.024 ± 0.009 | 0.056 ± 0.013 | 0.010 ± 0.005 | - | - |
-| small | `grad_sum_solve_backward` | f64 | 1 | `8x8,rhs=1` | - | 0.095 ± 0.038 | 0.024 ± 0.001 | 0.075 ± 0.032 | 0.010 ± 0.004 | - | - |
-| small | `grad_sum_solve_jvp` | f64 | 1 | `2x2,rhs=1` | - | 0.107 ± 0.013 | 0.017 ± 0.002 | 0.197 ± 0.024 | 0.009 ± 0.002 | - | - |
-| small | `grad_sum_solve_jvp` | f64 | 1 | `4x4,rhs=1` | - | 0.125 ± 0.007 | 0.019 ± 0.005 | 0.216 ± 0.030 | 0.009 ± 0.002 | - | - |
-| small | `grad_sum_solve_jvp` | f64 | 1 | `8x8,rhs=1` | - | 0.119 ± 0.030 | 0.017 ± 0.001 | 0.226 ± 0.250 | 0.010 ± 0.001 | - | - |
-| small | `grad_sum_solve_vjp` | f64 | 1 | `2x2,rhs=1` | - | 0.045 ± 0.002 | 0.017 ± 0.002 | 0.089 ± 0.018 | 0.008 ± 0.001 | - | - |
-| small | `grad_sum_solve_vjp` | f64 | 1 | `4x4,rhs=1` | - | 0.053 ± 0.017 | 0.016 ± 0.005 | 0.099 ± 0.008 | 0.010 ± 0.012 | - | - |
-| small | `grad_sum_solve_vjp` | f64 | 1 | `8x8,rhs=1` | - | 0.064 ± 0.013 | 0.017 ± 0.000 | 0.125 ± 0.040 | 0.010 ± 0.002 | - | - |
-| small | `grad_sum_svd_s_backward` | f64 | 1 | `2x2` | - | 0.114 ± 0.091 | 0.013 ± 0.001 | 0.040 ± 0.006 | 0.012 ± 0.003 | - | - |
-| small | `grad_sum_svd_s_backward` | f64 | 1 | `4x4` | - | 0.047 ± 0.008 | 0.026 ± 0.011 | 0.044 ± 0.006 | 0.016 ± 0.003 | - | - |
-| small | `grad_sum_svd_s_backward` | f64 | 1 | `8x8` | - | 0.062 ± 0.104 | 0.027 ± 0.021 | 0.051 ± 0.008 | 0.021 ± 0.003 | - | - |
-| small | `grad_sum_svd_s_jvp` | f64 | 1 | `2x2` | - | 0.110 ± 0.021 | 0.014 ± 0.001 | 0.135 ± 0.036 | 0.010 ± 0.001 | - | - |
-| small | `grad_sum_svd_s_jvp` | f64 | 1 | `4x4` | - | 0.146 ± 0.164 | 0.025 ± 0.013 | 0.130 ± 0.030 | 0.012 ± 0.001 | - | - |
-| small | `grad_sum_svd_s_jvp` | f64 | 1 | `8x8` | - | 0.189 ± 0.044 | 0.031 ± 0.009 | 0.181 ± 0.083 | 0.019 ± 0.001 | - | - |
-| small | `grad_sum_svd_s_vjp` | f64 | 1 | `2x2` | - | 0.040 ± 0.003 | 0.013 ± 0.001 | 0.070 ± 0.011 | 0.011 ± 0.001 | - | - |
-| small | `grad_sum_svd_s_vjp` | f64 | 1 | `4x4` | - | 0.057 ± 0.019 | 0.019 ± 0.003 | 0.090 ± 0.026 | 0.013 ± 0.002 | - | - |
-| small | `grad_sum_svd_s_vjp` | f64 | 1 | `8x8` | - | 0.062 ± 0.018 | 0.035 ± 0.017 | 0.152 ± 0.076 | 0.019 ± 0.001 | - | - |
-| small | `matmul` | f64 | 1 | `2x2` | - | 0.002 ± 0.000 | 0.003 ± 0.000 | 0.001 ± 0.000 | 0.006 ± 0.000 | - | - |
-| small | `matmul` | f64 | 1 | `32x32` | - | 0.004 ± 0.001 | 0.003 ± 0.001 | 0.002 ± 0.000 | 0.010 ± 0.003 | - | - |
-| small | `matmul` | f64 | 1 | `4x4` | - | 0.002 ± 0.000 | 0.002 ± 0.000 | 0.001 ± 0.000 | 0.005 ± 0.001 | - | - |
-| small | `matmul` | f64 | 1 | `64x64` | - | 0.008 ± 0.002 | 0.005 ± 0.000 | 0.007 ± 0.001 | 0.024 ± 0.005 | - | - |
-| small | `matmul` | f64 | 1 | `8x8` | - | 0.003 ± 0.001 | 0.003 ± 0.001 | 0.001 ± 0.000 | 0.008 ± 0.002 | - | - |
-| small | `qr` | f64 | 1 | `2x2` | - | 0.006 ± 0.002 | 0.004 ± 0.002 | 0.003 ± 0.000 | 0.009 ± 0.001 | - | - |
-| small | `qr` | f64 | 1 | `4x4` | - | 0.006 ± 0.001 | 0.003 ± 0.000 | 0.004 ± 0.004 | 0.010 ± 0.001 | - | - |
-| small | `qr` | f64 | 1 | `8x8` | - | 0.006 ± 0.001 | 0.005 ± 0.004 | 0.004 ± 0.002 | 0.011 ± 0.001 | - | - |
-| small | `solve` | f64 | 1 | `2x2,rhs=1` | - | 0.004 ± 0.000 | 0.005 ± 0.001 | 0.010 ± 0.001 | 0.007 ± 0.002 | - | - |
-| small | `solve` | f64 | 1 | `2x2,rhs=4` | - | 0.004 ± 0.000 | 0.005 ± 0.001 | 0.010 ± 0.001 | 0.007 ± 0.002 | - | - |
-| small | `solve` | f64 | 1 | `4x4,rhs=1` | - | 0.005 ± 0.002 | 0.005 ± 0.003 | 0.010 ± 0.001 | 0.007 ± 0.005 | - | - |
-| small | `solve` | f64 | 1 | `4x4,rhs=4` | - | 0.006 ± 0.001 | 0.005 ± 0.000 | 0.011 ± 0.006 | 0.007 ± 0.002 | - | - |
-| small | `solve` | f64 | 1 | `8x8,rhs=1` | - | 0.005 ± 0.001 | 0.006 ± 0.005 | 0.010 ± 0.001 | 0.007 ± 0.002 | - | - |
-| small | `solve` | f64 | 1 | `8x8,rhs=4` | - | 0.006 ± 0.003 | 0.005 ± 0.002 | 0.012 ± 0.003 | 0.008 ± 0.001 | - | - |
-| small | `svd` | f64 | 1 | `2x2` | - | 0.005 ± 0.000 | 0.005 ± 0.001 | 0.006 ± 0.001 | 0.014 ± 0.002 | - | - |
-| small | `svd` | f64 | 1 | `4x4` | - | 0.008 ± 0.001 | 0.007 ± 0.001 | 0.010 ± 0.001 | 0.017 ± 0.002 | - | - |
-| small | `svd` | f64 | 1 | `8x8` | - | 0.020 ± 0.004 | 0.024 ± 0.005 | 0.016 ± 0.002 | 0.028 ± 0.005 | - | - |
+| batched | `batched_eigh` | f64 | 1 | `2x2xbatch16 (native batch layout)` | - | 0.008 ± 0.002 | 0.011 ± 0.002 | 0.013 ± 0.005 | 0.018 ± 0.004 | - | - |
+| batched | `batched_eigh` | f64 | 1 | `2x2xbatch64 (native batch layout)` | - | 0.026 ± 0.006 | 0.018 ± 0.002 | 0.027 ± 0.022 | 0.043 ± 0.003 | - | - |
+| batched | `batched_eigh` | f64 | 1 | `4x4xbatch16 (native batch layout)` | - | 0.037 ± 0.007 | 0.028 ± 0.017 | 0.045 ± 0.031 | 0.049 ± 0.016 | - | - |
+| batched | `batched_eigh` | f64 | 1 | `4x4xbatch64 (native batch layout)` | - | 0.117 ± 0.061 | 0.125 ± 0.040 | 0.094 ± 0.011 | 0.113 ± 0.009 | - | - |
+| batched | `batched_matmul_ikb_kjb_ijb` | f64 | 1 | `2x2xbatch16 (native batch layout)` | - | 0.003 ± 0.002 | 0.004 ± 0.001 | 0.019 ± 0.003 | 0.149 ± 0.079 | - | - |
+| batched | `batched_matmul_ikb_kjb_ijb` | f64 | 1 | `2x2xbatch64 (native batch layout)` | - | 0.005 ± 0.002 | 0.005 ± 0.002 | 0.011 ± 0.007 | 0.126 ± 0.057 | - | - |
+| batched | `batched_matmul_ikb_kjb_ijb` | f64 | 1 | `4x4xbatch1024 (native batch layout)` | - | 0.068 ± 0.037 | 0.059 ± 0.001 | 0.042 ± 0.034 | 0.110 ± 0.035 | - | - |
+| batched | `batched_matmul_ikb_kjb_ijb` | f64 | 1 | `4x4xbatch16 (native batch layout)` | - | 0.003 ± 0.000 | 0.005 ± 0.002 | 0.009 ± 0.001 | 0.107 ± 0.007 | - | - |
+| batched | `batched_matmul_ikb_kjb_ijb` | f64 | 1 | `4x4xbatch64 (native batch layout)` | - | 0.009 ± 0.006 | 0.007 ± 0.001 | 0.014 ± 0.002 | 0.085 ± 0.002 | - | - |
+| batched | `batched_qr` | f64 | 1 | `2x2xbatch16 (native batch layout)` | - | 0.011 ± 0.005 | 0.012 ± 0.003 | 0.012 ± 0.008 | 0.015 ± 0.004 | - | - |
+| batched | `batched_qr` | f64 | 1 | `2x2xbatch64 (native batch layout)` | - | 0.018 ± 0.006 | 0.022 ± 0.004 | 0.028 ± 0.008 | 0.030 ± 0.004 | - | - |
+| batched | `batched_qr` | f64 | 1 | `4x4xbatch16 (native batch layout)` | - | 0.020 ± 0.005 | 0.014 ± 0.003 | 0.020 ± 0.012 | 0.020 ± 0.002 | - | - |
+| batched | `batched_qr` | f64 | 1 | `4x4xbatch64 (native batch layout)` | - | 0.057 ± 0.019 | 0.051 ± 0.005 | 0.048 ± 0.004 | 0.051 ± 0.005 | - | - |
+| batched | `batched_solve` | f64 | 1 | `2x2xbatch16 (native batch layout),rhs=1` | - | 0.007 ± 0.002 | 0.009 ± 0.002 | 0.012 ± 0.001 | 0.009 ± 0.003 | - | - |
+| batched | `batched_solve` | f64 | 1 | `2x2xbatch64 (native batch layout),rhs=1` | - | 0.016 ± 0.008 | 0.012 ± 0.007 | 0.019 ± 0.010 | 0.015 ± 0.002 | - | - |
+| batched | `batched_solve` | f64 | 1 | `4x4xbatch16 (native batch layout),rhs=1` | - | 0.009 ± 0.004 | 0.008 ± 0.003 | 0.015 ± 0.001 | 0.012 ± 0.006 | - | - |
+| batched | `batched_solve` | f64 | 1 | `4x4xbatch64 (native batch layout),rhs=1` | - | 0.022 ± 0.022 | 0.030 ± 0.012 | 0.022 ± 0.006 | 0.022 ± 0.003 | - | - |
+| batched | `batched_svd` | f64 | 1 | `2x2xbatch16 (native batch layout)` | - | 0.016 ± 0.003 | 0.013 ± 0.001 | 0.026 ± 0.009 | 0.067 ± 0.020 | - | - |
+| batched | `batched_svd` | f64 | 1 | `2x2xbatch64 (native batch layout)` | - | 0.062 ± 0.043 | 0.049 ± 0.008 | 0.043 ± 0.015 | 0.156 ± 0.067 | - | - |
+| batched | `batched_svd` | f64 | 1 | `4x4xbatch16 (native batch layout)` | - | 0.069 ± 0.012 | 0.072 ± 0.020 | 0.097 ± 0.103 | 0.086 ± 0.005 | - | - |
+| batched | `batched_svd` | f64 | 1 | `4x4xbatch64 (native batch layout)` | - | 0.291 ± 0.055 | 0.213 ± 0.071 | 0.211 ± 0.024 | 0.238 ± 0.007 | - | - |
+| batched | `grad_sum_batched_matmul_backward` | f64 | 1 | `2x2xbatch16 (native batch layout)` | - | 0.034 ± 0.001 | 0.014 ± 0.010 | 0.063 ± 0.003 | 0.010 ± 0.002 | - | - |
+| batched | `grad_sum_batched_matmul_backward` | f64 | 1 | `2x2xbatch64 (native batch layout)` | - | 0.074 ± 0.017 | 0.017 ± 0.001 | 0.074 ± 0.051 | 0.009 ± 0.001 | - | - |
+| batched | `grad_sum_batched_matmul_backward` | f64 | 1 | `4x4xbatch16 (native batch layout)` | - | 0.041 ± 0.003 | 0.015 ± 0.009 | 0.077 ± 0.033 | 0.015 ± 0.002 | - | - |
+| batched | `grad_sum_batched_matmul_backward` | f64 | 1 | `4x4xbatch64 (native batch layout)` | - | 0.044 ± 0.000 | 0.025 ± 0.010 | 0.082 ± 0.011 | 0.031 ± 0.004 | - | - |
+| batched | `grad_sum_batched_solve_backward` | f64 | 1 | `2x2xbatch16 (native batch layout),rhs=1` | - | 0.046 ± 0.001 | 0.031 ± 0.014 | 0.078 ± 0.032 | 0.016 ± 0.001 | - | - |
+| batched | `grad_sum_batched_solve_backward` | f64 | 1 | `2x2xbatch64 (native batch layout),rhs=1` | - | 0.064 ± 0.043 | 0.060 ± 0.009 | 0.067 ± 0.050 | 0.023 ± 0.008 | - | - |
+| batched | `grad_sum_batched_solve_backward` | f64 | 1 | `4x4xbatch16 (native batch layout),rhs=1` | - | 0.153 ± 0.018 | 0.038 ± 0.003 | 0.070 ± 0.028 | 0.022 ± 0.013 | - | - |
+| batched | `grad_sum_batched_solve_backward` | f64 | 1 | `4x4xbatch64 (native batch layout),rhs=1` | - | 0.066 ± 0.002 | 0.070 ± 0.021 | 0.100 ± 0.026 | 0.028 ± 0.006 | - | - |
+| large | `eigh` | f64 | 1 | `64x64` | - | 0.324 ± 0.001 | 0.372 ± 0.020 | 0.393 ± 0.127 | 0.372 ± 0.035 | - | - |
+| large | `grad_sum_eigh_jvp` | f64 | 1 | `256x256` | - | 10.124 ± 0.516 | 12.458 ± 1.576 | 5.582 ± 0.297 | 6.789 ± 0.097 | - | - |
+| large | `grad_sum_eigh_jvp` | f64 | 1 | `512x512` | - | 78.209 ± 5.461 | 64.058 ± 7.768 | 46.227 ± 8.496 | 47.877 ± 0.945 | - | - |
+| large | `grad_sum_eigh_vjp` | f64 | 1 | `256x256` | - | 5.155 ± 0.164 | 12.051 ± 3.535 | 6.289 ± 0.518 | 6.735 ± 0.156 | - | - |
+| large | `grad_sum_eigh_vjp` | f64 | 1 | `512x512` | - | 39.174 ± 5.077 | 69.384 ± 21.636 | 38.816 ± 5.809 | 45.753 ± 3.697 | - | - |
+| large | `grad_sum_lu_jvp` | f64 | 1 | `256x256` | - | 3.503 ± 0.426 | 2.071 ± 0.228 | 3.131 ± 0.682 | 3.106 ± 0.833 | - | - |
+| large | `grad_sum_lu_jvp` | f64 | 1 | `512x512` | - | 29.891 ± 3.410 | 14.259 ± 7.593 | 20.183 ± 5.934 | 20.697 ± 0.986 | - | - |
+| large | `grad_sum_lu_vjp` | f64 | 1 | `256x256` | - | 2.984 ± 0.356 | 2.212 ± 0.736 | 2.024 ± 1.496 | 2.892 ± 0.210 | - | - |
+| large | `grad_sum_lu_vjp` | f64 | 1 | `512x512` | - | 22.881 ± 3.819 | 16.384 ± 6.610 | 10.511 ± 2.267 | 19.954 ± 0.760 | - | - |
+| large | `grad_sum_matmul` | f64 | 1 | `64x64` | - | 0.015 ± 0.002 | 0.008 ± 0.002 | 0.011 ± 0.001 | 0.033 ± 0.008 | - | - |
+| large | `grad_sum_matmul_backward` | f64 | 1 | `64x64` | - | 0.062 ± 0.000 | 0.034 ± 0.012 | 0.059 ± 0.002 | 0.077 ± 0.017 | - | - |
+| large | `grad_sum_qr_jvp` | f64 | 1 | `256x256` | - | 6.325 ± 0.793 | 6.386 ± 0.941 | 2.934 ± 0.431 | 4.411 ± 0.157 | - | - |
+| large | `grad_sum_qr_jvp` | f64 | 1 | `512x512` | - | 32.019 ± 7.400 | 22.939 ± 1.314 | 27.099 ± 4.466 | 35.236 ± 1.651 | - | - |
+| large | `grad_sum_qr_vjp` | f64 | 1 | `256x256` | - | 3.378 ± 1.386 | 5.543 ± 1.118 | 3.452 ± 0.163 | 4.620 ± 1.311 | - | - |
+| large | `grad_sum_qr_vjp` | f64 | 1 | `512x512` | - | 40.596 ± 9.270 | 27.249 ± 8.068 | 22.620 ± 4.618 | 33.917 ± 4.371 | - | - |
+| large | `grad_sum_solve_backward` | f64 | 1 | `64x64,rhs=1` | - | 0.073 ± 0.002 | 0.085 ± 0.019 | 0.084 ± 0.010 | 0.053 ± 0.021 | - | - |
+| large | `grad_sum_solve_jvp` | f64 | 1 | `256x256,rhs=1` | - | 0.664 ± 0.075 | 0.855 ± 0.262 | 0.594 ± 0.098 | 0.321 ± 0.066 | - | - |
+| large | `grad_sum_solve_jvp` | f64 | 1 | `512x512,rhs=1` | - | 4.172 ± 3.220 | 4.127 ± 4.815 | 3.842 ± 2.272 | 1.798 ± 0.102 | - | - |
+| large | `grad_sum_solve_vjp` | f64 | 1 | `256x256,rhs=1` | - | 0.359 ± 0.039 | 0.931 ± 0.353 | 0.661 ± 0.336 | 0.353 ± 0.071 | - | - |
+| large | `grad_sum_solve_vjp` | f64 | 1 | `512x512,rhs=1` | - | 2.744 ± 1.784 | 5.009 ± 1.409 | 3.231 ± 0.115 | 1.568 ± 0.069 | - | - |
+| large | `grad_sum_svd_s_backward` | f64 | 1 | `64x64` | - | 0.527 ± 0.021 | 0.696 ± 0.036 | 0.642 ± 0.075 | 0.552 ± 0.032 | - | - |
+| large | `grad_sum_svd_s_jvp` | f64 | 1 | `256x256` | - | 21.541 ± 2.086 | 19.751 ± 4.153 | 13.759 ± 4.683 | 12.098 ± 0.558 | - | - |
+| large | `grad_sum_svd_s_jvp` | f64 | 1 | `512x512` | - | 163.039 ± 6.594 | 135.279 ± 6.563 | 94.224 ± 21.357 | 75.602 ± 5.973 | - | - |
+| large | `grad_sum_svd_s_vjp` | f64 | 1 | `256x256` | - | 10.232 ± 0.471 | 20.122 ± 2.902 | 13.471 ± 3.516 | 11.129 ± 0.196 | - | - |
+| large | `grad_sum_svd_s_vjp` | f64 | 1 | `512x512` | - | 72.936 ± 22.795 | 116.524 ± 22.008 | 76.338 ± 13.087 | 78.520 ± 5.762 | - | - |
+| large | `matmul` | f64 | 1 | `128x128` | - | 0.029 ± 0.006 | 0.025 ± 0.004 | 0.057 ± 0.040 | 0.140 ± 0.018 | - | - |
+| large | `matmul` | f64 | 1 | `256x256` | - | 0.188 ± 0.017 | 0.153 ± 0.046 | 0.334 ± 0.475 | 1.026 ± 0.459 | - | - |
+| large | `matmul_rect` | f64 | 1 | `256x1024 * 1024x256` | - | 0.582 ± 0.040 | 0.579 ± 0.047 | 0.688 ± 0.108 | 3.613 ± 0.382 | - | - |
+| large | `qr` | f64 | 1 | `64x64` | - | 0.069 ± 0.005 | 0.093 ± 0.024 | 0.093 ± 0.104 | 0.082 ± 0.008 | - | - |
+| large | `solve` | f64 | 1 | `64x64,rhs=1` | - | 0.023 ± 0.001 | 0.026 ± 0.004 | 0.036 ± 0.017 | 0.044 ± 0.003 | - | - |
+| large | `solve` | f64 | 1 | `64x64,rhs=16` | - | 0.022 ± 0.002 | 0.027 ± 0.005 | 0.054 ± 0.011 | 0.088 ± 0.035 | - | - |
+| large | `solve` | f64 | 1 | `64x64,rhs=64` | - | 0.027 ± 0.000 | 0.034 ± 0.003 | 0.056 ± 0.009 | 0.162 ± 0.036 | - | - |
+| large | `svd` | f64 | 1 | `64x64` | - | 0.493 ± 0.036 | 0.512 ± 0.052 | 0.454 ± 0.240 | 0.529 ± 0.086 | - | - |
+| small | `eigh` | f64 | 1 | `2x2` | - | 0.004 ± 0.001 | 0.003 ± 0.001 | 0.004 ± 0.000 | 0.008 ± 0.001 | - | - |
+| small | `eigh` | f64 | 1 | `4x4` | - | 0.004 ± 0.000 | 0.004 ± 0.001 | 0.008 ± 0.011 | 0.009 ± 0.001 | - | - |
+| small | `eigh` | f64 | 1 | `8x8` | - | 0.007 ± 0.001 | 0.007 ± 0.005 | 0.018 ± 0.008 | 0.012 ± 0.001 | - | - |
+| small | `einsum_ij_jk_ik` | f64 | 1 | `2x2` | - | 0.003 ± 0.000 | 0.008 ± 0.004 | 0.013 ± 0.001 | 0.067 ± 0.006 | - | - |
+| small | `einsum_ij_jk_ik` | f64 | 1 | `4x4` | - | 0.002 ± 0.000 | 0.005 ± 0.002 | 0.012 ± 0.006 | 0.080 ± 0.012 | - | - |
+| small | `einsum_ij_jk_ik` | f64 | 1 | `8x8` | - | 0.002 ± 0.000 | 0.004 ± 0.000 | 0.013 ± 0.006 | 0.094 ± 0.009 | - | - |
+| small | `grad_sum_eigh_jvp` | f64 | 1 | `2x2` | - | 0.113 ± 0.008 | 0.016 ± 0.017 | 0.126 ± 0.066 | 0.006 ± 0.000 | - | - |
+| small | `grad_sum_eigh_jvp` | f64 | 1 | `4x4` | - | 0.116 ± 0.013 | 0.019 ± 0.001 | 0.087 ± 0.005 | 0.014 ± 0.011 | - | - |
+| small | `grad_sum_eigh_jvp` | f64 | 1 | `8x8` | - | 0.139 ± 0.019 | 0.028 ± 0.000 | 0.082 ± 0.006 | 0.010 ± 0.001 | - | - |
+| small | `grad_sum_eigh_vjp` | f64 | 1 | `2x2` | - | 0.037 ± 0.002 | 0.017 ± 0.001 | 0.080 ± 0.077 | 0.007 ± 0.000 | - | - |
+| small | `grad_sum_eigh_vjp` | f64 | 1 | `4x4` | - | 0.036 ± 0.001 | 0.020 ± 0.002 | 0.078 ± 0.031 | 0.013 ± 0.011 | - | - |
+| small | `grad_sum_eigh_vjp` | f64 | 1 | `8x8` | - | 0.052 ± 0.002 | 0.028 ± 0.010 | 0.073 ± 0.002 | 0.011 ± 0.002 | - | - |
+| small | `grad_sum_lu_jvp` | f64 | 1 | `2x2` | - | 0.393 ± 0.061 | 0.020 ± 0.008 | 0.111 ± 0.091 | 0.008 ± 0.001 | - | - |
+| small | `grad_sum_lu_jvp` | f64 | 1 | `4x4` | - | 0.359 ± 0.010 | 0.021 ± 0.003 | 0.114 ± 0.029 | 0.014 ± 0.008 | - | - |
+| small | `grad_sum_lu_jvp` | f64 | 1 | `8x8` | - | 0.437 ± 0.053 | 0.025 ± 0.019 | 0.127 ± 0.022 | 0.009 ± 0.001 | - | - |
+| small | `grad_sum_lu_vjp` | f64 | 1 | `2x2` | - | 0.097 ± 0.026 | 0.019 ± 0.020 | 0.091 ± 0.042 | 0.008 ± 0.000 | - | - |
+| small | `grad_sum_lu_vjp` | f64 | 1 | `4x4` | - | 0.082 ± 0.004 | 0.018 ± 0.001 | 0.103 ± 0.021 | 0.012 ± 0.005 | - | - |
+| small | `grad_sum_lu_vjp` | f64 | 1 | `8x8` | - | 0.103 ± 0.008 | 0.028 ± 0.008 | 0.099 ± 0.004 | 0.008 ± 0.014 | - | - |
+| small | `grad_sum_matmul_backward` | f64 | 1 | `2x2` | - | 0.039 ± 0.015 | 0.008 ± 0.001 | 0.054 ± 0.029 | 0.006 ± 0.001 | - | - |
+| small | `grad_sum_matmul_backward` | f64 | 1 | `4x4` | - | 0.032 ± 0.001 | 0.007 ± 0.000 | 0.037 ± 0.009 | 0.007 ± 0.001 | - | - |
+| small | `grad_sum_matmul_backward` | f64 | 1 | `8x8` | - | 0.035 ± 0.005 | 0.010 ± 0.001 | 0.041 ± 0.019 | 0.009 ± 0.002 | - | - |
+| small | `grad_sum_qr_jvp` | f64 | 1 | `2x2` | - | 0.598 ± 0.516 | 0.037 ± 0.009 | 0.101 ± 0.025 | 0.007 ± 0.000 | - | - |
+| small | `grad_sum_qr_jvp` | f64 | 1 | `4x4` | - | 0.481 ± 0.015 | 0.028 ± 0.018 | 0.085 ± 0.030 | 0.009 ± 0.001 | - | - |
+| small | `grad_sum_qr_jvp` | f64 | 1 | `8x8` | - | 0.548 ± 0.030 | 0.039 ± 0.012 | 0.090 ± 0.038 | 0.008 ± 0.004 | - | - |
+| small | `grad_sum_qr_vjp` | f64 | 1 | `2x2` | - | 0.081 ± 0.025 | 0.034 ± 0.006 | 0.080 ± 0.004 | 0.007 ± 0.000 | - | - |
+| small | `grad_sum_qr_vjp` | f64 | 1 | `4x4` | - | 0.071 ± 0.004 | 0.031 ± 0.002 | 0.101 ± 0.030 | 0.012 ± 0.002 | - | - |
+| small | `grad_sum_qr_vjp` | f64 | 1 | `8x8` | - | 0.083 ± 0.006 | 0.051 ± 0.046 | 0.086 ± 0.001 | 0.008 ± 0.004 | - | - |
+| small | `grad_sum_solve_backward` | f64 | 1 | `2x2,rhs=1` | - | 0.046 ± 0.006 | 0.031 ± 0.010 | 0.042 ± 0.003 | 0.008 ± 0.000 | - | - |
+| small | `grad_sum_solve_backward` | f64 | 1 | `4x4,rhs=1` | - | 0.043 ± 0.002 | 0.021 ± 0.022 | 0.063 ± 0.007 | 0.009 ± 0.002 | - | - |
+| small | `grad_sum_solve_backward` | f64 | 1 | `8x8,rhs=1` | - | 0.050 ± 0.006 | 0.023 ± 0.001 | 0.068 ± 0.044 | 0.010 ± 0.001 | - | - |
+| small | `grad_sum_solve_jvp` | f64 | 1 | `2x2,rhs=1` | - | 0.102 ± 0.078 | 0.016 ± 0.008 | 0.167 ± 0.011 | 0.007 ± 0.001 | - | - |
+| small | `grad_sum_solve_jvp` | f64 | 1 | `4x4,rhs=1` | - | 0.088 ± 0.026 | 0.016 ± 0.005 | 0.205 ± 0.054 | 0.012 ± 0.005 | - | - |
+| small | `grad_sum_solve_jvp` | f64 | 1 | `8x8,rhs=1` | - | 0.092 ± 0.011 | 0.029 ± 0.016 | 0.185 ± 0.026 | 0.007 ± 0.001 | - | - |
+| small | `grad_sum_solve_vjp` | f64 | 1 | `2x2,rhs=1` | - | 0.074 ± 0.011 | 0.015 ± 0.002 | 0.083 ± 0.042 | 0.009 ± 0.002 | - | - |
+| small | `grad_sum_solve_vjp` | f64 | 1 | `4x4,rhs=1` | - | 0.035 ± 0.002 | 0.015 ± 0.001 | 0.097 ± 0.034 | 0.010 ± 0.002 | - | - |
+| small | `grad_sum_solve_vjp` | f64 | 1 | `8x8,rhs=1` | - | 0.043 ± 0.010 | 0.024 ± 0.006 | 0.083 ± 0.016 | 0.008 ± 0.000 | - | - |
+| small | `grad_sum_svd_s_backward` | f64 | 1 | `2x2` | - | 0.044 ± 0.020 | 0.013 ± 0.000 | 0.044 ± 0.025 | 0.009 ± 0.000 | - | - |
+| small | `grad_sum_svd_s_backward` | f64 | 1 | `4x4` | - | 0.039 ± 0.004 | 0.020 ± 0.007 | 0.051 ± 0.020 | 0.011 ± 0.000 | - | - |
+| small | `grad_sum_svd_s_backward` | f64 | 1 | `8x8` | - | 0.048 ± 0.001 | 0.028 ± 0.004 | 0.044 ± 0.018 | 0.019 ± 0.001 | - | - |
+| small | `grad_sum_svd_s_jvp` | f64 | 1 | `2x2` | - | 0.106 ± 0.005 | 0.015 ± 0.005 | 0.107 ± 0.008 | 0.009 ± 0.000 | - | - |
+| small | `grad_sum_svd_s_jvp` | f64 | 1 | `4x4` | - | 0.091 ± 0.010 | 0.021 ± 0.009 | 0.150 ± 0.042 | 0.013 ± 0.000 | - | - |
+| small | `grad_sum_svd_s_jvp` | f64 | 1 | `8x8` | - | 0.116 ± 0.004 | 0.035 ± 0.005 | 0.117 ± 0.006 | 0.019 ± 0.001 | - | - |
+| small | `grad_sum_svd_s_vjp` | f64 | 1 | `2x2` | - | 0.039 ± 0.010 | 0.016 ± 0.007 | 0.084 ± 0.054 | 0.009 ± 0.000 | - | - |
+| small | `grad_sum_svd_s_vjp` | f64 | 1 | `4x4` | - | 0.034 ± 0.001 | 0.015 ± 0.004 | 0.081 ± 0.025 | 0.013 ± 0.001 | - | - |
+| small | `grad_sum_svd_s_vjp` | f64 | 1 | `8x8` | - | 0.046 ± 0.009 | 0.030 ± 0.007 | 0.074 ± 0.018 | 0.020 ± 0.004 | - | - |
+| small | `matmul` | f64 | 1 | `2x2` | - | 0.002 ± 0.000 | 0.002 ± 0.000 | 0.002 ± 0.001 | 0.005 ± 0.001 | - | - |
+| small | `matmul` | f64 | 1 | `32x32` | - | 0.004 ± 0.000 | 0.004 ± 0.001 | 0.003 ± 0.000 | 0.007 ± 0.005 | - | - |
+| small | `matmul` | f64 | 1 | `4x4` | - | 0.002 ± 0.000 | 0.002 ± 0.000 | 0.001 ± 0.001 | 0.005 ± 0.000 | - | - |
+| small | `matmul` | f64 | 1 | `64x64` | - | 0.008 ± 0.001 | 0.005 ± 0.000 | 0.007 ± 0.002 | 0.024 ± 0.037 | - | - |
+| small | `matmul` | f64 | 1 | `8x8` | - | 0.002 ± 0.000 | 0.002 ± 0.001 | 0.001 ± 0.001 | 0.007 ± 0.005 | - | - |
+| small | `qr` | f64 | 1 | `2x2` | - | 0.004 ± 0.002 | 0.003 ± 0.001 | 0.005 ± 0.002 | 0.008 ± 0.000 | - | - |
+| small | `qr` | f64 | 1 | `4x4` | - | 0.003 ± 0.000 | 0.003 ± 0.001 | 0.004 ± 0.002 | 0.008 ± 0.000 | - | - |
+| small | `qr` | f64 | 1 | `8x8` | - | 0.004 ± 0.000 | 0.004 ± 0.001 | 0.005 ± 0.001 | 0.008 ± 0.001 | - | - |
+| small | `solve` | f64 | 1 | `2x2,rhs=1` | - | 0.005 ± 0.000 | 0.005 ± 0.002 | 0.012 ± 0.007 | 0.010 ± 0.003 | - | - |
+| small | `solve` | f64 | 1 | `2x2,rhs=4` | - | 0.004 ± 0.000 | 0.005 ± 0.001 | 0.012 ± 0.005 | 0.006 ± 0.001 | - | - |
+| small | `solve` | f64 | 1 | `4x4,rhs=1` | - | 0.003 ± 0.000 | 0.007 ± 0.006 | 0.010 ± 0.013 | 0.006 ± 0.001 | - | - |
+| small | `solve` | f64 | 1 | `4x4,rhs=4` | - | 0.003 ± 0.001 | 0.004 ± 0.001 | 0.011 ± 0.009 | 0.006 ± 0.000 | - | - |
+| small | `solve` | f64 | 1 | `8x8,rhs=1` | - | 0.004 ± 0.000 | 0.005 ± 0.001 | 0.015 ± 0.011 | 0.006 ± 0.001 | - | - |
+| small | `solve` | f64 | 1 | `8x8,rhs=4` | - | 0.004 ± 0.000 | 0.005 ± 0.000 | 0.013 ± 0.005 | 0.008 ± 0.003 | - | - |
+| small | `svd` | f64 | 1 | `2x2` | - | 0.005 ± 0.002 | 0.005 ± 0.002 | 0.008 ± 0.004 | 0.012 ± 0.001 | - | - |
+| small | `svd` | f64 | 1 | `4x4` | - | 0.006 ± 0.000 | 0.006 ± 0.002 | 0.015 ± 0.010 | 0.015 ± 0.002 | - | - |
+| small | `svd` | f64 | 1 | `8x8` | - | 0.014 ± 0.001 | 0.013 ± 0.001 | 0.017 ± 0.003 | 0.022 ± 0.002 | - | - |
 
 ### Cross-Backend Spread Audit
 
 Rows with a successful cell more than 10x faster than the slowest successful cell are flagged for operation-specific review. This cross-backend spread check is a warning, not a correctness verdict.
 
-- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=1, shape=`2x2xbatch16 (native batch layout)`): `tenferro-eager` is 27.4x faster than the slowest successful cell (`jax-cpu`, 0.082 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=1, shape=`2x2xbatch16 (native batch layout)`): `tenferro-trace` is 26.3x faster than the slowest successful cell (`jax-cpu`, 0.082 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=1, shape=`2x2xbatch64 (native batch layout)`): `pytorch-cpu` is 10.5x faster than the slowest successful cell (`jax-cpu`, 0.109 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=1, shape=`2x2xbatch64 (native batch layout)`): `tenferro-eager` is 19.5x faster than the slowest successful cell (`jax-cpu`, 0.109 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=1, shape=`2x2xbatch64 (native batch layout)`): `tenferro-trace` is 19.6x faster than the slowest successful cell (`jax-cpu`, 0.109 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=1, shape=`4x4xbatch16 (native batch layout)`): `pytorch-cpu` is 12.5x faster than the slowest successful cell (`jax-cpu`, 0.120 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=1, shape=`4x4xbatch16 (native batch layout)`): `tenferro-eager` is 26.7x faster than the slowest successful cell (`jax-cpu`, 0.120 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=1, shape=`4x4xbatch16 (native batch layout)`): `tenferro-trace` is 34.9x faster than the slowest successful cell (`jax-cpu`, 0.120 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=1, shape=`4x4xbatch64 (native batch layout)`): `tenferro-eager` is 16.7x faster than the slowest successful cell (`jax-cpu`, 0.107 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=1, shape=`4x4xbatch64 (native batch layout)`): `tenferro-trace` is 16.4x faster than the slowest successful cell (`jax-cpu`, 0.107 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/einsum_ij_jk_ik` (f64, threads=1, shape=`2x2`): `tenferro-eager` is 33.6x faster than the slowest successful cell (`jax-cpu`, 0.083 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/einsum_ij_jk_ik` (f64, threads=1, shape=`2x2`): `tenferro-trace` is 14.7x faster than the slowest successful cell (`jax-cpu`, 0.083 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/einsum_ij_jk_ik` (f64, threads=1, shape=`4x4`): `tenferro-eager` is 33.8x faster than the slowest successful cell (`jax-cpu`, 0.084 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/einsum_ij_jk_ik` (f64, threads=1, shape=`4x4`): `tenferro-trace` is 15.5x faster than the slowest successful cell (`jax-cpu`, 0.084 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/einsum_ij_jk_ik` (f64, threads=1, shape=`8x8`): `pytorch-cpu` is 15.0x faster than the slowest successful cell (`jax-cpu`, 0.138 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/einsum_ij_jk_ik` (f64, threads=1, shape=`8x8`): `tenferro-eager` is 44.6x faster than the slowest successful cell (`jax-cpu`, 0.138 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/einsum_ij_jk_ik` (f64, threads=1, shape=`8x8`): `tenferro-trace` is 18.5x faster than the slowest successful cell (`jax-cpu`, 0.138 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_eigh_jvp` (f64, threads=1, shape=`2x2`): `jax-cpu` is 16.1x faster than the slowest successful cell (`tenferro-eager`, 0.122 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_eigh_jvp` (f64, threads=1, shape=`4x4`): `jax-cpu` is 16.6x faster than the slowest successful cell (`tenferro-eager`, 0.186 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_eigh_jvp` (f64, threads=1, shape=`8x8`): `jax-cpu` is 16.7x faster than the slowest successful cell (`tenferro-eager`, 0.161 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_eigh_vjp` (f64, threads=1, shape=`8x8`): `jax-cpu` is 12.3x faster than the slowest successful cell (`pytorch-cpu`, 0.121 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_lu_jvp` (f64, threads=1, shape=`2x2`): `jax-cpu` is 77.8x faster than the slowest successful cell (`tenferro-eager`, 0.577 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_lu_jvp` (f64, threads=1, shape=`2x2`): `tenferro-trace` is 25.3x faster than the slowest successful cell (`tenferro-eager`, 0.577 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_lu_jvp` (f64, threads=1, shape=`4x4`): `jax-cpu` is 54.5x faster than the slowest successful cell (`tenferro-eager`, 0.482 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_lu_jvp` (f64, threads=1, shape=`4x4`): `tenferro-trace` is 21.0x faster than the slowest successful cell (`tenferro-eager`, 0.482 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_lu_jvp` (f64, threads=1, shape=`8x8`): `jax-cpu` is 80.1x faster than the slowest successful cell (`tenferro-eager`, 0.604 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_lu_jvp` (f64, threads=1, shape=`8x8`): `tenferro-trace` is 26.3x faster than the slowest successful cell (`tenferro-eager`, 0.604 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_lu_vjp` (f64, threads=1, shape=`2x2`): `jax-cpu` is 12.6x faster than the slowest successful cell (`tenferro-eager`, 0.111 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_lu_vjp` (f64, threads=1, shape=`4x4`): `jax-cpu` is 13.4x faster than the slowest successful cell (`tenferro-eager`, 0.129 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_lu_vjp` (f64, threads=1, shape=`8x8`): `jax-cpu` is 11.3x faster than the slowest successful cell (`pytorch-cpu`, 0.230 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_lu_vjp` (f64, threads=1, shape=`8x8`): `tenferro-trace` is 10.2x faster than the slowest successful cell (`pytorch-cpu`, 0.230 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_matmul_backward` (f64, threads=1, shape=`4x4`): `jax-cpu` is 12.1x faster than the slowest successful cell (`tenferro-eager`, 0.121 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_matmul_backward` (f64, threads=1, shape=`4x4`): `tenferro-trace` is 16.4x faster than the slowest successful cell (`tenferro-eager`, 0.121 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_matmul_backward` (f64, threads=1, shape=`8x8`): `jax-cpu` is 10.3x faster than the slowest successful cell (`tenferro-eager`, 0.101 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_qr_jvp` (f64, threads=1, shape=`2x2`): `jax-cpu` is 99.1x faster than the slowest successful cell (`tenferro-eager`, 0.749 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_qr_jvp` (f64, threads=1, shape=`2x2`): `tenferro-trace` is 21.9x faster than the slowest successful cell (`tenferro-eager`, 0.749 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_qr_jvp` (f64, threads=1, shape=`4x4`): `jax-cpu` is 109.1x faster than the slowest successful cell (`tenferro-eager`, 1.015 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_qr_jvp` (f64, threads=1, shape=`4x4`): `pytorch-cpu` is 10.7x faster than the slowest successful cell (`tenferro-eager`, 1.015 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_qr_jvp` (f64, threads=1, shape=`4x4`): `tenferro-trace` is 28.5x faster than the slowest successful cell (`tenferro-eager`, 1.015 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_qr_jvp` (f64, threads=1, shape=`8x8`): `jax-cpu` is 149.2x faster than the slowest successful cell (`tenferro-eager`, 0.909 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_qr_jvp` (f64, threads=1, shape=`8x8`): `tenferro-trace` is 28.2x faster than the slowest successful cell (`tenferro-eager`, 0.909 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_qr_vjp` (f64, threads=1, shape=`2x2`): `jax-cpu` is 10.7x faster than the slowest successful cell (`pytorch-cpu`, 0.094 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_qr_vjp` (f64, threads=1, shape=`4x4`): `jax-cpu` is 11.8x faster than the slowest successful cell (`tenferro-eager`, 0.123 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_qr_vjp` (f64, threads=1, shape=`8x8`): `jax-cpu` is 19.6x faster than the slowest successful cell (`pytorch-cpu`, 0.157 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_solve_jvp` (f64, threads=1, shape=`2x2,rhs=1`): `jax-cpu` is 20.8x faster than the slowest successful cell (`pytorch-cpu`, 0.197 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_solve_jvp` (f64, threads=1, shape=`2x2,rhs=1`): `tenferro-trace` is 11.3x faster than the slowest successful cell (`pytorch-cpu`, 0.197 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_solve_jvp` (f64, threads=1, shape=`4x4,rhs=1`): `jax-cpu` is 23.9x faster than the slowest successful cell (`pytorch-cpu`, 0.216 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_solve_jvp` (f64, threads=1, shape=`4x4,rhs=1`): `tenferro-trace` is 11.2x faster than the slowest successful cell (`pytorch-cpu`, 0.216 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_solve_jvp` (f64, threads=1, shape=`8x8,rhs=1`): `jax-cpu` is 23.0x faster than the slowest successful cell (`pytorch-cpu`, 0.226 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_solve_jvp` (f64, threads=1, shape=`8x8,rhs=1`): `tenferro-trace` is 13.3x faster than the slowest successful cell (`pytorch-cpu`, 0.226 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_solve_vjp` (f64, threads=1, shape=`2x2,rhs=1`): `jax-cpu` is 11.4x faster than the slowest successful cell (`pytorch-cpu`, 0.089 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_solve_vjp` (f64, threads=1, shape=`4x4,rhs=1`): `jax-cpu` is 10.2x faster than the slowest successful cell (`pytorch-cpu`, 0.099 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_solve_vjp` (f64, threads=1, shape=`8x8,rhs=1`): `jax-cpu` is 13.0x faster than the slowest successful cell (`pytorch-cpu`, 0.125 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_svd_s_jvp` (f64, threads=1, shape=`2x2`): `jax-cpu` is 13.1x faster than the slowest successful cell (`pytorch-cpu`, 0.135 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_svd_s_jvp` (f64, threads=1, shape=`4x4`): `jax-cpu` is 11.8x faster than the slowest successful cell (`tenferro-eager`, 0.146 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_svd_s_jvp` (f64, threads=1, shape=`8x8`): `jax-cpu` is 10.1x faster than the slowest successful cell (`tenferro-eager`, 0.189 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=1, shape=`2x2xbatch16 (native batch layout)`): `tenferro-eager` is 42.9x faster than the slowest successful cell (`jax-cpu`, 0.149 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=1, shape=`2x2xbatch16 (native batch layout)`): `tenferro-trace` is 40.0x faster than the slowest successful cell (`jax-cpu`, 0.149 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=1, shape=`2x2xbatch64 (native batch layout)`): `pytorch-cpu` is 11.4x faster than the slowest successful cell (`jax-cpu`, 0.126 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=1, shape=`2x2xbatch64 (native batch layout)`): `tenferro-eager` is 27.5x faster than the slowest successful cell (`jax-cpu`, 0.126 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=1, shape=`2x2xbatch64 (native batch layout)`): `tenferro-trace` is 23.3x faster than the slowest successful cell (`jax-cpu`, 0.126 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=1, shape=`4x4xbatch16 (native batch layout)`): `pytorch-cpu` is 11.5x faster than the slowest successful cell (`jax-cpu`, 0.107 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=1, shape=`4x4xbatch16 (native batch layout)`): `tenferro-eager` is 33.3x faster than the slowest successful cell (`jax-cpu`, 0.107 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=1, shape=`4x4xbatch16 (native batch layout)`): `tenferro-trace` is 23.1x faster than the slowest successful cell (`jax-cpu`, 0.107 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=1, shape=`4x4xbatch64 (native batch layout)`): `tenferro-trace` is 12.7x faster than the slowest successful cell (`jax-cpu`, 0.085 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/einsum_ij_jk_ik` (f64, threads=1, shape=`2x2`): `tenferro-eager` is 26.2x faster than the slowest successful cell (`jax-cpu`, 0.067 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/einsum_ij_jk_ik` (f64, threads=1, shape=`4x4`): `tenferro-eager` is 36.6x faster than the slowest successful cell (`jax-cpu`, 0.080 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/einsum_ij_jk_ik` (f64, threads=1, shape=`4x4`): `tenferro-trace` is 16.6x faster than the slowest successful cell (`jax-cpu`, 0.080 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/einsum_ij_jk_ik` (f64, threads=1, shape=`8x8`): `tenferro-eager` is 45.1x faster than the slowest successful cell (`jax-cpu`, 0.094 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/einsum_ij_jk_ik` (f64, threads=1, shape=`8x8`): `tenferro-trace` is 21.1x faster than the slowest successful cell (`jax-cpu`, 0.094 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_eigh_jvp` (f64, threads=1, shape=`2x2`): `jax-cpu` is 19.7x faster than the slowest successful cell (`pytorch-cpu`, 0.126 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_eigh_jvp` (f64, threads=1, shape=`8x8`): `jax-cpu` is 14.0x faster than the slowest successful cell (`tenferro-eager`, 0.139 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_eigh_vjp` (f64, threads=1, shape=`2x2`): `jax-cpu` is 11.7x faster than the slowest successful cell (`pytorch-cpu`, 0.080 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_lu_jvp` (f64, threads=1, shape=`2x2`): `jax-cpu` is 48.4x faster than the slowest successful cell (`tenferro-eager`, 0.393 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_lu_jvp` (f64, threads=1, shape=`2x2`): `tenferro-trace` is 19.2x faster than the slowest successful cell (`tenferro-eager`, 0.393 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_lu_jvp` (f64, threads=1, shape=`4x4`): `jax-cpu` is 25.8x faster than the slowest successful cell (`tenferro-eager`, 0.359 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_lu_jvp` (f64, threads=1, shape=`4x4`): `tenferro-trace` is 16.8x faster than the slowest successful cell (`tenferro-eager`, 0.359 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_lu_jvp` (f64, threads=1, shape=`8x8`): `jax-cpu` is 49.3x faster than the slowest successful cell (`tenferro-eager`, 0.437 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_lu_jvp` (f64, threads=1, shape=`8x8`): `tenferro-trace` is 17.8x faster than the slowest successful cell (`tenferro-eager`, 0.437 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_lu_vjp` (f64, threads=1, shape=`2x2`): `jax-cpu` is 12.0x faster than the slowest successful cell (`tenferro-eager`, 0.097 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_lu_vjp` (f64, threads=1, shape=`8x8`): `jax-cpu` is 12.5x faster than the slowest successful cell (`tenferro-eager`, 0.103 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_qr_jvp` (f64, threads=1, shape=`2x2`): `jax-cpu` is 85.4x faster than the slowest successful cell (`tenferro-eager`, 0.598 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_qr_jvp` (f64, threads=1, shape=`2x2`): `tenferro-trace` is 16.3x faster than the slowest successful cell (`tenferro-eager`, 0.598 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_qr_jvp` (f64, threads=1, shape=`4x4`): `jax-cpu` is 50.8x faster than the slowest successful cell (`tenferro-eager`, 0.481 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_qr_jvp` (f64, threads=1, shape=`4x4`): `tenferro-trace` is 16.9x faster than the slowest successful cell (`tenferro-eager`, 0.481 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_qr_jvp` (f64, threads=1, shape=`8x8`): `jax-cpu` is 69.0x faster than the slowest successful cell (`tenferro-eager`, 0.548 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_qr_jvp` (f64, threads=1, shape=`8x8`): `tenferro-trace` is 14.1x faster than the slowest successful cell (`tenferro-eager`, 0.548 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_qr_vjp` (f64, threads=1, shape=`2x2`): `jax-cpu` is 12.1x faster than the slowest successful cell (`tenferro-eager`, 0.081 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_qr_vjp` (f64, threads=1, shape=`8x8`): `jax-cpu` is 10.7x faster than the slowest successful cell (`pytorch-cpu`, 0.086 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_solve_jvp` (f64, threads=1, shape=`2x2,rhs=1`): `jax-cpu` is 22.7x faster than the slowest successful cell (`pytorch-cpu`, 0.167 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_solve_jvp` (f64, threads=1, shape=`2x2,rhs=1`): `tenferro-trace` is 10.7x faster than the slowest successful cell (`pytorch-cpu`, 0.167 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_solve_jvp` (f64, threads=1, shape=`4x4,rhs=1`): `jax-cpu` is 16.7x faster than the slowest successful cell (`pytorch-cpu`, 0.205 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_solve_jvp` (f64, threads=1, shape=`4x4,rhs=1`): `tenferro-trace` is 12.8x faster than the slowest successful cell (`pytorch-cpu`, 0.205 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_solve_jvp` (f64, threads=1, shape=`8x8,rhs=1`): `jax-cpu` is 25.7x faster than the slowest successful cell (`pytorch-cpu`, 0.185 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_solve_vjp` (f64, threads=1, shape=`8x8,rhs=1`): `jax-cpu` is 11.0x faster than the slowest successful cell (`pytorch-cpu`, 0.083 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_svd_s_jvp` (f64, threads=1, shape=`2x2`): `jax-cpu` is 11.7x faster than the slowest successful cell (`pytorch-cpu`, 0.107 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_svd_s_jvp` (f64, threads=1, shape=`4x4`): `jax-cpu` is 11.8x faster than the slowest successful cell (`pytorch-cpu`, 0.150 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
 
 ### Physical Bound Audit
 
@@ -271,18 +256,18 @@ No cell exceeded the conservative physical bound by more than 10x.
 
 ## Threads: 4
 
-Source report: `data/results/mac-cpu/cpu/einsum/20261114_175950/cpu_ops_report.md`.
+Source report: `data/results/mac-cpu/cpu/einsum/20261115_175655/cpu_ops_report.md`.
 
 
 - Suite: `cpu/cpu_ops`
 - Target profile: `mac-cpu`
 - Suite file: `benchmarks/cpu/einsum.yaml`
-- Run metadata: `data/results/mac-cpu/cpu/einsum/20261114_175950/run.yaml`
-- Timestamp: `2026-11-14T17:59:50.064820+00:00`
+- Run metadata: `data/results/mac-cpu/cpu/einsum/20261115_175655/run.yaml`
+- Timestamp: `2026-11-15T17:56:55.332197+00:00`
 
 Latest run: `./scripts/run_all.sh 4`.
 
-This file is generated from one CPU ops run under `data/results/mac-cpu/cpu/einsum/20261114_175950`.
+This file is generated from one CPU ops run under `data/results/mac-cpu/cpu/einsum/20261115_175655`.
 
 - tenferro-rs commit: `9a850b06155405acc99ecd0648829e9e6d3866ba`
 
@@ -330,7 +315,7 @@ This file is generated from one CPU ops run under `data/results/mac-cpu/cpu/eins
   - linked LAPACK libs: `bazel-out/darwin_arm64-opt/bin/jaxlib/cpu/_lapack.so`
 
 
-- CSV: `data/results/mac-cpu/cpu/einsum/20261114_175950/cpu_ops_t4_20261114_175950.csv`
+- CSV: `data/results/mac-cpu/cpu/einsum/20261115_175655/cpu_ops_t4_20261115_175655.csv`
 
 ### CPU Benchmark Items
 
@@ -340,180 +325,181 @@ Median ± IQR (ms). Missing backends are shown as `-`.
 
 | suite | benchmark | dtype | threads | shape | tenferro-rs direct API (ms) | tenferro-rs eager mode (ms) | tenferro-rs trace mode (ms) | PyTorch Python (ms) | JAX Python (XLA CPU) (ms) | Julia (Base/LinearAlgebra) (ms) | Julia (Strided.jl) (ms) |
 |---|---|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|
-| batched | `batched_eigh` | f64 | 4 | `2x2xbatch16 (native batch layout)` | - | 0.008 ± 0.001 | 0.008 ± 0.001 | 0.009 ± 0.001 | 0.020 ± 0.002 | - | - |
-| batched | `batched_eigh` | f64 | 4 | `2x2xbatch64 (native batch layout)` | - | 0.019 ± 0.002 | 0.021 ± 0.005 | 0.020 ± 0.001 | 0.048 ± 0.006 | - | - |
-| batched | `batched_eigh` | f64 | 4 | `4x4xbatch16 (native batch layout)` | - | 0.025 ± 0.001 | 0.027 ± 0.004 | 0.026 ± 0.005 | 0.047 ± 0.021 | - | - |
-| batched | `batched_eigh` | f64 | 4 | `4x4xbatch64 (native batch layout)` | - | 0.089 ± 0.003 | 0.095 ± 0.007 | 0.081 ± 0.005 | 0.115 ± 0.002 | - | - |
-| batched | `batched_matmul_ikb_kjb_ijb` | f64 | 4 | `2x2xbatch16 (native batch layout)` | - | 0.003 ± 0.000 | 0.004 ± 0.000 | 0.009 ± 0.004 | 0.083 ± 0.010 | - | - |
-| batched | `batched_matmul_ikb_kjb_ijb` | f64 | 4 | `2x2xbatch64 (native batch layout)` | - | 0.005 ± 0.000 | 0.005 ± 0.001 | 0.008 ± 0.001 | 0.091 ± 0.005 | - | - |
-| batched | `batched_matmul_ikb_kjb_ijb` | f64 | 4 | `4x4xbatch1024 (native batch layout)` | - | 0.052 ± 0.010 | 0.059 ± 0.002 | 0.074 ± 0.043 | 0.229 ± 0.087 | - | - |
-| batched | `batched_matmul_ikb_kjb_ijb` | f64 | 4 | `4x4xbatch16 (native batch layout)` | - | 0.004 ± 0.000 | 0.004 ± 0.001 | 0.009 ± 0.001 | 0.097 ± 0.015 | - | - |
-| batched | `batched_matmul_ikb_kjb_ijb` | f64 | 4 | `4x4xbatch64 (native batch layout)` | - | 0.006 ± 0.000 | 0.007 ± 0.001 | 0.010 ± 0.000 | 0.093 ± 0.011 | - | - |
-| batched | `batched_qr` | f64 | 4 | `2x2xbatch16 (native batch layout)` | - | 0.008 ± 0.001 | 0.007 ± 0.001 | 0.037 ± 0.006 | 0.015 ± 0.001 | - | - |
-| batched | `batched_qr` | f64 | 4 | `2x2xbatch64 (native batch layout)` | - | 0.018 ± 0.002 | 0.018 ± 0.003 | 0.042 ± 0.016 | 0.028 ± 0.003 | - | - |
-| batched | `batched_qr` | f64 | 4 | `4x4xbatch16 (native batch layout)` | - | 0.013 ± 0.001 | 0.012 ± 0.001 | 0.042 ± 0.010 | 0.022 ± 0.009 | - | - |
-| batched | `batched_qr` | f64 | 4 | `4x4xbatch64 (native batch layout)` | - | 0.039 ± 0.002 | 0.042 ± 0.001 | 0.060 ± 0.011 | 0.055 ± 0.002 | - | - |
-| batched | `batched_solve` | f64 | 4 | `2x2xbatch16 (native batch layout),rhs=1` | - | 0.006 ± 0.000 | 0.008 ± 0.001 | 0.045 ± 0.003 | 0.011 ± 0.001 | - | - |
-| batched | `batched_solve` | f64 | 4 | `2x2xbatch64 (native batch layout),rhs=1` | - | 0.011 ± 0.001 | 0.013 ± 0.004 | 0.053 ± 0.002 | 0.013 ± 0.002 | - | - |
-| batched | `batched_solve` | f64 | 4 | `4x4xbatch16 (native batch layout),rhs=1` | - | 0.007 ± 0.001 | 0.010 ± 0.002 | 0.058 ± 0.008 | 0.014 ± 0.004 | - | - |
-| batched | `batched_solve` | f64 | 4 | `4x4xbatch64 (native batch layout),rhs=1` | - | 0.016 ± 0.002 | 0.017 ± 0.001 | 0.055 ± 0.001 | 0.022 ± 0.003 | - | - |
-| batched | `batched_svd` | f64 | 4 | `2x2xbatch16 (native batch layout)` | - | 0.014 ± 0.001 | 0.015 ± 0.001 | 0.016 ± 0.001 | 0.045 ± 0.008 | - | - |
-| batched | `batched_svd` | f64 | 4 | `2x2xbatch64 (native batch layout)` | - | 0.043 ± 0.006 | 0.045 ± 0.011 | 0.041 ± 0.001 | 0.141 ± 0.027 | - | - |
-| batched | `batched_svd` | f64 | 4 | `4x4xbatch16 (native batch layout)` | - | 0.047 ± 0.005 | 0.048 ± 0.006 | 0.047 ± 0.012 | 0.135 ± 0.078 | - | - |
-| batched | `batched_svd` | f64 | 4 | `4x4xbatch64 (native batch layout)` | - | 0.161 ± 0.013 | 0.179 ± 0.028 | 0.167 ± 0.005 | 0.260 ± 0.015 | - | - |
-| batched | `grad_sum_batched_matmul_backward` | f64 | 4 | `2x2xbatch16 (native batch layout)` | - | 0.041 ± 0.001 | 0.012 ± 0.002 | 0.063 ± 0.008 | 0.011 ± 0.002 | - | - |
-| batched | `grad_sum_batched_matmul_backward` | f64 | 4 | `2x2xbatch64 (native batch layout)` | - | 0.047 ± 0.005 | 0.019 ± 0.001 | 0.057 ± 0.002 | 0.008 ± 0.004 | - | - |
-| batched | `grad_sum_batched_matmul_backward` | f64 | 4 | `4x4xbatch16 (native batch layout)` | - | 0.042 ± 0.001 | 0.014 ± 0.001 | 0.075 ± 0.013 | 0.020 ± 0.011 | - | - |
-| batched | `grad_sum_batched_matmul_backward` | f64 | 4 | `4x4xbatch64 (native batch layout)` | - | 0.052 ± 0.005 | 0.022 ± 0.003 | 0.061 ± 0.002 | 0.052 ± 0.005 | - | - |
-| batched | `grad_sum_batched_solve_backward` | f64 | 4 | `2x2xbatch16 (native batch layout),rhs=1` | - | 0.056 ± 0.001 | 0.042 ± 0.011 | 0.090 ± 0.014 | 0.015 ± 0.003 | - | - |
-| batched | `grad_sum_batched_solve_backward` | f64 | 4 | `2x2xbatch64 (native batch layout),rhs=1` | - | 0.072 ± 0.008 | 0.069 ± 0.016 | 0.099 ± 0.003 | 0.018 ± 0.005 | - | - |
-| batched | `grad_sum_batched_solve_backward` | f64 | 4 | `4x4xbatch16 (native batch layout),rhs=1` | - | 0.058 ± 0.003 | 0.052 ± 0.005 | 0.111 ± 0.049 | 0.014 ± 0.020 | - | - |
-| batched | `grad_sum_batched_solve_backward` | f64 | 4 | `4x4xbatch64 (native batch layout),rhs=1` | - | 0.070 ± 0.001 | 0.082 ± 0.007 | 0.101 ± 0.005 | 0.035 ± 0.008 | - | - |
-| large | `eigh` | f64 | 4 | `64x64` | - | 0.319 ± 0.037 | 0.314 ± 0.008 | 0.362 ± 0.092 | 0.346 ± 0.028 | - | - |
-| large | `grad_sum_eigh_jvp` | f64 | 4 | `256x256` | - | 11.767 ± 3.416 | 8.651 ± 0.297 | 5.903 ± 0.678 | 6.838 ± 0.201 | - | - |
-| large | `grad_sum_eigh_jvp` | f64 | 4 | `512x512` | - | 59.290 ± 3.947 | 50.505 ± 0.605 | 44.096 ± 6.250 | 45.592 ± 5.041 | - | - |
-| large | `grad_sum_eigh_vjp` | f64 | 4 | `256x256` | - | 6.353 ± 0.562 | 8.714 ± 0.421 | 5.586 ± 0.865 | 6.950 ± 0.637 | - | - |
-| large | `grad_sum_eigh_vjp` | f64 | 4 | `512x512` | - | 32.500 ± 0.367 | 50.913 ± 0.661 | 31.901 ± 3.922 | 50.943 ± 18.774 | - | - |
-| large | `grad_sum_lu_jvp` | f64 | 4 | `256x256` | - | 3.340 ± 0.719 | 1.406 ± 0.278 | 2.788 ± 0.818 | 2.291 ± 0.221 | - | - |
-| large | `grad_sum_lu_jvp` | f64 | 4 | `512x512` | - | 19.335 ± 1.378 | 9.351 ± 0.804 | 17.771 ± 1.374 | 13.566 ± 1.611 | - | - |
-| large | `grad_sum_lu_vjp` | f64 | 4 | `256x256` | - | 2.732 ± 0.342 | 1.493 ± 0.026 | 2.191 ± 0.395 | 2.357 ± 0.434 | - | - |
-| large | `grad_sum_lu_vjp` | f64 | 4 | `512x512` | - | 18.097 ± 1.061 | 10.648 ± 1.103 | 10.569 ± 0.921 | 13.625 ± 0.692 | - | - |
-| large | `grad_sum_matmul` | f64 | 4 | `64x64` | - | 0.016 ± 0.001 | 0.009 ± 0.003 | 0.010 ± 0.003 | 0.039 ± 0.010 | - | - |
-| large | `grad_sum_matmul_backward` | f64 | 4 | `64x64` | - | 0.065 ± 0.001 | 0.029 ± 0.005 | 0.049 ± 0.009 | 0.089 ± 0.014 | - | - |
-| large | `grad_sum_qr_jvp` | f64 | 4 | `256x256` | - | 7.098 ± 1.303 | 4.149 ± 0.516 | 3.742 ± 0.477 | 4.087 ± 0.851 | - | - |
-| large | `grad_sum_qr_jvp` | f64 | 4 | `512x512` | - | 38.332 ± 2.366 | 26.342 ± 1.138 | 23.745 ± 6.467 | 26.454 ± 4.993 | - | - |
-| large | `grad_sum_qr_vjp` | f64 | 4 | `256x256` | - | 5.150 ± 0.577 | 3.800 ± 0.498 | 3.907 ± 0.831 | 4.382 ± 0.716 | - | - |
-| large | `grad_sum_qr_vjp` | f64 | 4 | `512x512` | - | 27.281 ± 2.513 | 24.487 ± 5.301 | 22.584 ± 9.027 | 32.966 ± 5.751 | - | - |
-| large | `grad_sum_solve_backward` | f64 | 4 | `64x64,rhs=1` | - | 0.082 ± 0.000 | 0.102 ± 0.021 | 0.086 ± 0.026 | 0.067 ± 0.017 | - | - |
-| large | `grad_sum_solve_jvp` | f64 | 4 | `256x256,rhs=1` | - | 0.869 ± 0.031 | 0.511 ± 0.159 | 0.600 ± 0.087 | 0.397 ± 0.110 | - | - |
-| large | `grad_sum_solve_jvp` | f64 | 4 | `512x512,rhs=1` | - | 4.154 ± 0.910 | 3.435 ± 0.254 | 2.113 ± 0.144 | 2.339 ± 0.599 | - | - |
-| large | `grad_sum_solve_vjp` | f64 | 4 | `256x256,rhs=1` | - | 0.761 ± 0.338 | 0.505 ± 0.114 | 0.690 ± 0.108 | 0.454 ± 0.209 | - | - |
-| large | `grad_sum_solve_vjp` | f64 | 4 | `512x512,rhs=1` | - | 2.211 ± 0.350 | 3.162 ± 0.201 | 3.746 ± 0.749 | 1.983 ± 0.655 | - | - |
-| large | `grad_sum_svd_s_backward` | f64 | 4 | `64x64` | - | 0.459 ± 0.010 | 0.652 ± 0.069 | 0.521 ± 0.092 | 0.565 ± 0.039 | - | - |
-| large | `grad_sum_svd_s_jvp` | f64 | 4 | `256x256` | - | 19.336 ± 1.409 | 16.202 ± 1.204 | 13.536 ± 1.350 | 11.838 ± 0.774 | - | - |
-| large | `grad_sum_svd_s_jvp` | f64 | 4 | `512x512` | - | 129.219 ± 19.205 | 109.728 ± 7.096 | 61.964 ± 4.448 | 63.033 ± 2.446 | - | - |
-| large | `grad_sum_svd_s_vjp` | f64 | 4 | `256x256` | - | 10.575 ± 0.619 | 15.150 ± 1.615 | 11.499 ± 0.645 | 12.054 ± 1.839 | - | - |
-| large | `grad_sum_svd_s_vjp` | f64 | 4 | `512x512` | - | 68.931 ± 5.624 | 123.181 ± 18.203 | 70.455 ± 7.621 | 69.345 ± 4.762 | - | - |
-| large | `matmul` | f64 | 4 | `128x128` | - | 0.028 ± 0.014 | 0.021 ± 0.004 | 0.028 ± 0.003 | 0.153 ± 0.040 | - | - |
-| large | `matmul` | f64 | 4 | `256x256` | - | 0.190 ± 0.009 | 0.122 ± 0.005 | 0.180 ± 0.022 | 0.738 ± 0.177 | - | - |
-| large | `matmul_rect` | f64 | 4 | `256x1024 * 1024x256` | - | 0.515 ± 0.049 | 0.613 ± 0.242 | 1.000 ± 0.682 | 2.038 ± 0.484 | - | - |
-| large | `qr` | f64 | 4 | `64x64` | - | 0.073 ± 0.022 | 0.070 ± 0.002 | 0.145 ± 0.033 | 0.087 ± 0.005 | - | - |
-| large | `solve` | f64 | 4 | `64x64,rhs=1` | - | 0.022 ± 0.000 | 0.023 ± 0.005 | 0.041 ± 0.011 | 0.070 ± 0.022 | - | - |
-| large | `solve` | f64 | 4 | `64x64,rhs=16` | - | 0.023 ± 0.000 | 0.028 ± 0.001 | 0.053 ± 0.021 | 0.125 ± 0.044 | - | - |
-| large | `solve` | f64 | 4 | `64x64,rhs=64` | - | 0.028 ± 0.000 | 0.034 ± 0.000 | 0.071 ± 0.037 | 0.222 ± 0.044 | - | - |
-| large | `svd` | f64 | 4 | `64x64` | - | 0.472 ± 0.040 | 0.437 ± 0.071 | 0.648 ± 0.239 | 0.530 ± 0.099 | - | - |
-| small | `eigh` | f64 | 4 | `2x2` | - | 0.004 ± 0.000 | 0.004 ± 0.000 | 0.005 ± 0.001 | 0.010 ± 0.005 | - | - |
-| small | `eigh` | f64 | 4 | `4x4` | - | 0.006 ± 0.002 | 0.005 ± 0.000 | 0.009 ± 0.005 | 0.010 ± 0.002 | - | - |
-| small | `eigh` | f64 | 4 | `8x8` | - | 0.010 ± 0.000 | 0.008 ± 0.001 | 0.010 ± 0.001 | 0.019 ± 0.006 | - | - |
-| small | `einsum_ij_jk_ik` | f64 | 4 | `2x2` | - | 0.003 ± 0.000 | 0.006 ± 0.001 | 0.009 ± 0.002 | 0.088 ± 0.021 | - | - |
-| small | `einsum_ij_jk_ik` | f64 | 4 | `4x4` | - | 0.003 ± 0.000 | 0.006 ± 0.001 | 0.020 ± 0.012 | 0.150 ± 0.033 | - | - |
-| small | `einsum_ij_jk_ik` | f64 | 4 | `8x8` | - | 0.003 ± 0.001 | 0.006 ± 0.001 | 0.009 ± 0.001 | 0.107 ± 0.014 | - | - |
-| small | `grad_sum_eigh_jvp` | f64 | 4 | `2x2` | - | 0.127 ± 0.023 | 0.023 ± 0.003 | 0.076 ± 0.021 | 0.009 ± 0.003 | - | - |
-| small | `grad_sum_eigh_jvp` | f64 | 4 | `4x4` | - | 0.135 ± 0.025 | 0.028 ± 0.004 | 0.072 ± 0.016 | 0.013 ± 0.003 | - | - |
-| small | `grad_sum_eigh_jvp` | f64 | 4 | `8x8` | - | 0.145 ± 0.017 | 0.036 ± 0.001 | 0.081 ± 0.016 | 0.016 ± 0.004 | - | - |
-| small | `grad_sum_eigh_vjp` | f64 | 4 | `2x2` | - | 0.046 ± 0.005 | 0.023 ± 0.005 | 0.069 ± 0.013 | 0.009 ± 0.002 | - | - |
-| small | `grad_sum_eigh_vjp` | f64 | 4 | `4x4` | - | 0.053 ± 0.006 | 0.028 ± 0.002 | 0.070 ± 0.018 | 0.011 ± 0.003 | - | - |
-| small | `grad_sum_eigh_vjp` | f64 | 4 | `8x8` | - | 0.062 ± 0.004 | 0.033 ± 0.002 | 0.077 ± 0.008 | 0.022 ± 0.012 | - | - |
-| small | `grad_sum_lu_jvp` | f64 | 4 | `2x2` | - | 0.448 ± 0.051 | 0.031 ± 0.005 | 0.384 ± 0.104 | 0.009 ± 0.001 | - | - |
-| small | `grad_sum_lu_jvp` | f64 | 4 | `4x4` | - | 0.476 ± 0.059 | 0.029 ± 0.004 | 0.319 ± 0.071 | 0.011 ± 0.002 | - | - |
-| small | `grad_sum_lu_jvp` | f64 | 4 | `8x8` | - | 0.451 ± 0.046 | 0.030 ± 0.005 | 0.285 ± 0.080 | 0.017 ± 0.012 | - | - |
-| small | `grad_sum_lu_vjp` | f64 | 4 | `2x2` | - | 0.125 ± 0.006 | 0.026 ± 0.002 | 0.286 ± 0.050 | 0.008 ± 0.001 | - | - |
-| small | `grad_sum_lu_vjp` | f64 | 4 | `4x4` | - | 0.126 ± 0.017 | 0.027 ± 0.003 | 0.231 ± 0.065 | 0.009 ± 0.002 | - | - |
-| small | `grad_sum_lu_vjp` | f64 | 4 | `8x8` | - | 0.133 ± 0.010 | 0.031 ± 0.002 | 0.247 ± 0.026 | 0.014 ± 0.004 | - | - |
-| small | `grad_sum_matmul_backward` | f64 | 4 | `2x2` | - | 0.068 ± 0.077 | 0.009 ± 0.001 | 0.029 ± 0.013 | 0.007 ± 0.001 | - | - |
-| small | `grad_sum_matmul_backward` | f64 | 4 | `4x4` | - | 0.039 ± 0.001 | 0.010 ± 0.002 | 0.027 ± 0.009 | 0.010 ± 0.001 | - | - |
-| small | `grad_sum_matmul_backward` | f64 | 4 | `8x8` | - | 0.053 ± 0.030 | 0.012 ± 0.001 | 0.031 ± 0.011 | 0.011 ± 0.004 | - | - |
-| small | `grad_sum_qr_jvp` | f64 | 4 | `2x2` | - | 0.588 ± 0.046 | 0.046 ± 0.010 | 0.148 ± 0.009 | 0.009 ± 0.001 | - | - |
-| small | `grad_sum_qr_jvp` | f64 | 4 | `4x4` | - | 0.585 ± 0.100 | 0.042 ± 0.007 | 0.167 ± 0.071 | 0.011 ± 0.003 | - | - |
-| small | `grad_sum_qr_jvp` | f64 | 4 | `8x8` | - | 0.662 ± 0.061 | 0.044 ± 0.007 | 0.170 ± 0.020 | 0.022 ± 0.005 | - | - |
-| small | `grad_sum_qr_vjp` | f64 | 4 | `2x2` | - | 0.108 ± 0.027 | 0.043 ± 0.004 | 0.164 ± 0.028 | 0.008 ± 0.002 | - | - |
-| small | `grad_sum_qr_vjp` | f64 | 4 | `4x4` | - | 0.110 ± 0.017 | 0.049 ± 0.008 | 0.165 ± 0.006 | 0.011 ± 0.002 | - | - |
-| small | `grad_sum_qr_vjp` | f64 | 4 | `8x8` | - | 0.128 ± 0.022 | 0.051 ± 0.010 | 0.173 ± 0.033 | 0.016 ± 0.018 | - | - |
-| small | `grad_sum_solve_backward` | f64 | 4 | `2x2,rhs=1` | - | 0.058 ± 0.008 | 0.033 ± 0.004 | 0.045 ± 0.012 | 0.011 ± 0.003 | - | - |
-| small | `grad_sum_solve_backward` | f64 | 4 | `4x4,rhs=1` | - | 0.060 ± 0.008 | 0.034 ± 0.002 | 0.047 ± 0.006 | 0.012 ± 0.002 | - | - |
-| small | `grad_sum_solve_backward` | f64 | 4 | `8x8,rhs=1` | - | 0.055 ± 0.007 | 0.032 ± 0.003 | 0.042 ± 0.009 | 0.015 ± 0.007 | - | - |
-| small | `grad_sum_solve_jvp` | f64 | 4 | `2x2,rhs=1` | - | 0.092 ± 0.020 | 0.027 ± 0.005 | 0.201 ± 0.048 | 0.008 ± 0.001 | - | - |
-| small | `grad_sum_solve_jvp` | f64 | 4 | `4x4,rhs=1` | - | 0.096 ± 0.018 | 0.025 ± 0.002 | 0.175 ± 0.024 | 0.010 ± 0.001 | - | - |
-| small | `grad_sum_solve_jvp` | f64 | 4 | `8x8,rhs=1` | - | 0.091 ± 0.015 | 0.023 ± 0.004 | 0.180 ± 0.112 | 0.008 ± 0.001 | - | - |
-| small | `grad_sum_solve_vjp` | f64 | 4 | `2x2,rhs=1` | - | 0.052 ± 0.006 | 0.023 ± 0.010 | 0.091 ± 0.027 | 0.010 ± 0.003 | - | - |
-| small | `grad_sum_solve_vjp` | f64 | 4 | `4x4,rhs=1` | - | 0.051 ± 0.011 | 0.024 ± 0.002 | 0.079 ± 0.008 | 0.010 ± 0.001 | - | - |
-| small | `grad_sum_solve_vjp` | f64 | 4 | `8x8,rhs=1` | - | 0.049 ± 0.006 | 0.023 ± 0.002 | 0.078 ± 0.023 | 0.010 ± 0.001 | - | - |
-| small | `grad_sum_svd_s_backward` | f64 | 4 | `2x2` | - | 0.046 ± 0.001 | 0.016 ± 0.002 | 0.039 ± 0.007 | 0.011 ± 0.002 | - | - |
-| small | `grad_sum_svd_s_backward` | f64 | 4 | `4x4` | - | 0.050 ± 0.007 | 0.020 ± 0.004 | 0.034 ± 0.003 | 0.016 ± 0.002 | - | - |
-| small | `grad_sum_svd_s_backward` | f64 | 4 | `8x8` | - | 0.065 ± 0.010 | 0.031 ± 0.003 | 0.049 ± 0.009 | 0.054 ± 0.017 | - | - |
-| small | `grad_sum_svd_s_jvp` | f64 | 4 | `2x2` | - | 0.106 ± 0.049 | 0.019 ± 0.001 | 0.113 ± 0.020 | 0.011 ± 0.001 | - | - |
-| small | `grad_sum_svd_s_jvp` | f64 | 4 | `4x4` | - | 0.114 ± 0.018 | 0.024 ± 0.001 | 0.106 ± 0.017 | 0.014 ± 0.002 | - | - |
-| small | `grad_sum_svd_s_jvp` | f64 | 4 | `8x8` | - | 0.140 ± 0.011 | 0.036 ± 0.001 | 0.122 ± 0.013 | 0.032 ± 0.024 | - | - |
-| small | `grad_sum_svd_s_vjp` | f64 | 4 | `2x2` | - | 0.041 ± 0.009 | 0.017 ± 0.002 | 0.073 ± 0.018 | 0.011 ± 0.001 | - | - |
-| small | `grad_sum_svd_s_vjp` | f64 | 4 | `4x4` | - | 0.062 ± 0.029 | 0.022 ± 0.001 | 0.074 ± 0.020 | 0.015 ± 0.003 | - | - |
-| small | `grad_sum_svd_s_vjp` | f64 | 4 | `8x8` | - | 0.056 ± 0.011 | 0.033 ± 0.003 | 0.076 ± 0.011 | 0.019 ± 0.011 | - | - |
-| small | `matmul` | f64 | 4 | `2x2` | - | 0.003 ± 0.000 | 0.003 ± 0.000 | 0.001 ± 0.000 | 0.006 ± 0.001 | - | - |
-| small | `matmul` | f64 | 4 | `32x32` | - | 0.004 ± 0.001 | 0.004 ± 0.000 | 0.003 ± 0.001 | 0.007 ± 0.002 | - | - |
-| small | `matmul` | f64 | 4 | `4x4` | - | 0.003 ± 0.001 | 0.003 ± 0.000 | 0.001 ± 0.000 | 0.009 ± 0.003 | - | - |
-| small | `matmul` | f64 | 4 | `64x64` | - | 0.008 ± 0.001 | 0.006 ± 0.000 | 0.008 ± 0.001 | 0.027 ± 0.018 | - | - |
-| small | `matmul` | f64 | 4 | `8x8` | - | 0.003 ± 0.000 | 0.003 ± 0.001 | 0.001 ± 0.000 | 0.007 ± 0.004 | - | - |
-| small | `qr` | f64 | 4 | `2x2` | - | 0.004 ± 0.002 | 0.004 ± 0.001 | 0.045 ± 0.003 | 0.008 ± 0.002 | - | - |
-| small | `qr` | f64 | 4 | `4x4` | - | 0.005 ± 0.001 | 0.004 ± 0.000 | 0.035 ± 0.016 | 0.013 ± 0.005 | - | - |
-| small | `qr` | f64 | 4 | `8x8` | - | 0.006 ± 0.000 | 0.005 ± 0.001 | 0.042 ± 0.021 | 0.014 ± 0.005 | - | - |
-| small | `solve` | f64 | 4 | `2x2,rhs=1` | - | 0.005 ± 0.000 | 0.006 ± 0.001 | 0.011 ± 0.002 | 0.006 ± 0.002 | - | - |
-| small | `solve` | f64 | 4 | `2x2,rhs=4` | - | 0.004 ± 0.001 | 0.006 ± 0.001 | 0.010 ± 0.002 | 0.006 ± 0.000 | - | - |
-| small | `solve` | f64 | 4 | `4x4,rhs=1` | - | 0.005 ± 0.001 | 0.006 ± 0.001 | 0.013 ± 0.008 | 0.007 ± 0.001 | - | - |
-| small | `solve` | f64 | 4 | `4x4,rhs=4` | - | 0.005 ± 0.000 | 0.006 ± 0.001 | 0.011 ± 0.003 | 0.007 ± 0.001 | - | - |
-| small | `solve` | f64 | 4 | `8x8,rhs=1` | - | 0.005 ± 0.001 | 0.006 ± 0.001 | 0.009 ± 0.001 | 0.007 ± 0.001 | - | - |
-| small | `solve` | f64 | 4 | `8x8,rhs=4` | - | 0.005 ± 0.001 | 0.007 ± 0.001 | 0.010 ± 0.002 | 0.007 ± 0.001 | - | - |
-| small | `svd` | f64 | 4 | `2x2` | - | 0.005 ± 0.001 | 0.005 ± 0.001 | 0.007 ± 0.001 | 0.014 ± 0.004 | - | - |
-| small | `svd` | f64 | 4 | `4x4` | - | 0.008 ± 0.001 | 0.007 ± 0.001 | 0.024 ± 0.013 | 0.024 ± 0.008 | - | - |
-| small | `svd` | f64 | 4 | `8x8` | - | 0.016 ± 0.001 | 0.015 ± 0.002 | 0.017 ± 0.002 | 0.026 ± 0.005 | - | - |
+| batched | `batched_eigh` | f64 | 4 | `2x2xbatch16 (native batch layout)` | - | 0.008 ± 0.000 | 0.009 ± 0.001 | 0.008 ± 0.000 | 0.018 ± 0.005 | - | - |
+| batched | `batched_eigh` | f64 | 4 | `2x2xbatch64 (native batch layout)` | - | 0.020 ± 0.002 | 0.020 ± 0.000 | 0.020 ± 0.001 | 0.078 ± 0.037 | - | - |
+| batched | `batched_eigh` | f64 | 4 | `4x4xbatch16 (native batch layout)` | - | 0.025 ± 0.001 | 0.024 ± 0.003 | 0.028 ± 0.006 | 0.033 ± 0.003 | - | - |
+| batched | `batched_eigh` | f64 | 4 | `4x4xbatch64 (native batch layout)` | - | 0.084 ± 0.014 | 0.082 ± 0.002 | 0.090 ± 0.015 | 0.138 ± 0.037 | - | - |
+| batched | `batched_matmul_ikb_kjb_ijb` | f64 | 4 | `2x2xbatch16 (native batch layout)` | - | 0.003 ± 0.000 | 0.004 ± 0.001 | 0.009 ± 0.004 | 0.080 ± 0.016 | - | - |
+| batched | `batched_matmul_ikb_kjb_ijb` | f64 | 4 | `2x2xbatch64 (native batch layout)` | - | 0.005 ± 0.000 | 0.005 ± 0.001 | 0.010 ± 0.001 | 0.147 ± 0.066 | - | - |
+| batched | `batched_matmul_ikb_kjb_ijb` | f64 | 4 | `4x4xbatch1024 (native batch layout)` | - | 0.049 ± 0.002 | 0.069 ± 0.034 | 0.114 ± 0.026 | 0.286 ± 0.203 | - | - |
+| batched | `batched_matmul_ikb_kjb_ijb` | f64 | 4 | `4x4xbatch16 (native batch layout)` | - | 0.004 ± 0.000 | 0.004 ± 0.000 | 0.010 ± 0.004 | 0.112 ± 0.028 | - | - |
+| batched | `batched_matmul_ikb_kjb_ijb` | f64 | 4 | `4x4xbatch64 (native batch layout)` | - | 0.006 ± 0.001 | 0.006 ± 0.000 | 0.012 ± 0.005 | 0.096 ± 0.020 | - | - |
+| batched | `batched_qr` | f64 | 4 | `2x2xbatch16 (native batch layout)` | - | 0.008 ± 0.000 | 0.008 ± 0.002 | 0.046 ± 0.010 | 0.016 ± 0.006 | - | - |
+| batched | `batched_qr` | f64 | 4 | `2x2xbatch64 (native batch layout)` | - | 0.017 ± 0.001 | 0.016 ± 0.001 | 0.072 ± 0.028 | 0.034 ± 0.007 | - | - |
+| batched | `batched_qr` | f64 | 4 | `4x4xbatch16 (native batch layout)` | - | 0.012 ± 0.001 | 0.012 ± 0.001 | 0.056 ± 0.006 | 0.017 ± 0.002 | - | - |
+| batched | `batched_qr` | f64 | 4 | `4x4xbatch64 (native batch layout)` | - | 0.045 ± 0.003 | 0.037 ± 0.002 | 0.103 ± 0.012 | 0.088 ± 0.012 | - | - |
+| batched | `batched_solve` | f64 | 4 | `2x2xbatch16 (native batch layout),rhs=1` | - | 0.006 ± 0.000 | 0.010 ± 0.004 | 0.045 ± 0.028 | 0.011 ± 0.017 | - | - |
+| batched | `batched_solve` | f64 | 4 | `2x2xbatch64 (native batch layout),rhs=1` | - | 0.013 ± 0.001 | 0.012 ± 0.002 | 0.071 ± 0.014 | 0.035 ± 0.003 | - | - |
+| batched | `batched_solve` | f64 | 4 | `4x4xbatch16 (native batch layout),rhs=1` | - | 0.009 ± 0.000 | 0.009 ± 0.000 | 0.069 ± 0.026 | 0.012 ± 0.004 | - | - |
+| batched | `batched_solve` | f64 | 4 | `4x4xbatch64 (native batch layout),rhs=1` | - | 0.017 ± 0.001 | 0.015 ± 0.000 | 0.056 ± 0.041 | 0.053 ± 0.010 | - | - |
+| batched | `batched_svd` | f64 | 4 | `2x2xbatch16 (native batch layout)` | - | 0.015 ± 0.000 | 0.019 ± 0.004 | 0.015 ± 0.000 | 0.056 ± 0.040 | - | - |
+| batched | `batched_svd` | f64 | 4 | `2x2xbatch64 (native batch layout)` | - | 0.044 ± 0.002 | 0.042 ± 0.012 | 0.046 ± 0.025 | 0.189 ± 0.057 | - | - |
+| batched | `batched_svd` | f64 | 4 | `4x4xbatch16 (native batch layout)` | - | 0.049 ± 0.003 | 0.046 ± 0.001 | 0.057 ± 0.033 | 0.079 ± 0.003 | - | - |
+| batched | `batched_svd` | f64 | 4 | `4x4xbatch64 (native batch layout)` | - | 0.208 ± 0.029 | 0.162 ± 0.002 | 0.191 ± 0.007 | 0.334 ± 0.029 | - | - |
+| batched | `grad_sum_batched_matmul_backward` | f64 | 4 | `2x2xbatch16 (native batch layout)` | - | 0.044 ± 0.004 | 0.012 ± 0.000 | 0.058 ± 0.011 | 0.009 ± 0.002 | - | - |
+| batched | `grad_sum_batched_matmul_backward` | f64 | 4 | `2x2xbatch64 (native batch layout)` | - | 0.081 ± 0.056 | 0.016 ± 0.001 | 0.077 ± 0.012 | 0.009 ± 0.002 | - | - |
+| batched | `grad_sum_batched_matmul_backward` | f64 | 4 | `4x4xbatch16 (native batch layout)` | - | 0.050 ± 0.003 | 0.013 ± 0.000 | 0.073 ± 0.018 | 0.029 ± 0.004 | - | - |
+| batched | `grad_sum_batched_matmul_backward` | f64 | 4 | `4x4xbatch64 (native batch layout)` | - | 0.053 ± 0.005 | 0.020 ± 0.000 | 0.065 ± 0.003 | 0.052 ± 0.009 | - | - |
+| batched | `grad_sum_batched_solve_backward` | f64 | 4 | `2x2xbatch16 (native batch layout),rhs=1` | - | 0.064 ± 0.002 | 0.039 ± 0.002 | 0.102 ± 0.028 | 0.016 ± 0.004 | - | - |
+| batched | `grad_sum_batched_solve_backward` | f64 | 4 | `2x2xbatch64 (native batch layout),rhs=1` | - | 0.087 ± 0.099 | 0.057 ± 0.001 | 0.200 ± 0.069 | 0.028 ± 0.021 | - | - |
+| batched | `grad_sum_batched_solve_backward` | f64 | 4 | `4x4xbatch16 (native batch layout),rhs=1` | - | 0.060 ± 0.001 | 0.044 ± 0.002 | 0.117 ± 0.018 | 0.026 ± 0.015 | - | - |
+| batched | `grad_sum_batched_solve_backward` | f64 | 4 | `4x4xbatch64 (native batch layout),rhs=1` | - | 0.080 ± 0.041 | 0.070 ± 0.002 | 0.109 ± 0.010 | 0.046 ± 0.027 | - | - |
+| large | `eigh` | f64 | 4 | `64x64` | - | 0.311 ± 0.020 | 0.326 ± 0.003 | 0.310 ± 0.035 | 0.475 ± 0.397 | - | - |
+| large | `grad_sum_eigh_jvp` | f64 | 4 | `256x256` | - | 9.684 ± 0.710 | 8.675 ± 0.324 | 6.290 ± 0.333 | 7.034 ± 5.794 | - | - |
+| large | `grad_sum_eigh_jvp` | f64 | 4 | `512x512` | - | 74.469 ± 6.712 | 58.884 ± 3.401 | 41.652 ± 8.425 | 41.021 ± 4.385 | - | - |
+| large | `grad_sum_eigh_vjp` | f64 | 4 | `256x256` | - | 5.535 ± 0.295 | 8.684 ± 0.309 | 5.658 ± 0.404 | 6.634 ± 1.903 | - | - |
+| large | `grad_sum_eigh_vjp` | f64 | 4 | `512x512` | - | 39.127 ± 7.108 | 65.623 ± 2.654 | 36.932 ± 4.754 | 59.147 ± 10.550 | - | - |
+| large | `grad_sum_lu_jvp` | f64 | 4 | `256x256` | - | 2.808 ± 0.115 | 1.289 ± 0.086 | 3.720 ± 3.720 | 4.004 ± 1.025 | - | - |
+| large | `grad_sum_lu_jvp` | f64 | 4 | `512x512` | - | 27.799 ± 8.368 | 13.567 ± 1.858 | 19.984 ± 6.542 | 24.414 ± 7.687 | - | - |
+| large | `grad_sum_lu_vjp` | f64 | 4 | `256x256` | - | 2.664 ± 0.060 | 1.440 ± 0.089 | 4.715 ± 0.899 | 2.517 ± 0.133 | - | - |
+| large | `grad_sum_lu_vjp` | f64 | 4 | `512x512` | - | 16.963 ± 1.511 | 13.229 ± 1.299 | 11.236 ± 0.946 | 24.330 ± 6.137 | - | - |
+| large | `grad_sum_matmul` | f64 | 4 | `64x64` | - | 0.016 ± 0.001 | 0.009 ± 0.000 | 0.011 ± 0.004 | 0.042 ± 0.009 | - | - |
+| large | `grad_sum_matmul_backward` | f64 | 4 | `64x64` | - | 0.066 ± 0.002 | 0.031 ± 0.003 | 0.051 ± 0.005 | 0.118 ± 0.028 | - | - |
+| large | `grad_sum_qr_jvp` | f64 | 4 | `256x256` | - | 5.976 ± 0.228 | 4.057 ± 0.161 | 3.890 ± 0.298 | 6.077 ± 4.373 | - | - |
+| large | `grad_sum_qr_jvp` | f64 | 4 | `512x512` | - | 55.064 ± 5.517 | 27.283 ± 4.716 | 16.327 ± 0.508 | 29.585 ± 4.978 | - | - |
+| large | `grad_sum_qr_vjp` | f64 | 4 | `256x256` | - | 3.844 ± 0.235 | 3.999 ± 0.116 | 3.596 ± 0.261 | 4.259 ± 0.551 | - | - |
+| large | `grad_sum_qr_vjp` | f64 | 4 | `512x512` | - | 36.501 ± 3.824 | 26.671 ± 1.895 | 33.256 ± 9.861 | 29.758 ± 14.661 | - | - |
+| large | `grad_sum_solve_backward` | f64 | 4 | `64x64,rhs=1` | - | 0.092 ± 0.026 | 0.102 ± 0.004 | 0.088 ± 0.012 | 0.084 ± 0.028 | - | - |
+| large | `grad_sum_solve_jvp` | f64 | 4 | `256x256,rhs=1` | - | 0.806 ± 0.088 | 0.566 ± 0.010 | 0.560 ± 0.022 | 0.387 ± 0.021 | - | - |
+| large | `grad_sum_solve_jvp` | f64 | 4 | `512x512,rhs=1` | - | 3.416 ± 0.537 | 3.995 ± 0.157 | 2.537 ± 0.622 | 2.213 ± 0.149 | - | - |
+| large | `grad_sum_solve_vjp` | f64 | 4 | `256x256,rhs=1` | - | 0.451 ± 0.043 | 0.543 ± 0.011 | 0.732 ± 0.023 | 0.429 ± 0.021 | - | - |
+| large | `grad_sum_solve_vjp` | f64 | 4 | `512x512,rhs=1` | - | 1.790 ± 0.124 | 3.809 ± 0.923 | 3.731 ± 0.438 | 2.030 ± 0.742 | - | - |
+| large | `grad_sum_svd_s_backward` | f64 | 4 | `64x64` | - | 0.504 ± 0.080 | 0.627 ± 0.023 | 0.619 ± 0.059 | 0.654 ± 0.255 | - | - |
+| large | `grad_sum_svd_s_jvp` | f64 | 4 | `256x256` | - | 19.580 ± 0.423 | 15.215 ± 0.766 | 12.385 ± 2.438 | 11.268 ± 1.439 | - | - |
+| large | `grad_sum_svd_s_jvp` | f64 | 4 | `512x512` | - | 137.659 ± 10.773 | 87.715 ± 2.140 | 65.683 ± 12.400 | 70.142 ± 8.747 | - | - |
+| large | `grad_sum_svd_s_vjp` | f64 | 4 | `256x256` | - | 9.856 ± 0.107 | 15.486 ± 1.201 | 10.711 ± 1.192 | 10.507 ± 0.018 | - | - |
+| large | `grad_sum_svd_s_vjp` | f64 | 4 | `512x512` | - | 79.588 ± 13.876 | 90.287 ± 1.040 | 54.545 ± 3.669 | 67.438 ± 1.796 | - | - |
+| large | `matmul` | f64 | 4 | `128x128` | - | 0.030 ± 0.001 | 0.023 ± 0.004 | 0.027 ± 0.002 | 0.226 ± 0.126 | - | - |
+| large | `matmul` | f64 | 4 | `256x256` | - | 0.182 ± 0.054 | 0.134 ± 0.009 | 0.184 ± 0.017 | 0.678 ± 0.189 | - | - |
+| large | `matmul_rect` | f64 | 4 | `256x1024 * 1024x256` | - | 0.495 ± 0.027 | 0.550 ± 0.061 | 0.717 ± 0.170 | 2.320 ± 1.441 | - | - |
+| large | `qr` | f64 | 4 | `64x64` | - | 0.065 ± 0.009 | 0.070 ± 0.004 | 0.124 ± 0.017 | 0.108 ± 0.100 | - | - |
+| large | `solve` | f64 | 4 | `64x64,rhs=1` | - | 0.022 ± 0.000 | 0.025 ± 0.002 | 0.032 ± 0.009 | 0.092 ± 0.038 | - | - |
+| large | `solve` | f64 | 4 | `64x64,rhs=16` | - | 0.023 ± 0.004 | 0.028 ± 0.001 | 0.046 ± 0.010 | 0.119 ± 0.057 | - | - |
+| large | `solve` | f64 | 4 | `64x64,rhs=64` | - | 0.028 ± 0.000 | 0.034 ± 0.000 | 0.066 ± 0.008 | 0.256 ± 0.055 | - | - |
+| large | `svd` | f64 | 4 | `64x64` | - | 0.444 ± 0.014 | 0.479 ± 0.027 | 0.456 ± 0.015 | 0.541 ± 0.046 | - | - |
+| small | `eigh` | f64 | 4 | `2x2` | - | 0.009 ± 0.003 | 0.004 ± 0.000 | 0.005 ± 0.001 | 0.008 ± 0.004 | - | - |
+| small | `eigh` | f64 | 4 | `4x4` | - | 0.005 ± 0.000 | 0.004 ± 0.000 | 0.005 ± 0.002 | 0.010 ± 0.001 | - | - |
+| small | `eigh` | f64 | 4 | `8x8` | - | 0.012 ± 0.002 | 0.008 ± 0.001 | 0.010 ± 0.003 | 0.014 ± 0.001 | - | - |
+| small | `einsum_ij_jk_ik` | f64 | 4 | `2x2` | - | 0.003 ± 0.001 | 0.006 ± 0.001 | 0.012 ± 0.004 | 0.082 ± 0.125 | - | - |
+| small | `einsum_ij_jk_ik` | f64 | 4 | `4x4` | - | 0.003 ± 0.001 | 0.006 ± 0.000 | 0.009 ± 0.003 | 0.084 ± 0.016 | - | - |
+| small | `einsum_ij_jk_ik` | f64 | 4 | `8x8` | - | 0.003 ± 0.001 | 0.007 ± 0.000 | 0.012 ± 0.004 | 0.090 ± 0.009 | - | - |
+| small | `grad_sum_eigh_jvp` | f64 | 4 | `2x2` | - | 0.118 ± 0.016 | 0.023 ± 0.000 | 0.083 ± 0.007 | 0.008 ± 0.001 | - | - |
+| small | `grad_sum_eigh_jvp` | f64 | 4 | `4x4` | - | 0.136 ± 0.015 | 0.025 ± 0.002 | 0.070 ± 0.002 | 0.011 ± 0.000 | - | - |
+| small | `grad_sum_eigh_jvp` | f64 | 4 | `8x8` | - | 0.150 ± 0.010 | 0.040 ± 0.002 | 0.114 ± 0.028 | 0.026 ± 0.005 | - | - |
+| small | `grad_sum_eigh_vjp` | f64 | 4 | `2x2` | - | 0.042 ± 0.013 | 0.023 ± 0.003 | 0.073 ± 0.006 | 0.008 ± 0.001 | - | - |
+| small | `grad_sum_eigh_vjp` | f64 | 4 | `4x4` | - | 0.049 ± 0.001 | 0.025 ± 0.000 | 0.060 ± 0.001 | 0.010 ± 0.002 | - | - |
+| small | `grad_sum_eigh_vjp` | f64 | 4 | `8x8` | - | 0.059 ± 0.003 | 0.036 ± 0.003 | 0.101 ± 0.036 | 0.026 ± 0.004 | - | - |
+| small | `grad_sum_lu_jvp` | f64 | 4 | `2x2` | - | 0.367 ± 0.022 | 0.027 ± 0.002 | 0.425 ± 0.231 | 0.009 ± 0.003 | - | - |
+| small | `grad_sum_lu_jvp` | f64 | 4 | `4x4` | - | 0.441 ± 0.022 | 0.035 ± 0.018 | 0.399 ± 0.224 | 0.009 ± 0.002 | - | - |
+| small | `grad_sum_lu_jvp` | f64 | 4 | `8x8` | - | 0.374 ± 0.024 | 0.035 ± 0.004 | 0.428 ± 0.069 | 0.014 ± 0.003 | - | - |
+| small | `grad_sum_lu_vjp` | f64 | 4 | `2x2` | - | 0.110 ± 0.079 | 0.026 ± 0.000 | 0.341 ± 0.037 | 0.008 ± 0.000 | - | - |
+| small | `grad_sum_lu_vjp` | f64 | 4 | `4x4` | - | 0.147 ± 0.017 | 0.025 ± 0.002 | 0.179 ± 0.054 | 0.009 ± 0.000 | - | - |
+| small | `grad_sum_lu_vjp` | f64 | 4 | `8x8` | - | 0.129 ± 0.007 | 0.051 ± 0.009 | 0.322 ± 0.061 | 0.015 ± 0.002 | - | - |
+| small | `grad_sum_matmul_backward` | f64 | 4 | `2x2` | - | 0.127 ± 0.015 | 0.011 ± 0.002 | 0.029 ± 0.003 | 0.008 ± 0.001 | - | - |
+| small | `grad_sum_matmul_backward` | f64 | 4 | `4x4` | - | 0.045 ± 0.002 | 0.009 ± 0.000 | 0.025 ± 0.001 | 0.009 ± 0.003 | - | - |
+| small | `grad_sum_matmul_backward` | f64 | 4 | `8x8` | - | 0.052 ± 0.014 | 0.013 ± 0.001 | 0.040 ± 0.026 | 0.011 ± 0.003 | - | - |
+| small | `grad_sum_qr_jvp` | f64 | 4 | `2x2` | - | 0.587 ± 0.055 | 0.040 ± 0.001 | 0.201 ± 0.044 | 0.009 ± 0.006 | - | - |
+| small | `grad_sum_qr_jvp` | f64 | 4 | `4x4` | - | 0.582 ± 0.046 | 0.040 ± 0.002 | 0.285 ± 0.132 | 0.010 ± 0.001 | - | - |
+| small | `grad_sum_qr_jvp` | f64 | 4 | `8x8` | - | 0.650 ± 0.038 | 0.106 ± 0.028 | 0.234 ± 0.081 | 0.015 ± 0.002 | - | - |
+| small | `grad_sum_qr_vjp` | f64 | 4 | `2x2` | - | 0.127 ± 0.035 | 0.042 ± 0.003 | 0.172 ± 0.023 | 0.008 ± 0.001 | - | - |
+| small | `grad_sum_qr_vjp` | f64 | 4 | `4x4` | - | 0.100 ± 0.018 | 0.039 ± 0.001 | 0.236 ± 0.065 | 0.009 ± 0.000 | - | - |
+| small | `grad_sum_qr_vjp` | f64 | 4 | `8x8` | - | 0.134 ± 0.018 | 0.053 ± 0.013 | 0.188 ± 0.099 | 0.015 ± 0.001 | - | - |
+| small | `grad_sum_solve_backward` | f64 | 4 | `2x2,rhs=1` | - | 0.065 ± 0.122 | 0.031 ± 0.001 | 0.045 ± 0.003 | 0.012 ± 0.003 | - | - |
+| small | `grad_sum_solve_backward` | f64 | 4 | `4x4,rhs=1` | - | 0.061 ± 0.004 | 0.033 ± 0.002 | 0.041 ± 0.004 | 0.010 ± 0.001 | - | - |
+| small | `grad_sum_solve_backward` | f64 | 4 | `8x8,rhs=1` | - | 0.053 ± 0.003 | 0.047 ± 0.008 | 0.090 ± 0.088 | 0.010 ± 0.001 | - | - |
+| small | `grad_sum_solve_jvp` | f64 | 4 | `2x2,rhs=1` | - | 0.083 ± 0.023 | 0.021 ± 0.000 | 0.180 ± 0.018 | 0.009 ± 0.002 | - | - |
+| small | `grad_sum_solve_jvp` | f64 | 4 | `4x4,rhs=1` | - | 0.097 ± 0.011 | 0.021 ± 0.001 | 0.161 ± 0.011 | 0.007 ± 0.000 | - | - |
+| small | `grad_sum_solve_jvp` | f64 | 4 | `8x8,rhs=1` | - | 0.084 ± 0.005 | 0.026 ± 0.018 | 0.226 ± 0.114 | 0.009 ± 0.000 | - | - |
+| small | `grad_sum_solve_vjp` | f64 | 4 | `2x2,rhs=1` | - | 0.046 ± 0.002 | 0.022 ± 0.003 | 0.087 ± 0.003 | 0.010 ± 0.001 | - | - |
+| small | `grad_sum_solve_vjp` | f64 | 4 | `4x4,rhs=1` | - | 0.052 ± 0.004 | 0.032 ± 0.004 | 0.079 ± 0.010 | 0.008 ± 0.000 | - | - |
+| small | `grad_sum_solve_vjp` | f64 | 4 | `8x8,rhs=1` | - | 0.043 ± 0.001 | 0.026 ± 0.001 | 0.118 ± 0.032 | 0.009 ± 0.004 | - | - |
+| small | `grad_sum_svd_s_backward` | f64 | 4 | `2x2` | - | 0.058 ± 0.006 | 0.017 ± 0.001 | 0.036 ± 0.008 | 0.011 ± 0.005 | - | - |
+| small | `grad_sum_svd_s_backward` | f64 | 4 | `4x4` | - | 0.050 ± 0.006 | 0.020 ± 0.001 | 0.033 ± 0.001 | 0.014 ± 0.008 | - | - |
+| small | `grad_sum_svd_s_backward` | f64 | 4 | `8x8` | - | 0.065 ± 0.126 | 0.040 ± 0.003 | 0.095 ± 0.049 | 0.039 ± 0.016 | - | - |
+| small | `grad_sum_svd_s_jvp` | f64 | 4 | `2x2` | - | 0.119 ± 0.042 | 0.017 ± 0.001 | 0.115 ± 0.027 | 0.014 ± 0.014 | - | - |
+| small | `grad_sum_svd_s_jvp` | f64 | 4 | `4x4` | - | 0.118 ± 0.003 | 0.020 ± 0.001 | 0.148 ± 0.051 | 0.013 ± 0.001 | - | - |
+| small | `grad_sum_svd_s_jvp` | f64 | 4 | `8x8` | - | 0.162 ± 0.017 | 0.047 ± 0.005 | 0.142 ± 0.032 | 0.042 ± 0.003 | - | - |
+| small | `grad_sum_svd_s_vjp` | f64 | 4 | `2x2` | - | 0.052 ± 0.022 | 0.016 ± 0.001 | 0.085 ± 0.024 | 0.012 ± 0.004 | - | - |
+| small | `grad_sum_svd_s_vjp` | f64 | 4 | `4x4` | - | 0.070 ± 0.014 | 0.018 ± 0.000 | 0.097 ± 0.047 | 0.013 ± 0.001 | - | - |
+| small | `grad_sum_svd_s_vjp` | f64 | 4 | `8x8` | - | 0.050 ± 0.006 | 0.039 ± 0.002 | 0.085 ± 0.010 | 0.043 ± 0.037 | - | - |
+| small | `matmul` | f64 | 4 | `2x2` | - | 0.003 ± 0.002 | 0.004 ± 0.000 | 0.001 ± 0.001 | 0.009 ± 0.005 | - | - |
+| small | `matmul` | f64 | 4 | `32x32` | - | 0.005 ± 0.001 | 0.005 ± 0.002 | 0.002 ± 0.001 | 0.017 ± 0.010 | - | - |
+| small | `matmul` | f64 | 4 | `4x4` | - | 0.003 ± 0.000 | 0.003 ± 0.000 | 0.001 ± 0.000 | 0.007 ± 0.003 | - | - |
+| small | `matmul` | f64 | 4 | `64x64` | - | 0.009 ± 0.002 | 0.006 ± 0.000 | 0.007 ± 0.001 | 0.075 ± 0.015 | - | - |
+| small | `matmul` | f64 | 4 | `8x8` | - | 0.003 ± 0.000 | 0.003 ± 0.000 | 0.001 ± 0.000 | 0.007 ± 0.001 | - | - |
+| small | `qr` | f64 | 4 | `2x2` | - | 0.006 ± 0.001 | 0.004 ± 0.001 | 0.027 ± 0.004 | 0.009 ± 0.001 | - | - |
+| small | `qr` | f64 | 4 | `4x4` | - | 0.005 ± 0.001 | 0.004 ± 0.000 | 0.044 ± 0.001 | 0.009 ± 0.002 | - | - |
+| small | `qr` | f64 | 4 | `8x8` | - | 0.006 ± 0.000 | 0.005 ± 0.000 | 0.030 ± 0.009 | 0.010 ± 0.002 | - | - |
+| small | `solve` | f64 | 4 | `2x2,rhs=1` | - | 0.006 ± 0.001 | 0.008 ± 0.000 | 0.011 ± 0.004 | 0.008 ± 0.002 | - | - |
+| small | `solve` | f64 | 4 | `2x2,rhs=4` | - | 0.006 ± 0.002 | 0.006 ± 0.001 | 0.010 ± 0.000 | 0.007 ± 0.003 | - | - |
+| small | `solve` | f64 | 4 | `4x4,rhs=1` | - | 0.005 ± 0.000 | 0.006 ± 0.000 | 0.008 ± 0.000 | 0.009 ± 0.003 | - | - |
+| small | `solve` | f64 | 4 | `4x4,rhs=4` | - | 0.005 ± 0.000 | 0.006 ± 0.001 | 0.008 ± 0.000 | 0.008 ± 0.004 | - | - |
+| small | `solve` | f64 | 4 | `8x8,rhs=1` | - | 0.006 ± 0.001 | 0.006 ± 0.001 | 0.011 ± 0.008 | 0.007 ± 0.001 | - | - |
+| small | `solve` | f64 | 4 | `8x8,rhs=4` | - | 0.005 ± 0.000 | 0.006 ± 0.000 | 0.012 ± 0.005 | 0.008 ± 0.001 | - | - |
+| small | `svd` | f64 | 4 | `2x2` | - | 0.011 ± 0.004 | 0.005 ± 0.000 | 0.008 ± 0.002 | 0.013 ± 0.004 | - | - |
+| small | `svd` | f64 | 4 | `4x4` | - | 0.009 ± 0.001 | 0.007 ± 0.000 | 0.009 ± 0.000 | 0.015 ± 0.002 | - | - |
+| small | `svd` | f64 | 4 | `8x8` | - | 0.017 ± 0.005 | 0.014 ± 0.001 | 0.022 ± 0.015 | 0.020 ± 0.001 | - | - |
 
 ### Cross-Backend Spread Audit
 
 Rows with a successful cell more than 10x faster than the slowest successful cell are flagged for operation-specific review. This cross-backend spread check is a warning, not a correctness verdict.
 
-- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=4, shape=`2x2xbatch16 (native batch layout)`): `tenferro-eager` is 26.8x faster than the slowest successful cell (`jax-cpu`, 0.083 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=4, shape=`2x2xbatch16 (native batch layout)`): `tenferro-trace` is 22.3x faster than the slowest successful cell (`jax-cpu`, 0.083 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=4, shape=`2x2xbatch64 (native batch layout)`): `pytorch-cpu` is 10.9x faster than the slowest successful cell (`jax-cpu`, 0.091 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=4, shape=`2x2xbatch64 (native batch layout)`): `tenferro-eager` is 18.3x faster than the slowest successful cell (`jax-cpu`, 0.091 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=4, shape=`2x2xbatch64 (native batch layout)`): `tenferro-trace` is 16.6x faster than the slowest successful cell (`jax-cpu`, 0.091 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=4, shape=`4x4xbatch16 (native batch layout)`): `pytorch-cpu` is 11.3x faster than the slowest successful cell (`jax-cpu`, 0.097 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=4, shape=`4x4xbatch16 (native batch layout)`): `tenferro-eager` is 26.8x faster than the slowest successful cell (`jax-cpu`, 0.097 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=4, shape=`4x4xbatch16 (native batch layout)`): `tenferro-trace` is 22.1x faster than the slowest successful cell (`jax-cpu`, 0.097 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=4, shape=`4x4xbatch64 (native batch layout)`): `tenferro-eager` is 16.1x faster than the slowest successful cell (`jax-cpu`, 0.093 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=4, shape=`4x4xbatch64 (native batch layout)`): `tenferro-trace` is 13.8x faster than the slowest successful cell (`jax-cpu`, 0.093 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/einsum_ij_jk_ik` (f64, threads=4, shape=`2x2`): `tenferro-eager` is 30.3x faster than the slowest successful cell (`jax-cpu`, 0.088 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/einsum_ij_jk_ik` (f64, threads=4, shape=`2x2`): `tenferro-trace` is 14.4x faster than the slowest successful cell (`jax-cpu`, 0.088 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/einsum_ij_jk_ik` (f64, threads=4, shape=`4x4`): `tenferro-eager` is 53.8x faster than the slowest successful cell (`jax-cpu`, 0.150 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/einsum_ij_jk_ik` (f64, threads=4, shape=`4x4`): `tenferro-trace` is 23.1x faster than the slowest successful cell (`jax-cpu`, 0.150 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/einsum_ij_jk_ik` (f64, threads=4, shape=`8x8`): `pytorch-cpu` is 11.7x faster than the slowest successful cell (`jax-cpu`, 0.107 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/einsum_ij_jk_ik` (f64, threads=4, shape=`8x8`): `tenferro-eager` is 33.4x faster than the slowest successful cell (`jax-cpu`, 0.107 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/einsum_ij_jk_ik` (f64, threads=4, shape=`8x8`): `tenferro-trace` is 18.1x faster than the slowest successful cell (`jax-cpu`, 0.107 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_eigh_jvp` (f64, threads=4, shape=`2x2`): `jax-cpu` is 14.2x faster than the slowest successful cell (`tenferro-eager`, 0.127 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_eigh_jvp` (f64, threads=4, shape=`4x4`): `jax-cpu` is 10.8x faster than the slowest successful cell (`tenferro-eager`, 0.135 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_lu_jvp` (f64, threads=4, shape=`2x2`): `jax-cpu` is 51.2x faster than the slowest successful cell (`tenferro-eager`, 0.448 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_lu_jvp` (f64, threads=4, shape=`2x2`): `tenferro-trace` is 14.6x faster than the slowest successful cell (`tenferro-eager`, 0.448 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_lu_jvp` (f64, threads=4, shape=`4x4`): `jax-cpu` is 42.0x faster than the slowest successful cell (`tenferro-eager`, 0.476 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_lu_jvp` (f64, threads=4, shape=`4x4`): `tenferro-trace` is 16.2x faster than the slowest successful cell (`tenferro-eager`, 0.476 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_lu_jvp` (f64, threads=4, shape=`8x8`): `jax-cpu` is 27.1x faster than the slowest successful cell (`tenferro-eager`, 0.451 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_lu_jvp` (f64, threads=4, shape=`8x8`): `tenferro-trace` is 15.2x faster than the slowest successful cell (`tenferro-eager`, 0.451 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_lu_vjp` (f64, threads=4, shape=`2x2`): `jax-cpu` is 35.6x faster than the slowest successful cell (`pytorch-cpu`, 0.286 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_lu_vjp` (f64, threads=4, shape=`2x2`): `tenferro-trace` is 11.0x faster than the slowest successful cell (`pytorch-cpu`, 0.286 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_lu_vjp` (f64, threads=4, shape=`4x4`): `jax-cpu` is 24.4x faster than the slowest successful cell (`pytorch-cpu`, 0.231 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_lu_vjp` (f64, threads=4, shape=`8x8`): `jax-cpu` is 18.2x faster than the slowest successful cell (`pytorch-cpu`, 0.247 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_matmul_backward` (f64, threads=4, shape=`2x2`): `jax-cpu` is 10.1x faster than the slowest successful cell (`tenferro-eager`, 0.068 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_qr_jvp` (f64, threads=4, shape=`2x2`): `jax-cpu` is 64.0x faster than the slowest successful cell (`tenferro-eager`, 0.588 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_qr_jvp` (f64, threads=4, shape=`2x2`): `tenferro-trace` is 12.8x faster than the slowest successful cell (`tenferro-eager`, 0.588 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_qr_jvp` (f64, threads=4, shape=`4x4`): `jax-cpu` is 52.2x faster than the slowest successful cell (`tenferro-eager`, 0.585 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_qr_jvp` (f64, threads=4, shape=`4x4`): `tenferro-trace` is 14.1x faster than the slowest successful cell (`tenferro-eager`, 0.585 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_qr_jvp` (f64, threads=4, shape=`8x8`): `jax-cpu` is 30.5x faster than the slowest successful cell (`tenferro-eager`, 0.662 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_qr_jvp` (f64, threads=4, shape=`8x8`): `tenferro-trace` is 15.1x faster than the slowest successful cell (`tenferro-eager`, 0.662 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_qr_vjp` (f64, threads=4, shape=`2x2`): `jax-cpu` is 19.4x faster than the slowest successful cell (`pytorch-cpu`, 0.164 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_qr_vjp` (f64, threads=4, shape=`4x4`): `jax-cpu` is 15.1x faster than the slowest successful cell (`pytorch-cpu`, 0.165 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_qr_vjp` (f64, threads=4, shape=`8x8`): `jax-cpu` is 10.8x faster than the slowest successful cell (`pytorch-cpu`, 0.173 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_solve_jvp` (f64, threads=4, shape=`2x2,rhs=1`): `jax-cpu` is 25.2x faster than the slowest successful cell (`pytorch-cpu`, 0.201 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_solve_jvp` (f64, threads=4, shape=`4x4,rhs=1`): `jax-cpu` is 17.7x faster than the slowest successful cell (`pytorch-cpu`, 0.175 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_solve_jvp` (f64, threads=4, shape=`8x8,rhs=1`): `jax-cpu` is 21.2x faster than the slowest successful cell (`pytorch-cpu`, 0.180 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/grad_sum_svd_s_jvp` (f64, threads=4, shape=`2x2`): `jax-cpu` is 10.7x faster than the slowest successful cell (`pytorch-cpu`, 0.113 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/qr` (f64, threads=4, shape=`2x2`): `tenferro-eager` is 10.8x faster than the slowest successful cell (`pytorch-cpu`, 0.045 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `small/qr` (f64, threads=4, shape=`2x2`): `tenferro-trace` is 11.0x faster than the slowest successful cell (`pytorch-cpu`, 0.045 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=4, shape=`2x2xbatch16 (native batch layout)`): `tenferro-eager` is 25.6x faster than the slowest successful cell (`jax-cpu`, 0.080 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=4, shape=`2x2xbatch16 (native batch layout)`): `tenferro-trace` is 18.6x faster than the slowest successful cell (`jax-cpu`, 0.080 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=4, shape=`2x2xbatch64 (native batch layout)`): `pytorch-cpu` is 14.4x faster than the slowest successful cell (`jax-cpu`, 0.147 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=4, shape=`2x2xbatch64 (native batch layout)`): `tenferro-eager` is 29.6x faster than the slowest successful cell (`jax-cpu`, 0.147 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=4, shape=`2x2xbatch64 (native batch layout)`): `tenferro-trace` is 28.3x faster than the slowest successful cell (`jax-cpu`, 0.147 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=4, shape=`4x4xbatch16 (native batch layout)`): `pytorch-cpu` is 11.1x faster than the slowest successful cell (`jax-cpu`, 0.112 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=4, shape=`4x4xbatch16 (native batch layout)`): `tenferro-eager` is 31.5x faster than the slowest successful cell (`jax-cpu`, 0.112 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=4, shape=`4x4xbatch16 (native batch layout)`): `tenferro-trace` is 30.5x faster than the slowest successful cell (`jax-cpu`, 0.112 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=4, shape=`4x4xbatch64 (native batch layout)`): `tenferro-eager` is 16.5x faster than the slowest successful cell (`jax-cpu`, 0.096 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=4, shape=`4x4xbatch64 (native batch layout)`): `tenferro-trace` is 16.7x faster than the slowest successful cell (`jax-cpu`, 0.096 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/einsum_ij_jk_ik` (f64, threads=4, shape=`2x2`): `tenferro-eager` is 24.0x faster than the slowest successful cell (`jax-cpu`, 0.082 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/einsum_ij_jk_ik` (f64, threads=4, shape=`2x2`): `tenferro-trace` is 14.4x faster than the slowest successful cell (`jax-cpu`, 0.082 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/einsum_ij_jk_ik` (f64, threads=4, shape=`4x4`): `tenferro-eager` is 30.9x faster than the slowest successful cell (`jax-cpu`, 0.084 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/einsum_ij_jk_ik` (f64, threads=4, shape=`4x4`): `tenferro-trace` is 14.4x faster than the slowest successful cell (`jax-cpu`, 0.084 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/einsum_ij_jk_ik` (f64, threads=4, shape=`8x8`): `tenferro-eager` is 29.1x faster than the slowest successful cell (`jax-cpu`, 0.090 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/einsum_ij_jk_ik` (f64, threads=4, shape=`8x8`): `tenferro-trace` is 12.8x faster than the slowest successful cell (`jax-cpu`, 0.090 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_eigh_jvp` (f64, threads=4, shape=`2x2`): `jax-cpu` is 15.2x faster than the slowest successful cell (`tenferro-eager`, 0.118 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_eigh_jvp` (f64, threads=4, shape=`4x4`): `jax-cpu` is 12.8x faster than the slowest successful cell (`tenferro-eager`, 0.136 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_lu_jvp` (f64, threads=4, shape=`2x2`): `jax-cpu` is 49.5x faster than the slowest successful cell (`pytorch-cpu`, 0.425 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_lu_jvp` (f64, threads=4, shape=`2x2`): `tenferro-trace` is 15.9x faster than the slowest successful cell (`pytorch-cpu`, 0.425 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_lu_jvp` (f64, threads=4, shape=`4x4`): `jax-cpu` is 50.4x faster than the slowest successful cell (`tenferro-eager`, 0.441 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_lu_jvp` (f64, threads=4, shape=`4x4`): `tenferro-trace` is 12.5x faster than the slowest successful cell (`tenferro-eager`, 0.441 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_lu_jvp` (f64, threads=4, shape=`8x8`): `jax-cpu` is 31.0x faster than the slowest successful cell (`pytorch-cpu`, 0.428 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_lu_jvp` (f64, threads=4, shape=`8x8`): `tenferro-trace` is 12.1x faster than the slowest successful cell (`pytorch-cpu`, 0.428 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_lu_vjp` (f64, threads=4, shape=`2x2`): `jax-cpu` is 42.9x faster than the slowest successful cell (`pytorch-cpu`, 0.341 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_lu_vjp` (f64, threads=4, shape=`2x2`): `tenferro-trace` is 13.2x faster than the slowest successful cell (`pytorch-cpu`, 0.341 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_lu_vjp` (f64, threads=4, shape=`4x4`): `jax-cpu` is 20.6x faster than the slowest successful cell (`pytorch-cpu`, 0.179 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_lu_vjp` (f64, threads=4, shape=`8x8`): `jax-cpu` is 21.3x faster than the slowest successful cell (`pytorch-cpu`, 0.322 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_matmul_backward` (f64, threads=4, shape=`2x2`): `jax-cpu` is 16.2x faster than the slowest successful cell (`tenferro-eager`, 0.127 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_matmul_backward` (f64, threads=4, shape=`2x2`): `tenferro-trace` is 11.2x faster than the slowest successful cell (`tenferro-eager`, 0.127 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_qr_jvp` (f64, threads=4, shape=`2x2`): `jax-cpu` is 63.8x faster than the slowest successful cell (`tenferro-eager`, 0.587 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_qr_jvp` (f64, threads=4, shape=`2x2`): `tenferro-trace` is 14.5x faster than the slowest successful cell (`tenferro-eager`, 0.587 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_qr_jvp` (f64, threads=4, shape=`4x4`): `jax-cpu` is 59.3x faster than the slowest successful cell (`tenferro-eager`, 0.582 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_qr_jvp` (f64, threads=4, shape=`4x4`): `tenferro-trace` is 14.4x faster than the slowest successful cell (`tenferro-eager`, 0.582 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_qr_jvp` (f64, threads=4, shape=`8x8`): `jax-cpu` is 42.3x faster than the slowest successful cell (`tenferro-eager`, 0.650 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_qr_vjp` (f64, threads=4, shape=`2x2`): `jax-cpu` is 21.3x faster than the slowest successful cell (`pytorch-cpu`, 0.172 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_qr_vjp` (f64, threads=4, shape=`4x4`): `jax-cpu` is 25.9x faster than the slowest successful cell (`pytorch-cpu`, 0.236 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_qr_vjp` (f64, threads=4, shape=`8x8`): `jax-cpu` is 12.4x faster than the slowest successful cell (`pytorch-cpu`, 0.188 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_solve_jvp` (f64, threads=4, shape=`2x2,rhs=1`): `jax-cpu` is 20.9x faster than the slowest successful cell (`pytorch-cpu`, 0.180 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_solve_jvp` (f64, threads=4, shape=`4x4,rhs=1`): `jax-cpu` is 21.7x faster than the slowest successful cell (`pytorch-cpu`, 0.161 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_solve_jvp` (f64, threads=4, shape=`8x8,rhs=1`): `jax-cpu` is 26.6x faster than the slowest successful cell (`pytorch-cpu`, 0.226 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_solve_vjp` (f64, threads=4, shape=`8x8,rhs=1`): `jax-cpu` is 12.6x faster than the slowest successful cell (`pytorch-cpu`, 0.118 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_svd_s_jvp` (f64, threads=4, shape=`4x4`): `jax-cpu` is 11.8x faster than the slowest successful cell (`pytorch-cpu`, 0.148 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/matmul` (f64, threads=4, shape=`64x64`): `pytorch-cpu` is 10.9x faster than the slowest successful cell (`jax-cpu`, 0.075 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/matmul` (f64, threads=4, shape=`64x64`): `tenferro-trace` is 13.1x faster than the slowest successful cell (`jax-cpu`, 0.075 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/qr` (f64, threads=4, shape=`4x4`): `tenferro-trace` is 11.7x faster than the slowest successful cell (`pytorch-cpu`, 0.044 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
 
 ### Physical Bound Audit
 
