@@ -85,7 +85,7 @@ if [[ "${SKIP_EXTERN_SETUP:-0}" != "1" ]]; then
     source "$SCRIPT_DIR/setup_extern_deps.sh"
 fi
 
-# A BLAS selection needs MKLROOT / OPENBLAS_ROOT; `native` needs nothing.
+# tenferro-rs 0.12 has one CPU backend (tenferro-rs #2608): this needs no provider prefix.
 
 RESULTS_ROOT="$PROJECT_DIR/data/results"
 REPORTS_DIR="$PROJECT_DIR/result"

@@ -35,8 +35,6 @@ devcontainer exec --workspace-folder . bash -lc '
   configure_cpu_thread_env 4
   source scripts/benchmark_host_idle.sh
   assert_benchmark_host_idle
-  source scripts/cpu_blas_provider.sh
-  ensure_blas_env_for_features blas-mkl
   target/followup-current/release/cpu-followup-mwe activation.sigmoid eager-shared 4 15'
 devcontainer exec --workspace-folder . bash -lc '
   source scripts/thread_env.sh
@@ -57,12 +55,14 @@ Materializing operations produce allocated outputs in both arms. A missing
 one-call equivalent is unsupported; for example, dynamic-update-slice uses
 JAX rather than a synthesized PyTorch clone-plus-write operation.
 
-The Rust crate uses its `system-mkl` feature to enable upstream's new `blas`
-features and link installed oneMKL. This crate was introduced while the root harness still used older feature/path
-dependencies. The root CPU-provider migration landed separately on main during
-this campaign; recorded measurement commits remain frozen. The independent
-crate provides the single-operation reproducers used in these Issue reports. `system-openblas` is
-available for an explicitly different provider experiment.
+The crate builds tenferro-rs's one CPU backend (tenferro-rs #2608): it selects
+and links no vendor BLAS/LAPACK provider and has no `system-mkl` /
+`system-openblas` feature, so it needs no `MKLROOT` or `OPENBLAS_ROOT`. The
+oneMKL DFTI reference of the FFT cases is a runtime reference in
+`reference.py` (ctypes); it reports those rows skipped when no `libmkl_rt`
+loads. The crate was introduced while the root harness still selected a
+provider; recorded measurement commits remain frozen, and the independent
+crate provides the single-operation reproducers used in these Issue reports.
 
 All fixtures, sessions, input descriptors, graph construction/compilation,
 FFT priming, correctness checks, retention containers and output destruction
