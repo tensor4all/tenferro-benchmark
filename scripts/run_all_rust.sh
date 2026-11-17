@@ -33,7 +33,6 @@ echo "============================================"
 echo " Rust benchmark (threads=${NUM_THREADS})"
 echo "============================================"
 print_cpu_thread_env
-[[ -n "${OPENBLAS_ROOT:-}" ]] && echo "  OPENBLAS_ROOT=$OPENBLAS_ROOT"
 [[ -n "${MKLROOT:-}" ]] && echo "  MKLROOT=$MKLROOT"
 echo "  tenferro features=native"
 echo ""
