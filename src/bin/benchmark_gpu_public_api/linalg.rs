@@ -1,8 +1,17 @@
 use super::{Case, Result};
 use tenferro_ad::{EagerSession, EagerTensor};
-use tenferro_einsum::{EagerSessionEinsumExt, TensorDotAxes, TensorTensordotExt};
-use tenferro_linalg::{EagerSessionLinalgExt, TensorLinalgExt};
+use tenferro_einsum::{EagerEinsumOps, TensorDotAxes, TensordotOps};
+use tenferro_linalg::{EagerLinalgOps, LinalgOps, PinvOptions};
 use tenferro_tensor::{Engine, Tensor};
+
+/// The tensor-level conjugation flag of a case's boolean conjunction switch.
+fn conj_flag(conj: bool) -> tenferro_tensor::Conj {
+    if conj {
+        tenferro_tensor::Conj::Yes
+    } else {
+        tenferro_tensor::Conj::No
+    }
+}
 
 pub(super) fn direct(
     case: &Case,
@@ -33,11 +42,11 @@ pub(super) fn direct(
         "cholesky" => x.cholesky(s)?,
         "svdvals" => x.svdvals(s)?,
         "eigvalsh" => x.eigvalsh(s)?,
-        "pinv" => x.pinv_with_rtol(1e-5, s)?,
+        "pinv" => x.pinv_with(&PinvOptions::default().rtol(Some(1e-5)), s)?,
         "inv" => x.inv(s)?,
         "det" => x.det(s)?,
-        "norm" => x.norm(None, None, false, s)?,
-        "triangular_solve" => x.triangular_solve(&inputs[1], true, true, false, false, s)?,
+        "norm" => x.norm(s)?,
+        "triangular_solve" => x.triangular_solve(&inputs[1], s)?,
         _ => return Err(format!("unknown linalg operation {}", case.op).into()),
     })
 }
@@ -54,22 +63,26 @@ pub(super) fn eager(
             &inputs[1],
             args.dot.ok_or("missing prepared dot configuration")?,
         )?,
-        "dot_general_conj" => s.dot_general_with_conj(
-            x,
-            &inputs[1],
-            args.dot.ok_or("missing prepared dot configuration")?,
-            case.lhs_conj,
-            case.rhs_conj,
-        )?,
+        "dot_general_conj" => {
+            let options = tenferro_tensor::DotGeneralOptions::default()
+                .lhs(conj_flag(case.lhs_conj))
+                .rhs(conj_flag(case.rhs_conj));
+            s.dot_general_with(
+                x,
+                &inputs[1],
+                args.dot.ok_or("missing prepared dot configuration")?,
+                &options,
+            )?
+        }
         "tensordot" => s.tensordot(x, &inputs[1], TensorDotAxes::Count(1))?,
         "lstsq" => s.lstsq(x, &inputs[1])?,
         "cholesky" => s.cholesky(x)?,
         "eigvalsh" => s.eigvalsh(x)?,
-        "pinv" => s.pinv_with_rtol(x, 1e-5)?,
+        "pinv" => s.pinv_with(x, &PinvOptions::default().rtol(Some(1e-5)))?,
         "inv" => s.inv(x)?,
         "det" => s.det(x)?,
-        "norm" => s.norm(x, None, None, false)?,
-        "triangular_solve" => s.triangular_solve(x, &inputs[1], true, true, false, false)?,
+        "norm" => s.norm(x)?,
+        "triangular_solve" => s.triangular_solve(x, &inputs[1])?,
         _ => return Err(format!("unknown eager linalg operation {}", case.op).into()),
     })
 }

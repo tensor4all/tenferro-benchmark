@@ -1,15 +1,11 @@
 FROM nvidia/cuda:12.9.2-cudnn-devel-ubuntu24.04
 
 ENV DEBIAN_FRONTEND=noninteractive
-ENV OPENBLAS_ROOT=/opt/openblas
 ENV CMAKE_POLICY_VERSION_MINIMUM=3.5
 ENV CUDA_HOME=/usr/local/cuda
 ENV PATH="/home/vscode/.cargo/bin:/home/vscode/.local/bin:${PATH}"
-ENV LD_LIBRARY_PATH="${OPENBLAS_ROOT}/lib:${CUDA_HOME}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
+ENV LD_LIBRARY_PATH="${CUDA_HOME}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
 
-ARG OPENBLAS_VERSION=0.3.26
-ARG OPENBLAS_MAX_THREADS=64
-ARG OPENBLAS_DYNAMIC_ARCH=1
 ARG CUTLASS_TAG=v3.7.0
 ARG GINKGO_TAG=v1.8.0
 # Docker builds do not have GPU access, so make the target architecture explicit.
@@ -57,10 +53,7 @@ RUN usermod  -l ${USERNAME} ubuntu \
     && echo "${USERNAME} ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/${USERNAME} \
     && chmod 0440 /etc/sudoers.d/${USERNAME}
 
-COPY .devcontainer/install_openblas.sh /usr/local/bin/install_openblas.sh
 COPY scripts/setup_gpu_vendors.sh /usr/local/bin/setup_gpu_vendors.sh
-
-RUN bash /usr/local/bin/install_openblas.sh
 
 # Bake the optional comparison backends into the image.  Keeping them under
 # /opt makes them independent of the workspace mount and ready on first start.

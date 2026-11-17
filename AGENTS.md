@@ -227,14 +227,20 @@ CPU comparisons use:
 - JAX Python
 
 C++ Torch/LibTorch is intentionally removed. Do not reintroduce LibTorch
-runners or `Torch_DIR`. The opt-in `.devcontainer/openblas/` image source-builds
-PyTorch Python to match tenferro's OpenBLAS provider; it is not a LibTorch runner.
+runners or `Torch_DIR`.
 
-On Linux CPU devcontainer runs, PyTorch uses the installed wheel's MKL-backed
-provider. For fair CPU comparisons, run tenferro-rs with `blas-mkl` inside the
-devcontainer rather than the default `blas-openblas` path. Record the detected
-PyTorch provider in `run.yaml` using `torch.__config__.show()` and linked
-library inspection.
+tenferro-rs 0.12 has one CPU backend (its own faer-based kernels and thread
+pool, tenferro-rs #2608): the harness has no vendor BLAS/LAPACK provider to
+select, link or record. Do not reintroduce provider features, `OPENBLAS_ROOT` /
+`MKLROOT` link prefixes, or a `blas` block in `run.yaml`. The comparison is
+tenferro(faer) versus PyTorch(MKL) / JAX(XLA); the vendor-versus-colmat
+comparison lives in colmat-benchmark.
+
+Record the detected PyTorch provider in `run.yaml` using `torch.__config__.show()`
+and linked library inspection. Historical pages carry `blas: mkl | openblas |
+accelerate`; they stay as history and were measured on a provider the harness
+can no longer link, so do not read them as provider-matched against new runs,
+and do not present their differences as implementation speedups.
 
 ## macOS CPU Workflow
 
@@ -245,7 +251,8 @@ BENCHMARK_TARGET_PROFILE=mac-cpu ./scripts/run_all.sh 1
 BENCHMARK_TARGET_PROFILE=mac-cpu ./scripts/run_all.sh 4
 ```
 
-macOS BLAS-backed tenferro runs use Accelerate by default.
+macOS builds the same single CPU backend; nothing links the Accelerate
+framework for tenferro (PyTorch and the OS BLAS are separate).
 
 ### Updating the macOS Public API Report
 
@@ -304,7 +311,7 @@ Run these checks after changing the public API suite or its update path:
 
 ```bash
 bash -n scripts/run_cpu_public_api.sh scripts/benchmark_host_idle.sh
-cargo check --no-default-features --features blas-accelerate --bin benchmark_cpu_public_api
+cargo check --no-default-features --features native --bin benchmark_cpu_public_api
 uv run python -m py_compile scripts/benchmark_cpu_public_api_python.py \
   scripts/benchmark_cpu_public_api_jax.py scripts/format_cpu_ops_results.py
 uv run python scripts/validate_benchmark_suite.py benchmarks/cpu/public_api.yaml
@@ -358,38 +365,32 @@ Dockerfile for builds, validation, and measurement. Create or recreate it with
 the devcontainer CLI; do not substitute an ad hoc Docker image. If `devcontainer`
 is not installed on PATH, use `npx --yes @devcontainers/cli` for the same commands.
 The default image uses
-`blas-mkl` to match the PyTorch wheel. For provider-matched OpenBLAS comparisons,
-use `.devcontainer/openblas/devcontainer.json` and `blas-openblas` instead;
-see `docs/linux-devcontainer.md`. Keep its `BENCHMARK_TORCH_WHEEL` setting
-when recreating `.venv`, and verify the runtime provider before collecting.
-Do not present differences from historical MKL runs as implementation speedups.
+one CPU backend (tenferro-rs #2608): the image installs no vendor BLAS/LAPACK
+for the harness and exports no provider prefix. Keep its
+`BENCHMARK_TORCH_WHEEL` setting when recreating `.venv`, and verify the runtime
+PyTorch provider before collecting. Do not present differences from historical
+MKL/OpenBLAS runs as implementation speedups.
 
 Before building or collecting benchmarks, check that the existing devcontainer
 was created from the current `.devcontainer/Dockerfile` and
 `.devcontainer/devcontainer.json`. If it predates relevant devcontainer changes
 or required tools and libraries are missing, recreate it with
 `devcontainer up --workspace-folder . --remove-existing-container`. In
-particular, verify that `MKLROOT` resolves to an installed oneMKL tree before a
-`blas-mkl` run; do not silently fall back to an older image or another BLAS
-backend.
+particular, verify that no stale image still configures a provider prefix for
+the harness; do not silently fall back to an older image.
 
 ```bash
 devcontainer up --workspace-folder .
 devcontainer exec --workspace-folder . bash -lc '
-  export TENFERRO_CPU_FEATURES=blas-mkl
-  export PUBLICATION_GATE_FEATURES=blas-mkl
   export BENCHMARK_TARGET_PROFILE=amd-cpu
   ./scripts/run_all.sh 1'
 devcontainer exec --workspace-folder . bash -lc '
-  export TENFERRO_CPU_FEATURES=blas-mkl
-  export PUBLICATION_GATE_FEATURES=blas-mkl
   export BENCHMARK_TARGET_PROFILE=amd-cpu
   ./scripts/run_all.sh 4'
 ```
 
-Intel oneMKL is installed in the default Linux CPU devcontainer under
-`/opt/intel/oneapi/mkl/latest` and exported as `MKLROOT`. PyTorch uses the
-installed wheel provider, which is MKL-backed on this path.
+PyTorch uses the installed wheel provider, which is MKL-backed on this path;
+`run.yaml` records it under `python_backends.pytorch`.
 
 The `cpu/permutation` suite is a standalone entry point (not wired into
 `run_all.sh`). Collect its `amd-cpu` report inside the same devcontainer; HPTT
@@ -399,7 +400,6 @@ image:
 
 ```bash
 devcontainer exec --workspace-folder . bash -lc '
-  export TENFERRO_CPU_FEATURES=blas-mkl
   export BENCHMARK_TARGET_PROFILE=amd-cpu
   export PERMUTATION_EXTRA_FEATURES=hptt
   ./scripts/run_permutation.sh 1 4'
@@ -415,28 +415,11 @@ pinned, see above).
 `run_all.sh`; opt in there with `RUN_ELEMENTWISE_SUITE=1`). It measures f64
 `sqrt` / `rsqrt` / `exp` under the default and a raised CPU buffer-pool limit,
 so its `default`/`raised` ratio is an allocation/first-touch signal rather than
-a kernel comparison. It needs no BLAS and no devcontainer; see
+a kernel comparison. It needs no devcontainer; see
 `docs/elementwise-suite.md`:
 
 ```bash
 BENCHMARK_TARGET_PROFILE=amd-cpu ./scripts/run_elementwise.sh 1 4
-```
-
-`OPENBLAS_ROOT=/opt/openblas` is also configured for tenferro `blas-openblas`
-runs, but treat that as an alternate backend for experiments, not the standard
-Linux CPU comparison path. The devcontainer OpenBLAS is source-built with
-threading enabled; verify this with the OpenBLAS runtime API, not `strings`,
-because parallel builds can still contain standalone diagnostic strings:
-
-```bash
-devcontainer exec --workspace-folder . bash -lc 'python3 - <<PY
-import ctypes
-lib = ctypes.CDLL("/opt/openblas/lib/libopenblas.so")
-lib.openblas_get_config.restype = ctypes.c_char_p
-lib.openblas_get_parallel.restype = ctypes.c_int
-print(lib.openblas_get_config().decode())
-print(f"parallel={lib.openblas_get_parallel()}")
-PY'
 ```
 
 ## Local Linux Linalg AD Repro

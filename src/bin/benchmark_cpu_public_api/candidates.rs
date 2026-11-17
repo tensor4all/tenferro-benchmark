@@ -1,6 +1,7 @@
 //! Isolated public linalg operations. Fixtures, sessions and validation are untimed.
 use super::*;
-use tenferro_linalg::{QrOptions, RankRevealingQrOptions, TensorReadLinalgExt};
+use tenferro_linalg::{LinalgOps, QrOptions, RankRevealingQrOptions};
+use tenferro_tensor::Dest;
 
 pub(super) fn cases() -> Vec<Case> {
     let mut rows = Vec::new();
@@ -205,31 +206,31 @@ fn direct(args: &Args, backend: &mut CpuEngine, case: &Case) -> BenchResult<(f64
             "solve_read_into" => {
                 let b = Tensor::from_vec_col_major([m, 16], data_f64(m * 16, 2))?;
                 let mut out = Tensor::from_vec_col_major([m, 16], vec![f64::NAN; m * 16])?;
-                TensorRead::from_tensor(&a).solve_read_into(
-                    TensorRead::from_tensor(&b),
-                    TensorWrite::from_tensor(&mut out),
+                TensorRead::from_tensor(&a).solve_into(
+                    &TensorRead::from_tensor(&b),
                     s,
+                    Dest::overwrite(&mut out),
                 )?;
                 check_solve(&a, &b, &out)?;
                 let stats = sample_count(args, operation_count(case), || {
-                    TensorRead::from_tensor(&a).solve_read_into(
-                        TensorRead::from_tensor(&b),
-                        TensorWrite::from_tensor(&mut out),
+                    TensorRead::from_tensor(&a).solve_into(
+                        &TensorRead::from_tensor(&b),
                         s,
+                        Dest::overwrite(&mut out),
                     )
                 })?;
                 check_solve(&a, &b, &out)?;
                 Ok(stats)
             }
             _ => {
-                let output = a.rank_revealing_qr(options, s)?;
+                let output = a.rank_revealing_qr_with(&options, s)?;
                 check_qr(&a, &output.q, &output.r, Some(&output.column_permutation))?;
                 let expected = if deficient { 3 * n / 4 } else { n };
                 if output.rank.as_slice::<i64>()? != [expected as i64] {
                     return Err("incorrect RRQR numerical rank".into());
                 }
                 sample_count(args, operation_count(case), || {
-                    a.rank_revealing_qr(options, s)
+                    a.rank_revealing_qr_with(&options, s)
                 })
             }
         }
@@ -242,7 +243,7 @@ fn eager(args: &Args, case: &Case) -> BenchResult<(f64, f64)> {
     let mut engine = cpu_backend()?;
     let _guard = runtime.no_grad();
     let original = fixture(m, n, case.benchmark.ends_with("_deficient"))?;
-    let a = EagerTensor::from_tensor_in(original.duplicate()?, Arc::clone(&runtime))?;
+    let a = runtime.constant_from(original.duplicate()?)?;
     runtime.with_eager_session(&mut engine, |s| -> BenchResult<_> {
         if case.benchmark == "householder_qr" {
             let state = s.householder_qr(&a)?;
@@ -258,7 +259,8 @@ fn eager(args: &Args, case: &Case) -> BenchResult<(f64, f64)> {
             )?;
             sample_count(args, operation_count(case), || s.householder_qr(&a))
         } else {
-            let out = s.rank_revealing_qr(&a, RankRevealingQrOptions::default().rtol(1e-12))?;
+            let out =
+                s.rank_revealing_qr_with(&a, &RankRevealingQrOptions::default().rtol(1e-12))?;
             let q = out.q.tensor_read();
             let r = out.r.tensor_read();
             let p = out.column_permutation.tensor_read();
@@ -287,7 +289,7 @@ fn eager(args: &Args, case: &Case) -> BenchResult<(f64, f64)> {
                 return Err("incorrect eager RRQR rank".into());
             }
             sample_count(args, operation_count(case), || {
-                s.rank_revealing_qr(&a, RankRevealingQrOptions::default().rtol(1e-12))
+                s.rank_revealing_qr_with(&a, &RankRevealingQrOptions::default().rtol(1e-12))
             })
         }
     })
@@ -382,21 +384,14 @@ fn eager_session_case(args: &Args, case: &Case) -> BenchResult<(f64, f64)> {
     let runtime = EagerRuntime::new()?;
     let mut engine = cpu_backend()?;
     let _guard = runtime.no_grad();
-    let input =
-        EagerTensor::from_tensor_in(tensor_f64(&shape, 1).duplicate()?, Arc::clone(&runtime))?;
+    let input = runtime.constant_from(tensor_f64(&shape, 1).duplicate()?)?;
     let other = if case.benchmark == "where_select" {
-        Some(EagerTensor::from_tensor_in(
-            tensor_f64(&shape, 2).duplicate()?,
-            Arc::clone(&runtime),
-        )?)
+        Some(runtime.constant_from(tensor_f64(&shape, 2).duplicate()?)?)
     } else {
         None
     };
     let mask = if case.benchmark != "reduce_sum_squares_axis0" {
-        Some(EagerTensor::from_tensor_in(
-            tensor_bool(&shape).duplicate()?,
-            Arc::clone(&runtime),
-        )?)
+        Some(runtime.constant_from(tensor_bool(&shape).duplicate()?)?)
     } else {
         None
     };
@@ -559,7 +554,8 @@ mod tests {
             )?;
             for deficient in [false, true] {
                 let a = fixture(12, 8, deficient)?;
-                let out = a.rank_revealing_qr(RankRevealingQrOptions::default().rtol(1e-12), s)?;
+                let out =
+                    a.rank_revealing_qr_with(&RankRevealingQrOptions::default().rtol(1e-12), s)?;
                 check_qr(&a, &out.q, &out.r, Some(&out.column_permutation))?;
                 assert_eq!(out.rank.as_slice::<i64>()?, [if deficient { 6 } else { 8 }]);
             }
@@ -567,10 +563,10 @@ mod tests {
             let b = Tensor::from_vec_col_major([8, 2], data_f64(16, 2))?;
             let mut x = Tensor::from_vec_col_major([8, 2], vec![f64::NAN; 16])?;
             for _ in 0..2 {
-                TensorRead::from_tensor(&a).solve_read_into(
-                    TensorRead::from_tensor(&b),
-                    TensorWrite::from_tensor(&mut x),
+                TensorRead::from_tensor(&a).solve_into(
+                    &TensorRead::from_tensor(&b),
                     s,
+                    Dest::overwrite(&mut x),
                 )?;
                 check_solve(&a, &b, &x)?;
             }

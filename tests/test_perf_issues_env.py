@@ -27,9 +27,6 @@ class MissingMklIntegrationTest(unittest.TestCase):
                 shutil.copytree(ROOT / directory, root / directory,
                                 ignore=shutil.ignore_patterns('__pycache__', 'target'))
             (root / '.venv').symlink_to(sys.prefix, target_is_directory=True)
-            provider = root / 'scripts/cpu_blas_provider.sh'
-            provider.write_text('if [[ "${RUN_ALL_MAIN_ONLY:-0}" == 1 ]]; then exit 0; fi\n'
-                                + provider.read_text())
             (root / 'scripts/collect_run_metadata.py').write_text(
                 "import pathlib,sys,yaml\n"
                 "p=pathlib.Path(sys.argv[sys.argv.index('--output')+1])\n"
@@ -55,8 +52,9 @@ class MissingMklIntegrationTest(unittest.TestCase):
             env = dict(os.environ, PATH=str(bin_dir) + os.pathsep + os.environ['PATH'],
                        PYTHONPATH=str(hooks), BENCHMARK_COMMIT='fixture',
                        BENCHMARK_TIMESTAMP='skip-check', SKIP_EXTERN_SETUP='1',
-                       TENFERRO_CPU_FEATURES='native', BENCH_COVERAGE='full',
+                       BENCH_COVERAGE='full',
                        BENCH_INSTANCE=','.join(fft), PERF_ISSUES_CORRECTNESS_ONLY='1',
+                       RUN_EINSUM_SUITE='0',
                        RUN_FFT_SUITE='0', RUN_PUBLIC_API_SUITE='0', RUN_SMALL_WORK_SUITE='0',
                        RUN_OVERHEAD_SMOKE_SUITE='0', RUN_PERMUTATION_SUITE='0',
                        RUN_ELEMENTWISE_SUITE='0', RUN_PERF_ISSUES_SUITE='1')

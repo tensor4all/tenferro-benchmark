@@ -2,7 +2,7 @@
 use std::{error::Error, hint::black_box, num::NonZeroUsize, time::Instant};
 use tenferro_ad::{EagerRuntime, EagerTensor};
 use tenferro_cpu::CpuEngine;
-use tenferro_einsum::{EagerSessionEinsumExt, EinsumSubscripts};
+use tenferro_einsum::{EagerEinsumOps, EinsumSubscripts};
 use tenferro_runtime::{ExtensionCacheLimits, ExtensionCacheSelector};
 use tenferro_tensor::Tensor;
 type Result<T> = std::result::Result<T, Box<dyn Error + Send + Sync>>;
@@ -68,18 +68,15 @@ fn call(
     }
     let input_a = if row {
         let storage = (0..m * k).map(|p| a[p / k + m * (p % k)]).collect();
-        let base = EagerTensor::from_tensor_in(
-            Tensor::from_vec_col_major([k, m], storage)?,
-            runtime.clone(),
-        )?;
+        let base = runtime.constant_from(Tensor::from_vec_col_major([k, m], storage)?)?;
         runtime.with_eager_session(engine, |s| s.transpose(&base, &[1, 0]))?
     } else {
-        EagerTensor::from_tensor_in(Tensor::from_vec_col_major([m, k], a)?, runtime.clone())?
+        runtime.constant_from(Tensor::from_vec_col_major([m, k], a)?)?
     };
     let inputs = [
         input_a,
-        EagerTensor::from_tensor_in(Tensor::from_vec_col_major([k, n], b)?, runtime.clone())?,
-        EagerTensor::from_tensor_in(Tensor::from_vec_col_major([n, 2], c)?, runtime.clone())?,
+        runtime.constant_from(Tensor::from_vec_col_major([k, n], b)?)?,
+        runtime.constant_from(Tensor::from_vec_col_major([n, 2], c)?)?,
     ];
     let expected_strides = if row {
         vec![k as isize, 1]
@@ -219,7 +216,7 @@ pub fn run(args: &[String]) -> Result<()> {
                 None
             };
             for inputs in &bindings {
-                outputs.push(s.einsum_subscripts(inputs, &subs)?);
+                outputs.push(s.einsum(inputs, &subs)?);
             }
             let elapsed = clock.map(|c| c.elapsed().as_nanos());
             black_box(&outputs);

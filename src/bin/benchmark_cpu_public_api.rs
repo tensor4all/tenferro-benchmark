@@ -14,15 +14,16 @@ use std::time::Instant;
 use num_complex::Complex64;
 use tenferro_ad::{EagerRuntime, EagerTensor};
 use tenferro_cpu::CpuEngine;
-use tenferro_einsum::{TensorDotAxes, TensorEinsumExt, TensorTensordotExt, TracedTensorEinsumExt};
+use tenferro_einsum::{EinsumOps, TensorDotAxes, TensordotOps, TracedTensordotOps};
 use tenferro_einsum_benchmark::thread_enforcement::{
     enforce_thread_request, verify_backend_threads,
 };
 use tenferro_linalg::{
-    EagerSessionLinalgExt, LinalgBackend, TensorLinalgExt, TracedTensorLinalgExt,
+    EagerLinalgOps, Eig, Eigh, KeepDims, LinalgBackend, LinalgOps, Lu, NormOptions, PinvOptions,
+    Qr, Slogdet, Svd, SvdOptions, SvdShape, TracedLinalgOps,
 };
 use tenferro_runtime::{
-    ExecutionEngine, GraphCompiler, Runtime, TensorSessionOpsExt, TraceContext, TracedTensor,
+    CoreOps, ExecutionEngine, GraphCompiler, Runtime, TraceContext, TracedTensor,
 };
 use tenferro_tensor::{
     CompareDir, DType, DotGeneralAccumulation, DotGeneralConfig, Engine, GatherConfig, PadConfig,
@@ -1946,7 +1947,10 @@ fn build_trace_case(case: &Case) -> BenchResult<Vec<TracedTensor>> {
         }
         ("cpu/linalg_uncovered", "cholesky") => one(traced(trace, spd(1536, 1))?.cholesky()?),
         ("cpu/linalg_uncovered", "eig") => {
-            let (w, v) = traced(trace, well_conditioned(160, 1))?.eig()?;
+            let Eig {
+                values: w,
+                vectors: v,
+            } = traced(trace, well_conditioned(160, 1))?.eig()?;
             Ok(vec![w, v])
         }
         ("cpu/linalg_uncovered", "eigvals") => {
@@ -1955,37 +1959,34 @@ fn build_trace_case(case: &Case) -> BenchResult<Vec<TracedTensor>> {
         ("cpu/linalg_uncovered", "eigvalsh") => one(traced(trace, spd(512, 1))?.eigvalsh()?),
         ("cpu/linalg_batched", "batched_triangular_solve") => {
             let n = batched_matrix_size(case).ok_or("invalid batched shape label")?;
-            one(
-                traced(trace, batched_lower_triangular(n, 1))?.triangular_solve(
-                    &traced(trace, tensor_f64(&[n, 1, LU_BATCH], 2))?,
-                    true,
-                    true,
-                    false,
-                    false,
-                )?,
-            )
+            one(traced(trace, batched_lower_triangular(n, 1))?
+                .triangular_solve(&traced(trace, tensor_f64(&[n, 1, LU_BATCH], 2))?)?)
         }
         ("cpu/linalg_uncovered", "triangular_solve") => {
-            one(traced(trace, lower_triangular(4096, 1))?.triangular_solve(
-                &traced(trace, tensor_f64(&[4096, 64], 2))?,
-                true,
-                true,
-                false,
-                false,
-            )?)
+            one(traced(trace, lower_triangular(4096, 1))?
+                .triangular_solve(&traced(trace, tensor_f64(&[4096, 64], 2))?)?)
         }
         ("cpu/linalg_uncovered", "det") => one(traced(trace, well_conditioned(1024, 1))?.det()?),
         ("cpu/linalg_uncovered", "slogdet") => {
-            let (sign, logabsdet) = traced(trace, well_conditioned(1024, 1))?.slogdet()?;
+            let Slogdet {
+                sign,
+                log_abs_det: logabsdet,
+            } = traced(trace, well_conditioned(1024, 1))?.slogdet()?;
             Ok(vec![sign, logabsdet])
         }
         ("cpu/linalg_uncovered", "inv") => one(traced(trace, well_conditioned(768, 1))?.inv()?),
         ("cpu/linalg_uncovered", "pinv") => one(traced(trace, tensor_f64(&[512, 256], 1))?.pinv()?),
         ("cpu/linalg_uncovered", "pinv_with_rtol") => {
-            one(traced(trace, tensor_f64(&[512, 256], 1))?.pinv_with_rtol(1e-12)?)
+            one(traced(trace, tensor_f64(&[512, 256], 1))?
+                .pinv_with(&PinvOptions::default().rtol(Some(1e-12)))?)
         }
         ("cpu/linalg_uncovered", "lu") => {
-            let (p, l, u, pivots) = traced(trace, well_conditioned(1024, 1))?.lu()?;
+            let Lu {
+                p,
+                l,
+                u,
+                parity: pivots,
+            } = traced(trace, well_conditioned(1024, 1))?.lu()?;
             Ok(vec![p, l, u, pivots])
         }
         ("cpu/linalg_uncovered", "lstsq") => {
@@ -1993,12 +1994,16 @@ fn build_trace_case(case: &Case) -> BenchResult<Vec<TracedTensor>> {
                 .lstsq(&traced(trace, tensor_f64(&[768, 16], 2))?)?)
         }
         ("cpu/linalg_uncovered", "svd_full") => {
-            let (u, s, vt) = traced(trace, tensor_f64(&[768, 384], 1))?.svd_full()?;
+            let Svd { u, s, vh: vt } = traced(trace, tensor_f64(&[768, 384], 1))?
+                .svd_with(&SvdOptions::default().shape(SvdShape::Full))?;
             Ok(vec![u, s, vt])
         }
-        ("cpu/linalg_uncovered", "norm_fro") => {
-            one(traced(trace, tensor_f64(&[2048, 2048], 1))?.norm(None, Some(&[0, 1]), false)?)
-        }
+        ("cpu/linalg_uncovered", "norm_fro") => one(traced(trace, tensor_f64(&[2048, 2048], 1))?
+            .norm_with(
+            &NormOptions::default()
+                .axes(Some(tenferro_tensor::AxisVec::from(&[0isize, 1isize][..])))
+                .keep_dims(KeepDims::No),
+        )?),
         ("cpu/complex", "conj") => one(traced(trace, tensor_c64(&[16_777_216], 1))?.conj()?),
         ("cpu/complex", "mul") => one(traced(trace, tensor_c64(&[8_388_608], 1))?
             .mul(&traced(trace, tensor_c64(&[8_388_608], 2))?)?),
@@ -2027,23 +2032,29 @@ fn build_trace_case(case: &Case) -> BenchResult<Vec<TracedTensor>> {
             TensorDotAxes::Count(1),
         )?),
         ("cpu/complex", "svd") => {
-            let (u, s, vt) = traced(trace, tensor_c64(&[160, 160], 1))?.svd()?;
+            let Svd { u, s, vh: vt } = traced(trace, tensor_c64(&[160, 160], 1))?.svd()?;
             Ok(vec![u, s, vt])
         }
         ("cpu/complex", "qr") => {
-            let (q, r) = traced(trace, tensor_c64(&[256, 256], 1))?.qr()?;
+            let Qr { q, r } = traced(trace, tensor_c64(&[256, 256], 1))?.qr()?;
             Ok(vec![q, r])
         }
         ("cpu/complex", "eig") => {
-            let (w, v) = traced(trace, tensor_c64(&[112, 112], 1))?.eig()?;
+            let Eig {
+                values: w,
+                vectors: v,
+            } = traced(trace, tensor_c64(&[112, 112], 1))?.eig()?;
             Ok(vec![w, v])
         }
         ("cpu/complex", "solve") => one(traced(trace, well_conditioned_c64(384, 1))?
             .solve(&traced(trace, tensor_c64(&[384, 8], 2))?)?),
         ("cpu/complex", "cholesky") => one(traced(trace, hpd_c64(448, 1))?.cholesky()?),
-        ("cpu/complex", "norm_fro") => {
-            one(traced(trace, tensor_c64(&[2048, 1536], 1))?.norm(None, Some(&[0, 1]), false)?)
-        }
+        ("cpu/complex", "norm_fro") => one(traced(trace, tensor_c64(&[2048, 1536], 1))?
+            .norm_with(
+                &NormOptions::default()
+                    .axes(Some(tenferro_tensor::AxisVec::from(&[0isize, 1isize][..])))
+                    .keep_dims(KeepDims::No),
+            )?),
         _ => Err(format!(
             "no trace benchmark implementation for {}/{}",
             case.suite, case.benchmark
@@ -2721,9 +2732,7 @@ fn dot_into_accum_f64(b: &mut CpuEngine) -> tenferro_tensor::Result<()> {
 
 fn einsum_ij_jk_f64(b: &mut CpuEngine) -> tenferro_tensor::Result<()> {
     consume(direct(b, |s| {
-        [tensor_f64(&[1024, 1024], 1), tensor_f64(&[1024, 1024], 2)]
-            .einsum("ij,jk->ik", s)
-            .map_err(|error| error.into_tensor_error("einsum"))
+        [tensor_f64(&[1024, 1024], 1), tensor_f64(&[1024, 1024], 2)].einsum("ij,jk->ik", s)
     })?);
     Ok(())
 }
@@ -2743,7 +2752,10 @@ fn eig_f64(b: &mut CpuEngine) -> tenferro_tensor::Result<()> {
 }
 
 fn eig_f64_in_session(session: &mut CpuEngine) -> tenferro_tensor::Result<()> {
-    let (w, v) = well_conditioned(160, 1).eig(session)?;
+    let Eig {
+        values: w,
+        vectors: v,
+    } = well_conditioned(160, 1).eig(session)?;
     consume_many([w, v]);
     Ok(())
 }
@@ -2771,14 +2783,7 @@ fn triangular_solve_f64(b: &mut CpuEngine) -> tenferro_tensor::Result<()> {
 }
 
 fn triangular_solve_f64_in_session(session: &mut CpuEngine) -> tenferro_tensor::Result<()> {
-    consume(lower_triangular(4096, 1).triangular_solve(
-        tensor_f64(&[4096, 64], 2),
-        true,
-        true,
-        false,
-        false,
-        session,
-    )?);
+    consume(lower_triangular(4096, 1).triangular_solve(&tensor_f64(&[4096, 64], 2), session)?);
     Ok(())
 }
 
@@ -2840,14 +2845,10 @@ fn batched_triangular_solve_f64<const N: usize>(b: &mut CpuEngine) -> tenferro_t
 fn batched_triangular_solve_in_session<const N: usize>(
     session: &mut CpuEngine,
 ) -> tenferro_tensor::Result<()> {
-    consume(batched_lower_triangular(N, 1).triangular_solve(
-        tensor_f64(&[N, 1, LU_BATCH], 2),
-        true,
-        true,
-        false,
-        false,
-        session,
-    )?);
+    consume(
+        batched_lower_triangular(N, 1)
+            .triangular_solve(&tensor_f64(&[N, 1, LU_BATCH], 2), session)?,
+    );
     Ok(())
 }
 
@@ -2865,7 +2866,10 @@ fn slogdet_f64(b: &mut CpuEngine) -> tenferro_tensor::Result<()> {
 }
 
 fn slogdet_f64_in_session(session: &mut CpuEngine) -> tenferro_tensor::Result<()> {
-    let (s, l) = well_conditioned(1024, 1).slogdet(session)?;
+    let Slogdet {
+        sign: s,
+        log_abs_det: l,
+    } = well_conditioned(1024, 1).slogdet(session)?;
     consume_many([s, l]);
     Ok(())
 }
@@ -2893,7 +2897,9 @@ fn pinv_with_rtol_f64(b: &mut CpuEngine) -> tenferro_tensor::Result<()> {
 }
 
 fn pinv_with_rtol_f64_in_session(session: &mut CpuEngine) -> tenferro_tensor::Result<()> {
-    consume(tensor_f64(&[512, 256], 1).pinv_with_rtol(1e-12, session)?);
+    consume(
+        tensor_f64(&[512, 256], 1).pinv_with(&PinvOptions::default().rtol(Some(1e-12)), session)?,
+    );
     Ok(())
 }
 
@@ -2902,7 +2908,12 @@ fn lu_f64(b: &mut CpuEngine) -> tenferro_tensor::Result<()> {
 }
 
 fn lu_f64_in_session(session: &mut CpuEngine) -> tenferro_tensor::Result<()> {
-    let (p, l, u, pivots) = well_conditioned(1024, 1).lu(session)?;
+    let Lu {
+        p,
+        l,
+        u,
+        parity: pivots,
+    } = well_conditioned(1024, 1).lu(session)?;
     consume_many([p, l, u, pivots]);
     Ok(())
 }
@@ -2932,20 +2943,20 @@ fn lstsq_f64(b: &mut CpuEngine) -> tenferro_tensor::Result<()> {
         let mut fixture = slot.borrow_mut();
         if fixture.is_none() {
             let ctx = eager_cpu_context();
-            let a = EagerTensor::from_tensor_in(
-                well_conditioned_rect(768, 384, 1)
-                    .duplicate()
-                    .expect("lstsq lhs tensor should duplicate"),
-                Arc::clone(&ctx),
-            )
-            .expect("lstsq lhs fixture should initialize");
-            let rhs = EagerTensor::from_tensor_in(
-                tensor_f64(&[768, 16], 2)
-                    .duplicate()
-                    .expect("lstsq rhs tensor should duplicate"),
-                ctx,
-            )
-            .expect("lstsq rhs fixture should initialize");
+            let a = Arc::clone(&ctx)
+                .constant_from(
+                    well_conditioned_rect(768, 384, 1)
+                        .duplicate()
+                        .expect("lstsq lhs tensor should duplicate"),
+                )
+                .expect("lstsq lhs fixture should initialize");
+            let rhs = ctx
+                .constant_from(
+                    tensor_f64(&[768, 16], 2)
+                        .duplicate()
+                        .expect("lstsq rhs tensor should duplicate"),
+                )
+                .expect("lstsq rhs fixture should initialize");
             *fixture = Some((a, rhs));
         }
         let (a, rhs) = fixture.as_ref().expect("lstsq fixture initialized");
@@ -2964,20 +2975,22 @@ fn svd_full_f64(b: &mut CpuEngine) -> tenferro_tensor::Result<()> {
         let mut fixture = slot.borrow_mut();
         if fixture.is_none() {
             *fixture = Some(
-                EagerTensor::from_tensor_in(
-                    tensor_f64(&[768, 384], 1)
-                        .duplicate()
-                        .expect("full SVD tensor should duplicate"),
-                    eager_cpu_context(),
-                )
-                .expect("full SVD fixture should initialize"),
+                eager_cpu_context()
+                    .constant_from(
+                        tensor_f64(&[768, 384], 1)
+                            .duplicate()
+                            .expect("full SVD tensor should duplicate"),
+                    )
+                    .expect("full SVD fixture should initialize"),
             );
         }
         let input = fixture.as_ref().expect("full SVD fixture initialized");
         // One eager session per call, as the pre-#1938 tensor-owned `svd_full` entered.
-        let (u, s, vt) = input
+        let Svd { u, s, vh: vt } = input
             .runtime()
-            .with_eager_session(b, |session| session.svd_full(input))
+            .with_eager_session(b, |session| {
+                session.svd_with(input, &SvdOptions::default().shape(SvdShape::Full))
+            })
             .map_err(|error| eager_linalg_error("svd_full", error))?;
         EAGER_OUTPUTS.with(|outputs| outputs.borrow_mut().extend([u, s, vt]));
         Ok(())
@@ -2988,7 +3001,14 @@ fn norm_f64(b: &mut CpuEngine) -> tenferro_tensor::Result<()> {
 }
 
 fn norm_f64_in_session(session: &mut CpuEngine) -> tenferro_tensor::Result<()> {
-    consume(tensor_f64(&[2048, 2048], 1).norm(None, Some(&[0, 1]), false, session)?);
+    consume(
+        tensor_f64(&[2048, 2048], 1).norm_with(
+            &NormOptions::default()
+                .axes(Some(tenferro_tensor::AxisVec::from(&[0isize, 1isize][..])))
+                .keep_dims(KeepDims::No),
+            session,
+        )?,
+    );
     Ok(())
 }
 
@@ -3072,9 +3092,7 @@ fn dot_with_conj_c64(b: &mut CpuEngine) -> tenferro_tensor::Result<()> {
 }
 fn tensordot_c64(b: &mut CpuEngine) -> tenferro_tensor::Result<()> {
     consume(direct(b, |s| {
-        tensor_c64(&[640, 640], 1)
-            .tensordot(tensor_c64(&[640, 640], 2), TensorDotAxes::Count(1), s)
-            .map_err(|err| err.into_tensor_error("tensordot"))
+        tensor_c64(&[640, 640], 1).tensordot(tensor_c64(&[640, 640], 2), TensorDotAxes::Count(1), s)
     })?);
     Ok(())
 }
@@ -3083,7 +3101,7 @@ fn svd_c64(b: &mut CpuEngine) -> tenferro_tensor::Result<()> {
 }
 
 fn svd_c64_in_session(session: &mut CpuEngine) -> tenferro_tensor::Result<()> {
-    let (u, s, vt) = tensor_c64(&[160, 160], 1).svd(session)?;
+    let Svd { u, s, vh: vt } = tensor_c64(&[160, 160], 1).svd(session)?;
     consume_many([u, s, vt]);
     Ok(())
 }
@@ -3093,7 +3111,7 @@ fn qr_c64(b: &mut CpuEngine) -> tenferro_tensor::Result<()> {
 }
 
 fn qr_c64_in_session(session: &mut CpuEngine) -> tenferro_tensor::Result<()> {
-    let (q, r) = tensor_c64(&[256, 256], 1).qr(session)?;
+    let Qr { q, r } = tensor_c64(&[256, 256], 1).qr(session)?;
     consume_many([q, r]);
     Ok(())
 }
@@ -3103,7 +3121,10 @@ fn eig_c64(b: &mut CpuEngine) -> tenferro_tensor::Result<()> {
 }
 
 fn eig_c64_in_session(session: &mut CpuEngine) -> tenferro_tensor::Result<()> {
-    let (w, v) = tensor_c64(&[112, 112], 1).eig(session)?;
+    let Eig {
+        values: w,
+        vectors: v,
+    } = tensor_c64(&[112, 112], 1).eig(session)?;
     consume_many([w, v]);
     Ok(())
 }
@@ -3131,7 +3152,14 @@ fn norm_c64(b: &mut CpuEngine) -> tenferro_tensor::Result<()> {
 }
 
 fn norm_c64_in_session(session: &mut CpuEngine) -> tenferro_tensor::Result<()> {
-    consume(tensor_c64(&[2048, 1536], 1).norm(None, Some(&[0, 1]), false, session)?);
+    consume(
+        tensor_c64(&[2048, 1536], 1).norm_with(
+            &NormOptions::default()
+                .axes(Some(tenferro_tensor::AxisVec::from(&[0isize, 1isize][..])))
+                .keep_dims(KeepDims::No),
+            session,
+        )?,
+    );
     Ok(())
 }
 
@@ -3404,21 +3432,26 @@ fn batch_family_in_session(
         BatchFamily::Solve => consume(input.solve(spec.rhs(), session)?),
         BatchFamily::Cholesky => consume(input.cholesky(session)?),
         BatchFamily::Qr => {
-            let (q, r) = input.qr(session)?;
+            let Qr { q, r } = input.qr(session)?;
             consume_many([q, r]);
         }
         BatchFamily::Eigh => {
-            let (values, vectors) = input.eigh(session)?;
+            let Eigh { values, vectors } = input.eigh(session)?;
             consume_many([values, vectors]);
         }
         BatchFamily::Eigvalsh => consume(input.eigvalsh(session)?),
         BatchFamily::Svd => {
-            let (u, s, vt) = input.svd(session)?;
+            let Svd { u, s, vh: vt } = input.svd(session)?;
             consume_many([u, s, vt]);
         }
         BatchFamily::Svdvals => consume(input.svdvals(session)?),
         BatchFamily::Lu => {
-            let (p, l, u, pivots) = input.lu(session)?;
+            let Lu {
+                p,
+                l,
+                u,
+                parity: pivots,
+            } = input.lu(session)?;
             consume_many([p, l, u, pivots]);
         }
     }
@@ -3434,23 +3467,28 @@ fn build_batch_family_trace(
         BatchFamily::Solve => vec![input.solve(&traced(trace, spec.rhs())?)?],
         BatchFamily::Cholesky => vec![input.cholesky()?],
         BatchFamily::Qr => {
-            let (q, r) = input.qr()?;
+            let Qr { q, r } = input.qr()?;
             vec![q, r]
         }
         BatchFamily::Eigh => {
-            let (values, vectors) = input.eigh()?;
+            let Eigh { values, vectors } = input.eigh()?;
             vec![values, vectors]
         }
         BatchFamily::Eigvalsh => vec![input.eigvalsh()?],
         BatchFamily::Svd => {
-            let (u, s, vt) = input.svd()?;
+            let Svd { u, s, vh: vt } = input.svd()?;
             vec![u, s, vt]
         }
         BatchFamily::Svdvals => {
             return Err("tenferro-rs has no TracedTensor svdvals API (unsupported)".into())
         }
         BatchFamily::Lu => {
-            let (p, l, u, pivots) = input.lu()?;
+            let Lu {
+                p,
+                l,
+                u,
+                parity: pivots,
+            } = input.lu()?;
             vec![p, l, u, pivots]
         }
     })
@@ -3501,7 +3539,7 @@ mod tests {
                 let lu_x = LinalgBackend::lu_solve_prepared(
                     session, a, packed, pivots, rhs, false, false,
                 )?;
-                let tri_x = lower.triangular_solve(rhs, true, true, false, false, session)?;
+                let tri_x = lower.triangular_solve(rhs, session)?;
                 Ok((lu_x, tri_x))
             })
             .unwrap();

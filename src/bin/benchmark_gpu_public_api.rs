@@ -5,7 +5,7 @@ use serde::Deserialize;
 use serde_json::{json, Value};
 use std::{collections::HashMap, fs, hint::black_box, io::Write, path::Path, time::Instant};
 use tenferro_ad::{EagerRuntime, EagerTensor};
-use tenferro_fft::{EagerSessionFftExt, FftExecutor, FftNorm};
+use tenferro_fft::{EagerFftOps, FftExecutor, FftNorm, FftOptions};
 use tenferro_gpu::cuda::{download_tensor, upload_tensor, CudaDeviceId, CudaEngine, CudaRuntime};
 use tenferro_tensor::{DType, Engine, Tensor};
 
@@ -586,11 +586,12 @@ fn direct(
     args: structural::Arguments<'_>,
 ) -> Result<Tensor> {
     let input = &inputs[0];
+    let options = FftOptions::default().axis(-1).norm(FftNorm::Backward);
     Ok(match case.op.as_str() {
-        "fft" => executor.fft(input, None, -1, FftNorm::Backward, session)?,
-        "ifft" => executor.ifft(input, None, -1, FftNorm::Backward, session)?,
-        "rfft" => executor.rfft(input, None, -1, FftNorm::Backward, session)?,
-        "irfft" => executor.irfft(input, Some(case.n), -1, FftNorm::Backward, session)?,
+        "fft" => executor.fft_with(input, &options, session)?,
+        "ifft" => executor.ifft_with(input, &options, session)?,
+        "rfft" => executor.rfft_with(input, &options, session)?,
+        "irfft" => executor.irfft_with(input, &options.n(Some(case.n)), session)?,
         _ => return runtime_ops::direct(case, inputs, session, args),
     })
 }
@@ -601,11 +602,12 @@ fn eager(
     args: structural::Arguments<'_>,
 ) -> Result<EagerTensor> {
     let input = &inputs[0];
+    let options = FftOptions::default().axis(-1).norm(FftNorm::Backward);
     Ok(match case.op.as_str() {
-        "fft" => session.fft(input, None, -1, FftNorm::Backward)?,
-        "ifft" => session.ifft(input, None, -1, FftNorm::Backward)?,
-        "rfft" => session.rfft(input, None, -1, FftNorm::Backward)?,
-        "irfft" => session.irfft(input, Some(case.n), -1, FftNorm::Backward)?,
+        "fft" => session.fft_with(input, &options)?,
+        "ifft" => session.ifft_with(input, &options)?,
+        "rfft" => session.rfft_with(input, &options)?,
+        "irfft" => session.irfft_with(input, &options.n(Some(case.n)))?,
         _ => return runtime_ops::eager(case, inputs, session, args),
     })
 }

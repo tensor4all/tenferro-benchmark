@@ -36,7 +36,6 @@ MANIFEST = ROOT / "benchmarks/cpu/manifests/session_matrix.yaml"
 INSTANCES = ROOT / "data/instances/session_matrix.json"
 SUITE_ID = "cpu/session_matrix"
 BATCHED = {"batched_dot", "batched_einsum", "hadamard", "chain3", "stream", "eager_stream"}
-BLAS_IMPLEMENTATIONS = ("accelerate", "openblas", "mkl")
 DEFAULT_CASE_TIMEOUT_S = 900
 
 
@@ -154,13 +153,10 @@ def collect(binary, run_dir, threads, coverage=None):
                 row.update(case_id=case_id, workload=case["workload"], threads=threads,
                            provider=row.get("provider", provider), route=case["route"],
                            coverage_tier=case["coverage"], effort=effort["effort"],
-                           case_key=cs.case_key(case_id, threads, provider),
-                           cpu_features=os.environ.get("TENFERRO_CPU_FEATURES"))
+                           case_key=cs.case_key(case_id, threads, provider))
                 if case["workload"] not in BATCHED:
                     row.update(timing_scope="many_operations_single_interval",
                                input_policy="distinct_prepared_pairs")
-                    if provider == "blas":
-                        row["provider"] = "accelerate" if sys.platform == "darwin" else "blas"
                 row.setdefault("samples_ns", [])
                 status = row.get("correctness", "failed")
                 row["status"] = status
@@ -230,8 +226,12 @@ def build_summary(run_dir, *, cpu_model=None):
             count = record.get('operations_per_sample', 1)
             values = [value / count for value in record.get('samples_ns', [])]
             verified = record.get('correctness') == 'passed'
+            # Historical runs name the vendor BLAS implementation the old
+            # provider-selecting build linked ('accelerate' on macOS, 'blas'
+            # elsewhere); tenferro-rs 0.12 runs name the one CPU backend.
             provider = str(record.get('provider', 'unknown'))
-            provider = 'blas' if provider in BLAS_IMPLEMENTATIONS else provider
+            provider = {'accelerate': 'blas', 'openblas': 'blas', 'mkl': 'blas'}.get(
+                provider, provider)
             backend = 'pytorch-cpu' if provider == 'pytorch' else 'tenferro-' + provider
             status = 'ok' if verified and values else 'failed'
             reason = record.get('unsupported_reason') or record.get('reason') or record.get('error')

@@ -1,14 +1,14 @@
 //! Isolated public elementwise, reduction and NN operations for issue #155.
 use super::{Case, Result};
 use tenferro_ad::{EagerSession, EagerTensor};
-use tenferro_runtime::TensorSessionOpsExt;
+use tenferro_runtime::CoreOps;
 use tenferro_tensor::{CompareDir, Engine, Tensor};
 
-fn axes(case: &Case) -> Option<&'static [usize]> {
+fn axes(case: &Case) -> Option<&'static [isize]> {
     if case.full_reduction {
         None
     } else {
-        Some(&[1])
+        Some(&[1isize])
     }
 }
 

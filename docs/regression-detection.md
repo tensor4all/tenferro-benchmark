@@ -60,10 +60,11 @@ baseline and candidate artifacts never mix). The helper re-points
 `extern/tenferro-rs` during the build and restores it, so do not run other
 builds of this checkout at the same time.
 
-Feature names follow tenferro-rs #2004 (`native` / `blas-openblas` /
-`blas-accelerate` / `blas-mkl`). A revision before #2004 cannot be built with
-this harness revision's feature names: build that revision with the matching
-older harness revision instead, not by translating names here.
+The CPU feature set is `native` (one backend, tenferro-rs #2608). Revisions
+that predate it selected a vendor provider (`native` / `blas-openblas` /
+`blas-accelerate` / `blas-mkl`, before that `cpu-faer` / `system-*`); build such
+a revision with the matching older harness revision instead of translating
+names here.
 
 ## Detector
 
@@ -98,7 +99,7 @@ commit it first and declare that commit as `harness_commit`.
 removed the feature names this sequence was written for. Building those
 revisions needs the harness revision that matched them (its `cpu-faer` /
 `system-*` vocabulary); the current harness builds only post-#2004 revisions,
-with `native` / `blas-openblas` / `blas-accelerate` / `blas-mkl`. To
+with `native`. To
 characterize noise or compare two current revisions, substitute their SHAs
 below and keep one feature selection across both arms.
 
@@ -120,14 +121,14 @@ the suite's standard effort):
 
 ```bash
 devcontainer exec --workspace-folder . bash -lc "
-  export BENCHMARK_TARGET_PROFILE=amd-cpu TENFERRO_CPU_FEATURES=blas-mkl
+  export BENCHMARK_TARGET_PROFILE=amd-cpu 
   export BENCH_COVERAGE=quick BENCH_AA_ROUNDS=4 BENCH_AA_WARMUPS=3 BENCH_AA_RUNS=15 BENCH_AA_THREADS='1 4'
   scripts/run_paired_timing.sh aa $BASE"
 ```
 
 Then copy `benchmarks/cpu/confirmation.yaml` to a path outside tracked files,
 fill every field (full SHAs of `$BASE`, `$REPAIR` and this harness, features
-`blas-mkl`, threads `[1, 4]`, coverage `quick`, manifest version from
+`native`, threads `[1, 4]`, coverage `quick`, manifest version from
 `benchmarks/cpu/manifests/session_matrix.yaml`, repetitions with an even number
 of rounds, statistic `median_of_round_ratios`, thresholds and noise bounds from
 the A/A report) and set `status: declared` before step (b).
@@ -136,7 +137,7 @@ the A/A report) and set `status: declared` before step (b).
 
 ```bash
 devcontainer exec --workspace-folder . bash -lc "
-  export BENCHMARK_TARGET_PROFILE=amd-cpu TENFERRO_CPU_FEATURES=blas-mkl
+  export BENCHMARK_TARGET_PROFILE=amd-cpu 
   export BENCH_CONFIRM_CONFIG=data/results/amd-cpu/cpu/confirmation-1946.yaml
   export BENCH_AA_DIR=data/results/amd-cpu/cpu/session_matrix_aa/<aa-timestamp>
   scripts/run_paired_timing.sh paired $BASE $REPAIR"
@@ -158,7 +159,7 @@ the executed order, `command.txt` the command, and the latest summary goes to
 cases visible; do not rerun selectively.
 
 On macOS use the same scripts natively with `BENCHMARK_TARGET_PROFILE=mac-cpu`
-and `TENFERRO_CPU_FEATURES=blas-accelerate`; the routine
+and ` the routine
 `./scripts/run_all.sh 1 4` still runs `cpu/session_matrix`.
 
 ## GPU

@@ -5,8 +5,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 TMP="$(mktemp -d)"
 trap 'rm -r -- "$TMP"' EXIT
 mkdir -p "$TMP/scripts" "$TMP/bin" "$TMP/extern/tenferro-rs/crates/tenferro-cpu"
-cp "$ROOT/scripts/build_for_tenferro_rev.sh" "$ROOT/scripts/cpu_blas_provider.sh" \
-   "$ROOT/scripts/link_preflight.sh" "$TMP/scripts/"
+cp "$ROOT/scripts/build_for_tenferro_rev.sh" "$TMP/scripts/"
 printf 'preserve this checkout\n' > "$TMP/extern/tenferro-rs/crates/tenferro-cpu/marker"
 git -C "$TMP/extern/tenferro-rs" init -q
 git -C "$TMP/extern/tenferro-rs" add .
@@ -20,7 +19,6 @@ grep -qx 'preserve this checkout' extern/tenferro-rs/crates/tenferro-cpu/marker
 SH
 chmod +x "$TMP/bin/cargo"
 export PATH="$TMP/bin:$PATH"
-export TENFERRO_CPU_FEATURES=native
 cd "$TMP"
 export EXPECTED_TENFERRO_DIR="$TMP/extern/tenferro-rs"
 bash scripts/build_for_tenferro_rev.sh "$EXPECTED_TENFERRO_DIR" "$TMP/build.env" benchmark_cpu_session

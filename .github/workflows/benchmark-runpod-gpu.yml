@@ -82,7 +82,6 @@ env:
   CUDA_PATH: /usr/local/cuda-12.8
   LD_LIBRARY_PATH: /usr/local/cuda-12.8/lib64
   TENFERRO_CUTENSOR_PATH: /usr/lib/x86_64-linux-gnu/libcutensor/12/libcutensor.so.2
-  TENFERRO_CPU_FEATURES: none
   UV_NO_SYNC: "1"
   BENCHMARK_TARGET_PROFILE: nvidia-gpu
   # Scheduled runs have no inputs; jobs fall back to the weekly defaults

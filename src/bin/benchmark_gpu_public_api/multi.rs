@@ -4,7 +4,9 @@ use serde_json::Value;
 use std::path::Path;
 use tenferro_ad::{EagerRuntime, EagerSession, EagerTensor};
 use tenferro_gpu::cuda::{download_tensor, upload_tensor, CudaEngine, CudaRuntime};
-use tenferro_linalg::{EagerSessionLinalgExt, HouseholderQr, QrOptions, TensorLinalgExt};
+use tenferro_linalg::{
+    EagerLinalgOps, HouseholderQr, LinalgOps, Lu, QrOptions, Slogdet, Svd, SvdOptions, SvdShape,
+};
 use tenferro_tensor::{DType, Engine, Tensor};
 
 // Stack-owned adapters add no output-retention allocation to the timed call.
@@ -27,16 +29,20 @@ impl<T> Outputs<T> {
 fn direct(case: &Case, x: &Tensor, session: &mut dyn Engine) -> Result<Outputs<Tensor>> {
     Ok(match case.op.as_str() {
         "lu" => {
-            let (p, l, u, parity) = x.lu(session)?;
+            let Lu { p, l, u, parity } = x.lu(session)?;
             Outputs::Four([p, l, u, parity])
         }
         "householder_qr" => Outputs::Compact(x.householder_qr(session)?),
         "svd_full" => {
-            let (u, s, vh) = x.svd_full(session)?;
+            let Svd { u, s, vh } =
+                x.svd_with(&SvdOptions::default().shape(SvdShape::Full), session)?;
             Outputs::Three([u, s, vh])
         }
         "slogdet" => {
-            let (sign, logabs) = x.slogdet(session)?;
+            let Slogdet {
+                sign,
+                log_abs_det: logabs,
+            } = x.slogdet(session)?;
             Outputs::Two([sign, logabs])
         }
         _ => return Err("unknown multi-output operation".into()),
@@ -49,16 +55,20 @@ fn eager(
 ) -> Result<Outputs<EagerTensor>> {
     Ok(match case.op.as_str() {
         "lu" => {
-            let (p, l, u, parity) = session.lu(x)?;
+            let Lu { p, l, u, parity } = session.lu(x)?;
             Outputs::Four([p, l, u, parity])
         }
         "householder_qr" => Outputs::Compact(session.householder_qr(x)?),
         "svd_full" => {
-            let (u, s, vh) = session.svd_full(x)?;
+            let Svd { u, s, vh } =
+                session.svd_with(x, &SvdOptions::default().shape(SvdShape::Full))?;
             Outputs::Three([u, s, vh])
         }
         "slogdet" => {
-            let (sign, logabs) = session.slogdet(x)?;
+            let Slogdet {
+                sign,
+                log_abs_det: logabs,
+            } = session.slogdet(x)?;
             Outputs::Two([sign, logabs])
         }
         _ => return Err("unknown multi-output operation".into()),

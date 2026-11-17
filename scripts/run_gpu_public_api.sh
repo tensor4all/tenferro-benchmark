@@ -55,7 +55,7 @@ CUTENSOR_DEVCONTAINER_PATH="/usr/lib/x86_64-linux-gnu/libcutensor/12/libcutensor
 if [[ -z "${TENFERRO_CUTENSOR_PATH:-}" && -f "$CUTENSOR_DEVCONTAINER_PATH" ]]; then
     export TENFERRO_CUTENSOR_PATH="$CUTENSOR_DEVCONTAINER_PATH"
 fi
-TENFERRO_CPU_FEATURES=native bash scripts/setup_extern_deps.sh
+bash scripts/setup_extern_deps.sh
 
 # Preserve pinned checkouts; follow main only when the user has selected main.
 tenferro_dir="$PWD/extern/tenferro-rs"
@@ -102,7 +102,7 @@ uv run python scripts/collect_run_metadata.py \
     --suite-file "$declaration" \
     --timestamp "${GPU_BENCH_RUN_TIMESTAMP:-$(date -u +%Y-%m-%dT%H:%M:%SZ)}" \
     --tenferro-dir "$tenferro_dir" \
-    --features cuda --blas none --cuda-device-ordinal "$GPU_BENCH_PHYSICAL_DEVICE" \
+    --features cuda --cuda-device-ordinal "$GPU_BENCH_PHYSICAL_DEVICE" \
     --output "$run_dir/run.yaml"
 # Record this run's own copy rate: time one plain device copy of a known size on
 # this device and put the traffic rate it reached in run.yaml. Every record below

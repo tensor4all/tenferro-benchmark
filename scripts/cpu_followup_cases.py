@@ -29,7 +29,12 @@ def mwe_build_hint(binary):
 
 
 def followup_mwe_supported():
-    """mwe/cpu_followup's default feature is system-mkl, so it builds on Linux only."""
+    """The follow-up cases are collected on Linux hosts only.
+
+    The crate itself links nothing vendor (tenferro-rs #2608) and builds
+    anywhere; its oneMKL DFTI reference is a Linux oneMKL feature, and the
+    macOS CPU profile does not collect cpu/perf_issues.
+    """
     return sys.platform=='linux'
 
 

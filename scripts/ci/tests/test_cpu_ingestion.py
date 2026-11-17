@@ -21,7 +21,7 @@ class CPUIngestionTest(unittest.TestCase):
         self.run.mkdir(parents=True)
         self.metadata = {'target_profile': 'amd-cpu', 'suite_id': 'cpu/fft',
                          'timestamp': '2026-10-18T00:00:00+00:00',
-                         'tenferro_rs': {'commit': 'b'*40, 'features':['blas-mkl']}, 'blas':{'implementation':'mkl'}, 'python_backends':{'pytorch':{'provider':'mkl'}}, 'harness': {'commit': 'a'*40},
+                         'tenferro_rs': {'commit': 'b'*40, 'features':['native']}, 'python_backends':{'pytorch':{'provider':'mkl'}}, 'harness': {'commit': 'a'*40},
                          'environment': {'hostname': 'fixture', 'cpu': 'Fixture CPU', 'env':{'RAYON_NUM_THREADS':'1'}}}
         (self.run/'run.yaml').write_text(yaml.safe_dump(self.metadata))
         for thread in (1,4):
@@ -98,7 +98,7 @@ class CPUIngestionTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'No CPU raw measurements|raw threads'):
             self.package()
 
-    def test_blas_implementation_names_share_one_session_matrix_identity(self):
+    def test_provider_names_share_one_session_matrix_identity(self):
         run = self.root/'data/results/amd-cpu/cpu/session_matrix/20261018_000000'
         run.mkdir(parents=True)
         (run/'run.yaml').write_text(yaml.safe_dump(dict(self.metadata, suite_id='cpu/session_matrix',
@@ -110,8 +110,11 @@ class CPUIngestionTest(unittest.TestCase):
             descriptor = {'metadata': str((run/'run.yaml').relative_to(self.root)),
                           'raw_files': [str((run/'samples_t1.jsonl').relative_to(self.root))]}
             return identities(build_source(self.root, descriptor, 'cpu/session_matrix', 'amd-cpu', {'head_sha':'a'*40}))
-        self.assertEqual(build('accelerate'), build('blas'))
+        # A run from before tenferro-rs #2608 named the vendor BLAS it linked;
+        # a 0.12 run names the one CPU backend. Both are one identity.
+        self.assertEqual(build('accelerate'), build('faer'))
         self.assertEqual(build('accelerate'), [['matmul_n2_count1024', 'threads=1', 'tenferro-blas']])
+        self.assertEqual(build('faer'), [['matmul_n2_count1024', 'threads=1', 'tenferro-blas']])
 
     def test_mismatched_pytorch_provider_cannot_publish(self):
         self.metadata['python_backends']['pytorch']['provider']='openblas'
@@ -128,8 +131,7 @@ class CPUIngestionTest(unittest.TestCase):
         for path in (self.root/'data/results/mac-cpu').rglob('*.yaml'):
             meta = yaml.safe_load(path.read_text())
             meta['target_profile']='mac-cpu'
-            meta['tenferro_rs']['features']=['blas-accelerate']
-            meta['blas']['implementation']='accelerate'
+            meta['tenferro_rs']['features']=['native']
             path.write_text(yaml.safe_dump(meta))
         package_cpu(self.root,'mac-cpu','a'*40,self.bundle,suites=('fft',))
         self.assertEqual(validate_bundle(self.bundle,'mac-cpu',self.source)[0][0]['target_profile'],'mac-cpu')
@@ -160,8 +162,7 @@ class OverheadIngestionTest(unittest.TestCase):
                    for case in cases]
         metadata = dict(target_profile=profile, suite_id='cpu/overhead_smoke',
                         timestamp='2026-10-18T00:00:00+00:00', harness={'commit':'a'*40},
-                        tenferro_rs={'commit':'b'*40,'features':['blas-mkl' if profile=='amd-cpu' else 'blas-accelerate']},
-                        blas={'implementation':'mkl' if profile=='amd-cpu' else 'accelerate'},
+                        tenferro_rs={'commit':'b'*40,'features':['native']},
                         python_backends={'pytorch':{'provider':'mkl'}},
                         environment={'hostname':'fixture', 'env':{'RAYON_NUM_THREADS':'1'}},
                         collection=collection_policy(cases))

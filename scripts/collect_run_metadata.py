@@ -237,145 +237,6 @@ def collect_environment() -> dict[str, Any]:
     return environment
 
 
-def find_openblas_library(root: Path) -> str:
-    candidates: list[Path] = []
-    for lib_dir in (root / "lib", root / "lib64", root):
-        if not lib_dir.exists():
-            continue
-        for pattern in (
-            "libopenblas*.dylib",
-            "libopenblas*.so",
-            "libopenblas*.a",
-            "openblas*.lib",
-        ):
-            candidates.extend(sorted(lib_dir.glob(pattern)))
-    if candidates:
-        return str(candidates[0])
-    return str(root)
-
-
-def parse_openblas_version_header(path: Path) -> str | None:
-    try:
-        text = path.read_text(errors="ignore")
-    except OSError:
-        return None
-    for line in text.splitlines():
-        if "OPENBLAS_VERSION" not in line:
-            continue
-        quoted = re.search(r'"([^"]+)"', line)
-        if quoted:
-            version = quoted.group(1).strip()
-            if version:
-                return version
-        tokens = line.split()
-        if tokens:
-            version = tokens[-1].strip()
-            if version:
-                return version
-    return None
-
-
-def find_openblas_version(root: Path) -> str:
-    for header in (
-        root / "include" / "openblas_config.h",
-        root / "include" / "openblas" / "openblas_config.h",
-    ):
-        version = parse_openblas_version_header(header)
-        if version:
-            return version
-    return "unknown"
-
-
-def find_mkl_library(root: Path) -> str:
-    candidates: list[Path] = []
-    for lib_dir in (root / "lib", root / "lib" / "intel64", root):
-        if not lib_dir.exists():
-            continue
-        for pattern in (
-            "libmkl_rt*.so*",
-            "libmkl_rt*.dylib",
-            "mkl_rt*.lib",
-            "libmkl_intel_lp64*.so*",
-            "libmkl_core*.so*",
-            "libmkl_intel_thread*.so*",
-        ):
-            candidates.extend(sorted(lib_dir.glob(pattern)))
-    if candidates:
-        return str(candidates[0])
-    return str(root)
-
-
-def parse_mkl_version_header(path: Path) -> str | None:
-    try:
-        text = path.read_text(errors="ignore")
-    except OSError:
-        return None
-
-    defines: dict[str, str] = {}
-    for line in text.splitlines():
-        match = re.match(r"\s*#\s*define\s+([A-Za-z0-9_]+)\s+([0-9]+)\b", line)
-        if match:
-            defines[match.group(1)] = match.group(2)
-
-    for major_key, minor_key, update_key in (
-        ("__INTEL_MKL__", "__INTEL_MKL_MINOR__", "__INTEL_MKL_UPDATE__"),
-        ("MKL_VERSION_MAJOR", "MKL_VERSION_MINOR", "MKL_VERSION_UPDATE"),
-    ):
-        major = defines.get(major_key)
-        if major:
-            minor = defines.get(minor_key, "0")
-            update = defines.get(update_key, "0")
-            return f"{major}.{minor}.{update}"
-
-    return defines.get("INTEL_MKL_VERSION")
-
-
-def find_mkl_version(root: Path) -> str:
-    for header in (
-        root / "include" / "mkl_version.h",
-        root / "include" / "mkl" / "mkl_version.h",
-    ):
-        version = parse_mkl_version_header(header)
-        if version:
-            return version
-    return "unknown"
-
-
-def collect_blas(blas: str | None) -> dict[str, str] | None:
-    if blas is None:
-        return None
-    if blas == "none":
-        return {"implementation": "none"}
-    if blas == "accelerate":
-        return {
-            "implementation": "accelerate",
-            "version": "unknown",
-            "library": "/System/Library/Frameworks/Accelerate.framework",
-        }
-    if blas == "mkl":
-        root_value = os.environ.get("MKLROOT")
-        if not root_value:
-            raise MetadataError("--blas mkl requires MKLROOT to be set")
-        root = Path(root_value).expanduser()
-        return {
-            "implementation": "mkl",
-            "version": find_mkl_version(root),
-            "root": str(root),
-            "library": find_mkl_library(root),
-        }
-
-    root_value = os.environ.get("OPENBLAS_ROOT")
-    if not root_value:
-        raise MetadataError("--blas openblas requires OPENBLAS_ROOT to be set")
-    root = Path(root_value).expanduser()
-    return {
-        "implementation": "openblas",
-        "version": find_openblas_version(root),
-        "root": str(root),
-        "library": find_openblas_library(root),
-    }
-
-
 def run_python_probe(source: str) -> dict[str, Any]:
     try:
         result = subprocess.run(
@@ -776,9 +637,6 @@ def build_metadata(args: argparse.Namespace) -> dict[str, Any]:
     collection = collect_collection(args)
     if collection:
         metadata["collection"] = collection
-    blas = collect_blas(args.blas)
-    if blas is not None:
-        metadata["blas"] = blas
     metadata["python_backends"] = collect_python_backends()
     metadata["julia"] = collect_julia_backend()
     if "cuda" in parse_features(args.features) and args.cuda_device_ordinal is not None:
@@ -798,7 +656,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--tenferro-commit")
     parser.add_argument("--tenferro-ref")
     parser.add_argument("--features", action="append", default=[])
-    parser.add_argument("--blas", choices=["openblas", "accelerate", "mkl", "none"])
     parser.add_argument("--cuda-device-ordinal", type=int)
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--harness-dir", type=Path, default=Path(__file__).resolve().parents[1])

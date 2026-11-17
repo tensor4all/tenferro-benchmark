@@ -1501,7 +1501,9 @@ fn run_tenferro_cuda_destination_reuse(
                 "skipped",
                 false,
             )
-            .with_note(format!("CudaEngine::copy_read_into rejected this destination: {error}")),
+            .with_note(format!(
+                "CudaEngine::copy_read_into rejected this destination: {error}"
+            )),
             sink,
         );
         return;

@@ -24,8 +24,8 @@ use tenferro_gpu::cuda::raw::with_cuda_engine;
 use tenferro_gpu::cuda::{
     download_pending, download_tensor, upload_tensor, CudaDeviceId, CudaEngine, PinnedHostBuffer,
 };
-use tenferro_linalg::{EighDriver, EighOptions, SvdDriver, SvdOptions, TensorLinalgExt};
-use tenferro_runtime::{ExecutionEngine, TensorSessionOpsExt};
+use tenferro_linalg::{Eigh, EighDriver, EighOptions, LinalgOps, Qr, Svd, SvdDriver, SvdOptions};
+use tenferro_runtime::{CoreOps, ExecutionEngine};
 use tenferro_tensor::{
     DotGeneralConfig, Engine, GatherConfig, Tensor, TensorDot, TensorElementwise, TensorRead,
     TensorStructural, TensorView, TensorViewMut, TensorWrite,
@@ -897,10 +897,10 @@ fn well_conditioned(n: usize, seed: u64) -> Vec<f64> {
 
 fn factorize(op: &str, a: &Tensor, s: &mut dyn Engine) -> Result<Vec<Tensor>> {
     Ok(if op == "qr" {
-        let (q, r) = a.qr(s)?;
+        let Qr { q, r } = a.qr(s)?;
         vec![q, r]
     } else {
-        let (u, sv, vt) = a.svd(s)?;
+        let Svd { u, s: sv, vh: vt } = a.svd(s)?;
         vec![u, sv, vt]
     })
 }
@@ -1295,9 +1295,8 @@ fn eager_op(params: &Value, timing: &Timing, device: usize) -> Result<CaseOutcom
         }
     };
     // Correctness: one result, downloaded outside timing and checked against a host reduction.
-    let first = runtime
-        .with_eager_session(&mut bk, run)?
-        .to_tensor(&mut bk)?;
+    let first = runtime.with_eager_session(&mut bk, run)?;
+    let first = runtime.with_eager_session(&mut bk, |s| s.duplicate_value(&first))?;
     rt.synchronize()?;
     let back = download_tensor(&rt, &first)?;
     let got = back.as_slice::<f32>()?;
@@ -1490,7 +1489,7 @@ fn gather_table(params: &Value, timing: &Timing, device: usize) -> Result<CaseOu
         })?;
         rt.synchronize()?;
         let shape = first.shape().to_vec();
-        let first = first.to_tensor(&mut bk)?;
+        let first = runtime.with_eager_session(&mut bk, |s| s.duplicate_value(&first))?;
         let back = download_tensor(&rt, &first)?;
         let got = back.as_slice::<f32>()?;
         // The issue's rows layout gathers (tokens, hidden): row t of the result is
@@ -1655,11 +1654,10 @@ fn reshape_materialize(params: &Value, timing: &Timing, device: usize) -> Result
         return Err(format!("unknown reshape arm {arm}").into());
     };
     let target = vec![rows, cols];
-    let first = runtime
-        .with_eager_session(&mut bk, |s| {
-            Ok::<_, BoxError>(s.reshape(input, target.clone())?)
-        })?
-        .to_tensor(&mut bk)?;
+    let first = runtime.with_eager_session(&mut bk, |s| {
+        Ok::<_, BoxError>(s.reshape(input, target.clone())?)
+    })?;
+    let first = runtime.with_eager_session(&mut bk, |s| s.duplicate_value(&first))?;
     rt.synchronize()?;
     let back = download_tensor(&rt, &first)?;
     let got = back.as_slice::<f32>()?;
@@ -2046,9 +2044,9 @@ fn pool_retention(params: &Value, device: usize) -> Result<CaseOutcome> {
 fn svd_driver_of(name: &str) -> Result<SvdDriver> {
     Ok(match name {
         "auto" => SvdDriver::Auto,
-        "gesvdj" => SvdDriver::Gesvdj,
-        "gesvd" => SvdDriver::Gesvd,
-        "xgesvdp" => SvdDriver::Xgesvdp,
+        "jacobi" => SvdDriver::Jacobi,
+        "qr-based" => SvdDriver::QrBased,
+        "polar" => SvdDriver::Polar,
         other => return Err(format!("unknown SVD driver {other}").into()),
     })
 }
@@ -2107,7 +2105,7 @@ fn linalg_readback_latency(params: &Value, timing: &Timing, device: usize) -> Re
             }
             check_tol(worst, 1e-10, "solve residual")
         } else {
-            let (q, r) = a.qr(s)?;
+            let Qr { q, r } = a.qr(s)?;
             let qh = download_tensor(&rt, &q)?;
             let rh = download_tensor(&rt, &r)?;
             let (qs, rs) = (qh.as_slice::<f64>()?, rh.as_slice::<f64>()?);
@@ -2163,13 +2161,10 @@ fn svd_driver(params: &Value, timing: &Timing, device: usize) -> Result<CaseOutc
     }
     let a = upload_tensor(&rt, &host_c64(vec![n, n], data.clone())?)?;
     rt.synchronize()?;
-    let options = SvdOptions {
-        driver: svd_driver_of(driver)?,
-        ..SvdOptions::default()
-    };
+    let options = SvdOptions::default().driver(svd_driver_of(driver)?);
     let bytes = n * n * 16 * 3;
     let (error, outs) = bk.with_backend_session(|s| -> Result<(f64, Vec<Tensor>)> {
-        let (u, sv, vh) = a.svd_with_options(options.clone(), s)?;
+        let Svd { u, s: sv, vh } = a.svd_with(&options, s)?;
         let d = |t: &Tensor| -> Result<Vec<Complex64>> {
             Ok(download_tensor(&rt, t)?.as_slice::<Complex64>()?.to_vec())
         };
@@ -2197,7 +2192,7 @@ fn svd_driver(params: &Value, timing: &Timing, device: usize) -> Result<CaseOutc
     let m = bk.with_backend_session(|s| {
         measure(timing, bytes, |it| {
             timed_in_session(it, s, |s| {
-                let (u, sv, vh) = a.svd_with_options(options.clone(), s)?;
+                let Svd { u, s: sv, vh } = a.svd_with(&options, s)?;
                 Ok(vec![u, sv, vh])
             })
         })
@@ -2225,8 +2220,8 @@ fn svd_driver(params: &Value, timing: &Timing, device: usize) -> Result<CaseOutc
 fn eigh_driver_of(name: &str) -> Result<EighDriver> {
     Ok(match name {
         "auto" => EighDriver::Auto,
-        "syevd" => EighDriver::Syevd,
-        "syevj" => EighDriver::Syevj,
+        "divide-and-conquer" => EighDriver::DivideAndConquer,
+        "jacobi" => EighDriver::Jacobi,
         other => return Err(format!("unknown eigh driver {other}").into()),
     })
 }
@@ -2238,10 +2233,7 @@ fn eigh_driver(params: &Value, timing: &Timing, device: usize) -> Result<CaseOut
     let dtype = param_str(params, "dtype")?;
     let mut bk = backend(device)?;
     let rt = bk.runtime().clone();
-    let options = EighOptions {
-        driver: eigh_driver_of(driver)?,
-        ..EighOptions::default()
-    };
+    let options = EighOptions::default().driver(eigh_driver_of(driver)?);
     let bytes = batch * n * n * 16 * 2;
     let (error, measurement, timer) = if dtype == "f64" {
         let all: Vec<f64> = (0..batch)
@@ -2260,7 +2252,10 @@ fn eigh_driver(params: &Value, timing: &Timing, device: usize) -> Result<CaseOut
         let a = upload_tensor(&rt, &host(vec![n, n, batch], all.clone())?)?;
         rt.synchronize()?;
         bk.with_backend_session(|s| -> Result<(f64, Measurement, Vec<&str>)> {
-            let (w, v) = a.eigh_with_options(options.clone(), s)?;
+            let Eigh {
+                values: w,
+                vectors: v,
+            } = a.eigh_with(&options, s)?;
             let wh = download_tensor(&rt, &w)?.as_slice::<f64>()?.to_vec();
             let vh = download_tensor(&rt, &v)?.as_slice::<f64>()?.to_vec();
             let mut worst = 0.0f64;
@@ -2276,7 +2271,10 @@ fn eigh_driver(params: &Value, timing: &Timing, device: usize) -> Result<CaseOut
             let error = check_tol(worst, 1e-8, "batched eigh residual")?;
             let m = measure(timing, bytes, |it| {
                 timed_in_session(it, s, |s| {
-                    let (w, v) = a.eigh_with_options(options.clone(), s)?;
+                    let Eigh {
+                        values: w,
+                        vectors: v,
+                    } = a.eigh_with(&options, s)?;
                     Ok(vec![w, v])
                 })
             })?;
@@ -2308,7 +2306,10 @@ fn eigh_driver(params: &Value, timing: &Timing, device: usize) -> Result<CaseOut
         let a = upload_tensor(&rt, &host_c64(vec![n, n, batch], all.clone())?)?;
         rt.synchronize()?;
         bk.with_backend_session(|s| -> Result<(f64, Measurement, Vec<&str>)> {
-            let (w, v) = a.eigh_with_options(options.clone(), s)?;
+            let Eigh {
+                values: w,
+                vectors: v,
+            } = a.eigh_with(&options, s)?;
             let wh = download_tensor(&rt, &w)?.as_slice::<f64>()?.to_vec();
             let vh = download_tensor(&rt, &v)?.as_slice::<Complex64>()?.to_vec();
             let mut worst = 0.0f64;
@@ -2324,7 +2325,10 @@ fn eigh_driver(params: &Value, timing: &Timing, device: usize) -> Result<CaseOut
             let error = check_tol(worst, 1e-8, "batched eigh residual (c64)")?;
             let m = measure(timing, bytes, |it| {
                 timed_in_session(it, s, |s| {
-                    let (w, v) = a.eigh_with_options(options.clone(), s)?;
+                    let Eigh {
+                        values: w,
+                        vectors: v,
+                    } = a.eigh_with(&options, s)?;
                     Ok(vec![w, v])
                 })
             })?;

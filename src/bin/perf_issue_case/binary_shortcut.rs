@@ -1,6 +1,6 @@
 //! #2325 / #2416: allocating products, with identical-input controls.
 use super::*;
-use tenferro_einsum::{ConcreteEinsumPlan, EinsumSubscripts, TensorEinsumExt};
+use tenferro_einsum::{ConcreteEinsumPlan, EinsumOps, EinsumSubscripts};
 
 pub(super) fn run(p: &Value, timing: &Timing, threads: usize) -> Result<CaseOutcome> {
     let (m, k, n) = (
@@ -85,15 +85,15 @@ pub(super) fn run(p: &Value, timing: &Timing, threads: usize) -> Result<CaseOutc
         } else {
             EinsumSubscripts::new(&[&[0, 1], &[1, 2]], &[0, 2])
         };
-        let plan = ConcreteEinsumPlan::prepare([&a, &b], fmt)?;
+        let plan = ConcreteEinsumPlan::prepare(&[&a, &b], fmt, &Default::default())?;
         let cfg = matmul_config(if rank3 { &[2] } else { &[1] }, &[0]);
         let mut bk = tenferro_einsum_benchmark::cpu_engine(Some(threads))?;
         bk.with_backend_session(|s| -> Result<(f64, Measurement)> {
             let mut op = || -> Result<Tensor> {
                 Ok(match arm {
                     "string" => [&a, &b].einsum(fmt, s)?,
-                    "subscripts" => [&a, &b].einsum_subscripts(&subs, s)?,
-                    "prepared" => plan.execute([&a, &b], s)?,
+                    "subscripts" => [&a, &b].einsum(&subs, s)?,
+                    "prepared" => plan.execute(&[&a, &b], s)?,
                     "dot-general" => s.dot_general_read(
                         TensorRead::from_tensor(&a),
                         TensorRead::from_tensor(&b),

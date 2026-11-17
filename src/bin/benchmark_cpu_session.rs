@@ -9,7 +9,7 @@ mod shape_stream;
 
 use std::{error::Error, hint::black_box, time::Instant};
 use tenferro_cpu::CpuEngine;
-use tenferro_linalg::TensorLinalgExt;
+use tenferro_linalg::LinalgOps;
 use tenferro_tensor::{DotGeneralConfig, Tensor, TensorDot, TensorRead};
 type Result<T> = std::result::Result<T, Box<dyn Error + Send + Sync>>;
 
@@ -258,28 +258,22 @@ fn main() -> Result<()> {
     let samples: usize = get("--samples", "15").parse()?;
     let warmups: usize = get("--warmups", "3").parse()?;
     let op = get("--op", "matmul");
-    let provider = get("--provider", "blas");
+    let provider = get("--provider", "faer");
     if n == 0 || count == 0 || samples == 0 || !["matmul", "solve"].contains(&op.as_str()) {
         return Err("invalid case".into());
     }
-    // tenferro-rs #2004 makes the CPU backend a compile-time choice, so a build
-    // contains exactly one provider; the other requested provider is reported
-    // unsupported (not failed, and never measured on the wrong backend).
+    // tenferro-rs 0.12 has one CPU backend (#2608), so `faer` is the only
+    // provider a build can measure and the only one a case may declare.
     let compiled = tenferro_einsum_benchmark::compiled_cpu_provider();
-    if !["blas", "faer"].contains(&provider.as_str()) {
-        return Err("invalid provider".into());
+    if provider != "faer" {
+        return Err(format!("invalid provider {provider}: the only CPU provider is faer").into());
     }
     if provider != compiled {
-        let remedy = if provider == "blas" {
-            "blas-openblas, blas-accelerate, or blas-mkl"
-        } else {
-            "native"
-        };
         println!(
             "{}",
             serde_json::json!({"operation":op,"n":n,"provider":provider,"correctness":"unsupported",
                 "unsupported_reason":format!(
-                    "harness compiled with the {compiled} CPU backend; rebuild with the {remedy} feature set to measure the {provider} provider"),
+                    "harness compiled with the {compiled} CPU backend; this case is declared for the {provider} provider"),
                 "samples_ns":[]})
         );
         return Ok(());

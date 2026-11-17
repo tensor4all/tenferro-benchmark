@@ -257,8 +257,7 @@ impl fmt::Display for Row<'_> {
 fn writer() -> Result<Box<dyn Write>, String> {
     match env::var("BENCH_OUTPUT") {
         Ok(path) => {
-            let file =
-                File::create(&path).map_err(|err| format!("cannot write {path}: {err}"))?;
+            let file = File::create(&path).map_err(|err| format!("cannot write {path}: {err}"))?;
             Ok(Box::new(io::BufWriter::new(file)))
         }
         Err(_) => Ok(Box::new(io::stdout())),
@@ -278,12 +277,12 @@ fn run() -> Result<(), String> {
     // 256 MiB copy alive.
     let sample = |index: usize| 1.0 + (index % 17) as f64 / 32.0;
     let input: Vec<f64> = (0..N).map(sample).collect();
-    let x = EagerTensor::from_tensor_in(
-        Tensor::from_vec_col_major(vec![N], input)
-            .map_err(|err| format!("input tensor: {err}"))?,
-        ctx.clone(),
-    )
-    .map_err(|err| format!("input tensor: {err}"))?;
+    let x = ctx
+        .constant_from(
+            Tensor::from_vec_col_major(vec![N], input)
+                .map_err(|err| format!("input tensor: {err}"))?,
+        )
+        .map_err(|err| format!("input tensor: {err}"))?;
 
     let mut out = writer()?;
     writeln!(

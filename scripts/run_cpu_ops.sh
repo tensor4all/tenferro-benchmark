@@ -18,13 +18,8 @@ source "$SCRIPT_DIR/python_venv.sh"
 reset_benchmark_python_venv "$PROJECT_DIR"
 prepare_cpu_benchmark_python_venv "$PROJECT_DIR"
 
-# shellcheck source=scripts/cpu_blas_provider.sh
-source "$SCRIPT_DIR/cpu_blas_provider.sh"
 
 # Follow the run's CPU feature selection so the CPU-ops rows and the rest of the
-# run describe one provider; an explicit PUBLICATION_GATE_FEATURES still wins.
-PUBLICATION_GATE_FEATURES="$(normalize_cpu_blas_features "${PUBLICATION_GATE_FEATURES:-${TENFERRO_CPU_FEATURES:-}}")"
-export PUBLICATION_GATE_FEATURES
 export PUBLICATION_GATE_TENFERRO_MODE="${PUBLICATION_GATE_TENFERRO_MODE:-both}"
 
 # shellcheck source=scripts/thread_env.sh
@@ -33,11 +28,10 @@ configure_cpu_thread_env "$NUM_THREADS"
 
 mkdir -p "$RESULTS_DIR"
 
-RAW_LOG="$RESULTS_DIR/publication_gate_${PUBLICATION_GATE_FEATURES}_t${NUM_THREADS}_${PUBLICATION_GATE_PROFILE:-quick}_${PUBLICATION_GATE_SUITE:-all}_${TIMESTAMP}.csv"
+RAW_LOG="$RESULTS_DIR/publication_gate_native_t${NUM_THREADS}_${PUBLICATION_GATE_PROFILE:-quick}_${PUBLICATION_GATE_SUITE:-all}_${TIMESTAMP}.csv"
 CPU_OPS_LOG="$RESULTS_DIR/cpu_ops_t${NUM_THREADS}_${TIMESTAMP}.csv"
 export CPU_OPS_RAW_SAMPLES="$RESULTS_DIR/cpu_ops_samples_t${NUM_THREADS}_${TIMESTAMP}.jsonl"
 
-ensure_blas_env_for_features "$PUBLICATION_GATE_FEATURES"
 
 "$SCRIPT_DIR/run_publication_gate.sh" "$NUM_THREADS"
 

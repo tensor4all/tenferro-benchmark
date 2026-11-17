@@ -10,9 +10,7 @@ use std::time::Instant;
 use num_complex::{Complex32, Complex64};
 use tenferro_ad::{EagerRuntime, EagerTensor};
 use tenferro_cpu::CpuEngine;
-use tenferro_fft::{
-    EagerSessionFftExt, FftExecutor, FftNorm, TensorFftExt, TensorReadFftExt, TracedTensorFftExt,
-};
+use tenferro_fft::{EagerFftOps, FftExecutor, FftNorm, FftOps, FftOptions, TracedFftOps};
 use tenferro_runtime::{ExecutionEngine, GraphCompiler, Runtime, TraceContext};
 use tenferro_tensor::{Engine, Tensor, TensorRead};
 
@@ -301,11 +299,12 @@ fn time_trace_case(args: &Args, op: Op, input: &Tensor, n: usize) -> BenchResult
     // Constant construction, graph construction, compilation, runtime setup,
     // and FFT planning warmup are all outside the measured region.
     let traced = TraceContext::new().from_tensor_concrete_shape(input.duplicate()?)?;
+    let options = fft_options(op, n);
     let output = match op {
-        Op::Fft => traced.fft(None, -1, FftNorm::Backward)?,
-        Op::Ifft => traced.ifft(None, -1, FftNorm::Backward)?,
-        Op::Rfft => traced.rfft(None, -1, FftNorm::Backward)?,
-        Op::Irfft => traced.irfft(Some(n), -1, FftNorm::Backward)?,
+        Op::Fft => traced.fft_with(&options)?,
+        Op::Ifft => traced.ifft_with(&options)?,
+        Op::Rfft => traced.rfft_with(&options)?,
+        Op::Irfft => traced.irfft_with(&options)?,
     };
     let program = GraphCompiler::new().compile(&output)?;
     let mut engine = tenferro_einsum_benchmark::cpu_engine(Some(args.num_threads))?;
@@ -333,21 +332,22 @@ fn time_trace_case(args: &Args, op: Op, input: &Tensor, n: usize) -> BenchResult
 
 fn time_eager_case(args: &Args, op: Op, input: &Tensor, n: usize) -> BenchResult<(f64, f64)> {
     let runtime = EagerRuntime::new()?;
-    let input = EagerTensor::from_tensor_in(input.duplicate()?, runtime)?;
+    let input = runtime.constant_from(input.duplicate()?)?;
     // The engine is caller-held (tenferro-rs #2206) and built once per case,
     // outside every timer. tenferro-rs #1938 moved eager FFTs onto
     // `EagerSession`; enter one eager session per call, as the pre-#1938
     // tensor-owned FFT methods did, so that per-call entry stays measured.
     let mut engine = tenferro_einsum_benchmark::cpu_engine(Some(args.num_threads))?;
     let mut run = || -> Result<EagerTensor, tenferro_ad::Error> {
-        input
-            .runtime()
-            .with_eager_session(&mut engine, |session| match op {
-                Op::Fft => session.fft(&input, None, -1, FftNorm::Backward),
-                Op::Ifft => session.ifft(&input, None, -1, FftNorm::Backward),
-                Op::Rfft => session.rfft(&input, None, -1, FftNorm::Backward),
-                Op::Irfft => session.irfft(&input, Some(n), -1, FftNorm::Backward),
-            })
+        input.runtime().with_eager_session(&mut engine, |session| {
+            let options = fft_options(op, n);
+            match op {
+                Op::Fft => session.fft_with(&input, &options),
+                Op::Ifft => session.ifft_with(&input, &options),
+                Op::Rfft => session.rfft_with(&input, &options),
+                Op::Irfft => session.irfft_with(&input, &options),
+            }
+        })
     };
 
     for _ in 0..args.warmups.max(1) {
@@ -379,39 +379,39 @@ fn run_fft(
     session: &mut dyn Engine,
     executor: &mut FftExecutor,
 ) -> tenferro_tensor::Result<Tensor> {
+    let options = fft_options(op, n);
     match (mode, op) {
-        (TenferroMode::Immediate, Op::Fft) => input.fft(None, -1, FftNorm::Backward, session),
-        (TenferroMode::Immediate, Op::Ifft) => input.ifft(None, -1, FftNorm::Backward, session),
-        (TenferroMode::Immediate, Op::Rfft) => input.rfft(None, -1, FftNorm::Backward, session),
-        (TenferroMode::Immediate, Op::Irfft) => {
-            input.irfft(Some(n), -1, FftNorm::Backward, session)
-        }
-        (TenferroMode::Read, Op::Fft) => {
-            TensorRead::from_tensor(input).fft_read(None, -1, FftNorm::Backward, session)
-        }
+        (TenferroMode::Immediate, Op::Fft) => input.fft_with(&options, session),
+        (TenferroMode::Immediate, Op::Ifft) => input.ifft_with(&options, session),
+        (TenferroMode::Immediate, Op::Rfft) => input.rfft_with(&options, session),
+        (TenferroMode::Immediate, Op::Irfft) => input.irfft_with(&options, session),
+        (TenferroMode::Read, Op::Fft) => TensorRead::from_tensor(input).fft_with(&options, session),
         (TenferroMode::Read, Op::Ifft) => {
-            TensorRead::from_tensor(input).ifft_read(None, -1, FftNorm::Backward, session)
+            TensorRead::from_tensor(input).ifft_with(&options, session)
         }
         (TenferroMode::Read, Op::Rfft) => {
-            TensorRead::from_tensor(input).rfft_read(None, -1, FftNorm::Backward, session)
+            TensorRead::from_tensor(input).rfft_with(&options, session)
         }
         (TenferroMode::Read, Op::Irfft) => {
-            TensorRead::from_tensor(input).irfft_read(Some(n), -1, FftNorm::Backward, session)
+            TensorRead::from_tensor(input).irfft_with(&options, session)
         }
-        (TenferroMode::ExecutorCached, Op::Fft) => {
-            executor.fft(input, None, -1, FftNorm::Backward, session)
-        }
-        (TenferroMode::ExecutorCached, Op::Ifft) => {
-            executor.ifft(input, None, -1, FftNorm::Backward, session)
-        }
-        (TenferroMode::ExecutorCached, Op::Rfft) => {
-            executor.rfft(input, None, -1, FftNorm::Backward, session)
-        }
-        (TenferroMode::ExecutorCached, Op::Irfft) => {
-            executor.irfft(input, Some(n), -1, FftNorm::Backward, session)
-        }
+        (TenferroMode::ExecutorCached, Op::Fft) => executor.fft_with(input, &options, session),
+        (TenferroMode::ExecutorCached, Op::Ifft) => executor.ifft_with(input, &options, session),
+        (TenferroMode::ExecutorCached, Op::Rfft) => executor.rfft_with(input, &options, session),
+        (TenferroMode::ExecutorCached, Op::Irfft) => executor.irfft_with(input, &options, session),
         (TenferroMode::Trace, _) => unreachable!("trace FFT uses time_trace_case"),
         (TenferroMode::Eager, _) => unreachable!("eager FFT uses time_eager_case"),
+    }
+}
+
+/// The options every FFT case measures: the plan's default length and axis,
+/// with the requested length when a real inverse transform sets one.
+fn fft_options(op: Op, n: usize) -> FftOptions {
+    let options = FftOptions::default().axis(-1).norm(FftNorm::Backward);
+    if matches!(op, Op::Irfft) {
+        options.n(Some(n))
+    } else {
+        options
     }
 }
 

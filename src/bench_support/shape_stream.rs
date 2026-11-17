@@ -19,7 +19,7 @@ use std::hint::black_box;
 use std::time::Instant;
 
 use serde::Deserialize;
-use tenferro_einsum::TensorReadEinsumExt;
+use tenferro_einsum::EinsumOps;
 use tenferro_tensor::{Engine, Tensor, TensorRead, TensorView, TypedTensorView};
 
 use super::batch_route::BoxError;
@@ -147,7 +147,7 @@ impl Stream {
             let mut outputs = Vec::with_capacity(pass.len());
             let start = Instant::now();
             for read in &reads {
-                outputs.push(read.einsum_read("ij,jk->ik", engine)?);
+                outputs.push(read.einsum("ij,jk->ik", engine)?);
             }
             let ns = start.elapsed().as_nanos();
             black_box(&outputs);

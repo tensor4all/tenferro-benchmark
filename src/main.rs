@@ -12,7 +12,7 @@ use std::time::{Duration, Instant};
 use serde::Deserialize;
 use tenferro_ad::{EagerRuntime, EagerSession, EagerTensor};
 use tenferro_cpu::{runtime_engine_id, runtime_engine_registration, CpuEngine};
-use tenferro_einsum::{ContractionTree, EagerSessionEinsumExt, EinsumSubscripts, Subscripts};
+use tenferro_einsum::{ContractionTree, EagerEinsumOps, EinsumSubscripts, Subscripts};
 use tenferro_einsum_benchmark::{compile_einsum, unwrap_eval_result};
 use tenferro_runtime::{ExecutionEngine, Runtime, Tensor, TensorRead};
 use tenferro_tensor::TypedTensor;
@@ -130,7 +130,7 @@ fn create_eager_operands(
 ) -> Result<Vec<EagerTensor>, String> {
     create_operand_tensors(shapes)
         .into_iter()
-        .map(|tensor| EagerTensor::from_tensor_in(tensor, std::sync::Arc::clone(ctx)))
+        .map(|tensor| std::sync::Arc::clone(ctx).constant_from(tensor))
         .collect::<Result<_, _>>()
         .map_err(|e| format!("{e}"))
 }
@@ -663,7 +663,7 @@ fn contract_once_eager(
         let started = Instant::now();
         let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
             session
-                .einsum_subscripts(&input_refs, binary_subscripts)
+                .einsum(&input_refs, binary_subscripts)
                 .map_err(|e| e.to_string())
         }));
         let result = unwrap_eval_result(result, "panic during eager execution")?;

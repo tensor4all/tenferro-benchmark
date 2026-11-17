@@ -38,9 +38,9 @@ chmod +x "$TMP/bin/brew" "$TMP/bin/cargo"
 export CARGO_CALL_LOG="$TMP/cargo.log"
 (
   cd "$ROOT"
-  PATH="$TMP/bin:/usr/bin:/bin" OPENBLAS_ROOT="$TMP/openblas" \
+  PATH="$TMP/bin:/usr/bin:/bin" \
     BENCHMARK_RESULTS_DIR="$TMP/results" \
-    TENFERRO_CPU_FEATURES=blas-openblas BENCHMARK_TIMESTAMP=20000101_000000 \
+    BENCHMARK_TIMESTAMP=20000101_000000 \
     ./scripts/run_all_rust.sh 1 >/tmp/run_all_rust_bin_test.out
 )
 test -s "$TMP/results/tenferro_trace_t1_20000101_000000.log"

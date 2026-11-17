@@ -25,10 +25,10 @@ use serde::Serialize;
 use serde_json::{json, Value};
 use tenferro_ad::{AdContext, EagerRuntime, EagerSession, EagerTensor};
 use tenferro_cpu::{runtime_engine_id, runtime_engine_registration, CpuEngine};
-use tenferro_fft::{FftExecutor, FftNorm};
-use tenferro_linalg::{TensorLinalgExt, TracedTensorLinalgExt};
+use tenferro_fft::{FftExecutor, FftNorm, FftOptions};
+use tenferro_linalg::{Eigh, LinalgOps, Lu, Qr, Svd, TracedLinalgOps};
 use tenferro_runtime::{
-    DType, ExecutionEngine, GraphCompiler, Runtime, TensorSessionOpsExt, TraceContext, TracedTensor,
+    CoreOps, DType, ExecutionEngine, GraphCompiler, Runtime, TraceContext, TracedTensor,
 };
 use tenferro_tensor::{
     ContractionScalar, DotGeneralConfig, Engine, GatherConfig, SliceConfig, Tensor, TensorRead,
@@ -38,10 +38,10 @@ use tenferro_tensor::{
 #[path = "../../examples/cpu_gap_mwe.rs"]
 mod cpu_gap_mwe;
 
-#[path = "perf_issue_case/umbrella.rs"]
-mod umbrella;
 #[path = "perf_issue_case/binary_shortcut.rs"]
 mod binary_shortcut;
+#[path = "perf_issue_case/umbrella.rs"]
+mod umbrella;
 
 type BoxError = Box<dyn Error + Send + Sync>;
 type Result<T> = std::result::Result<T, BoxError>;
@@ -400,7 +400,7 @@ impl EagerSetup {
     }
 
     fn to_tensor(&mut self, tensor: &EagerTensor) -> Result<Tensor> {
-        Ok(tensor.to_tensor(&mut self.engine)?)
+        Ok(self.session(|s| s.duplicate_value(tensor))?)
     }
 }
 
@@ -634,7 +634,9 @@ fn decode_projection_view_operand(
             let run = |s: &mut dyn Engine| -> Result<Tensor> {
                 let rhs = match arm {
                     "prepared-view" => TensorRead::from_view(
-                        w_view.tensor_view().ok_or("decode view operand has no host view")?,
+                        w_view
+                            .tensor_view()
+                            .ok_or("decode view operand has no host view")?,
                     ),
                     "prepared-contiguous" => TensorRead::from_tensor(&w_contiguous),
                     _ => return Err(format!("unknown decode view operand arm {arm}").into()),
@@ -1004,7 +1006,12 @@ fn small_solves(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
             let triangular = arm == "triangular-solve-loop";
             let one = |s: &mut dyn Engine, a: &Tensor, b: &Tensor| -> Result<Tensor> {
                 Ok(if triangular {
-                    a.triangular_solve(b, true, true, false, true, s)?
+                    a.triangular_solve_with(
+                        b,
+                        &tenferro_linalg::TriangularSolveOptions::default()
+                            .diag(tenferro_linalg::Diag::Unit),
+                        s,
+                    )?
                 } else {
                     a.solve(b, s)?
                 })
@@ -1079,28 +1086,30 @@ fn small_solves(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
 fn backward_live_leaves(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
     let leaves = param_usize(params, "unrelated_leaves")?;
     let mut runtime = eager_runtime()?;
-    let a = EagerTensor::requires_grad_in(
-        Tensor::from_vec_col_major(vec![2, 2], vec![1.0, 2.0, 3.0, 4.0])?,
-        runtime.runtime.clone(),
-    )?;
-    let b = EagerTensor::requires_grad_in(
-        Tensor::from_vec_col_major(vec![2, 2], vec![0.5, -1.0, 1.5, 2.0])?,
-        runtime.runtime.clone(),
-    )?;
+    let a = runtime.runtime.variable_from(Tensor::from_vec_col_major(
+        vec![2, 2],
+        vec![1.0, 2.0, 3.0, 4.0],
+    )?)?;
+    let b = runtime.runtime.variable_from(Tensor::from_vec_col_major(
+        vec![2, 2],
+        vec![0.5, -1.0, 1.5, 2.0],
+    )?)?;
     // Unrelated leaves stay alive for the whole case; they never reach the loss.
     let unrelated: Vec<EagerTensor> = (0..leaves)
         .map(|i| {
-            EagerTensor::requires_grad_in(
-                Tensor::from_vec_col_major(vec![2, 2], values(4, 100 + i as u64))?,
-                runtime.runtime.clone(),
-            )
-            .map_err(Into::into)
+            runtime
+                .runtime
+                .variable_from(Tensor::from_vec_col_major(
+                    vec![2, 2],
+                    values(4, 100 + i as u64),
+                )?)
+                .map_err(Into::into)
         })
         .collect::<Result<_>>()?;
     let mut workflow = || -> Result<()> {
         let c = runtime.session(|s| s.matmul(&a, &b))?;
         let loss = runtime.session(|s| s.reduce_sum(&c, None))?;
-        loss.backward(&mut runtime.engine)?;
+        runtime.session(|s| s.backward(&loss))?;
         Ok(())
     };
     workflow()?;
@@ -1611,22 +1620,38 @@ fn activation(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
 }
 
 fn trace_metadata_case(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
-    let (rows, cols, steps) = (param_usize(params, "rows")?, param_usize(params, "cols")?, param_usize(params, "steps")?);
+    let (rows, cols, steps) = (
+        param_usize(params, "rows")?,
+        param_usize(params, "cols")?,
+        param_usize(params, "steps")?,
+    );
     let arm = param_str(params, "arm")?;
     let data = values_f32(rows * cols, 60);
     let mut expected = data.clone();
     let (mut m, mut n) = (rows, cols);
     for _ in 0..steps {
         let mut next = vec![0.0f32; m * n];
-        for j in 0..n { for i in 0..m { if i <= j { next[j + n * i] = expected[i + m * j]; } } }
+        for j in 0..n {
+            for i in 0..m {
+                if i <= j {
+                    next[j + n * i] = expected[i + m * j];
+                }
+            }
+        }
         expected = next;
         (m, n) = (n, m);
     }
     expected.iter_mut().for_each(|v| *v = -*v);
     let check = |t: &Tensor| -> Result<f64> {
         let actual = t.as_slice::<f32>()?;
-        if actual.len() != expected.len() { return Err("incorrect output length".into()); }
-        let error = actual.iter().zip(&expected).map(|(a, b)| fail_closed((*a as f64 - *b as f64).abs())).fold(0.0f64, f64::max);
+        if actual.len() != expected.len() {
+            return Err("incorrect output length".into());
+        }
+        let error = actual
+            .iter()
+            .zip(&expected)
+            .map(|(a, b)| fail_closed((*a as f64 - *b as f64).abs()))
+            .fold(0.0f64, f64::max);
         check_tol(error, 1e-6, "trace metadata")
     };
     let x = Tensor::from_vec_col_major(vec![rows, cols], data)?;
@@ -1636,14 +1661,22 @@ fn trace_metadata_case(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
         let input = eager_const(&mut runtime, x)?;
         time_eager_op(&mut runtime, timing, bytes, &check, |s| {
             let mut y = input.clone();
-            for _ in 0..steps { let upper = s.triu(&y, 0)?; y = s.transpose(&upper, &[1, 0])?; }
+            for _ in 0..steps {
+                let upper = s.triu(&y, 0)?;
+                y = s.transpose(&upper, &[1, 0])?;
+            }
             s.neg(&y)
         })?
     } else {
         let input = TraceContext::new().from_tensor_concrete_shape(x)?;
         let mut y = input;
         let mut views = Vec::new();
-        for _ in 0..steps { y = y.triu(0)?.transpose(&[1, 0])?; if arm == "trace-outputs" { views.push(y.clone()); } }
+        for _ in 0..steps {
+            y = y.triu(0)?.transpose(&[1, 0])?;
+            if arm == "trace-outputs" {
+                views.push(y.clone());
+            }
+        }
         y = y.neg()?;
         views.push(y);
         let refs: Vec<_> = views.iter().collect();
@@ -1654,12 +1687,27 @@ fn trace_metadata_case(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
         let runtime = builder.build()?;
         let target = ExecutionEngine::target(&backend);
         let prepared = runtime.prepare(&program, &[], std::slice::from_ref(&target))?;
-        let output = runtime.run(&mut [&mut backend], &prepared, &[])?.pop().ok_or("missing output")?.into_tensor(&mut backend)?;
+        let output = runtime
+            .run(&mut [&mut backend], &prepared, &[])?
+            .pop()
+            .ok_or("missing output")?
+            .into_tensor(&mut backend)?;
         let error = check(&output)?;
-        let measurement = measure(timing, bytes * views.len(), || Ok(runtime.run(&mut [&mut backend], &prepared, &[])?))?;
+        let measurement = measure(timing, bytes * views.len(), || {
+            Ok(runtime.run(&mut [&mut backend], &prepared, &[])?)
+        })?;
         (error, measurement)
     };
-    Ok(CaseOutcome { max_rel_error: error, measurement: Some(measurement), timer: vec!["triu transpose chain and neg", "output allocation"], outside_timer: vec!["fixture, engine, session, tracing, compilation and preparation", "correctness check"], extra: json!({"arm": arm}) })
+    Ok(CaseOutcome {
+        max_rel_error: error,
+        measurement: Some(measurement),
+        timer: vec!["triu transpose chain and neg", "output allocation"],
+        outside_timer: vec![
+            "fixture, engine, session, tracing, compilation and preparation",
+            "correctness check",
+        ],
+        extra: json!({"arm": arm}),
+    })
 }
 
 fn softmax_pool_case(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
@@ -1687,10 +1735,17 @@ fn softmax_pool_case(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
         let measurement = measure(timing, rows * cols * 8, || Ok(x.softmax(0, s)?))?;
         Ok((error, measurement))
     })??;
-    Ok(CaseOutcome { max_rel_error: error, measurement: Some(measurement),
+    Ok(CaseOutcome {
+        max_rel_error: error,
+        measurement: Some(measurement),
         timer: vec!["axis-0 softmax", "output allocation"],
-        outside_timer: vec!["input and engine construction", "session entry", "correctness check"],
-        extra: json!({"engine": arm}) })
+        outside_timer: vec![
+            "input and engine construction",
+            "session entry",
+            "correctness check",
+        ],
+        extra: json!({"engine": arm}),
+    })
 }
 
 fn softmax_case(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
@@ -2071,19 +2126,27 @@ fn small_ad_add(x: &TracedTensor, y: &TracedTensor) -> Result<TracedTensor> {
 fn small_ad_loss_traced(op: &str, a: &TracedTensor, b: &TracedTensor) -> Result<TracedTensor> {
     match op {
         "qr" => {
-            let (q, r) = a.qr()?;
+            let Qr { q, r } = a.qr()?;
             small_ad_add(&small_ad_sum2(&q)?, &small_ad_sum2(&r)?)
         }
         "eigh" => {
-            let (w, v) = a.eigh()?;
+            let Eigh {
+                values: w,
+                vectors: v,
+            } = a.eigh()?;
             small_ad_add(&small_ad_sum1(&w)?, &small_ad_sum2(&v)?)
         }
         "lu" => {
-            let (_p, l, u, _parity) = a.lu()?;
+            let Lu {
+                p: _p,
+                l,
+                u,
+                parity: _parity,
+            } = a.lu()?;
             small_ad_add(&small_ad_sum2(&l)?, &small_ad_sum2(&u)?)
         }
         "svd" => {
-            let (u, s, vt) = a.svd()?;
+            let Svd { u, s, vh: vt } = a.svd()?;
             let us = small_ad_add(&small_ad_sum2(&u)?, &small_ad_sum1(&s)?)?;
             small_ad_add(&us, &small_ad_sum2(&vt)?)
         }
@@ -2096,19 +2159,27 @@ fn small_ad_loss_eager(op: &str, a: &Tensor, b: &Tensor, s: &mut dyn Engine) -> 
     let total = |t: &Tensor| -> Result<f64> { Ok(t.as_slice::<f64>()?.iter().sum()) };
     Ok(match op {
         "qr" => {
-            let (q, r) = a.qr(s)?;
+            let Qr { q, r } = a.qr(s)?;
             total(&q)? + total(&r)?
         }
         "eigh" => {
-            let (w, v) = a.eigh(s)?;
+            let Eigh {
+                values: w,
+                vectors: v,
+            } = a.eigh(s)?;
             total(&w)? + total(&v)?
         }
         "lu" => {
-            let (_p, l, u, _parity) = a.lu(s)?;
+            let Lu {
+                p: _p,
+                l,
+                u,
+                parity: _parity,
+            } = a.lu(s)?;
             total(&l)? + total(&u)?
         }
         "svd" => {
-            let (u, sv, vt) = a.svd(s)?;
+            let Svd { u, s: sv, vh: vt } = a.svd(s)?;
             total(&u)? + total(&sv)? + total(&vt)?
         }
         "solve" => total(&a.solve(b, s)?)?,
@@ -2145,19 +2216,13 @@ fn small_grad_trace(params: &Value, timing: &Timing, threads: usize) -> Result<C
         .with_semantic_extension_rules(tenferro_linalg::semantic_ad_rules()?)?
         .build()?;
     let trace = TraceContext::new();
-    let a = trace.from_tensor_concrete_shape(Tensor::from_vec_col_major(
-        vec![n, n],
-        data.clone(),
-    )?)?;
-    let b = trace.from_tensor_concrete_shape(Tensor::from_vec_col_major(
-        vec![n, n],
-        rhs.clone(),
-    )?)?;
+    let a =
+        trace.from_tensor_concrete_shape(Tensor::from_vec_col_major(vec![n, n], data.clone())?)?;
+    let b =
+        trace.from_tensor_concrete_shape(Tensor::from_vec_col_major(vec![n, n], rhs.clone())?)?;
     let loss = small_ad_loss_traced(op, &a, &b)?;
-    let seed = trace.from_tensor_concrete_shape(Tensor::from_vec_col_major(
-        Vec::<usize>::new(),
-        vec![1.0],
-    )?)?;
+    let seed = trace
+        .from_tensor_concrete_shape(Tensor::from_vec_col_major(Vec::<usize>::new(), vec![1.0])?)?;
     let grad = ad.vjp(&loss, &a, &seed)?;
     let program = GraphCompiler::new().compile_many(&[&loss, &grad])?;
     let mut builder = Runtime::builder();
@@ -2171,7 +2236,9 @@ fn small_grad_trace(params: &Value, timing: &Timing, threads: usize) -> Result<C
     let commands = prepared.execution_command_count();
 
     // Correctness (untimed): forward loss and the directional derivative.
-    let mut outputs = runtime.run(&mut [&mut backend], &prepared, &[])?.into_iter();
+    let mut outputs = runtime
+        .run(&mut [&mut backend], &prepared, &[])?
+        .into_iter();
     let loss_value = outputs
         .next()
         .ok_or("prepared program returned no loss")?
@@ -2245,28 +2312,37 @@ fn fft_axis_c2c(params: &Value, timing: &Timing, threads: usize) -> Result<CaseO
     let mut backend = tenferro_einsum_benchmark::cpu_engine(Some(threads))?;
     let mut executor = FftExecutor::default();
     let bytes = n * n * n * 16;
-    let (error, measurement) = backend.with_backend_session(|s| -> Result<(f64, Measurement)> {
-        // Correctness on sampled lanes against a direct DFT of length n.
-        let out = executor.fft(&input, None, 0, FftNorm::Backward, s)?;
-        let got = out.as_slice::<Complex64>()?;
-        let mut worst = 0.0f64;
-        for probe in 0..64usize {
-            let (k, j, l) = ((probe * 37) % n, (probe * 11) % n, (probe * 5) % n);
-            let want: Complex64 = (0..n)
-                .map(|m| {
-                    let angle = -2.0 * std::f64::consts::PI * (k * m) as f64 / n as f64;
-                    data[m + n * j + n * n * l] * Complex64::from_polar(1.0, angle)
-                })
-                .sum();
-            let have = got[k + n * j + n * n * l];
-            worst = worst.max(rel_error_c64(have, want));
-        }
-        let error = check_tol(worst, 1e-9, "fft lanes against direct DFT")?;
-        let measurement = measure(timing, bytes, || {
-            Ok(executor.fft(&input, None, 0, FftNorm::Backward, s)?)
-        })?;
-        Ok((error, measurement))
-    })??;
+    let (error, measurement) =
+        backend.with_backend_session(|s| -> Result<(f64, Measurement)> {
+            // Correctness on sampled lanes against a direct DFT of length n.
+            let out = executor.fft_with(
+                &input,
+                &FftOptions::default().axis(0).norm(FftNorm::Backward),
+                s,
+            )?;
+            let got = out.as_slice::<Complex64>()?;
+            let mut worst = 0.0f64;
+            for probe in 0..64usize {
+                let (k, j, l) = ((probe * 37) % n, (probe * 11) % n, (probe * 5) % n);
+                let want: Complex64 = (0..n)
+                    .map(|m| {
+                        let angle = -2.0 * std::f64::consts::PI * (k * m) as f64 / n as f64;
+                        data[m + n * j + n * n * l] * Complex64::from_polar(1.0, angle)
+                    })
+                    .sum();
+                let have = got[k + n * j + n * n * l];
+                worst = worst.max(rel_error_c64(have, want));
+            }
+            let error = check_tol(worst, 1e-9, "fft lanes against direct DFT")?;
+            let measurement = measure(timing, bytes, || {
+                Ok(executor.fft_with(
+                    &input,
+                    &FftOptions::default().axis(0).norm(FftNorm::Backward),
+                    s,
+                )?)
+            })?;
+            Ok((error, measurement))
+        })??;
     Ok(CaseOutcome {
         max_rel_error: error,
         measurement: Some(measurement),
@@ -2332,24 +2408,25 @@ fn degenerate_dot_general(params: &Value, timing: &Timing, threads: usize) -> Re
     let rhs = Tensor::from_vec_col_major(rhs_shape, rhs_data)?;
     let mut backend = tenferro_einsum_benchmark::cpu_engine(Some(threads))?;
     let bytes = n * n * 8;
-    let (error, measurement) = backend.with_backend_session(|s| -> Result<(f64, Measurement)> {
-        let one = |s: &mut dyn Engine| -> Result<Tensor> {
-            Ok(s.dot_general_read(
-                TensorRead::from_tensor(&lhs),
-                TensorRead::from_tensor(&rhs),
-                &cfg,
-            )?)
-        };
-        let out = one(s)?;
-        let got = out.as_slice::<f64>()?;
-        let mut worst = 0.0f64;
-        for (g, w) in got.iter().zip(&want) {
-            worst = worst.max(rel_error(*g, *w));
-        }
-        let error = check_tol(worst, 1e-12, "degenerate dot_general")?;
-        let measurement = measure(timing, bytes, || one(s))?;
-        Ok((error, measurement))
-    })??;
+    let (error, measurement) =
+        backend.with_backend_session(|s| -> Result<(f64, Measurement)> {
+            let one = |s: &mut dyn Engine| -> Result<Tensor> {
+                Ok(s.dot_general_read(
+                    TensorRead::from_tensor(&lhs),
+                    TensorRead::from_tensor(&rhs),
+                    &cfg,
+                )?)
+            };
+            let out = one(s)?;
+            let got = out.as_slice::<f64>()?;
+            let mut worst = 0.0f64;
+            for (g, w) in got.iter().zip(&want) {
+                worst = worst.max(rel_error(*g, *w));
+            }
+            let error = check_tol(worst, 1e-12, "degenerate dot_general")?;
+            let measurement = measure(timing, bytes, || one(s))?;
+            Ok((error, measurement))
+        })??;
     Ok(CaseOutcome {
         max_rel_error: error,
         measurement: Some(measurement),
@@ -2383,16 +2460,17 @@ fn erased_binary_add(params: &Value, timing: &Timing, threads: usize) -> Result<
     let b = Tensor::from_vec_col_major(vec![n], b_data)?;
     let mut backend = tenferro_einsum_benchmark::cpu_engine(Some(threads))?;
     let bytes = n * 8;
-    let (error, measurement) = backend.with_backend_session(|s| -> Result<(f64, Measurement)> {
-        let out = a.add(&b, s)?;
-        let mut worst = 0.0f64;
-        for (g, w) in out.as_slice::<f64>()?.iter().zip(&want) {
-            worst = worst.max(rel_error(*g, *w));
-        }
-        let error = check_tol(worst, 1e-15, "erased Tensor add")?;
-        let measurement = measure(timing, bytes, || Ok(a.add(&b, s)?))?;
-        Ok((error, measurement))
-    })??;
+    let (error, measurement) =
+        backend.with_backend_session(|s| -> Result<(f64, Measurement)> {
+            let out = a.add(&b, s)?;
+            let mut worst = 0.0f64;
+            for (g, w) in out.as_slice::<f64>()?.iter().zip(&want) {
+                worst = worst.max(rel_error(*g, *w));
+            }
+            let error = check_tol(worst, 1e-15, "erased Tensor add")?;
+            let measurement = measure(timing, bytes, || Ok(a.add(&b, s)?))?;
+            Ok((error, measurement))
+        })??;
     Ok(CaseOutcome {
         max_rel_error: error,
         measurement: Some(measurement),
@@ -2464,7 +2542,9 @@ fn axpby_strided_source(params: &Value, timing: &Timing, threads: usize) -> Resu
                     let run = |s: &mut dyn Engine, dst: &mut Tensor| -> Result<()> {
                         let read = if strided {
                             TensorRead::from_view(
-                                x_view.tensor_view().ok_or("strided source has no host view")?,
+                                x_view
+                                    .tensor_view()
+                                    .ok_or("strided source has no host view")?,
                             )
                         } else {
                             TensorRead::from_tensor(&x_contiguous)
@@ -2737,7 +2817,9 @@ fn eager_small_call(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
             let a = eager_const(&mut runtime, a_t)?;
             let b = eager_const(&mut runtime, b_t)?;
             let (error, measurement) = if op == "add" {
-                time_eager_op(&mut runtime, timing, bytes, check.as_ref(), |s| s.add(&a, &b))?
+                time_eager_op(&mut runtime, timing, bytes, check.as_ref(), |s| {
+                    s.add(&a, &b)
+                })?
             } else {
                 time_eager_op(&mut runtime, timing, bytes, check.as_ref(), |s| {
                     s.dot_general(&a, &b, matmul_config(&[1], &[0]))
@@ -2858,7 +2940,9 @@ fn main() -> Result<()> {
             decode_projection_view_operand(&params, &timing, threads)
         }
         "copy_volume" => copy_volume(&params),
-        "binary_einsum_shortcut" | "thin_complex_gemm" => binary_shortcut::run(&params, &timing, threads),
+        "binary_einsum_shortcut" | "thin_complex_gemm" => {
+            binary_shortcut::run(&params, &timing, threads)
+        }
         "gemm_mm256" => gemm_mm256(&params, &timing),
         "rank1_dot" => rank1_dot(&params, &timing),
         "small_solves" => small_solves(&params, &timing),

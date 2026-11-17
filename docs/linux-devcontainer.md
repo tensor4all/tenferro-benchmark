@@ -1,7 +1,7 @@
 # Linux CPU Devcontainer Workflow
 
 Linux CPU benchmarks use the devcontainer/Docker path. This keeps Linux
-packages, OpenBLAS, and Python tooling isolated from the macOS host.
+packages and Python tooling isolated from the macOS host.
 
 Target profile:
 
@@ -9,27 +9,24 @@ Target profile:
 export BENCHMARK_TARGET_PROFILE=amd-cpu
 ```
 
-BLAS/provider policy:
+CPU backend policy (tenferro-rs 0.12):
 
-- Standard comparisons use tenferro `blas-mkl` to match the installed
-  PyTorch wheel's MKL provider.
-- `OPENBLAS_ROOT=/opt/openblas` inside the devcontainer.
-- `/opt/openblas` is built from OpenBLAS source with pthread threading enabled
-  (`USE_THREAD=1`, `USE_OPENMP=0`) instead of using Ubuntu's
-  `libopenblas-dev` package.
-- Intel oneMKL is installed under `/opt/intel/oneapi/mkl/latest` and exported
-  as `MKLROOT`. Verify that this tree exists before collecting.
-- OpenBLAS remains available for alternate-provider experiments. On x86_64,
-  its common code builds for CORE2 so CPU detection in the pinned release
-  cannot fail on newer hosts; dynamic runtime kernel dispatch remains enabled.
+- tenferro-rs has one CPU backend: its own faer-based kernels and thread pool
+  (tenferro-rs #2608). The harness selects, links and records no vendor
+  BLAS/LAPACK provider, so the image sets no `OPENBLAS_ROOT` or `MKLROOT` for
+  the build and `run.yaml` has no `blas` block.
+- A CPU row therefore compares **tenferro(faer)** against **PyTorch (the wheel's
+  provider)** and **JAX (XLA CPU)**. On this image the installed PyTorch wheel
+  is MKL-backed; the benchmark records `BLAS_INFO`, `LAPACK_INFO`, and linked
+  BLAS/LAPACK libraries in `run.yaml` under `python_backends`.
+- The pages committed before the migration carry `blas: mkl | openblas |
+  accelerate`. They are history: the harness can no longer link those
+  providers, so do not read them as provider-matched against new runs and do
+  not present their differences as implementation speedups.
 - The CPU Python environment installs the lockfile without torch and then the
   CPU wheel (`torch==<locked version>+cpu`) from the PyTorch CPU index, so the
   CUDA torch wheel and its `nvidia-*` dependencies are never downloaded
   (tensor4all/tenferro-benchmark#342). The GPU containers keep the CUDA wheel.
-- PyTorch Python uses the installed wheel provider. The benchmark records
-  `BLAS_INFO`, `LAPACK_INFO`, and linked BLAS/LAPACK libraries in `run.yaml`.
-- The default image does not source-build PyTorch. For a provider-matched
-  OpenBLAS comparison, use the separate image below.
 - JAX is reported as XLA CPU.
 - CPU runners disable experimental YNNPACK fusion with
   `--xla_cpu_experimental_ynn_fusion_type=` because JAX 0.10's YNNPACK path
@@ -37,79 +34,7 @@ BLAS/provider policy:
   The regular XLA CPU path handles those contractions. `XLA_FLAGS` records
   this setting in run metadata; keep it consistent across compared runs.
 
-## Provider-matched OpenBLAS image
-
-The separate `.devcontainer/openblas/Dockerfile` builds PyTorch Python 2.12.0
-from commit `0d62256a2b23365f8e1604297eb23a6545102aa8`. Both tenferro and
-PyTorch link to `/opt/openblas/lib/libopenblas.so`: OpenBLAS 0.3.26 with
-pthread threading, LP64 integers and dynamic CPU dispatch. Common code targets
-Core 2 rather than the build host's ISA, for AMD/Intel x86_64 portability;
-ARM builds are not covered by this configuration. MKL/oneDNN and GPU
-support are disabled in this PyTorch build. This is a new comparison baseline,
-not a speedup relative to historical MKL results; JAX and Julia are not forced
-to use this library. The original MKL image remains available.
-
-From the repository root:
-
-```bash
-devcontainer up --workspace-folder . --config .devcontainer/openblas/devcontainer.json
-devcontainer exec --workspace-folder . --config .devcontainer/openblas/devcontainer.json \
-  bash -c 'source scripts/python_venv.sh; prepare_cpu_benchmark_python_venv "$PWD" &&
-    uv run python /usr/local/bin/verify-openblas-pytorch --threads 1 &&
-    uv run python /usr/local/bin/verify-openblas-pytorch --threads 4'
-```
-
-The image retains the source-built wheel under `/opt/pytorch-wheels/` and sets
-`BENCHMARK_TORCH_WHEEL` so runner `.venv` resets reinstall that wheel, not MKL.
-Other dependencies come from `uv.lock`, pruning the binary torch wheel and its
-CUDA-only dependencies; the source wheel supplies its own runtime dependencies.
-The image and helper set `UV_NO_SYNC=1` to prevent subsequent `uv run` from
-restoring the lockfile wheel; explicit `uv sync` would still replace it. Do not
-reuse a host venv.
-The build-time smoke test checks the resolved `libtorch_cpu.so` link, pthread
-mode, LP64, BLAS/LAPACK operations, and effective 1T settings. Repeat the runtime
-check above after changing the image or Python environment. It is a correctness
-check, not a benchmark.
-
-Build without the devcontainer CLI (build jobs are separate from runtime threads):
-
-```bash
-docker build --build-arg BUILD_JOBS=8 -f .devcontainer/openblas/Dockerfile \
-  -t tenferro-benchmark-openblas:dev .
-```
-
-The first build compiles PyTorch and needs substantial time, RAM and disk;
-subsequent builds cache the wheel layer. Default `BUILD_JOBS=16`; lower it on
-smaller hosts. The wheel SHA256, PyTorch commit, build dependencies and CMake
-cache are saved in `/opt/pytorch-wheels/`. Record the resulting image ID/digest
-as well: Ubuntu packages, Rust, uv, and Julia tooling are not fully locked.
-This image targets Linux CPU; it does not replace native macOS measurements.
-
-For a focused 1T run, **after** checking that the host is quiet and no build or
-other benchmark is running:
-
-```bash
-devcontainer exec --workspace-folder . --config .devcontainer/openblas/devcontainer.json \
-  bash -c 'BENCH_INSTANCE=bin_matmul_256 ./scripts/run_all.sh 1'
-```
-
-Keep the existing idle-host guard enabled. Docker does not isolate shared host
-CPU or memory-bandwidth contention. Runtime thread budgets come from the runner;
-the image defaults OpenBLAS, OpenMP and Rayon to 1T. Check the generated
-`run.yaml` for the detected providers, linked libraries, commits and thread
-settings before interpreting results. Tenferro uses `blas-openblas` in this
-image; when first building Rust, also inspect the produced binary with `ldd`
-and confirm its `libopenblas` resolves to `/opt/openblas/lib/`.
-
-Validation on AMD EPYC 7713P: the image build, PyTorch BLAS/LAPACK checks at
-1T and 4T, and source-wheel preservation after a runner venv reset passed;
-`uv.lock` was unchanged. Rust einsum/publication-gate binaries subsequently built
-with the pinned external checkouts; three OpenBLAS correctness tests passed.
-Native timing comparisons remain deferred because the host is busy. See the
-[instruction-count diagnostic report](../result/amd-cpu/cpu/openblas_instruction_diagnostics.md)
-for attributed CPU work and its measurement limitations.
-
-## Default wheel/MKL image
+## Image
 
 Start the container:
 
@@ -126,10 +51,8 @@ devcontainer up --workspace-folder . --remove-existing-container
 Smoke run from the host:
 
 ```bash
-devcontainer exec --workspace-folder . bash -lc '\
+devcontainer exec --workspace-folder . bash -lc '
   BENCHMARK_TARGET_PROFILE=amd-cpu \
-  TENFERRO_CPU_FEATURES=blas-mkl \
-  PUBLICATION_GATE_FEATURES=blas-mkl \
   BENCH_INSTANCE=bin_matmul_256 \
   BENCH_RUNS=1 \
   BENCH_WARMUPS=0 \
@@ -141,36 +64,42 @@ Normal runs:
 
 ```bash
 devcontainer exec --workspace-folder . bash -lc \
-  'BENCHMARK_TARGET_PROFILE=amd-cpu TENFERRO_CPU_FEATURES=blas-mkl PUBLICATION_GATE_FEATURES=blas-mkl ./scripts/run_all.sh 1'
+  'BENCHMARK_TARGET_PROFILE=amd-cpu ./scripts/run_all.sh 1'
 
 devcontainer exec --workspace-folder . bash -lc \
-  'BENCHMARK_TARGET_PROFILE=amd-cpu TENFERRO_CPU_FEATURES=blas-mkl PUBLICATION_GATE_FEATURES=blas-mkl ./scripts/run_all.sh 4'
+  'BENCHMARK_TARGET_PROFILE=amd-cpu ./scripts/run_all.sh 4'
 ```
+
+For a focused 1T run, **after** checking that the host is quiet and no build or
+other benchmark is running:
+
+```bash
+devcontainer exec --workspace-folder . bash -lc \
+  'BENCH_INSTANCE=bin_matmul_256 ./scripts/run_all.sh 1'
+```
+
+Keep the existing idle-host guard enabled. Docker does not isolate shared host
+CPU or memory-bandwidth contention. Runtime thread budgets come from the runner.
+Check the generated `run.yaml` for the recorded PyTorch provider, commits and
+thread settings before interpreting results.
 
 ## Host (non-container) CPU runs
 
-A Linux host with the same MKL provider can collect without the devcontainer.
-The CPU collectors do not check for `/.dockerenv`: `cpu_info.md` records a
-`Container` line (`devcontainer` or `none`) that the reports embed, and
-`run.yaml` records `environment.container`, so a host run and a
-container run stay distinguishable.
+A Linux host can collect without the devcontainer. The CPU collectors do not
+check for `/.dockerenv`: `cpu_info.md` records a `Container` line
+(`devcontainer` or `none`) that the reports embed, and `run.yaml` records
+`environment.container`, so a host run and a container run stay
+distinguishable.
 
 Offline hosts keep the checked-out `extern/tenferro-rs` revision with
 `GPU_BENCH_NO_PULL=1`; the recorded commit is the one that was built.
 
 `scripts/run_cpu_followup.sh` writes its run record next to the results: with
 `--output PATH` it writes `PATH.run.yaml` (host, thread environment,
-`environment.container`, tenferro-rs commit, MKL provider) before the MWE run.
-The `--output` results file itself is unchanged.
-
-Alternate OpenBLAS tenferro run (the default PyTorch wheel still uses MKL):
-```bash
-devcontainer exec --workspace-folder . bash -lc '\
-  BENCHMARK_TARGET_PROFILE=amd-cpu \
-  TENFERRO_CPU_FEATURES=blas-openblas \
-  PUBLICATION_GATE_FEATURES=blas-openblas \
-    ./scripts/run_all.sh 1'
-```
+`environment.container`, tenferro-rs commit) before the MWE run. The `--output`
+results file itself is unchanged. The follow-up MWE links no vendor provider;
+its oneMKL DFTI reference is a Python runtime reference that reports the FFT
+rows skipped when no `libmkl_rt` loads.
 
 Latest reports:
 

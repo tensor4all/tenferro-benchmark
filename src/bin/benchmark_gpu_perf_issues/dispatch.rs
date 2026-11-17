@@ -78,7 +78,8 @@ pub(super) fn decode(p: &Value, timing: &Timing, device: usize) -> Result<CaseOu
         })?;
         let out =
             runtime.with_eager_session(&mut engine, |s| s.dot_general(&ex, &ew, cfg.clone()))?;
-        let error = check(&out.to_tensor(&mut engine)?)?;
+        let out = runtime.with_eager_session(&mut engine, |s| s.duplicate_value(&out))?;
+        let error = check(&out)?;
         rt.synchronize()?;
         runtime.with_eager_session(&mut engine, |s| -> Result<_> {
             let measurement = measure(timing, len * dout * 4, |it| {

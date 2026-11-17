@@ -81,46 +81,14 @@ strided-rs = ["dep:strided-perm", "dep:strided-view", "strided-perm/parallel", "
 # `blas*` and `cuda` each turn this on. The cpu/elementwise benchmark
 # binary needs the CPU stack but not a particular backend.
 cpu-engine = ["dep:tenferro-cpu"]
-# CPU backend selection (tenferro-rs #2004): a build compiles exactly one of
-# `native` (tenferro's own faer kernels and thread pool) or `blas` (cpueinsum
-# contractions plus tlinalg linear algebra on a vendor BLAS/LAPACK); enabling
-# both is a build error upstream.
-#
-# The vendor features select upstream's provider-neutral `blas` feature and link
-# the installed vendor library from this build instead (build.rs with
-# OPENBLAS_ROOT / MKLROOT, or the Accelerate framework), so a run measures the
-# same installed provider as the reference Python stacks. Upstream's
-# provider-src features would build and link their own copy of the library,
-# which is not the comparison this harness reports.
+# tenferro-rs 0.12 has one CPU backend (its own faer-based kernels and thread
+# pool): the vendor BLAS/LAPACK provider features are gone (tenferro-rs #2608).
 native = [
-    "tenferro-ad/native",
     "tenferro-einsum/autodiff",
-    "tenferro-einsum/native",
     "tenferro-fft/autodiff",
-    "tenferro-fft/native",
     "tenferro-linalg/autodiff",
-    "tenferro-linalg/native",
-    "tenferro-runtime/native",
     "cpu-engine",
-    "tenferro-cpu?/native",
 ]
-# Shared base of the three supported BLAS selections below. On its own it has no
-# provider link contract, so it is not a supported standalone selection.
-blas = [
-    "tenferro-ad/blas",
-    "tenferro-einsum/autodiff",
-    "tenferro-einsum/blas",
-    "tenferro-fft/autodiff",
-    "tenferro-fft/blas",
-    "tenferro-linalg/autodiff",
-    "tenferro-linalg/blas",
-    "tenferro-runtime/blas",
-    "cpu-engine",
-    "tenferro-cpu?/blas",
-]
-blas-openblas = ["blas"]
-blas-accelerate = ["blas"]
-blas-mkl = ["blas"]
 cuda = [
     "tenferro-fft/cuda",
     "tenferro-ad/cuda",
@@ -131,7 +99,6 @@ cuda = [
     "dep:tenferro-gpu",
     "tenferro-gpu?/cuda",
     "cpu-engine",
-    "tenferro-cpu?/native",
     "dep:libloading",
     "dep:cudarc",
 ]

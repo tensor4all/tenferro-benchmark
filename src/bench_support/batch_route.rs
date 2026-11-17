@@ -14,11 +14,9 @@ use std::collections::BTreeMap;
 
 use num_complex::Complex64;
 use serde::Deserialize;
-use tenferro_einsum::{
-    TensorEinsumExt, TensorEinsumIntoExt, TensorReadEinsumExt, TensorReadEinsumIntoExt,
-};
+use tenferro_einsum::{EinsumOps, EinsumOptions};
 use tenferro_tensor::{
-    DotGeneralConfig, Engine, ErrorKind, Tensor, TensorRead, TensorView, TensorWrite,
+    Dest, DotGeneralConfig, Engine, ErrorKind, Tensor, TensorRead, TensorView, TensorWrite,
     TypedTensorView,
 };
 
@@ -110,14 +108,6 @@ impl std::fmt::Display for OpError {
 }
 
 fn tensor_error(e: tenferro_tensor::Error) -> OpError {
-    if e.kind() == ErrorKind::Unsupported {
-        OpError::Unsupported(e.to_string())
-    } else {
-        OpError::Failed(e.to_string())
-    }
-}
-
-fn einsum_error(e: tenferro_einsum::Error) -> OpError {
     if e.kind() == ErrorKind::Unsupported {
         OpError::Unsupported(e.to_string())
     } else {
@@ -425,9 +415,9 @@ pub fn run_alloc(
         "einsum" => {
             let subscripts = spec.subscripts.as_deref().unwrap_or_default();
             if spec.layout == "direct" {
-                owned.einsum(subscripts, engine).map_err(einsum_error)
+                owned.einsum(subscripts, engine).map_err(tensor_error)
             } else {
-                reads.einsum_read(subscripts, engine).map_err(einsum_error)
+                reads.einsum(subscripts, engine).map_err(tensor_error)
             }
         }
         other => Err(OpError::Failed(format!(
@@ -458,12 +448,22 @@ pub fn run_into(
             let subscripts = spec.subscripts.as_deref().unwrap_or_default();
             if spec.layout == "direct" {
                 owned
-                    .einsum_into(subscripts, engine, TensorWrite::from_tensor(out))
-                    .map_err(einsum_error)
+                    .einsum_into(
+                        subscripts,
+                        &EinsumOptions::default(),
+                        engine,
+                        Dest::overwrite(out),
+                    )
+                    .map_err(tensor_error)
             } else {
                 reads
-                    .einsum_read_into(subscripts, engine, TensorWrite::from_tensor(out))
-                    .map_err(einsum_error)
+                    .einsum_into(
+                        subscripts,
+                        &EinsumOptions::default(),
+                        engine,
+                        Dest::overwrite(out),
+                    )
+                    .map_err(tensor_error)
             }
         }
         other => Err(OpError::Failed(format!("{other} is not an _into route"))),

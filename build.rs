@@ -1,4 +1,3 @@
-use std::env;
 use std::path::PathBuf;
 
 /// Probe the tenferro-rs source this harness builds against for APIs that
@@ -11,7 +10,8 @@ use std::path::PathBuf;
 /// (file mtimes can go backwards), so build each tenferro-rs revision into
 /// its own `CARGO_TARGET_DIR` (scripts/build_for_tenferro_rev.sh does that).
 fn probe_tenferro_apis() {
-    let root = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap()).join("extern/tenferro-rs");
+    let root =
+        PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap()).join("extern/tenferro-rs");
     let probes = [(
         "tenferro_session_einsum",
         "crates/tenferro-einsum/src/eager_ad.rs",
@@ -34,114 +34,8 @@ fn probe_tenferro_apis() {
 }
 
 fn main() {
+    // tenferro-rs 0.12 has one CPU backend, so this build no longer selects or
+    // links a vendor BLAS/LAPACK provider (tenferro-rs #2608). Nothing here
+    // reads OPENBLAS_ROOT or MKLROOT any more.
     probe_tenferro_apis();
-    let blas_openblas = env::var_os("CARGO_FEATURE_BLAS_OPENBLAS").is_some();
-    let blas_accelerate = env::var_os("CARGO_FEATURE_BLAS_ACCELERATE").is_some();
-    let blas_mkl = env::var_os("CARGO_FEATURE_BLAS_MKL").is_some();
-    let vendor_features = [
-        ("blas-openblas", blas_openblas),
-        ("blas-accelerate", blas_accelerate),
-        ("blas-mkl", blas_mkl),
-    ];
-    let enabled_vendor_features: Vec<&str> = vendor_features
-        .iter()
-        .filter_map(|(name, enabled)| enabled.then_some(*name))
-        .collect();
-    if enabled_vendor_features.len() > 1 {
-        panic!(
-            "features `{}` cannot be enabled together",
-            enabled_vendor_features.join("`, `")
-        );
-    }
-
-    if blas_accelerate {
-        println!("cargo:rustc-link-lib=framework=Accelerate");
-        // Sibling binaries that do not use this package's library also need
-        // the provider for tenferro-cpu's CBLAS symbols.
-        println!("cargo:rustc-link-arg=-framework");
-        println!("cargo:rustc-link-arg=Accelerate");
-        return;
-    }
-
-    if blas_openblas {
-        configure_openblas();
-    } else if blas_mkl {
-        configure_mkl();
-    }
-}
-
-fn configure_openblas() {
-    let root = env::var("OPENBLAS_ROOT")
-        .expect("OPENBLAS_ROOT must be set when building with feature `blas-openblas`");
-    let root = PathBuf::from(root);
-    let lib_dir = root.join("lib");
-    let include_dir = root.join("include");
-
-    if !lib_dir.exists() {
-        panic!(
-            "OPENBLAS_ROOT lib directory does not exist: {}",
-            lib_dir.display()
-        );
-    }
-    if !include_dir.exists() {
-        panic!(
-            "OPENBLAS_ROOT include directory does not exist: {}",
-            include_dir.display()
-        );
-    }
-
-    println!("cargo:rustc-link-search=native={}", lib_dir.display());
-    println!("cargo:rustc-link-lib=dylib=openblas");
-    // Apply the native provider to every final artifact. `rustc-link-lib` is
-    // attached to this package's library and its dependents; it does not reach
-    // sibling binary targets that link the library, so binaries such as
-    // benchmark_cpu_fft would otherwise leave tenferro-cpu's cblas references
-    // undefined. The MKL path below already uses rustc-link-arg for this reason.
-    println!("cargo:rustc-link-arg=-lopenblas");
-    println!("cargo:rustc-link-arg-bin=publication_gate=-lopenblas");
-    println!("cargo:include={}", include_dir.display());
-    println!("cargo:rerun-if-env-changed=OPENBLAS_ROOT");
-}
-
-fn configure_mkl() {
-    let root =
-        env::var("MKLROOT").expect("MKLROOT must be set when building with feature `blas-mkl`");
-    let root = PathBuf::from(root);
-    let lib_dir = root.join("lib");
-    let lib_intel64_dir = root.join("lib").join("intel64");
-    let include_dir = root.join("include");
-
-    if !lib_dir.exists() && !lib_intel64_dir.exists() {
-        panic!(
-            "MKLROOT lib directory does not exist: {}",
-            lib_dir.display()
-        );
-    }
-    if !include_dir.exists() {
-        panic!(
-            "MKLROOT include directory does not exist: {}",
-            include_dir.display()
-        );
-    }
-
-    if lib_dir.exists() {
-        println!("cargo:rustc-link-search=native={}", lib_dir.display());
-    }
-    if lib_intel64_dir.exists() {
-        println!(
-            "cargo:rustc-link-search=native={}",
-            lib_intel64_dir.display()
-        );
-    }
-    // Keep the split oneMKL dynamic libraries in DT_NEEDED. With the default
-    // Linux --as-needed behavior, mkl_core and mkl_intel_thread can be dropped
-    // even though mkl_intel_lp64 resolves symbols from them at runtime.
-    println!("cargo:rustc-link-arg=-Wl,--push-state,--no-as-needed");
-    println!("cargo:rustc-link-arg=-lmkl_intel_lp64");
-    println!("cargo:rustc-link-arg=-lmkl_intel_thread");
-    println!("cargo:rustc-link-arg=-lmkl_core");
-    println!("cargo:rustc-link-arg=-liomp5");
-    println!("cargo:rustc-link-arg=-Wl,--pop-state");
-    println!("cargo:include={}", include_dir.display());
-    println!("cargo:rerun-if-env-changed=MKLROOT");
 }

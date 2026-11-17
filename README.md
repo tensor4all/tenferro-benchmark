@@ -118,9 +118,9 @@ All profiles:
   the pin); without it the script reuses an existing checkout as it is, or
   clones the default branch. strided-perm / strided-view / threadteam come
   from crates.io (no strided-rs checkout is needed) and are recorded in
-  `run.yaml` (`resolved_deps`). With the default Linux provider
-  (`blas-openblas`) the script needs `OPENBLAS_ROOT` (the devcontainers set it);
-  `TENFERRO_CPU_FEATURES=native` needs no BLAS prefix.
+  `run.yaml` (`resolved_deps`). tenferro-rs 0.12 has one CPU backend
+  (tenferro-rs #2608), so the build needs no BLAS/LAPACK prefix: the harness has
+  no vendor provider to select, link or record.
 - The tensor-network problem data, `extern/TensorNetworkBenchmarks`, is a git
   submodule. The setup script does not fetch it; clone with
   `--recurse-submodules` or run
@@ -129,17 +129,17 @@ All profiles:
 For `mac-cpu`, run the "All profiles" commands directly on the host. For the
 devcontainer profiles (`amd-cpu` / `nvidia-gpu`), run them
 **inside the corresponding devcontainer** (`devcontainer exec ... bash -lc
-'uv sync && ./scripts/setup_extern_deps.sh'`) — the setup script expects the
-container's `OPENBLAS_ROOT` / `MKLROOT` environment, and the container's
-`.venv` must be built with the container's wheels (see the GPU note below).
+'uv sync && ./scripts/setup_extern_deps.sh'`) — the container's `.venv` must be
+built with the container's wheels (see the GPU note below).
 
 Profile-specific:
 
 - `zen5-cpu`: the AMD Ryzen AI 9 HX 470 workstation; thread rows 1/4/8 run under
   `taskset` (see AGENTS.md).
-- `mac-cpu`: runs natively (no Docker); tenferro uses Accelerate.
+- `mac-cpu`: runs natively (no Docker).
 - `amd-cpu`: the [devcontainer CLI](https://github.com/devcontainers/cli)
-  and Docker; tenferro defaults to OpenBLAS, oneMKL is optional.
+  and Docker; tenferro uses its own faer-based kernels and PyTorch uses its
+  wheel's MKL-backed provider.
 - `nvidia-gpu`: the CUDA devcontainer under `.devcontainer/cuda/`.
 - `cpu/permutation`, `cpu/public_api`, and `cpu/einsum` suites: Julia on
   `PATH` (e.g. [juliaup](https://github.com/JuliaLang/juliaup) or
@@ -212,9 +212,7 @@ suite; this command still runs the CPU ops suite (skip it with
 Useful environment variables: `BENCH_INSTANCE` (restrict to one einsum
 instance), `BENCH_RUNS` / `BENCH_WARMUPS` (iteration counts; at least one
 warmup always runs),
-`TENFERRO_CPU_FEATURES` (`native` or a BLAS provider: `blas-openblas`,
-`blas-mkl`, `blas-accelerate`; **Linux defaults to `blas-openblas`**,
-macOS defaults to `blas-accelerate`), `RUN_FFT_SUITE=0`, `RUN_PUBLIC_API_SUITE=0`, `RUN_SMALL_WORK_SUITE=0`,
+`RUN_FFT_SUITE=0`, `RUN_PUBLIC_API_SUITE=0`, `RUN_SMALL_WORK_SUITE=0`,
 `RUN_PERF_ISSUES_SUITE=0`, and `RUN_PERMUTATION_SUITE=0`
 (skip one of the follow-up suites in a multi-thread-count `run_all.sh`
 invocation; HPTT still needs `PERMUTATION_EXTRA_FEATURES=hptt`).
@@ -262,12 +260,10 @@ No cross-library equivalents or automatic performance gates are added.
 ```bash
 devcontainer up --workspace-folder .
 devcontainer exec --workspace-folder . bash -lc '
-  TENFERRO_CPU_FEATURES=blas-mkl \
   BENCHMARK_TARGET_PROFILE=amd-cpu ./scripts/run_small_work.sh 1 4'
 
 # Selected case (also overwrites the latest report; run the full suite last):
 devcontainer exec --workspace-folder . bash -lc '
-  TENFERRO_CPU_FEATURES=blas-mkl \
   BENCH_INSTANCE=add_f64_concrete_fresh ./scripts/run_small_work.sh 1'
 ```
 
@@ -313,8 +309,7 @@ Edit `scripts/generate_perf_issue_cases.py` (it also writes the #1865/#1863
 
 ```bash
 devcontainer exec --workspace-folder . bash -lc '
-  TENFERRO_CPU_FEATURES=blas-mkl BENCHMARK_TARGET_PROFILE=amd-cpu \
-  ./scripts/run_perf_issues.sh 1 4'
+  BENCHMARK_TARGET_PROFILE=amd-cpu ./scripts/run_perf_issues.sh 1 4'
 devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
   bash -lc 'BENCHMARK_TARGET_PROFILE=nvidia-gpu ./scripts/run_gpu_perf_issues.sh'
 ```
@@ -395,8 +390,7 @@ Nothing gates here (the gates live in each repository's PR CI).
 
 ```bash
 devcontainer exec --workspace-folder . bash -lc '
-  TENFERRO_CPU_FEATURES=blas-mkl BENCHMARK_TARGET_PROFILE=amd-cpu \
-  ./scripts/run_overhead_smoke.sh'
+  BENCHMARK_TARGET_PROFILE=amd-cpu ./scripts/run_overhead_smoke.sh'
 BENCHMARK_TARGET_PROFILE=mac-cpu ./scripts/run_overhead_smoke.sh
 ```
 
@@ -586,40 +580,38 @@ lineage visible in the comparison, not merely to add another backend.
 
 C++ Torch/LibTorch runners are intentionally removed; PyTorch Python is the
 ATen comparison backend. The PyTorch CPU provider is detected at run time and
-recorded in `run.yaml` and generated reports. The default Linux image uses a
-binary PyTorch wheel; the separate [provider-matched OpenBLAS image](docs/linux-devcontainer.md#provider-matched-openblas-image)
-source-builds PyTorch against the same OpenBLAS as tenferro.
+recorded in `run.yaml` and generated reports.
 
 ### CPU provider pairs
 
-A CPU result compares two provider stacks, and each side is fixed by a
-different mechanism:
+tenferro-rs 0.12 has one CPU backend: its own faer-based kernels and thread
+pool (tenferro-rs #2608). There is no provider to select, link or record, so a
+CPU row compares one implementation against two reference frameworks:
 
-| Side | Selection | Linux default |
+| Side | Selection | Linux |
 |---|---|---|
-| tenferro | `TENFERRO_CPU_FEATURES` (`native`, `blas-openblas`, `blas-mkl`) | OpenBLAS from `OPENBLAS_ROOT` (`/opt/openblas`) |
-| PyTorch CPU | Build-time choice inside the wheel | wheel-bundled Intel MKL |
+| tenferro | none (single backend) | faer kernels, harness-built |
+| PyTorch CPU | build-time choice inside the wheel | wheel-bundled Intel MKL |
+| JAX CPU | XLA CPU | XLA's own kernels; dot reported separately |
 
 Consequences to state in a report instead of assuming provider identity:
 
-- A `blas-openblas` lane is **tenferro=OpenBLAS vs PyTorch=bundled MKL**, not
-  OpenBLAS on both sides. The provider-matched image above is the only supported
-  way to align them, and it applies to OpenBLAS only.
-- A `blas-mkl` lane compares **different MKL builds**: the system oneAPI MKL
-  that tenferro links against, and the older MKL inside the wheel (reported by
-  `torch.__config__`). Both sides say "MKL" but they are not the same library
-  or OpenMP runtime, and replacing the wheel's MKL by preloading the system one
-  is not supported.
-- Record both sides with `run.yaml` (tenferro features and BLAS implementation)
-  plus the reference's own provider report (`torch.__config__` BLAS/MKL/OpenMP
-  lines), so a reader can see the pair that was actually measured.
+- A CPU lane is **tenferro(faer) vs PyTorch(bundled MKL)**, not one BLAS on both
+  sides. That is the comparison upstream intends; the vendor-versus-colmat
+  comparison lives in colmat-benchmark.
+- Pages committed before the migration carry `blas: mkl | openblas |
+  accelerate`. They are history: the harness can no longer link those
+  providers, so do not read them as provider-matched against new runs and do
+  not present their differences as implementation speedups.
+- Record the reference's own provider report (`torch.__config__` BLAS/MKL/OpenMP
+  lines, JAX's provider and dot backend) with `run.yaml`, so a reader can see
+  what each side actually executed.
 
 ## Documentation
 
-- [macOS CPU workflow](docs/macos-cpu.md): native run, no Docker, Accelerate.
+- [macOS CPU workflow](docs/macos-cpu.md): native run, no Docker.
 - [Linux CPU devcontainer workflow](docs/linux-devcontainer.md):
-  Docker/devcontainer, OpenBLAS default, optional oneMKL, detected PyTorch
-  provider.
+  Docker/devcontainer and the recorded PyTorch provider.
 - [NVIDIA GPU devcontainer workflow](docs/gpu-devcontainer.md): CUDA
   devcontainer.
 - [Einsum suite and instance selection](docs/einsum-suite.md): source

@@ -2,7 +2,7 @@
 use super::{measure, read_array, verify, Case, EngineScope, Result, Settings};
 use serde_json::Value;
 use std::path::Path;
-use tenferro_einsum::ConcreteEinsumPlan;
+use tenferro_einsum::{ConcreteEinsumPlan, EinsumOptions};
 use tenferro_gpu::cuda::{upload_tensor, CudaEngine};
 use tenferro_tensor::{DType, Tensor, TensorRead};
 
@@ -46,9 +46,9 @@ pub(super) fn run(
     };
     let owned = [&inputs[0], &inputs[1]];
     let plan = if case.op.contains("read") {
-        ConcreteEinsumPlan::prepare_read(reads(), "ik,kj->ij")?
+        ConcreteEinsumPlan::prepare(&reads(), "ik,kj->ij", &EinsumOptions::default())?
     } else {
-        ConcreteEinsumPlan::prepare(owned, "ik,kj->ij")?
+        ConcreteEinsumPlan::prepare(&owned, "ik,kj->ij", &EinsumOptions::default())?
     };
     let bytes = expected.shape().iter().product::<usize>()
         * match expected.dtype() {
@@ -72,9 +72,9 @@ pub(super) fn run(
         }
         let mut execute = |args: [TensorRead<'_>; 2]| -> Result<Tensor> {
             if case.op == "einsum_plan_owned" {
-                Ok(plan.execute(owned, session)?)
+                Ok(plan.execute(&owned, session)?)
             } else {
-                Ok(plan.execute_read(args, session)?)
+                Ok(plan.execute(&args, session)?)
             }
         };
         let probe = execute(reads())?;

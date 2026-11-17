@@ -9,9 +9,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 EXTERN_DIR="$PROJECT_DIR/extern"
 
-# shellcheck source=scripts/cpu_blas_provider.sh
-source "$SCRIPT_DIR/cpu_blas_provider.sh"
-
 TENFERRO_REPO_URL="${TENFERRO_REPO_URL:-https://github.com/tensor4all/tenferro-rs.git}"
 # The tenferro-rs revision this harness builds against. An explicit
 # TENFERRO_REF (a branch, tag or commit) overrides the pin.
@@ -24,22 +21,6 @@ TENFERRO_DIR="${TENFERRO_RS_DIR:-$EXTERN_DIR/tenferro-rs}"
 
 log() {
     printf '[setup_extern_deps] %s\n' "$*" >&2
-}
-
-ensure_openblas_root() {
-    if [[ -n "${OPENBLAS_ROOT:-}" ]]; then
-        export OPENBLAS_ROOT
-        return
-    fi
-    if command -v brew >/dev/null 2>&1 && brew --prefix openblas >/dev/null 2>&1; then
-        export OPENBLAS_ROOT="$(brew --prefix openblas)"
-        return
-    fi
-    cat >&2 <<'EOF'
-OPENBLAS_ROOT is required.
-Set OPENBLAS_ROOT to the OpenBLAS prefix, or install OpenBLAS with Homebrew.
-EOF
-    exit 1
 }
 
 require_clean_checkout() {
@@ -138,25 +119,11 @@ ensure_tenferro_checkout() {
 }
 
 main() {
-    TENFERRO_CPU_FEATURES="$(normalize_cpu_blas_features "${TENFERRO_CPU_FEATURES:-}")"
-    export TENFERRO_CPU_FEATURES
-    case "$TENFERRO_CPU_FEATURES" in
-        blas-openblas)
-            ensure_openblas_root
-            ensure_blas_env_for_features "$TENFERRO_CPU_FEATURES"
-            ;;
-        blas-mkl)
-            ensure_blas_env_for_features "$TENFERRO_CPU_FEATURES"
-            ;;
-    esac
     ensure_tenferro_checkout
 
     export TENFERRO_RS_DIR="$TENFERRO_DIR"
 
-    [[ -n "${OPENBLAS_ROOT:-}" ]] && log "OPENBLAS_ROOT=$OPENBLAS_ROOT"
-    [[ -n "${MKLROOT:-}" ]] && log "MKLROOT=$MKLROOT"
     log "TENFERRO_RS_DIR=$TENFERRO_RS_DIR"
-    log "TENFERRO_CPU_FEATURES=$TENFERRO_CPU_FEATURES"
     return 0
 }
 

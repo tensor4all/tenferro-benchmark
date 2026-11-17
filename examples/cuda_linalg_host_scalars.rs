@@ -1,6 +1,6 @@
 //! Public-API reproducer: CUDA-resident input, direct inverse / pseudoinverse.
 use tenferro_gpu::cuda::{upload_tensor, CudaDeviceId, CudaEngine};
-use tenferro_linalg::TensorLinalgExt;
+use tenferro_linalg::{LinalgOps, PinvOptions};
 use tenferro_tensor::Tensor;
 
 fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
@@ -15,7 +15,7 @@ fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let result = if operation == "inv" {
             input.inv(&mut engine)
         } else {
-            input.pinv_with_rtol(1e-5, &mut engine)
+            input.pinv_with(&PinvOptions::default().rtol(Some(1e-5)), &mut engine)
         };
         match result {
             Ok(output) => {

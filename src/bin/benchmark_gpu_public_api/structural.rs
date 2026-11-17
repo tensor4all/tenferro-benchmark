@@ -1,6 +1,6 @@
 use super::{Case, Result};
 use tenferro_ad::{EagerSession, EagerTensor};
-use tenferro_runtime::TensorSessionOpsExt;
+use tenferro_runtime::CoreOps;
 use tenferro_tensor::{
     DType, DotGeneralConfig, Engine, GatherConfig, PadConfig, ScatterConfig, SliceConfig, Tensor,
     TensorRead,

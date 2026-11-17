@@ -8,7 +8,7 @@
 //! one at a time with `timed` set: the same public call is then also timed with
 //! the standard retained-output batches, so each row carries ns/op and allocs/op.
 use super::*;
-use tenferro_tensor::{TensorRead, TypedTensorView};
+use tenferro_tensor::{Dest, TensorRead, TypedTensorView};
 
 const REPEATS: usize = 64;
 
@@ -345,13 +345,13 @@ fn session_op(
     )?
     .transpose_view(perm_for(fx))?;
     let lhs_read = TensorRead::from_view(f64::tensor_view(lhs_view));
-    let perm = perm_for(fx);
+    let perm: Vec<isize> = perm_for(fx).iter().map(|&k| k as isize).collect();
     let (tx, ty) = (
         Tensor::from_vec_col_major(fx.shape.clone(), x.to_vec())?,
         Tensor::from_vec_col_major(rhs_shape, y.to_vec())?,
     );
     let plan = (op == "einsum_prepared")
-        .then(|| ConcreteEinsumPlan::prepare([&tx, &ty], "ij,jk->ik"))
+        .then(|| ConcreteEinsumPlan::prepare(&[&tx, &ty], "ij,jk->ik", &Default::default()))
         .transpose()?;
     // The caller-owned destination of the prepared einsum step (n x n output).
     let out_shape = if op == "einsum_prepared" {
@@ -383,20 +383,21 @@ fn session_op(
                 probe(label, bytes, timing, || Ok(a.transpose(&perm, s)?))
             }
             "reduce_axis" => {
-                check(a.reduce_sum(Some(&[1]), s)?.host_data()?, want)?;
-                probe(label, bytes, timing, || Ok(a.reduce_sum(Some(&[1]), s)?))
+                check(a.reduce_sum(Some(&[1isize]), s)?.host_data()?, want)?;
+                probe(label, bytes, timing, || {
+                    Ok(a.reduce_sum(Some(&[1isize]), s)?)
+                })
             }
             "concat" => {
-                let concat = |s: &mut dyn Engine| {
-                    <Tensor as TensorSessionOpsExt>::concatenate(&[&tx, &ty], 1, s)
-                };
+                let concat =
+                    |s: &mut dyn Engine| <Tensor as CoreOps>::concatenate(&[&tx, &ty], 1, s);
                 check(data(&concat(s)?)?, want)?;
                 probe(label, bytes, timing, || Ok(concat(s)?))
             }
             "einsum_prepared" => {
                 let plan = plan.as_ref().ok_or("missing einsum plan")?;
                 let mut step = || -> Result<()> {
-                    plan.execute_into([&tx, &ty], s, TensorWrite::Tensor(&mut out))?;
+                    plan.execute_into(&[&tx, &ty], s, Dest::overwrite(&mut out))?;
                     Ok(())
                 };
                 step()?;

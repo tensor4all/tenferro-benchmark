@@ -216,21 +216,16 @@ PY
 }
 
 assert_collected_run_metadata() {
-  local openblas_root="$TMP/openblas"
   local output="$TMP/collected_run.yaml"
 
-  mkdir -p "$openblas_root/lib"
-  touch "$openblas_root/lib/libopenblas.dylib"
-
-  if ! OPENBLAS_ROOT="$openblas_root" uv run python scripts/collect_run_metadata.py \
+  if ! uv run python scripts/collect_run_metadata.py \
     --suite-id cpu/einsum \
     --target-profile amd-cpu \
     --suite-file benchmarks/cpu/einsum.yaml \
     --timestamp "2026-06-03T12:34:56+09:00" \
     --tenferro-dir extern/tenferro-rs \
     --tenferro-commit abcdef1 \
-    --features blas-openblas \
-    --blas openblas \
+    --features native \
     --output "$output" >"$TMP/out" 2>&1; then
     echo "collect_run_metadata.py failed" >&2
     cat "$TMP/out" >&2
