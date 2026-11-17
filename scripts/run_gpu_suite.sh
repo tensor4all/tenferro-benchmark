@@ -198,7 +198,6 @@ write_run_metadata() {
         --timestamp "$RUN_TIMESTAMP_RFC3339"
         --tenferro-dir "$tenferro_dir"
         --features cuda
-        --blas none
         --cuda-device-ordinal "$PHYSICAL_DEVICE_ORDINAL"
         --output "$run_yaml"
     )

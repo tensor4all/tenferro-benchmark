@@ -105,7 +105,6 @@ metadata_args=(
     --timestamp "$RUN_TIMESTAMP_RFC3339"
     --tenferro-dir "$tenferro_dir"
     --features cuda
-    --blas none
     --cuda-device-ordinal "$GPU_BENCH_PHYSICAL_DEVICE"
     --output "$RUN_YAML"
 )
