@@ -1,0 +1,21 @@
+{
+ "compared_output_pairs": 0,
+ "disagreements": [],
+ "single_arm_cases": [
+  {
+   "suite_id": "gpu/sparse",
+   "problem_id": "sparse_synthetic_4m_64m_spmv_f64",
+   "arms": [
+    "pytorch-cuda"
+   ]
+  },
+  {
+   "suite_id": "gpu/sparse",
+   "problem_id": "sparse_synthetic_64k_4m_spmm_f64_rhs1024",
+   "arms": [
+    "pytorch-cuda"
+   ]
+  }
+ ],
+ "rtol": 1e-09
+}

@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "target_profile": "nvidia-gpu",
+  "suite_id": "gpu/elementwise",
+  "timestamp": "2026-11-17T09:15:52+00:00",
+  "tenferro_commit": "ce9125d0cff4ee40841120759b5df45252c27f22",
+  "hardware": {
+    "gpu": "NVIDIA A100-SXM4-80GB",
+    "cpu": "AMD EPYC 7713 64-Core Processor",
+    "host": "b8e17af19547"
+  },
+  "unit": "ms",
+  "rows": [
+    {
+      "case": "elementwise_chain_f64_1k",
+      "group": "elementwise_chain",
+      "backend": "jax-cuda",
+      "median": 0.06891675,
+      "iqr": 0.004316874999999998,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 16
+    },
+    {
+      "case": "elementwise_chain_f64_1k",
+      "group": "elementwise_chain",
+      "backend": "pytorch-cuda",
+      "median": 0.13817975,
+      "iqr": 0.0008768749999999992,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 16
+    },
+    {
+      "case": "elementwise_chain_f64_1k",
+      "group": "elementwise_chain",
+      "backend": "tenferro-cuda-eager",
+      "median": 0.9037157499999999,
+      "iqr": 0.00473749999999995,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 4,
+      "verification": "cpu_reference"
+    },
+    {
+      "case": "elementwise_chain_f64_1k",
+      "group": "elementwise_chain",
+      "backend": "tenferro-cuda-trace",
+      "median": 0.1747471875,
+      "iqr": 0.001641249999999983,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 16,
+      "verification": "cpu_reference"
+    },
+    {
+      "case": "elementwise_chain_f64_1m",
+      "group": "elementwise_chain",
+      "backend": "jax-cuda",
+      "median": 0.13985475,
+      "iqr": 0.01982250000000002,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 4
+    },
+    {
+      "case": "elementwise_chain_f64_1m",
+      "group": "elementwise_chain",
+      "backend": "pytorch-cuda",
+      "median": 0.348925625,
+      "iqr": 0.0008262499999999728,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 8
+    },
+    {
+      "case": "elementwise_chain_f64_1m",
+      "group": "elementwise_chain",
+      "backend": "tenferro-cuda-eager",
+      "median": 1.1858330000000001,
+      "iqr": 0.4324939999999997,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 2,
+      "verification": "cpu_reference"
+    },
+    {
+      "case": "elementwise_chain_f64_1m",
+      "group": "elementwise_chain",
+      "backend": "tenferro-cuda-trace",
+      "median": 0.358451875,
+      "iqr": 0.001381249999999945,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 8,
+      "verification": "cpu_reference"
+    }
+  ]
+}

@@ -1,0 +1,400 @@
+{
+  "schema_version": 1,
+  "suite_id": "gpu/isolated_ops",
+  "backends": [
+    "tenferro-cuda-direct",
+    "tenferro-cuda-eager",
+    "pytorch-cuda",
+    "jax-cuda"
+  ],
+  "cases": [
+    {
+      "id": "add_f64_n1048576",
+      "op": "add",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "sub_f64_n1048576",
+      "op": "sub",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "mul_f64_n1048576",
+      "op": "mul",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "div_f64_n1048576",
+      "op": "div",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "rem_f64_n1048576",
+      "op": "rem",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "pow_f64_n1048576",
+      "op": "pow",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "maximum_f64_n1048576",
+      "op": "maximum",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "minimum_f64_n1048576",
+      "op": "minimum",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "neg_f64_n1048576",
+      "op": "neg",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "abs_f64_n1048576",
+      "op": "abs",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "sign_f64_n1048576",
+      "op": "sign",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "conj_c64_n1048576",
+      "op": "conj",
+      "dtype": "c64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "exp_f64_n1048576",
+      "op": "exp",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "expm1_f64_n1048576",
+      "op": "expm1",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "log_f64_n1048576",
+      "op": "log",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "log1p_f64_n1048576",
+      "op": "log1p",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "erf_f64_n1048576",
+      "op": "erf",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "sin_f64_n1048576",
+      "op": "sin",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "cos_f64_n1048576",
+      "op": "cos",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "tanh_f64_n1048576",
+      "op": "tanh",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "sqrt_f64_n1048576",
+      "op": "sqrt",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "rsqrt_f64_n1048576",
+      "op": "rsqrt",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "compare_f64_n1048576",
+      "op": "compare",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "where_select_f64_n1048576",
+      "op": "where_select",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "clamp_f64_n1048576",
+      "op": "clamp",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "reduce_sum_f64_n1048576",
+      "op": "reduce_sum",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "reduce_prod_f64_n1048576",
+      "op": "reduce_prod",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "reduce_max_f64_n1048576",
+      "op": "reduce_max",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "reduce_min_f64_n1048576",
+      "op": "reduce_min",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "reduce_sum_squares_f64_n1048576",
+      "op": "reduce_sum_squares",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {
+        "pytorch-cuda": "No equivalent single axis-wise sum-of-squares API; multiplying then reducing is not used as a synthetic reference arm.",
+        "jax-cuda": "No equivalent single axis-wise sum-of-squares API; multiplying then reducing is not used as a synthetic reference arm.",
+        "jax-cuda-jit": "No equivalent single axis-wise sum-of-squares API; multiplying then reducing is not used as a synthetic reference arm."
+      }
+    },
+    {
+      "id": "reduce_mean_f64_n1048576",
+      "op": "reduce_mean",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+      }
+    },
+    {
+      "id": "scale_real_f64_n1048576",
+      "op": "scale_real",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "alpha": 0.5,
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route.",
+        "tenferro-cuda-eager": "Eager scale host-placement bug fixed by upstream 917d5341. API now uploads its internal scalar through constant_from_host; no public preuploaded factor parameter. Numerical validation only; internal scalar transfer excludes standard timing."
+      },
+      "unavailable": {}
+    },
+    {
+      "id": "scale_complex_c64_n1048576",
+      "op": "scale_complex",
+      "dtype": "c64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "alpha": 0.5,
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route.",
+        "tenferro-cuda-eager": "Eager scale host-placement bug fixed by upstream 917d5341. API now uploads its internal scalar through constant_from_host; no public preuploaded factor parameter. Numerical validation only; internal scalar transfer excludes standard timing."
+      },
+      "beta": 0.75,
+      "unavailable": {}
+    }
+  ],
+  "description": "Isolated public APIs and explicit unsupported timing contracts. Issue 155."
+}

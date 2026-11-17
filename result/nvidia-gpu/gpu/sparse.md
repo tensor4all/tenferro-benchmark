@@ -2,17 +2,17 @@
 
 - Target profile: `nvidia-gpu`
 - Suite: `gpu/sparse`
-- Suite file: `/tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261114_082852/gpu_sparse.yaml`
-- Timestamp: `2026-11-14T08:28:52+00:00`
-- tenferro-rs commit: `9a850b06155405acc99ecd0648829e9e6d3866ba`
+- Suite file: `/tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261117_091552/gpu_sparse.yaml`
+- Timestamp: `2026-11-17T09:15:52+00:00`
+- tenferro-rs commit: `ce9125d0cff4ee40841120759b5df45252c27f22`
 - Effort: `standard`; manifest version: `2`
-- Selection and case accounting: `/tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261114_082852/selection.json` (see adjacent `case_status.json` and `report.md`; unselected rows are not covered)
+- Selection and case accounting: `/tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261117_091552/selection.json` (see adjacent `case_status.json` and `report.md`; unselected rows are not covered)
 
 ## GPU Information
 
 - Device: `cuda:0`
-- Name: `NVIDIA A100 80GB PCIe`
-- UUID: `GPU-c70851ec-1874-5bb5-8a0a-85e4eed17212`
+- Name: `NVIDIA A100-SXM4-80GB`
+- UUID: `GPU-704abe6c-29a2-539e-7ccd-01f9de4eed3b`
 - Memory: `80 GiB`
 - Driver version: `595.91.07`
 - CUDA version: `13.2`
@@ -26,17 +26,18 @@
 
 ## CPU Information
 
-- Model: `AMD EPYC-Genoa Processor`
+- Model: `AMD EPYC 7713 64-Core Processor`
 - Vendor: `AuthenticAMD`
-- Logical CPUs: `116`
-- Sockets: `1`
-- Cores per socket: `58`
-- Threads per core: `2`
-- NUMA nodes: `1`
+- Logical CPUs: `128`
+- Sockets: `2`
+- Cores per socket: `64`
+- Threads per core: `1`
+- NUMA nodes: `2`
 - Transparent huge pages: `madvise (always [madvise] never)`
 - Transparent huge page defrag: `madvise (always defer defer+madvise [madvise] never)`
 - Python platform: `Linux-6.8.0-147-generic-x86_64-with-glibc2.39`
-- L3 domains (shared CPUs): `0-115`
+- L3 domains (shared CPUs): `0-7; 8-15; 16-23; 24-31; 32-39; 40-47; 48-55; 56-63; 64-71; 72-79; 80-87; 88-95; 96-103; 104-111; 112-119; 120-127`
+- CPU boost: `enabled`
 - Container: `devcontainer`
 
 Median time is reported in milliseconds for `ok` records.
@@ -51,13 +52,13 @@ Non-`ok` cells show the structured backend status.
 
 | Problem | PyTorch CUDA |
 |---|---:|
-| sparse_synthetic_64k_4m_spmm_f64_rhs1024 | 14.887 |
+| sparse_synthetic_64k_4m_spmm_f64_rhs1024 | 14.480 |
 
 ## gpu/sparse / spmv / allocating output
 
 | Problem | PyTorch CUDA |
 |---|---:|
-| sparse_synthetic_4m_64m_spmv_f64 | 2.437 |
+| sparse_synthetic_4m_64m_spmv_f64 | 2.276 |
 
 ## Sampling
 
@@ -65,8 +66,8 @@ JAX uses compiled JIT execution; compilation, planning and numerical checks are 
 
 | Problem | Backend | Ops/sample | Raw batch ms | Setup and precision |
 | --- | --- | ---: | --- | --- |
-| sparse_synthetic_4m_64m_spmv_f64 | pytorch-cuda | 1 | 2.61262, 2.34555, 2.55982, 2.31286, 2.55563, 2.33242, 2.43662 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| sparse_synthetic_64k_4m_spmm_f64_rhs1024 | pytorch-cuda | 1 | 14.8868, 14.8522, 14.8497, 14.8161, 14.9469, 15.0349, 17.2427 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| sparse_synthetic_4m_64m_spmv_f64 | pytorch-cuda | 1 | 2.27942, 2.2683, 2.27628, 2.27596, 2.27498, 2.27771, 2.2738 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| sparse_synthetic_64k_4m_spmm_f64_rhs1024 | pytorch-cuda | 1 | 16.5077, 16.5064, 16.293, 14.4685, 14.4796, 14.4272, 14.4287 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
 
 ## Output retention bounds
 

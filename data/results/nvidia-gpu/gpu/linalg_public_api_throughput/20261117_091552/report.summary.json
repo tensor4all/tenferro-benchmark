@@ -1,0 +1,640 @@
+{
+  "schema_version": 1,
+  "target_profile": "nvidia-gpu",
+  "suite_id": "gpu/linalg_public_api_throughput",
+  "timestamp": "2026-11-17T09:15:52+00:00",
+  "tenferro_commit": "ce9125d0cff4ee40841120759b5df45252c27f22",
+  "hardware": {
+    "gpu": "NVIDIA A100-SXM4-80GB",
+    "cpu": "AMD EPYC 7713 64-Core Processor",
+    "host": "b8e17af19547"
+  },
+  "unit": "ms",
+  "rows": [
+    {
+      "case": "cholesky_f64_512x512",
+      "group": "cholesky",
+      "backend": "jax-cuda",
+      "median": 0.37782675,
+      "iqr": 0.010044374999999994,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 8
+    },
+    {
+      "case": "cholesky_f64_512x512",
+      "group": "cholesky",
+      "backend": "pytorch-cuda",
+      "median": 0.40298675,
+      "iqr": 0.01182987499999999,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 8
+    },
+    {
+      "case": "cholesky_f64_512x512",
+      "group": "cholesky",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.41484925,
+      "iqr": 0.0032450625000000066,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 8
+    },
+    {
+      "case": "cholesky_f64_512x512",
+      "group": "cholesky",
+      "backend": "tenferro-cuda-eager",
+      "median": 0.459356625,
+      "iqr": 0.021461249999999987,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 8
+    },
+    {
+      "case": "det_f64_512x512",
+      "group": "det",
+      "backend": "jax-cuda",
+      "median": 1.3658325,
+      "iqr": 0.022902500000000048,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 2
+    },
+    {
+      "case": "det_f64_512x512",
+      "group": "det",
+      "backend": "pytorch-cuda",
+      "median": 1.309053,
+      "iqr": 0.004089750000000114,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 2
+    },
+    {
+      "case": "det_f64_512x512",
+      "group": "det",
+      "backend": "tenferro-cuda-direct",
+      "median": 1.774027,
+      "iqr": 0.02337475000000011,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 2
+    },
+    {
+      "case": "det_f64_512x512",
+      "group": "det",
+      "backend": "tenferro-cuda-eager",
+      "median": 1.836772,
+      "iqr": 0.01595449999999987,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 2
+    },
+    {
+      "case": "eigvalsh_f64_512x512",
+      "group": "eigvalsh",
+      "backend": "jax-cuda",
+      "median": 6.023029,
+      "iqr": 0.020845000000000447,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 1
+    },
+    {
+      "case": "eigvalsh_f64_512x512",
+      "group": "eigvalsh",
+      "backend": "pytorch-cuda",
+      "median": 5.61612,
+      "iqr": 0.014639999999999986,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 1
+    },
+    {
+      "case": "eigvalsh_f64_512x512",
+      "group": "eigvalsh",
+      "backend": "tenferro-cuda-direct",
+      "median": 5.59722,
+      "iqr": 0.05981549999999913,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 1
+    },
+    {
+      "case": "eigvalsh_f64_512x512",
+      "group": "eigvalsh",
+      "backend": "tenferro-cuda-eager",
+      "median": 6.962028,
+      "iqr": 0.04319049999999969,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 1
+    },
+    {
+      "case": "householder_append_default_f64_512x256",
+      "group": "householder_append",
+      "backend": "jax-cuda",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
+    },
+    {
+      "case": "householder_append_default_f64_512x256",
+      "group": "householder_append",
+      "backend": "pytorch-cuda",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
+    },
+    {
+      "case": "householder_append_default_f64_512x256",
+      "group": "householder_append",
+      "backend": "tenferro-cuda-direct",
+      "median": null,
+      "status": "unsupported",
+      "verified": true,
+      "reason": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+    },
+    {
+      "case": "householder_append_default_f64_512x256",
+      "group": "householder_append",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": true,
+      "reason": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+    },
+    {
+      "case": "householder_from_factors_default_f64_512x256",
+      "group": "householder_from_factors",
+      "backend": "jax-cuda",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
+    },
+    {
+      "case": "householder_from_factors_default_f64_512x256",
+      "group": "householder_from_factors",
+      "backend": "pytorch-cuda",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
+    },
+    {
+      "case": "householder_from_factors_default_f64_512x256",
+      "group": "householder_from_factors",
+      "backend": "tenferro-cuda-direct",
+      "median": 1.5801225,
+      "iqr": 0.01457474999999997,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 2
+    },
+    {
+      "case": "householder_from_factors_default_f64_512x256",
+      "group": "householder_from_factors",
+      "backend": "tenferro-cuda-eager",
+      "median": 1.637632,
+      "iqr": 0.010662749999999832,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 2
+    },
+    {
+      "case": "householder_q_columns_prefix_f64_512x256",
+      "group": "householder_q_columns",
+      "backend": "jax-cuda",
+      "median": 0.1570978125,
+      "iqr": 0.035219,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 16
+    },
+    {
+      "case": "householder_q_columns_prefix_f64_512x256",
+      "group": "householder_q_columns",
+      "backend": "pytorch-cuda",
+      "median": 0.073833625,
+      "iqr": 0.0010873593749999994,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "householder_q_columns_prefix_f64_512x256",
+      "group": "householder_q_columns",
+      "backend": "tenferro-cuda-direct",
+      "median": null,
+      "status": "unsupported",
+      "verified": true,
+      "reason": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+    },
+    {
+      "case": "householder_q_columns_prefix_f64_512x256",
+      "group": "householder_q_columns",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": true,
+      "reason": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+    },
+    {
+      "case": "householder_qr_tall_f64_512x256",
+      "group": "householder_qr",
+      "backend": "jax-cuda",
+      "median": 1.4044625,
+      "iqr": 0.017377500000000268,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 2
+    },
+    {
+      "case": "householder_qr_tall_f64_512x256",
+      "group": "householder_qr",
+      "backend": "pytorch-cuda",
+      "median": 1.3398125,
+      "iqr": 0.007884749999999885,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 2
+    },
+    {
+      "case": "householder_qr_tall_f64_512x256",
+      "group": "householder_qr",
+      "backend": "tenferro-cuda-direct",
+      "median": 1.3376975,
+      "iqr": 0.0033202500000000246,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 2
+    },
+    {
+      "case": "householder_qr_tall_f64_512x256",
+      "group": "householder_qr",
+      "backend": "tenferro-cuda-eager",
+      "median": 1.3830425,
+      "iqr": 0.005479999999999929,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 2
+    },
+    {
+      "case": "householder_r_default_f64_512x256",
+      "group": "householder_r",
+      "backend": "jax-cuda",
+      "median": 0.058716125,
+      "iqr": 0.0010334531249999931,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "householder_r_default_f64_512x256",
+      "group": "householder_r",
+      "backend": "pytorch-cuda",
+      "median": 0.00632875,
+      "iqr": 6.124999999999967e-05,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 8
+    },
+    {
+      "case": "householder_r_default_f64_512x256",
+      "group": "householder_r",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.045872890625,
+      "iqr": 0.0009001484375000049,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 64
+    },
+    {
+      "case": "householder_r_default_f64_512x256",
+      "group": "householder_r",
+      "backend": "tenferro-cuda-eager",
+      "median": 0.0554744375,
+      "iqr": 0.000732734375000002,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 64
+    },
+    {
+      "case": "inv_f64_512x512",
+      "group": "inv",
+      "backend": "jax-cuda",
+      "median": 1.817892,
+      "iqr": 0.00846524999999998,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 2
+    },
+    {
+      "case": "inv_f64_512x512",
+      "group": "inv",
+      "backend": "pytorch-cuda",
+      "median": 1.795337,
+      "iqr": 0.004585000000000061,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 2
+    },
+    {
+      "case": "inv_f64_512x512",
+      "group": "inv",
+      "backend": "tenferro-cuda-direct",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "CUDA concrete route fails at revision 8b13220c: inv_owned/eye_like passes a host scalar to broadcast_in_dim. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906."
+    },
+    {
+      "case": "inv_f64_512x512",
+      "group": "inv",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": true,
+      "reason": "Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer."
+    },
+    {
+      "case": "lu_tall_f64_s256",
+      "group": "lu",
+      "backend": "jax-cuda",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+    },
+    {
+      "case": "lu_tall_f64_s256",
+      "group": "lu",
+      "backend": "pytorch-cuda",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+    },
+    {
+      "case": "lu_tall_f64_s256",
+      "group": "lu",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.843331,
+      "iqr": 0.12071862500000008,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 4
+    },
+    {
+      "case": "lu_tall_f64_s256",
+      "group": "lu",
+      "backend": "tenferro-cuda-eager",
+      "median": 1.067228,
+      "iqr": 0.010485000000000078,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 2
+    },
+    {
+      "case": "norm_f64_512x512",
+      "group": "norm",
+      "backend": "jax-cuda",
+      "median": 0.0739,
+      "iqr": 0.006599875000000005,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 4
+    },
+    {
+      "case": "norm_f64_512x512",
+      "group": "norm",
+      "backend": "pytorch-cuda",
+      "median": 0.01061908203125,
+      "iqr": 9.450976562499873e-05,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 256
+    },
+    {
+      "case": "norm_f64_512x512",
+      "group": "norm",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.05127771875,
+      "iqr": 0.0001960156250000039,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 64
+    },
+    {
+      "case": "norm_f64_512x512",
+      "group": "norm",
+      "backend": "tenferro-cuda-eager",
+      "median": 0.07587734375,
+      "iqr": 0.0005548281250000037,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "pinv_f64_512x512",
+      "group": "pinv",
+      "backend": "jax-cuda",
+      "median": 78.447153,
+      "iqr": 0.2243349999999964,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 1
+    },
+    {
+      "case": "pinv_f64_512x512",
+      "group": "pinv",
+      "backend": "pytorch-cuda",
+      "median": 85.074292,
+      "iqr": 0.07816950000000134,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 1
+    },
+    {
+      "case": "pinv_f64_512x512",
+      "group": "pinv",
+      "backend": "tenferro-cuda-direct",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "CUDA concrete route fails at revision 8b13220c: pinv_from_svd passes a host threshold scalar to mul_read. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906."
+    },
+    {
+      "case": "pinv_f64_512x512",
+      "group": "pinv",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": true,
+      "reason": "Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer."
+    },
+    {
+      "case": "slogdet_positive_f64_256x256",
+      "group": "slogdet",
+      "backend": "jax-cuda",
+      "median": 0.566119,
+      "iqr": 0.0025374999999999703,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 4
+    },
+    {
+      "case": "slogdet_positive_f64_256x256",
+      "group": "slogdet",
+      "backend": "pytorch-cuda",
+      "median": 0.5673415,
+      "iqr": 0.0007800000000000029,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 4
+    },
+    {
+      "case": "slogdet_positive_f64_256x256",
+      "group": "slogdet",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.8084185,
+      "iqr": 0.0026298749999998927,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 4
+    },
+    {
+      "case": "slogdet_positive_f64_256x256",
+      "group": "slogdet",
+      "backend": "tenferro-cuda-eager",
+      "median": 0.857681,
+      "iqr": 0.008797500000000014,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 4
+    },
+    {
+      "case": "svd_full_tall_f64_512x256",
+      "group": "svd_full",
+      "backend": "jax-cuda",
+      "median": 19.731156,
+      "iqr": 0.09146000000000143,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 1
+    },
+    {
+      "case": "svd_full_tall_f64_512x256",
+      "group": "svd_full",
+      "backend": "pytorch-cuda",
+      "median": 20.007855,
+      "iqr": 0.03154050000000197,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 1
+    },
+    {
+      "case": "svd_full_tall_f64_512x256",
+      "group": "svd_full",
+      "backend": "tenferro-cuda-direct",
+      "median": 19.691846,
+      "iqr": 0.05713500000000238,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 1
+    },
+    {
+      "case": "svd_full_tall_f64_512x256",
+      "group": "svd_full",
+      "backend": "tenferro-cuda-eager",
+      "median": 19.671086,
+      "iqr": 0.04762450000000129,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 1
+    },
+    {
+      "case": "svdvals_f64_512x512",
+      "group": "svdvals",
+      "backend": "jax-cuda",
+      "median": 78.269614,
+      "iqr": 0.7432085000000086,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 1
+    },
+    {
+      "case": "svdvals_f64_512x512",
+      "group": "svdvals",
+      "backend": "pytorch-cuda",
+      "median": 85.017482,
+      "iqr": 0.2841899999999953,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 1
+    },
+    {
+      "case": "svdvals_f64_512x512",
+      "group": "svdvals",
+      "backend": "tenferro-cuda-direct",
+      "median": 78.074084,
+      "iqr": 0.09516449999999566,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 1
+    },
+    {
+      "case": "svdvals_f64_512x512",
+      "group": "svdvals",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "EagerSessionLinalgExt has no values-only svdvals entry point; returning and discarding singular vectors is not equivalent."
+    },
+    {
+      "case": "triangular_solve_f64_512x512",
+      "group": "triangular_solve",
+      "backend": "jax-cuda",
+      "median": 0.2150565,
+      "iqr": 0.00210656250000002,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 16
+    },
+    {
+      "case": "triangular_solve_f64_512x512",
+      "group": "triangular_solve",
+      "backend": "pytorch-cuda",
+      "median": 0.308141875,
+      "iqr": 0.00023381249999998577,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 8
+    },
+    {
+      "case": "triangular_solve_f64_512x512",
+      "group": "triangular_solve",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.1936621875,
+      "iqr": 0.0005494062499999952,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 16
+    },
+    {
+      "case": "triangular_solve_f64_512x512",
+      "group": "triangular_solve",
+      "backend": "tenferro-cuda-eager",
+      "median": 0.251052,
+      "iqr": 0.002035000000000009,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 8
+    }
+  ]
+}

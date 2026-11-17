@@ -1,0 +1,11 @@
+{
+  "phases_seconds": {
+    "rust_build": 0.203,
+    "copy_calibration": 2.725,
+    "fixtures": 0.756,
+    "arm_prepare": 0.201,
+    "normalize_and_summary": 0.167,
+    "report": 0.213
+  },
+  "scope": "wall clock of the stages a suite runs outside its backend processes: fixture preparation, builds, separate verification passes and report generation"
+}

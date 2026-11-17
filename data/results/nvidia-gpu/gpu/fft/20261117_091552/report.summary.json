@@ -1,0 +1,175 @@
+{
+  "schema_version": 1,
+  "target_profile": "nvidia-gpu",
+  "suite_id": "gpu/fft",
+  "timestamp": "2026-11-17T09:15:52+00:00",
+  "tenferro_commit": "ce9125d0cff4ee40841120759b5df45252c27f22",
+  "hardware": {
+    "gpu": "NVIDIA A100-SXM4-80GB",
+    "cpu": "AMD EPYC 7713 64-Core Processor",
+    "host": "b8e17af19547"
+  },
+  "unit": "ms",
+  "rows": [
+    {
+      "case": "fft_c64_n1048576",
+      "group": "fft",
+      "backend": "jax-cuda",
+      "median": 0.8743135,
+      "iqr": 0.007912499999999989,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 4
+    },
+    {
+      "case": "fft_c64_n1048576",
+      "group": "fft",
+      "backend": "pytorch-cuda",
+      "median": 0.1241245,
+      "iqr": 0.0012302499999999883,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 2
+    },
+    {
+      "case": "fft_c64_n1048576",
+      "group": "fft",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.15598975,
+      "iqr": 0.0016474375000000152,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 8
+    },
+    {
+      "case": "fft_c64_n1048576",
+      "group": "fft",
+      "backend": "tenferro-cuda-eager",
+      "median": 0.209903375,
+      "iqr": 0.0010300624999999841,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 8
+    },
+    {
+      "case": "ifft_c64_n1048576",
+      "group": "ifft",
+      "backend": "jax-cuda",
+      "median": 1.008118,
+      "iqr": 0.13381725,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 2
+    },
+    {
+      "case": "ifft_c64_n1048576",
+      "group": "ifft",
+      "backend": "pytorch-cuda",
+      "median": 0.13511225,
+      "iqr": 0.00038750000000001283,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 4
+    },
+    {
+      "case": "ifft_c64_n1048576",
+      "group": "ifft",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.212292125,
+      "iqr": 0.0017199999999999993,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 16
+    },
+    {
+      "case": "ifft_c64_n1048576",
+      "group": "ifft",
+      "backend": "tenferro-cuda-eager",
+      "median": 0.265893375,
+      "iqr": 0.0007324999999999693,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 8
+    },
+    {
+      "case": "irfft_c64_n1048576",
+      "group": "irfft",
+      "backend": "jax-cuda",
+      "median": 1.119013,
+      "iqr": 0.05885724999999997,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 2
+    },
+    {
+      "case": "irfft_c64_n1048576",
+      "group": "irfft",
+      "backend": "pytorch-cuda",
+      "median": 0.08425546875,
+      "iqr": 0.0001123749999999979,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "irfft_c64_n1048576",
+      "group": "irfft",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.147185375,
+      "iqr": 0.0007862812500000205,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 16
+    },
+    {
+      "case": "irfft_c64_n1048576",
+      "group": "irfft",
+      "backend": "tenferro-cuda-eager",
+      "median": 0.1899896875,
+      "iqr": 0.013493125000000022,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 16
+    },
+    {
+      "case": "rfft_f64_n1048576",
+      "group": "rfft",
+      "backend": "jax-cuda",
+      "median": 0.923821,
+      "iqr": 0.00965487499999984,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 4
+    },
+    {
+      "case": "rfft_f64_n1048576",
+      "group": "rfft",
+      "backend": "pytorch-cuda",
+      "median": 0.061697967741935485,
+      "iqr": 0.00011241935483870952,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 31
+    },
+    {
+      "case": "rfft_f64_n1048576",
+      "group": "rfft",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.09605629032258065,
+      "iqr": 0.0007819354838709547,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 31
+    },
+    {
+      "case": "rfft_f64_n1048576",
+      "group": "rfft",
+      "backend": "tenferro-cuda-eager",
+      "median": 0.13887975,
+      "iqr": 0.0005503437499999875,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 16
+    }
+  ]
+}
