@@ -25,7 +25,6 @@ devcontainer image:
 
 ```bash
 npx --yes @devcontainers/cli exec --workspace-folder . bash -lc '
-  export TENFERRO_CPU_FEATURES=blas-mkl
   export BENCHMARK_TARGET_PROFILE=amd-cpu
   export PUBLICATION_GATE_PROFILE=full
   export PUBLIC_API_CANDIDATES_ONLY=1

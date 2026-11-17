@@ -5,8 +5,8 @@ use serde_json::{json, Value};
 use std::{error::Error, hint::black_box, time::Instant};
 use tenferro_ad::EagerRuntime;
 use tenferro_cpu::{with_cpu_engine, CpuEngine};
-use tenferro_fft::{FftExecutor, FftNorm, TracedTensorFftExt};
-use tenferro_linalg::{TensorLinalgExt, TracedTensorLinalgExt};
+use tenferro_fft::{FftExecutor, FftNorm, TracedFftOps};
+use tenferro_linalg::{LinalgOps, NormOptions, Slogdet, TracedLinalgOps};
 use tenferro_runtime::{ExecutionEngine, GraphCompiler, Runtime, TraceContext, TracedTensor};
 use tenferro_tensor::{
     DType, GatherConfig, PadConfig, ScatterConfig, SliceConfig, Tensor, TensorAnalytic,
@@ -235,7 +235,7 @@ fn real(case: &Value, path: &str, threads: usize, runs: usize, target: u128) -> 
     } else {
         None
     };
-    let axes = if op.ends_with("axis0") {
+    let axes: Vec<isize> = if op.ends_with("axis0") {
         vec![0]
     } else if op.ends_with("axis1") {
         vec![1]
@@ -246,7 +246,7 @@ fn real(case: &Value, path: &str, threads: usize, runs: usize, target: u128) -> 
         if axes.len() == 2 {
             8
         } else {
-            shape[1 - axes[0]] * 8
+            shape[1 - axes[0] as usize] * 8
         }
     } else {
         n * 8
@@ -298,10 +298,18 @@ fn real(case: &Value, path: &str, threads: usize, runs: usize, target: u128) -> 
                     "expm1" => s.expm1_read(r)?,
                     "log1p" => s.log1p_read(r)?,
                     "pow" => s.pow_read(r, e.unwrap())?,
-                    x if x.starts_with("reduce_max") => s.reduce_max_read(r, &axes)?,
-                    x if x.starts_with("reduce_min") => s.reduce_min_read(r, &axes)?,
-                    x if x.starts_with("reduce_sum") => s.reduce_sum_read(r, &axes)?,
-                    x if x.starts_with("reduce_prod") => s.reduce_prod_read(r, &axes)?,
+                    x if x.starts_with("reduce_max") => {
+                        s.reduce_max_read(r, &axes_usize(&axes))?
+                    }
+                    x if x.starts_with("reduce_min") => {
+                        s.reduce_min_read(r, &axes_usize(&axes))?
+                    }
+                    x if x.starts_with("reduce_sum") => {
+                        s.reduce_sum_read(r, &axes_usize(&axes))?
+                    }
+                    x if x.starts_with("reduce_prod") => {
+                        s.reduce_prod_read(r, &axes_usize(&axes))?
+                    }
                     _ => return Err("unknown real op".into()),
                 })
             },
@@ -590,9 +598,9 @@ fn complex_or_linalg(
         let outs = match op {
             "exp" => vec![tx.exp()?],
             "log" => vec![tx.log()?],
-            "norm_fro" => vec![tx.norm(None, Some(&[0, 1]), false)?],
+            "norm_fro" => vec![tx.norm_with(&NormOptions::default().axes(Some(tenferro_tensor::AxisVec::from(&[0isize, 1isize][..]))))?],
             "slogdet" => {
-                let (s, l) = tx.slogdet()?;
+                let Slogdet { sign: s, log_abs_det: l } = tx.slogdet()?;
                 vec![s, l]
             }
             _ => unreachable!(),
@@ -619,11 +627,11 @@ fn complex_or_linalg(
         with_cpu_engine(s, |s| -> Result<Value> {
             if op == "norm_fro" {
                 tensor_measure(bytes, runs, target, units, |()| {
-                    Ok(x.norm(None, Some(&[0, 1]), false, s)?)
+                    Ok(x.norm_with(&NormOptions::default().axes(Some(tenferro_tensor::AxisVec::from(&[0isize, 1isize][..]))), s)?)
                 })
             } else {
                 let initial = x.slogdet(s)?;
-                let sig = vec![signature(&initial.0)?, signature(&initial.1)?];
+                let sig = vec![signature(&initial.sign)?, signature(&initial.log_abs_det)?];
                 drop(initial);
                 let mut row = sample(bytes, runs, target, units, |()| Ok(x.slogdet(s)?))?;
                 row["outputs"] = json!(sig);
@@ -660,10 +668,10 @@ fn fft(case: &Value, path: &str, threads: usize, runs: usize, target: u128) -> R
         let trace = TraceContext::new();
         let tx = traced(&trace, &x)?;
         let out = match op {
-            "fft" => tx.fft(None, -1, FftNorm::Backward)?,
-            "ifft" => tx.ifft(None, -1, FftNorm::Backward)?,
-            "rfft" => tx.rfft(None, -1, FftNorm::Backward)?,
-            "irfft" => tx.irfft(Some(n), -1, FftNorm::Backward)?,
+            "fft" => tx.fft_with(&fft_options(op, n))?,
+            "ifft" => tx.ifft_with(&fft_options(op, n))?,
+            "rfft" => tx.rfft_with(&fft_options(op, n))?,
+            "irfft" => tx.irfft_with(&fft_options(op, n))?,
             _ => unreachable!(),
         };
         return trace_measure(&[out], threads, bytes, runs, target);
@@ -674,16 +682,33 @@ fn fft(case: &Value, path: &str, threads: usize, runs: usize, target: u128) -> R
         with_cpu_engine(s, |s| -> Result<Value> {
             tensor_measure(bytes, runs, target, units, |()| {
                 Ok(match op {
-                    "fft" => executor.fft(&x, None, -1, FftNorm::Backward, s)?,
-                    "ifft" => executor.ifft(&x, None, -1, FftNorm::Backward, s)?,
-                    "rfft" => executor.rfft(&x, None, -1, FftNorm::Backward, s)?,
-                    "irfft" => executor.irfft(&x, Some(n), -1, FftNorm::Backward, s)?,
+                    "fft" => executor.fft_with(&x, &fft_options(op, n), s)?,
+                    "ifft" => executor.ifft_with(&x, &fft_options(op, n), s)?,
+                    "rfft" => executor.rfft_with(&x, &fft_options(op, n), s)?,
+                    "irfft" => executor.irfft_with(&x, &fft_options(op, n), s)?,
                     _ => unreachable!(),
                 })
             })
         })
         .expect("CPU session")
     })?
+}
+
+/// The options every FFT case measures: the default length and axis, with the
+/// requested length for the real inverse transform.
+fn fft_options(op: &str, n: usize) -> tenferro_fft::FftOptions {
+    let options = tenferro_fft::FftOptions::default().axis(-1).norm(FftNorm::Backward);
+    if op == "irfft" {
+        options.n(Some(n))
+    } else {
+        options
+    }
+}
+
+/// The unsigned axes of the backend reduction hooks, which keep the harness
+/// provider contract's `usize` spelling.
+fn axes_usize(axes: &[isize]) -> Vec<usize> {
+    axes.iter().map(|&axis| axis as usize).collect()
 }
 
 fn metadata(case: &Value, runs: usize, target: u128) -> Result<Value> {

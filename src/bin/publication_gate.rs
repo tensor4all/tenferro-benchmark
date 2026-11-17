@@ -12,16 +12,15 @@ use std::time::{Duration, Instant};
 
 use tenferro_ad::{AdContext, EagerRuntime, EagerSession, EagerTensor};
 use tenferro_cpu::{runtime_engine_id, runtime_engine_registration, CpuEngine};
-use tenferro_einsum::{EagerSessionEinsumExt, TraceContextEinsumExt};
+use tenferro_einsum::{EagerEinsumOps, TracedEinsumOps};
 use tenferro_einsum_benchmark::spd_from_base;
 use tenferro_einsum_benchmark::thread_enforcement::{
     enforce_thread_request, verify_backend_threads,
 };
-use tenferro_linalg::{EagerSessionLinalgExt, TracedTensorLinalgExt};
-use tenferro_runtime::program::ProgramInputSpec;
+use tenferro_linalg::{EagerLinalgOps, Eigh, Lu, Qr, Svd, TracedLinalgOps};
 use tenferro_runtime::{
-    DotGeneralConfig, Error, ErrorPhase, ExecutionEngine, GraphCompiler, Runtime, Tensor,
-    TraceContext, TracedTensor,
+    DotGeneralConfig, Error, ExecutionEngine, GraphCompiler, Runtime, Tensor, TraceContext,
+    TracedTensor,
 };
 use tenferro_tensor::TypedTensor;
 
@@ -100,11 +99,13 @@ enum SuiteFilter {
 }
 
 fn eager_from_tensor_in(tensor: Tensor, ctx: Arc<EagerRuntime>) -> EagerTensor {
-    EagerTensor::from_tensor_in(tensor, ctx).expect("benchmark tensor should be valid")
+    ctx.constant_from(tensor)
+        .expect("benchmark tensor should be valid")
 }
 
 fn eager_requires_grad_in(tensor: Tensor, ctx: Arc<EagerRuntime>) -> EagerTensor {
-    EagerTensor::requires_grad_in(tensor, ctx).expect("benchmark tensor should be valid")
+    ctx.variable_from(tensor)
+        .expect("benchmark tensor should be valid")
 }
 
 // Operations use the borrowed session entered outside the sampling clock.
@@ -118,39 +119,27 @@ mod eager_einsum_tensor {
         static SUBS: OnceLock<tenferro_einsum::EinsumSubscripts> = OnceLock::new();
         let subs = SUBS
             .get_or_init(|| tenferro_einsum::EinsumSubscripts::new(&[&[0, 1], &[1, 2]], &[0, 2]));
-        session
-            .einsum_subscripts(inputs, subs)
-            .map_err(|e| runtime_einsum_error(e, ErrorPhase::Execution))
+        session.einsum(inputs, subs)
     }
-}
-fn runtime_einsum_error(error: tenferro_einsum::Error, phase: ErrorPhase) -> Error {
-    let kind = error.kind();
-    Error::extension(
-        "einsum",
-        phase,
-        tenferro_einsum::EINSUM_EXTENSION_FAMILY_ID,
-        kind,
-        error,
-    )
 }
 mod eager_linalg_tensor {
     use super::*;
     pub fn svd(
         session: &mut EagerSession<'_>,
         a: &EagerTensor,
-    ) -> tenferro_ad::error::Result<(EagerTensor, EagerTensor, EagerTensor)> {
+    ) -> tenferro_ad::error::Result<Svd<EagerTensor>> {
         session.svd(a)
     }
     pub fn qr(
         session: &mut EagerSession<'_>,
         a: &EagerTensor,
-    ) -> tenferro_ad::error::Result<(EagerTensor, EagerTensor)> {
+    ) -> tenferro_ad::error::Result<Qr<EagerTensor>> {
         session.qr(a)
     }
     pub fn eigh(
         session: &mut EagerSession<'_>,
         a: &EagerTensor,
-    ) -> tenferro_ad::error::Result<(EagerTensor, EagerTensor)> {
+    ) -> tenferro_ad::error::Result<Eigh<EagerTensor, EagerTensor>> {
         session.eigh(a)
     }
     pub fn solve(
@@ -181,7 +170,7 @@ mod eager_session_ops {
     pub fn reduce_sum(
         session: &mut EagerSession<'_>,
         input: &EagerTensor,
-        axes: &[usize],
+        axes: &[isize],
     ) -> tenferro_ad::error::Result<EagerTensor> {
         session.reduce_sum(input, Some(axes))
     }
@@ -257,17 +246,13 @@ struct Row {
     status: String,
 }
 
+/// The backend a row was measured on. tenferro-rs 0.12 has one CPU backend
+/// (#2608), so a CPU row names `faer`; the accelerated arm names `cuda`.
 fn backend_name() -> &'static str {
     if cfg!(feature = "cuda") {
         "cuda"
-    } else if cfg!(feature = "blas-openblas") {
-        "blas-openblas"
-    } else if cfg!(feature = "blas-accelerate") {
-        "blas-accelerate"
-    } else if cfg!(feature = "blas-mkl") {
-        "blas-mkl"
     } else {
-        "native"
+        "faer"
     }
 }
 
@@ -501,7 +486,7 @@ fn run_small_latency(config: &BenchConfig, rows: &mut Vec<Row>) {
                 Ok((a,))
             },
             |session, (a,)| {
-                let (u, s, vh) = eager_linalg_tensor::svd(session, &a)?;
+                let Svd { u, s, vh } = eager_linalg_tensor::svd(session, &a)?;
                 Ok((u, s, vh))
             },
         ));
@@ -519,7 +504,7 @@ fn run_small_latency(config: &BenchConfig, rows: &mut Vec<Row>) {
                 Ok((a,))
             },
             |session, (a,)| {
-                let (q, r) = eager_linalg_tensor::qr(session, &a)?;
+                let Qr { q, r } = eager_linalg_tensor::qr(session, &a)?;
                 Ok((q, r))
             },
         ));
@@ -536,7 +521,10 @@ fn run_small_latency(config: &BenchConfig, rows: &mut Vec<Row>) {
                 Ok((a,))
             },
             |session, (a,)| {
-                let (w, v) = eager_linalg_tensor::eigh(session, &a)?;
+                let Eigh {
+                    values: w,
+                    vectors: v,
+                } = eager_linalg_tensor::eigh(session, &a)?;
                 Ok((w, v))
             },
         ));
@@ -583,7 +571,7 @@ fn run_small_latency(config: &BenchConfig, rows: &mut Vec<Row>) {
             |session, (a, b)| {
                 let y = eager_session_ops::matmul(session, &a, &b)?;
                 let loss = eager_session_ops::reduce_sum(session, &y, &[0, 1])?;
-                Ok((loss.backward(session.engine())?, loss, y))
+                Ok((session.backward(&loss)?, loss, y))
             },
             |engine, (a, b)| check_sum_matmul_grads(engine, a, b, n, 1),
         ));
@@ -602,9 +590,9 @@ fn run_small_latency(config: &BenchConfig, rows: &mut Vec<Row>) {
                 Ok((a,))
             },
             |session, (a,)| {
-                let (u, s, vt) = eager_linalg_tensor::svd(session, &a)?;
+                let Svd { u, s, vh: vt } = eager_linalg_tensor::svd(session, &a)?;
                 let loss = eager_session_ops::reduce_sum(session, &s, &[0])?;
-                Ok((loss.backward(session.engine())?, loss, u, s, vt))
+                Ok((session.backward(&loss)?, loss, u, s, vt))
             },
             |engine, (a,)| check_sum_svd_s_grad(engine, a, n),
         ));
@@ -624,7 +612,7 @@ fn run_small_latency(config: &BenchConfig, rows: &mut Vec<Row>) {
             |session, (a, b)| {
                 let x = eager_linalg_tensor::solve(session, &a, &b)?;
                 let loss = eager_session_ops::reduce_sum(session, &x, &[0, 1])?;
-                Ok((loss.backward(session.engine())?, loss, x))
+                Ok((session.backward(&loss)?, loss, x))
             },
             |engine, (a, b)| check_sum_solve_grads(engine, a, b, n, 1),
         ));
@@ -752,7 +740,7 @@ fn run_large_throughput(config: &BenchConfig, rows: &mut Vec<Row>) {
                 Ok((a,))
             },
             |session, (a,)| {
-                let (u, s, vh) = eager_linalg_tensor::svd(session, &a)?;
+                let Svd { u, s, vh } = eager_linalg_tensor::svd(session, &a)?;
                 Ok((u, s, vh))
             },
         ));
@@ -771,7 +759,7 @@ fn run_large_throughput(config: &BenchConfig, rows: &mut Vec<Row>) {
                 Ok((a,))
             },
             |session, (a,)| {
-                let (q, r) = eager_linalg_tensor::qr(session, &a)?;
+                let Qr { q, r } = eager_linalg_tensor::qr(session, &a)?;
                 Ok((q, r))
             },
         ));
@@ -787,7 +775,10 @@ fn run_large_throughput(config: &BenchConfig, rows: &mut Vec<Row>) {
                 Ok((a,))
             },
             |session, (a,)| {
-                let (w, v) = eager_linalg_tensor::eigh(session, &a)?;
+                let Eigh {
+                    values: w,
+                    vectors: v,
+                } = eager_linalg_tensor::eigh(session, &a)?;
                 Ok((w, v))
             },
         ));
@@ -860,7 +851,7 @@ fn run_large_throughput(config: &BenchConfig, rows: &mut Vec<Row>) {
             |session, (a, b)| {
                 let y = eager_session_ops::matmul(session, &a, &b)?;
                 let loss = eager_session_ops::reduce_sum(session, &y, &[0, 1])?;
-                Ok((loss.backward(session.engine())?, loss, y))
+                Ok((session.backward(&loss)?, loss, y))
             },
             |engine, (a, b)| check_sum_matmul_grads(engine, a, b, n, 1),
         ));
@@ -878,9 +869,9 @@ fn run_large_throughput(config: &BenchConfig, rows: &mut Vec<Row>) {
                 Ok((a,))
             },
             |session, (a,)| {
-                let (u, s, vt) = eager_linalg_tensor::svd(session, &a)?;
+                let Svd { u, s, vh: vt } = eager_linalg_tensor::svd(session, &a)?;
                 let loss = eager_session_ops::reduce_sum(session, &s, &[0])?;
-                Ok((loss.backward(session.engine())?, loss, u, s, vt))
+                Ok((session.backward(&loss)?, loss, u, s, vt))
             },
             |engine, (a,)| check_sum_svd_s_grad(engine, a, n),
         ));
@@ -899,7 +890,7 @@ fn run_large_throughput(config: &BenchConfig, rows: &mut Vec<Row>) {
             |session, (a, b)| {
                 let x = eager_linalg_tensor::solve(session, &a, &b)?;
                 let loss = eager_session_ops::reduce_sum(session, &x, &[0, 1])?;
-                Ok((loss.backward(session.engine())?, loss, x))
+                Ok((session.backward(&loss)?, loss, x))
             },
             |engine, (a, b)| check_sum_solve_grads(engine, a, b, n, 1),
         ));
@@ -1047,7 +1038,7 @@ fn run_batched_small(config: &BenchConfig, rows: &mut Vec<Row>) {
                     Ok((a,))
                 },
                 |session, (a,)| {
-                    let (u, s, vh) = eager_linalg_tensor::svd(session, &a)?;
+                    let Svd { u, s, vh } = eager_linalg_tensor::svd(session, &a)?;
                     Ok((u, s, vh))
                 },
             ));
@@ -1066,7 +1057,7 @@ fn run_batched_small(config: &BenchConfig, rows: &mut Vec<Row>) {
                     Ok((a,))
                 },
                 |session, (a,)| {
-                    let (q, r) = eager_linalg_tensor::qr(session, &a)?;
+                    let Qr { q, r } = eager_linalg_tensor::qr(session, &a)?;
                     Ok((q, r))
                 },
             ));
@@ -1083,7 +1074,10 @@ fn run_batched_small(config: &BenchConfig, rows: &mut Vec<Row>) {
                     Ok((a,))
                 },
                 |session, (a,)| {
-                    let (w, v) = eager_linalg_tensor::eigh(session, &a)?;
+                    let Eigh {
+                        values: w,
+                        vectors: v,
+                    } = eager_linalg_tensor::eigh(session, &a)?;
                     Ok((w, v))
                 },
             ));
@@ -1138,7 +1132,7 @@ fn run_batched_small(config: &BenchConfig, rows: &mut Vec<Row>) {
                         config.take().expect("prepared config"),
                     )?;
                     let loss = eager_session_ops::reduce_sum(session, &out, &[0, 1, 2])?;
-                    Ok((loss.backward(session.engine())?, loss, out))
+                    Ok((session.backward(&loss)?, loss, out))
                 },
                 |engine, (a, rhs, _)| check_sum_matmul_grads(engine, a, rhs, n, b),
             ));
@@ -1163,7 +1157,7 @@ fn run_batched_small(config: &BenchConfig, rows: &mut Vec<Row>) {
                 |session, (a, rhs)| {
                     let x = eager_linalg_tensor::solve(session, &a, &rhs)?;
                     let loss = eager_session_ops::reduce_sum(session, &x, &[0, 1, 2])?;
-                    Ok((loss.backward(session.engine())?, loss, x))
+                    Ok((session.backward(&loss)?, loss, x))
                 },
                 |engine, (a, rhs)| check_sum_solve_grads(engine, a, rhs, n, b),
             ));
@@ -1217,7 +1211,7 @@ fn run_small_latency_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
             &format!("{n}x{n}"),
             |trace| {
                 let a = traced_tensor(trace, &[n, n], well_conditioned_matrix(n, 3));
-                let (u, s, vh) = a.svd()?;
+                let Svd { u, s, vh } = a.svd()?;
                 Ok(vec![u, s, vh])
             },
         ));
@@ -1230,7 +1224,7 @@ fn run_small_latency_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
             &format!("{n}x{n}"),
             |trace| {
                 let a = traced_tensor(trace, &[n, n], well_conditioned_matrix(n, 4));
-                let (q, r) = a.qr()?;
+                let Qr { q, r } = a.qr()?;
                 Ok(vec![q, r])
             },
         ));
@@ -1243,7 +1237,10 @@ fn run_small_latency_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
             &format!("{n}x{n}"),
             |trace| {
                 let a = traced_tensor(trace, &[n, n], spd_matrix(n, 5));
-                let (w, v) = a.eigh()?;
+                let Eigh {
+                    values: w,
+                    vectors: v,
+                } = a.eigh()?;
                 Ok(vec![w, v])
             },
         ));
@@ -1286,7 +1283,7 @@ fn run_small_latency_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
             &format!("{n}x{n}"),
             |trace| {
                 let a = traced_tensor(trace, &[n, n], well_conditioned_matrix(n, 10));
-                let (_, s, _) = a.svd()?;
+                let Svd { s, .. } = a.svd()?;
                 let loss = s.reduce_sum(Some(&[0]))?;
                 Ok(vec![grad(&loss, &a)?, loss])
             },
@@ -1410,7 +1407,7 @@ fn run_large_throughput_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
             &format!("{n}x{n}"),
             |trace| {
                 let a = traced_tensor(trace, &[n, n], well_conditioned_matrix(n, 25));
-                let (u, s, vh) = a.svd()?;
+                let Svd { u, s, vh } = a.svd()?;
                 Ok(vec![u, s, vh])
             },
         ));
@@ -1423,7 +1420,7 @@ fn run_large_throughput_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
             &format!("{n}x{n}"),
             |trace| {
                 let a = traced_tensor(trace, &[n, n], well_conditioned_matrix(n, 26));
-                let (q, r) = a.qr()?;
+                let Qr { q, r } = a.qr()?;
                 Ok(vec![q, r])
             },
         ));
@@ -1436,7 +1433,10 @@ fn run_large_throughput_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
             &format!("{n}x{n}"),
             |trace| {
                 let a = traced_tensor(trace, &[n, n], spd_matrix(n, 27));
-                let (w, v) = a.eigh()?;
+                let Eigh {
+                    values: w,
+                    vectors: v,
+                } = a.eigh()?;
                 Ok(vec![w, v])
             },
         ));
@@ -1499,7 +1499,7 @@ fn run_large_throughput_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
             &format!("{n}x{n}"),
             |trace| {
                 let a = traced_tensor(trace, &[n, n], well_conditioned_matrix(n, 34));
-                let (_, s, _) = a.svd()?;
+                let Svd { s, .. } = a.svd()?;
                 let loss = s.reduce_sum(Some(&[0]))?;
                 Ok(vec![grad(&loss, &a)?, loss])
             },
@@ -1623,7 +1623,7 @@ fn run_batched_small_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
                 &shape,
                 |trace| {
                     let a = traced_tensor(trace, &[n, n, b], batched_well_conditioned(n, b, 43));
-                    let (u, s, vh) = a.svd()?;
+                    let Svd { u, s, vh } = a.svd()?;
                     Ok(vec![u, s, vh])
                 },
             ));
@@ -1636,7 +1636,7 @@ fn run_batched_small_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
                 &shape,
                 |trace| {
                     let a = traced_tensor(trace, &[n, n, b], batched_well_conditioned(n, b, 44));
-                    let (q, r) = a.qr()?;
+                    let Qr { q, r } = a.qr()?;
                     Ok(vec![q, r])
                 },
             ));
@@ -1649,7 +1649,10 @@ fn run_batched_small_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
                 &shape,
                 |trace| {
                     let a = traced_tensor(trace, &[n, n, b], batched_spd(n, b, 45));
-                    let (w, v) = a.eigh()?;
+                    let Eigh {
+                        values: w,
+                        vectors: v,
+                    } = a.eigh()?;
                     Ok(vec![w, v])
                 },
             ));
@@ -1929,23 +1932,6 @@ fn cpu_engine() -> MutexGuard<'static, CpuEngine> {
 }
 
 fn record_cpu_runtime() -> Result<(), Error> {
-    #[cfg(feature = "blas-mkl")]
-    let provider_threads = {
-        extern "C" {
-            fn MKL_Get_Max_Threads() -> i32;
-        }
-        // SAFETY: blas-mkl links the oneMKL C ABI; this argument-free query
-        // only reads the calling thread's effective provider configuration.
-        let threads = unsafe { MKL_Get_Max_Threads() };
-        assert_eq!(
-            threads as usize,
-            cpu_engine().num_threads(),
-            "MKL and CPU thread budgets differ"
-        );
-        Some(threads)
-    };
-    #[cfg(not(feature = "blas-mkl"))]
-    let provider_threads: Option<i32> = None;
     let affinity = std::fs::read_to_string("/proc/thread-self/status")
         .ok()
         .and_then(|status| {
@@ -1958,7 +1944,7 @@ fn record_cpu_runtime() -> Result<(), Error> {
     record_raw(serde_json::json!({
         "record_type": "runtime", "backend": "tenferro", "provider": backend_name(),
         "thread_budget": backend.num_threads(), "worker_count": backend.num_threads(),
-        "provider_max_threads": provider_threads, "scope_worker_affinity": affinity,
+        "scope_worker_affinity": affinity,
         "cpu_provider": tenferro_cpu::cpu_provider_id(),
     }))
 }
@@ -2335,20 +2321,17 @@ fn bench_einsum_trace_row(config: &BenchConfig, n: usize) -> Row {
     let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
         let a = tensor(&[n, n], data_for_shape(&[n, n], 1));
         let b = tensor(&[n, n], data_for_shape(&[n, n], 2));
-        let mut trace = TraceContext::new();
+        let trace = TraceContext::new();
+        // The fixtures are constants bound to the trace: the program carries
+        // them, so the measured run passes no input tensors.
         let a_value = trace
-            .input_with_default(ProgramInputSpec::new(a.dtype(), [n.into(), n.into()]), a)
+            .from_tensor_concrete_shape(a)
             .map_err(|err| Error::Internal(err.to_string()))?;
         let b_value = trace
-            .input_with_default(ProgramInputSpec::new(b.dtype(), [n.into(), n.into()]), b)
+            .from_tensor_concrete_shape(b)
             .map_err(|err| Error::Internal(err.to_string()))?;
-        let output = trace
-            .einsum(&[a_value, b_value], "ij,jk->ik")
-            .map_err(|error| runtime_einsum_error(error, ErrorPhase::GraphBuild))?;
-        let graph = trace
-            .finish(&[output])
-            .map_err(|err| Error::Internal(err.to_string()))?;
-        let program = GraphCompiler::new().compile_traced_graph(&graph)?;
+        let output = trace.einsum(&[&a_value, &b_value], "ij,jk->ik")?;
+        let program = GraphCompiler::new().compile(&output)?;
         let runtime = cpu_runtime_with_extensions()?;
         let mut engine = cpu_engine();
         let target = ExecutionEngine::target(&*engine);
@@ -2508,23 +2491,23 @@ impl LinalgAdLoss {
         match self {
             Self::SumSvdS { matrix_seed } => {
                 let a = traced_tensor(trace, &[n, n], well_conditioned_matrix(n, matrix_seed));
-                let (_, s, _) = a.svd()?;
+                let Svd { s, .. } = a.svd()?;
                 Ok((s.reduce_sum(Some(&[0]))?, a))
             }
             Self::SumQr { matrix_seed } => {
                 let a = traced_tensor(trace, &[n, n], well_conditioned_matrix(n, matrix_seed));
-                let (q, r) = a.qr()?;
+                let Qr { q, r } = a.qr()?;
                 let loss = (&q.reduce_sum(Some(&[0, 1]))? + &r.reduce_sum(Some(&[0, 1]))?)?;
                 Ok((loss, a))
             }
             Self::SumEigh { matrix_seed } => {
                 let a = traced_tensor(trace, &[n, n], spd_matrix(n, matrix_seed));
-                let (w, _) = a.eigh()?;
+                let Eigh { values: w, .. } = a.eigh()?;
                 Ok((w.reduce_sum(Some(&[0]))?, a))
             }
             Self::SumLu { matrix_seed } => {
                 let a = traced_tensor(trace, &[n, n], well_conditioned_matrix(n, matrix_seed));
-                let (_, l, u, _) = a.lu()?;
+                let Lu { l, u, .. } = a.lu()?;
                 let loss = (&l.reduce_sum(Some(&[0, 1]))? + &u.reduce_sum(Some(&[0, 1]))?)?;
                 Ok((loss, a))
             }
@@ -2582,21 +2565,21 @@ impl LinalgAdLoss {
     ) -> tenferro_ad::error::Result<EagerTensor> {
         match self {
             Self::SumSvdS { .. } => {
-                let (_, s, _) = session.svd(&fixture.wrt)?;
+                let Svd { s, .. } = session.svd(&fixture.wrt)?;
                 session.reduce_sum(&s, Some(&[0]))
             }
             Self::SumQr { .. } => {
-                let (q, r) = session.qr(&fixture.wrt)?;
+                let Qr { q, r } = session.qr(&fixture.wrt)?;
                 let q_sum = session.reduce_sum(&q, Some(&[0, 1]))?;
                 let r_sum = session.reduce_sum(&r, Some(&[0, 1]))?;
                 session.add(&q_sum, &r_sum)
             }
             Self::SumEigh { .. } => {
-                let (w, _) = session.eigh(&fixture.wrt)?;
+                let Eigh { values: w, .. } = session.eigh(&fixture.wrt)?;
                 session.reduce_sum(&w, Some(&[0]))
             }
             Self::SumLu { .. } => {
-                let (_, l, u, _) = session.lu(&fixture.wrt)?;
+                let Lu { l, u, .. } = session.lu(&fixture.wrt)?;
                 let l_sum = session.reduce_sum(&l, Some(&[0, 1]))?;
                 let u_sum = session.reduce_sum(&u, Some(&[0, 1]))?;
                 session.add(&l_sum, &u_sum)
@@ -2684,8 +2667,11 @@ fn push_linalg_jvp_vjp_eager_benches(
             ))
         },
         |ctx, engine, (fixture, tangent)| {
+            let derivative = ctx.with_eager_session(engine, |s| {
+                let output = loss.eager_forward(s, fixture)?;
+                s.jvp(&output, &fixture.wrt, tangent)
+            })?;
             let output = ctx.with_eager_session(engine, |s| loss.eager_forward(s, fixture))?;
-            let derivative = ctx.jvp(engine, &output, &fixture.wrt, tangent)?;
             Ok((output, derivative))
         },
     ));
@@ -2703,8 +2689,11 @@ fn push_linalg_jvp_vjp_eager_benches(
             ))
         },
         |ctx, engine, (fixture, cotangent)| {
+            let derivative = ctx.with_eager_session(engine, |s| {
+                let output = loss.eager_forward(s, fixture)?;
+                s.vjp(&output, &fixture.wrt, cotangent)
+            })?;
             let output = ctx.with_eager_session(engine, |s| loss.eager_forward(s, fixture))?;
-            let derivative = ctx.vjp(engine, &output, &fixture.wrt, cotangent)?;
             Ok((output, derivative))
         },
     ));
@@ -2785,7 +2774,8 @@ fn leaf_value_and_grad(
     leaf: &EagerTensor,
 ) -> Result<(Vec<f64>, Vec<f64>), String> {
     let value = leaf
-        .to_tensor(engine)
+        .runtime()
+        .with_eager_session(engine, |session| session.duplicate_value(leaf))
         .map_err(|error| format!("read leaf value: {error}"))?;
     let value = value
         .as_slice::<f64>()
@@ -3253,7 +3243,7 @@ mod timing_tests {
                     y = session.add(&y, &y)?;
                 }
                 let loss = eager_session_ops::reduce_sum(session, &y, &[0, 1])?;
-                Ok((loss.backward(session.engine())?, loss, y))
+                Ok((session.backward(&loss)?, loss, y))
             },
             validate,
         )
@@ -3335,7 +3325,7 @@ mod timing_tests {
             || Ok((leaf.clone(),)),
             |session, (x,)| {
                 let loss = eager_session_ops::reduce_sum(session, x, &[0])?;
-                Ok((loss.backward(session.engine())?, loss))
+                Ok((session.backward(&loss)?, loss))
             },
             MAX_BATCH_OPERATIONS,
         )
@@ -3349,7 +3339,8 @@ mod timing_tests {
                 eager_session_ops::reduce_sum(session, &leaf, &[0])
             })
             .unwrap();
-        loss.backward(&mut *engine).unwrap();
+        ctx.with_eager_session(&mut *engine, |session| session.backward(&loss))
+            .unwrap();
         assert_eq!(
             leaf_value_and_grad(&mut engine, &leaf).unwrap().1,
             vec![1.0, 1.0]
@@ -3364,14 +3355,15 @@ mod timing_tests {
         let n = 6;
         let backward = |engine: &mut CpuEngine, loss: EagerTensor| {
             ctx.clear_grads().unwrap();
-            loss.backward(engine).unwrap();
+            ctx.with_eager_session(engine, |session| session.backward(&loss))
+                .unwrap();
         };
 
         let a =
             eager_requires_grad_in(tensor(&[n, n], well_conditioned_matrix(n, 10)), ctx.clone());
         let loss = ctx
             .with_eager_session(&mut *engine, |session| {
-                let (_, s, _) = eager_linalg_tensor::svd(session, &a)?;
+                let Svd { s, .. } = eager_linalg_tensor::svd(session, &a)?;
                 eager_session_ops::reduce_sum(session, &s, &[0])
             })
             .unwrap();
@@ -3388,7 +3380,7 @@ mod timing_tests {
         // -U·Vᵀ is orthogonal with QᵀA symmetric, but negative definite.
         let loss = ctx
             .with_eager_session(&mut *engine, |session| {
-                let (_, s, _) = eager_linalg_tensor::svd(session, &a)?;
+                let Svd { s, .. } = eager_linalg_tensor::svd(session, &a)?;
                 let total = eager_session_ops::reduce_sum(session, &s, &[0])?;
                 session.neg(&total)
             })
@@ -3458,13 +3450,14 @@ mod timing_tests {
         // d/dx sum(x / 0) = [inf, inf]: a non-finite gradient is never accepted.
         let zero = eager_from_tensor_in(tensor(&[2], vec![0.0, 0.0]), ctx.clone());
         ctx.clear_grads().unwrap();
-        ctx.with_eager_session(&mut *engine, |session| {
-            let y = session.div(&x, &zero)?;
-            eager_session_ops::reduce_sum(session, &y, &[0])
-        })
-        .unwrap()
-        .backward(&mut *engine)
-        .unwrap();
+        let loss = ctx
+            .with_eager_session(&mut *engine, |session| {
+                let y = session.div(&x, &zero)?;
+                eager_session_ops::reduce_sum(session, &y, &[0])
+            })
+            .unwrap();
+        ctx.with_eager_session(&mut *engine, |session| session.backward(&loss))
+            .unwrap();
         let error = leaf_value_and_grad(&mut engine, &x).unwrap_err();
         assert!(error.contains("gradient element 0 is inf"), "{error}");
         ctx.clear_grads().unwrap();
@@ -3522,16 +3515,16 @@ mod timing_tests {
                 .unwrap();
             assert_eq!(output.shape(), shape);
             check(
-                output
-                    .to_tensor(&mut *engine)
+                ctx.with_eager_session(&mut *engine, |session| session.duplicate_value(&output))
                     .unwrap()
                     .as_slice::<f64>()
                     .unwrap(),
                 &expected,
             );
-            ctx.with_eager_session(&mut *engine, |session| session.reduce_sum(&output, None))
-                .unwrap()
-                .backward(&mut *engine)
+            let loss = ctx
+                .with_eager_session(&mut *engine, |session| session.reduce_sum(&output, None))
+                .unwrap();
+            ctx.with_eager_session(&mut *engine, |session| session.backward(&loss))
                 .unwrap();
             check(x.grad().unwrap().unwrap().as_slice::<f64>().unwrap(), &da);
             check(y.grad().unwrap().unwrap().as_slice::<f64>().unwrap(), &db);

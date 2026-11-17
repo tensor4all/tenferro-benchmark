@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "target_profile": "nvidia-gpu",
+  "suite_id": "gpu/einsum",
+  "timestamp": "2026-11-17T09:15:52+00:00",
+  "tenferro_commit": "ce9125d0cff4ee40841120759b5df45252c27f22",
+  "hardware": {
+    "gpu": "NVIDIA A100-SXM4-80GB",
+    "cpu": "AMD EPYC 7713 64-Core Processor",
+    "host": "b8e17af19547"
+  },
+  "unit": "ms",
+  "rows": [
+    {
+      "case": "einsum_bin_matmul_3072_f64",
+      "group": "einsum",
+      "backend": "jax-cuda",
+      "median": 3.391595,
+      "iqr": 0.0434300000000003,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 1
+    },
+    {
+      "case": "einsum_bin_matmul_3072_f64",
+      "group": "einsum",
+      "backend": "pytorch-cuda",
+      "median": 3.952353,
+      "iqr": 0.4875289999999999,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 1
+    },
+    {
+      "case": "einsum_bin_matmul_3072_f64",
+      "group": "einsum",
+      "backend": "tenferro-cuda-eager",
+      "median": 3.168704,
+      "iqr": 0.00041000000000002146,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 1,
+      "verification": "cpu_reference"
+    },
+    {
+      "case": "einsum_bin_matmul_3072_f64",
+      "group": "einsum",
+      "backend": "tenferro-cuda-trace",
+      "median": 3.177665,
+      "iqr": 0.0024900000000003253,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 1,
+      "verification": "cpu_reference"
+    }
+  ]
+}

@@ -7,9 +7,9 @@
 use std::hint::black_box;
 use std::time::{Duration, Instant};
 
-use tenferro_ad::{EagerRuntime, EagerTensor};
+use tenferro_ad::EagerRuntime;
 use tenferro_cpu::CpuEngine;
-use tenferro_einsum::{ContractionTree, EagerSessionEinsumExt, EinsumSubscripts, Subscripts};
+use tenferro_einsum::{ContractionTree, EagerEinsumOps, EinsumSubscripts, Subscripts};
 use tenferro_einsum_benchmark::{compile_einsum, CompiledEinsum};
 use tenferro_runtime::{ExecutionEngine, Runtime, TensorRead};
 use tenferro_tensor::{DotGeneralConfig, Tensor, TensorDot};
@@ -18,7 +18,9 @@ const DEFAULT_N: usize = 1024;
 const DEFAULT_WARMUPS: usize = 3;
 const DEFAULT_RUNS: usize = 15;
 
+#[cfg(target_os = "macos")]
 const CBLAS_COL_MAJOR: i32 = 102;
+#[cfg(target_os = "macos")]
 const CBLAS_NO_TRANS: i32 = 111;
 
 #[cfg(target_os = "macos")]
@@ -257,14 +259,12 @@ fn main() -> Result<(), String> {
 
     let eager_ctx = EagerRuntime::new().map_err(|e| e.to_string())?;
     let mut eager_engine = tenferro_einsum_benchmark::cpu_engine(None)?;
-    let eager_lhs = EagerTensor::from_tensor_in(
-        lhs.duplicate().map_err(|e| e.to_string())?,
-        eager_ctx.clone(),
-    )
-    .map_err(|e| e.to_string())?;
-    let eager_rhs =
-        EagerTensor::from_tensor_in(rhs.duplicate().map_err(|e| e.to_string())?, eager_ctx)
-            .map_err(|e| e.to_string())?;
+    let eager_lhs = eager_ctx
+        .constant_from(lhs.duplicate().map_err(|e| e.to_string())?)
+        .map_err(|e| e.to_string())?;
+    let eager_rhs = eager_ctx
+        .constant_from(rhs.duplicate().map_err(|e| e.to_string())?)
+        .map_err(|e| e.to_string())?;
     let subscripts = EinsumSubscripts::new(&[&[0, 1], &[2, 0]], &[2, 1]);
     let inputs = [&eager_lhs, &eager_rhs];
     measure("tenferro_eager_einsum", warmups, runs, || {
@@ -273,7 +273,7 @@ fn main() -> Result<(), String> {
             .runtime()
             .with_eager_session(&mut eager_engine, |session| {
                 session
-                    .einsum_subscripts(&inputs, &subscripts)
+                    .einsum(&inputs, &subscripts)
                     .map_err(Box::<dyn std::error::Error + Send + Sync>::from)
             })
             .map_err(|e| e.to_string())

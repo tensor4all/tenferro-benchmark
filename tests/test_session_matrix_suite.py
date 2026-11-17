@@ -107,8 +107,9 @@ class CollectTest(unittest.TestCase):
         snapshots = [{'before':dict(hits=0,misses=0,evictions=0,entries=0,retained_bytes=0),
                       'after':dict(hits=3,misses=1,evictions=0,entries=1,retained_bytes=128)}]*3
         def fake(command):
-            if command[command.index('--provider')+1] == 'faer':
-                return dict(correctness='unsupported', samples_ns=[], command_wall_seconds=0)
+            # tenferro-rs 0.12 has one CPU backend (tenferro-rs #2608), so a
+            # stream case runs once for latency and once for its counters.
+            self.assertEqual(command[command.index('--provider')+1], 'faer')
             if '--mode' in command:
                 return dict(correctness='passed', samples_ns=[], cache_diagnostics=snapshots,
                             command_wall_seconds=0)
@@ -116,13 +117,13 @@ class CollectTest(unittest.TestCase):
                         operations_per_sample=128, command_wall_seconds=0)
         with tempfile.TemporaryDirectory() as tmp, patch.dict(os.environ, {'BENCH_INSTANCE':case_id,'BENCH_EFFORT':'scan'}), patch.object(suite,'run_one',side_effect=fake) as run:
             self.assertFalse(suite.collect(Path('/fake'),Path(tmp),1))
-            self.assertEqual(run.call_count,3)
+            self.assertEqual(run.call_count,2)
             diagnostics = [json.loads(line) for line in (Path(tmp)/'cache_diagnostics_t1.jsonl').read_text().splitlines()]
             self.assertEqual(len(diagnostics),1)
             self.assertEqual(diagnostics[0]['samples_ns'],[])
             status=json.loads((Path(tmp)/'case_status_t1.json').read_text())
             self.assertEqual(len(status['executed']),1)
-            self.assertEqual(len(status['unsupported']),1)
+            self.assertEqual(len(status['unsupported']),0)
             self.assertFalse(status['complete'])
 
     def run_collect(self, script, ids):

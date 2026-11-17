@@ -46,7 +46,7 @@ def main():
     subprocess.run([sys.executable,str(ROOT/'scripts/collect_run_metadata.py'),'--suite-id','gpu/vendor_verification',
         '--suite-file',str(args.output/'manifest.json'),'--target-profile','nvidia-gpu',
         '--timestamp',datetime.now(timezone.utc).isoformat(),'--tenferro-dir',str(ROOT/'extern/tenferro-rs'),
-        '--features','cuda','--blas','none','--cuda-device-ordinal',os.environ.get('GPU_BENCH_PHYSICAL_DEVICE','0'),
+        '--features','cuda','--cuda-device-ordinal',os.environ.get('GPU_BENCH_PHYSICAL_DEVICE','0'),
         '--output',str(args.output/'run.yaml')],check=True)
     failed=[]
     with (args.output/'records.jsonl').open('w') as output:

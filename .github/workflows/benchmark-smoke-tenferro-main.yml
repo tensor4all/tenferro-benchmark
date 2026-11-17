@@ -82,8 +82,6 @@ jobs:
         run: |
           devcontainer exec --workspace-folder . bash -lc '
             set -euo pipefail
-            test -d "$MKLROOT/include"
-            export TENFERRO_CPU_FEATURES=blas-mkl
             export BENCHMARK_TARGET_PROFILE=amd-cpu
             export TENFERRO_REF=main TENFERRO_UPDATE=1
             ./scripts/setup_extern_deps.sh

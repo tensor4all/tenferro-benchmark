@@ -71,9 +71,9 @@ def main():
     config = yaml.safe_load((ROOT/"benchmarks/cpu/confirmation.yaml").read_text())
     config.update(status="declared", declared_before_candidate_results=datetime.now(timezone.utc).isoformat(),
         library={"baseline_commit": library_commit, "candidate_commit": library_commit},
-        harness_commit=harness_commit, build={"profile": "release", "features": ["blas-mkl"]},
+        harness_commit=harness_commit, build={"profile": "release", "features": ["native"]},
         host={"target_profile": "amd-cpu", "hostname": subprocess.check_output(["hostname"], text=True).strip(),
-              "affinity": "none (thread env only)", "provider": "MKL; versions independently recorded"},
+              "affinity": "none (thread env only)", "provider": "tenferro faer kernels; PyTorch MKL"},
         threads=[1, 4], cases={"suite_id": "cpu/perf_issues", "manifest_version": "new MWE cases pending issue assignment",
                               "coverage": "explicit", "case_ids": list(operations)},
         timing={"scope": "many_operations_single_interval; session/setup/cleanup outside", "cache_pool_state": "warm, validated and primed", "target_interval_ns": int(os.environ.get("CPU_GAP_TARGET_NS", "2000000"))},

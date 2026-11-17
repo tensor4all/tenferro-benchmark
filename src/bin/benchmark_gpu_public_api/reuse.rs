@@ -6,8 +6,8 @@ use std::{hint::black_box, time::Instant};
 use tenferro_einsum::ConcreteEinsumPlan;
 use tenferro_gpu::cuda::{upload_tensor, CudaRuntime};
 use tenferro_tensor::{
-    ContractionScalar, DType, DotGeneralAccumulation, DotGeneralConfig, Engine, Tensor, TensorRead,
-    TensorView, TensorWrite,
+    ContractionScalar, DType, Dest, DotGeneralAccumulation, DotGeneralConfig, Engine, Tensor,
+    TensorRead, TensorView, TensorWrite,
 };
 
 fn execute(
@@ -25,15 +25,24 @@ fn execute(
     let x = &inputs[0];
     let y = inputs.get(1).unwrap_or(x);
     match op {
-        "einsum_plan_into" => plan
-            .ok_or("missing prepared plan")?
-            .execute_into([x, y], s, out)?,
+        "einsum_plan_into" => {
+            plan.ok_or("missing prepared plan")?
+                .execute_into(&[x, y], s, Dest::Overwrite(out))?
+        }
         "einsum_plan_read_into" | "einsum_plan_strided_read_into" => plan
             .ok_or("missing prepared plan")?
-            .execute_read_into([a, b], s, out)?,
-        "einsum_plan_read_into_accum" | "einsum_plan_strided_read_into_accum" => plan
-            .ok_or("missing prepared plan")?
-            .execute_read_into_accum([a, b], s, dot_accumulation, out)?,
+            .execute_into(&[a, b], s, Dest::Overwrite(out))?,
+        "einsum_plan_read_into_accum" | "einsum_plan_strided_read_into_accum" => {
+            plan.ok_or("missing prepared plan")?.execute_into(
+                &[a, b],
+                s,
+                Dest::Scaled {
+                    out,
+                    alpha: dot_accumulation.alpha,
+                    beta: dot_accumulation.beta,
+                },
+            )?
+        }
         "dot_general_read_into" => s.dot_general_read_into(a, b, config, out)?,
         "dot_general_read_into_accum" => {
             s.dot_general_read_into_accum(a, b, config, dot_accumulation, out)?

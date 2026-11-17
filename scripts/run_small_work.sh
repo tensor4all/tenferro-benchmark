@@ -8,12 +8,10 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_DIR"
 THREAD_COUNTS=("${@:-1}")
-source "$SCRIPT_DIR/cpu_blas_provider.sh"
 source "$SCRIPT_DIR/thread_env.sh"
 source "$SCRIPT_DIR/benchmark_host_idle.sh"
 # shellcheck source=scripts/publish_run.sh
 source "$SCRIPT_DIR/publish_run.sh"
-export TENFERRO_CPU_FEATURES="$(normalize_cpu_blas_features "${TENFERRO_CPU_FEATURES:-}")"
 export BENCHMARK_TARGET_PROFILE="${BENCHMARK_TARGET_PROFILE:-amd-cpu}"
 PYTHON="$PROJECT_DIR/.venv/bin/python"
 [[ -x "$PYTHON" ]] || PYTHON=python3
@@ -29,10 +27,9 @@ fi
 if [[ "${SKIP_EXTERN_SETUP:-0}" != 1 ]]; then
     source "$SCRIPT_DIR/setup_extern_deps.sh"
 fi
-ensure_blas_env_for_features "$TENFERRO_CPU_FEATURES"
 "$PYTHON" "$SCRIPT_DIR/validate_benchmark_suite.py" benchmarks/cpu/small_work.yaml
 # Build once before sequential timing collection.
-cargo build --release --no-default-features --features "$TENFERRO_CPU_FEATURES" --bin small_work_case
+cargo build --release --no-default-features --features native --bin small_work_case
 BUILD_END_NS="$($PYTHON -c 'import time; print(time.monotonic_ns())')"
 BINARY="${CARGO_TARGET_DIR:-$PROJECT_DIR/target}/release/small_work_case"
 TIMESTAMP="${BENCHMARK_TIMESTAMP:-$(date -u +%Y%m%d_%H%M%S)}"
@@ -44,15 +41,15 @@ if [[ -z "${BENCHMARK_COMMIT:-}" ]]; then
     BENCHMARK_COMMIT="$(git rev-parse HEAD)"
 fi
 export BENCHMARK_COMMIT
-export BENCH_COMMAND="${BENCH_COMMAND:-$(for v in BENCHMARK_TARGET_PROFILE TENFERRO_CPU_FEATURES BENCH_COVERAGE BENCH_EFFORT BENCH_INSTANCE; do if [[ -n "${!v:-}" ]]; then printf '%s=%q ' "$v" "${!v}"; fi; done)$(printf '%q ' "$0" "$@")}"
+export BENCH_COMMAND="${BENCH_COMMAND:-$(for v in BENCHMARK_TARGET_PROFILE BENCH_COVERAGE BENCH_EFFORT BENCH_INSTANCE; do if [[ -n "${!v:-}" ]]; then printf '%s=%q ' "$v" "${!v}"; fi; done)$(printf '%q ' "$0" "$@")}"
 failed=0
 for threads in "${THREAD_COUNTS[@]}"; do
     configure_cpu_thread_env "$threads"
     "$PYTHON" "$SCRIPT_DIR/collect_run_metadata.py" \
         --suite-id cpu/small_work --target-profile "$BENCHMARK_TARGET_PROFILE" \
         --suite-file benchmarks/cpu/small_work.yaml --timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-        --tenferro-dir "$PROJECT_DIR/extern/tenferro-rs" --features "$TENFERRO_CPU_FEATURES" \
-        --blas "$(blas_impl_for_features "$TENFERRO_CPU_FEATURES")" --output "$RUN_DIR/run_t${threads}.yaml"
+        --tenferro-dir "$PROJECT_DIR/extern/tenferro-rs" --features native \
+        --output "$RUN_DIR/run_t${threads}.yaml"
     "$PYTHON" - "$RUN_DIR/run_t${threads}.yaml" <<'PY'
 import os, sys, subprocess, yaml
 from pathlib import Path
@@ -82,7 +79,7 @@ done
 DIAGNOSTIC_BUILD_START_NS="$($PYTHON -c 'import time; print(time.monotonic_ns())')"
 DIAGNOSTIC_TARGET="${CARGO_TARGET_DIR:-$PROJECT_DIR/target}-allocations"
 CARGO_TARGET_DIR="$DIAGNOSTIC_TARGET" cargo build --release --no-default-features \
-    --features "$TENFERRO_CPU_FEATURES,allocation-diagnostics" --bin small_work_case
+    --features native,allocation-diagnostics --bin small_work_case
 DIAGNOSTIC_BUILD_END_NS="$($PYTHON -c 'import time; print(time.monotonic_ns())')"
 for threads in "${THREAD_COUNTS[@]}"; do
     configure_cpu_thread_env "$threads"

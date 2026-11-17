@@ -16,35 +16,19 @@ ln -s "$ROOT/.venv" "$TMP/.venv"
 
 mkdir -p "$TMP/scripts" "$TMP/data/results" "$TMP/extern/tenferro-rs" "$TMP/benchmarks/cpu"
 cp "$ROOT/scripts/run_all.sh" "$TMP/scripts/run_all.sh"
-cp "$ROOT/scripts/format_cpu_thread_reports.py" "$TMP/scripts/format_cpu_thread_reports.py"
-cp "$ROOT/scripts/cpu_blas_provider.sh" "$TMP/scripts/cpu_blas_provider.sh"
-cp "$ROOT/scripts/collect_cpu_info.py" "$TMP/scripts/collect_cpu_info.py"
+cp "$ROOT/scripts/host_os.sh" "$TMP/scripts/host_os.sh"
+# Rendering pulls in most of scripts/, so the fixture carries all of it.
+cp "$ROOT/scripts/"*.py "$TMP/scripts/"
+cp -r "$ROOT/scripts/ci" "$TMP/scripts/ci"
 cp "$ROOT/scripts/thread_env.sh" "$TMP/scripts/thread_env.sh"
-cp "$ROOT/scripts/render_run.py" "$TMP/scripts/render_run.py"
-cp "$ROOT/scripts/report_summary.py" "$TMP/scripts/report_summary.py"
-cp "$ROOT/scripts/regenerate_report_summaries.py" "$TMP/scripts/regenerate_report_summaries.py"
 cp "$ROOT/scripts/publish_run.sh" "$TMP/scripts/publish_run.sh"
-cp "$ROOT/scripts/link_preflight.sh" "$TMP/scripts/link_preflight.sh"
-# The vendor roots this fixture exports are fakes, so the link preflight run_all.sh starts with is stubbed here;
-# the real check is campaign-toolkit's, run by the validate CI job.
-printf '#!/usr/bin/env bash\nexit 0\n' > "$TMP/link-preflight-python"
-chmod +x "$TMP/link-preflight-python"
-export LINK_PREFLIGHT_PYTHON="$TMP/link-preflight-python"
-cp "$ROOT/scripts/finalize_run.py" "$TMP/scripts/finalize_run.py"
-cp "$ROOT/scripts/case_status.py" "$TMP/scripts/case_status.py"
-cp "$ROOT/scripts/benchmark_wall.py" "$TMP/scripts/benchmark_wall.py"
 mkdir -p "$TMP/benchmarks"
-cp "$ROOT/benchmarks/profiles.yaml" "$TMP/benchmarks/profiles.yaml"
-cp "$ROOT/benchmarks/unverified-pages.txt" "$TMP/benchmarks/unverified-pages.txt"
-cp "$ROOT/scripts/format_results.py" "$TMP/scripts/format_results.py"
-cp "$ROOT/scripts/format_cpu_ops_results.py" "$TMP/scripts/format_cpu_ops_results.py"
+cp -r "$ROOT/benchmarks/"* "$TMP/benchmarks/"
 cp "$ROOT/scripts/cpu_pinning.sh" "$TMP/scripts/cpu_pinning.sh"
-cp "$ROOT/benchmarks/cpu_pinning_rows.tsv" "$TMP/benchmarks/cpu_pinning_rows.tsv"
 cat > "$TMP/scripts/suite_instances.py" <<'PY'
 #!/usr/bin/env python3
 print("bin_matmul_256")
 PY
-cp "$ROOT/benchmarks/cpu/einsum.yaml" "$TMP/benchmarks/cpu/einsum.yaml"
 
 (
   cd "$TMP/extern/tenferro-rs"
@@ -71,7 +55,6 @@ parser.add_argument("--timestamp", required=True)
 parser.add_argument("--tenferro-dir")
 parser.add_argument("--tenferro-commit")
 parser.add_argument("--features", action="append", default=[])
-parser.add_argument("--blas")
 parser.add_argument("--output", required=True)
 args = parser.parse_args()
 Path(args.output).parent.mkdir(parents=True, exist_ok=True)
@@ -96,13 +79,6 @@ Path(args.output).write_text(
             "  env:",
             f"    RAYON_NUM_THREADS: '{os.environ['RAYON_NUM_THREADS']}'",
             f"    BENCHMARK_COMMIT: {os.environ['BENCHMARK_COMMIT']}",
-            "blas:",
-            f"  implementation: {args.blas}",
-            "  version: unknown",
-            *([] if os.environ.get("TEST_EMPTY_BLAS_PATHS") == "1" else [
-                "  root: /tmp/openblas",
-                "  library: /tmp/openblas/lib/libopenblas.dylib",
-            ]),
             "",
         ]
     )
@@ -114,7 +90,6 @@ cat > "$TMP/scripts/setup_extern_deps.sh" <<'SH'
 set -euo pipefail
 root="$(cd "$(dirname "$0")/.." && pwd)"
 printf 'called\n' > "$root/setup_extern_called"
-export OPENBLAS_ROOT="$root/openblas"
 export TENFERRO_RS_DIR="$root/extern/tenferro-rs"
 SH
 
@@ -215,8 +190,10 @@ grep -q "Thread Environment" "$TMP/result/amd-cpu/cpu/einsum.md"
 grep -q "OPENBLAS_NUM_THREADS" "$TMP/result/amd-cpu/cpu/einsum.md"
 grep -q "XLA_FLAGS" "$TMP/result/amd-cpu/cpu/einsum.md"
 grep -q "Tenferro CPU BLAS Backend" "$TMP/result/amd-cpu/cpu/einsum.md"
-grep -q "tenferro-rs features: \`blas-openblas\`" "$TMP/result/amd-cpu/cpu/einsum.md"
-grep -q "BLAS implementation: \`openblas\`" "$TMP/result/amd-cpu/cpu/einsum.md"
+grep -q "tenferro-rs features: \`native\`" "$TMP/result/amd-cpu/cpu/einsum.md"
+# tenferro-rs 0.12 links no vendor provider (tenferro-rs #2608): a new run
+# records none, so the page names none.
+! grep -q "BLAS implementation:" "$TMP/result/amd-cpu/cpu/einsum.md"
 
 grep -q "CPU Benchmark Items" "$TMP/result/amd-cpu/cpu/cpu_ops.md"
 grep -q "Target profile: \`amd-cpu\`" "$TMP/result/amd-cpu/cpu/cpu_ops.md"
@@ -235,8 +212,8 @@ grep -q "Thread Environment" "$TMP/result/amd-cpu/cpu/cpu_ops.md"
 grep -q "OPENBLAS_NUM_THREADS" "$TMP/result/amd-cpu/cpu/cpu_ops.md"
 grep -q "XLA_FLAGS" "$TMP/result/amd-cpu/cpu/cpu_ops.md"
 grep -q "Tenferro CPU BLAS Backend" "$TMP/result/amd-cpu/cpu/cpu_ops.md"
-grep -q "tenferro-rs features: \`blas-openblas\`" "$TMP/result/amd-cpu/cpu/cpu_ops.md"
-grep -q "BLAS implementation: \`openblas\`" "$TMP/result/amd-cpu/cpu/cpu_ops.md"
+grep -q "tenferro-rs features: \`native\`" "$TMP/result/amd-cpu/cpu/cpu_ops.md"
+! grep -q "BLAS implementation:" "$TMP/result/amd-cpu/cpu/cpu_ops.md"
 
 # Exercise multi-thread aggregation with synthetic runners, never real timing.
 (
@@ -250,13 +227,12 @@ for report in einsum cpu_ops; do
   grep -q '^## Threads: 4$' "$TMP/result/amd-cpu/cpu/$report.md"
 done
 
-# Accelerate does not record optional BLAS root/library paths. Missing optional
-# metadata must not make a report-writing helper return failure under set -e.
+# The macOS profile writes its own pages from the same offline path.
 (
   cd "$TMP"
-  TEST_EMPTY_BLAS_PATHS=1 BENCHMARK_COMMIT=fixture-benchmark \
+  BENCHMARK_COMMIT=fixture-benchmark \
     BENCHMARK_HOST_OS=Darwin BENCHMARK_TARGET_PROFILE=mac-cpu \
-    TENFERRO_CPU_FEATURES=blas-accelerate RUN_PUBLIC_API_SUITE=1 RUN_PUBLIC_API_PROFILE=full PATH="/usr/bin:/bin" \
+    RUN_PUBLIC_API_SUITE=1 RUN_PUBLIC_API_PROFILE=full PATH="/usr/bin:/bin" \
     ./scripts/run_all.sh 1 >>"$TMP/run_all_docs_test.out"
 )
 test "$(cat "$TMP/public_profile_calls.log")" = "$(printf 'quick\nquick\nquick\nfull')"
@@ -265,8 +241,8 @@ test "$(cat "$TMP/public_profile_calls.log")" = "$(printf 'quick\nquick\nquick\n
 test "$(cat "$TMP/small_suite_calls.log")" = "$(printf 'run_small_work.sh 1\nrun_cpu_session.sh 1\nrun_perf_issues.sh 1\nrun_overhead_smoke.sh \nrun_small_work.sh 4\nrun_cpu_session.sh 4\nrun_perf_issues.sh 4\nrun_overhead_smoke.sh \nrun_overhead_smoke.sh \nrun_small_work.sh 1\nrun_cpu_session.sh 1\nrun_perf_issues.sh 1\nrun_overhead_smoke.sh ')"
 for report in einsum cpu_ops; do
   test -s "$TMP/result/mac-cpu/cpu/$report.md"
-  grep -q 'BLAS implementation: `accelerate`' "$TMP/result/mac-cpu/cpu/$report.md"
-  ! grep -q 'BLAS library:' "$TMP/result/mac-cpu/cpu/$report.md"
+  grep -q 'tenferro-rs features: `native`' "$TMP/result/mac-cpu/cpu/$report.md"
+  ! grep -q 'BLAS implementation:' "$TMP/result/mac-cpu/cpu/$report.md"
   grep -q 'Thread Environment' "$TMP/result/mac-cpu/cpu/$report.md"
 done
 

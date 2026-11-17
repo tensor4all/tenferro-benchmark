@@ -5,23 +5,13 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 use serde::Deserialize;
-#[cfg(tenferro_session_einsum)]
-use tenferro_ad::EagerSession;
-use tenferro_ad::{EagerRuntime, EagerTensor};
-// tenferro-rs #1946 moved eager einsum onto the borrowed session. The legacy
-// path below only keeps this library compiling against the #1946 audit
-// baseline, so the cross-revision CPU binaries (benchmark_cpu_session,
-// cpu_route_diagnostic) can be built there; build.rs sets the cfg.
-#[cfg(not(tenferro_session_einsum))]
-use tenferro_einsum::EagerEinsumExt;
-#[cfg(tenferro_session_einsum)]
-use tenferro_einsum::EagerSessionEinsumExt;
+use tenferro_ad::{EagerRuntime, EagerSession, EagerTensor};
+use tenferro_einsum::EagerEinsumOps;
 #[cfg(feature = "cuda")]
-use tenferro_einsum::TraceContextEinsumExt;
-#[cfg(tenferro_session_einsum)]
-use tenferro_runtime::{Engine, ExecutionEngine};
+use tenferro_einsum::TracedEinsumOps;
+use tenferro_runtime::ExecutionEngine;
 #[cfg(feature = "cuda")]
-use tenferro_runtime::{TraceContext, TraceValue};
+use tenferro_runtime::{TraceContext, TracedTensor};
 use tenferro_tensor::Tensor as StorageTensor;
 
 pub const DEFAULT_FILL_VALUE: f32 = 0.840_896_4; // 0.5f32.powf(0.4)
@@ -114,7 +104,7 @@ pub fn build_cpu_eager_inputs(
         .iter()
         .map(|ixs| {
             let shape = vec![spec.bond_dim; ixs.len()];
-            EagerTensor::from_tensor_in(tensor_f32_col_major(&shape, spec.fill_value)?, ctx.clone())
+            ctx.constant_from(tensor_f32_col_major(&shape, spec.fill_value)?)
                 .map_err(|e| format!("{e}"))
         })
         .collect()
@@ -159,7 +149,6 @@ impl PreparedEagerTree {
     ///
     /// `engine` is the caller-held execution engine; the caller builds it once
     /// outside the timed region and passes the same one to every execution.
-    #[cfg(tenferro_session_einsum)]
     pub fn execute(
         &self,
         engine: &mut dyn ExecutionEngine,
@@ -179,7 +168,6 @@ impl PreparedEagerTree {
     }
 
     /// Execute the tree on an already-entered eager session.
-    #[cfg(tenferro_session_einsum)]
     pub fn execute_in(
         &self,
         session: &mut EagerSession<'_>,
@@ -199,40 +187,12 @@ impl PreparedEagerTree {
                     .map(|child| child.execute_in(session, inputs))
                     .collect::<Result<Vec<_>, _>>()?;
                 let refs = operands.iter().collect::<Vec<_>>();
-                session
-                    .einsum_subscripts(&refs, subscripts)
-                    .map_err(|e| e.to_string())
-            }
-        }
-    }
-
-    /// Execute the tree; each contraction enters its own eager session
-    /// (tensor-owned einsum at the #1946 audit baseline).
-    #[cfg(not(tenferro_session_einsum))]
-    pub fn execute(&self, inputs: &[EagerTensor]) -> Result<EagerTensor, String> {
-        match self {
-            Self::Input(index) => inputs
-                .get(*index)
-                .cloned()
-                .ok_or_else(|| format!("tensorindex {index} out of range")),
-            Self::Contract {
-                children,
-                subscripts,
-            } => {
-                let operands = children
-                    .iter()
-                    .map(|child| child.execute(inputs))
-                    .collect::<Result<Vec<_>, _>>()?;
-                let refs = operands.iter().collect::<Vec<_>>();
-                refs.as_slice()
-                    .einsum_subscripts(subscripts)
-                    .map_err(|e| e.to_string())
+                session.einsum(&refs, subscripts).map_err(|e| e.to_string())
             }
         }
     }
 }
 
-#[cfg(tenferro_session_einsum)]
 pub fn contract_tree_eager(
     engine: &mut dyn ExecutionEngine,
     node: &TreeNode,
@@ -251,7 +211,6 @@ pub fn contract_tree_eager(
         .map_err(|e| e.to_string())
 }
 
-#[cfg(tenferro_session_einsum)]
 fn contract_tree_eager_in(
     session: &mut EagerSession<'_>,
     node: &TreeNode,
@@ -282,9 +241,12 @@ fn contract_tree_eager_in(
         .map_err(|e| format!("einsum ({expr}): {e}"))
 }
 
-/// Legacy (#1946 audit baseline) tree contraction; see the import note.
-#[cfg(not(tenferro_session_einsum))]
-pub fn contract_tree_eager(node: &TreeNode, inputs: &[EagerTensor]) -> Result<EagerTensor, String> {
+#[cfg(feature = "cuda")]
+pub fn contract_tree_trace(
+    trace: &TraceContext,
+    node: &TreeNode,
+    inputs: &[TracedTensor],
+) -> Result<TracedTensor, String> {
     if node.isleaf {
         let index = node
             .tensorindex
@@ -296,59 +258,25 @@ pub fn contract_tree_eager(node: &TreeNode, inputs: &[EagerTensor]) -> Result<Ea
             .cloned()
             .ok_or_else(|| format!("tensorindex {index} out of range"));
     }
-    let eins = node.eins.as_ref().ok_or("internal node missing eins")?;
-    let args = node.args.as_ref().ok_or("internal node missing args")?;
-    let child_tensors: Vec<EagerTensor> = args
-        .iter()
-        .map(|child| contract_tree_eager(child, inputs))
-        .collect::<Result<_, _>>()?;
-    let refs: Vec<&EagerTensor> = child_tensors.iter().collect();
-    let expr = integer_labels_to_expr(&eins.ixs, &eins.iy);
-    refs.as_slice()
-        .einsum(&expr)
-        .map_err(|e| format!("einsum ({expr}): {e}"))
-}
-
-#[cfg(feature = "cuda")]
-pub fn contract_tree_trace(
-    trace: &mut TraceContext,
-    node: &TreeNode,
-    inputs: &[TraceValue],
-) -> Result<TraceValue, String> {
-    if node.isleaf {
-        let index = node
-            .tensorindex
-            .ok_or("leaf missing tensorindex")?
-            .checked_sub(1)
-            .ok_or("tensorindex must be >= 1")?;
-        return inputs
-            .get(index)
-            .copied()
-            .ok_or_else(|| format!("tensorindex {index} out of range"));
-    }
 
     let eins = node.eins.as_ref().ok_or("internal node missing eins")?;
     let args = node.args.as_ref().ok_or("internal node missing args")?;
-    let child_tensors: Vec<TraceValue> = args
+    let child_tensors: Vec<TracedTensor> = args
         .iter()
         .map(|child| contract_tree_trace(trace, child, inputs))
         .collect::<Result<_, _>>()?;
+    let refs: Vec<&TracedTensor> = child_tensors.iter().collect();
     let expr = integer_labels_to_expr(&eins.ixs, &eins.iy);
     trace
-        .einsum(&child_tensors, &expr)
+        .einsum(&refs, &expr)
         .map_err(|e| format!("einsum ({expr}): {e}"))
 }
 
-#[cfg(tenferro_session_einsum)]
 pub fn scalar_f32(engine: &mut dyn ExecutionEngine, result: &EagerTensor) -> Result<f32, String> {
-    let engine: &mut dyn Engine = engine;
-    let tensor = result.to_tensor(engine).map_err(|e| format!("{e}"))?;
-    scalar_f32_tensor(&tensor)
-}
-
-#[cfg(not(tenferro_session_einsum))]
-pub fn scalar_f32(result: &EagerTensor) -> Result<f32, String> {
-    let tensor = result.to_tensor().map_err(|e| format!("{e}"))?;
+    let tensor = result
+        .runtime()
+        .with_eager_session(engine, |session| session.duplicate_value(result))
+        .map_err(|e| format!("{e}"))?;
     scalar_f32_tensor(&tensor)
 }
 

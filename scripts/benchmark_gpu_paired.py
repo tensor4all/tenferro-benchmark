@@ -218,7 +218,7 @@ def run(args):
             subprocess.run([sys.executable, str(ROOT/'scripts/collect_run_metadata.py'), '--suite-id', 'gpu/perf_issues',
                 '--suite-file', 'benchmarks/gpu/perf_issues.yaml', '--target-profile', 'nvidia-gpu',
                 '--timestamp', datetime.now(timezone.utc).isoformat(), '--tenferro-dir', descriptor['directory'],
-                '--features', FEATURES, '--blas', 'none', '--cuda-device-ordinal', str(args.device),
+                '--features', FEATURES, '--cuda-device-ordinal', str(args.device),
                 '--output', str(folder/'run_t1.yaml')], check=True)
             path = folder/'run_t1.yaml'
             metadata = yaml.safe_load(path.read_text())

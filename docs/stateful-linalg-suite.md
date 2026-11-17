@@ -33,12 +33,11 @@ Collect sequentially in the repository's default devcontainer:
 
 ```bash
 devcontainer exec --workspace-folder . bash -lc '
-  export TENFERRO_CPU_FEATURES=blas-mkl BENCHMARK_TARGET_PROFILE=amd-cpu
   ./scripts/run_cpu_stateful_linalg.sh 1 4'
 ```
 
 One thread is the primary diagnostic; the ordinary 4T setting remains usable.
-The native macOS path uses blas-accelerate and mac-cpu. No affinity pinning is
+The native macOS path uses mac-cpu and the same single CPU backend. No affinity pinning is
 applied. Rows with process-median CoV above 10%, missing observations/replicates
 or sub-1-ms process-median batches remain inconclusive. The report presents
 complete/(append+R+Q), fresh/shared, eager/shared and compact/BCGS2 append

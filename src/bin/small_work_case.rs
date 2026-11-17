@@ -13,10 +13,8 @@ use num_complex::Complex64;
 use serde::Serialize;
 use tenferro_ad::{EagerRuntime, EagerTensor};
 use tenferro_cpu::{runtime_engine_id, runtime_engine_registration, CpuEngine};
-use tenferro_runtime::program::ProgramInputSpec;
 use tenferro_runtime::{
-    CompiledGraph, DType, Engine, ExecutionEngine, GraphCompiler, Runtime, TensorSessionOpsExt,
-    TraceContext,
+    CompiledGraph, CoreOps, DType, Engine, ExecutionEngine, GraphCompiler, Runtime, TraceContext,
 };
 use tenferro_tensor::{Tensor, TensorRead, TypedTensorView};
 
@@ -56,11 +54,31 @@ impl SessionScope for CpuEngine {
 fn eager_reduce_sum(
     engine: &mut CpuEngine,
     input: &EagerTensor,
-    axes: &[usize],
+    axes: &[isize],
 ) -> Result<EagerTensor, BoxError> {
     Ok(input
         .runtime()
         .with_eager_session(engine, |session| session.reduce_sum(input, Some(axes)))?)
+}
+
+/// Read an eager value outside timing: the runtime hands it back as a tensor.
+fn eager_to_tensor(
+    engine: &mut CpuEngine,
+    input: &EagerTensor,
+) -> Result<Tensor, Box<dyn Error + Send + Sync>> {
+    Ok(input
+        .runtime()
+        .with_eager_session(engine, |session| session.duplicate_value(input))?)
+}
+
+/// Reverse-mode backward through one borrowed eager session.
+fn eager_backward(
+    engine: &mut CpuEngine,
+    loss: &EagerTensor,
+) -> Result<tenferro_ad::Gradients, Box<dyn Error + Send + Sync>> {
+    Ok(loss
+        .runtime()
+        .with_eager_session(engine, |session| session.backward(loss))?)
 }
 
 #[derive(Serialize)]
@@ -264,25 +282,20 @@ fn check_solve_result(
     Ok(value)
 }
 
-fn trace_compile_einsum(
-    n: usize,
-    dtype: DType,
-) -> Result<CompiledGraph, Box<dyn Error + Send + Sync>> {
-    use tenferro_einsum::TraceContextEinsumExt;
-    let mut trace = TraceContext::new();
-    let a = trace.input(ProgramInputSpec::new(dtype, [n.into(), n.into()]))?;
-    let b = trace.input(ProgramInputSpec::new(dtype, [n.into(), n.into()]))?;
-    let output = trace.einsum(&[a, b], "ij,jk->ik")?;
-    let graph = trace.finish(&[output])?;
-    Ok(GraphCompiler::new().compile_traced_graph(&graph)?)
+fn trace_compile_einsum(dtype: DType) -> Result<CompiledGraph, Box<dyn Error + Send + Sync>> {
+    use tenferro_einsum::TracedEinsumOps;
+    let trace = TraceContext::new();
+    let a = trace.input_symbolic_shape(dtype, 2)?;
+    let b = trace.input_symbolic_shape(dtype, 2)?;
+    let output = trace.einsum(&[&a, &b], "ij,jk->ik")?;
+    Ok(GraphCompiler::new().compile(&output)?)
 }
 
 fn compiled_einsum(
     backend: &CpuEngine,
-    n: usize,
     dtype: DType,
 ) -> Result<(Runtime, CompiledGraph), Box<dyn Error + Send + Sync>> {
-    let program = trace_compile_einsum(n, dtype)?;
+    let program = trace_compile_einsum(dtype)?;
     let mut builder = Runtime::builder();
     builder.register_engine(runtime_engine_registration(backend)?)?;
     builder.install_extension_module(tenferro_einsum::extension_module::<CpuEngine>(
@@ -422,10 +435,10 @@ fn borrowed_einsum(
     inputs: &BorrowedEinsumViews<'_>,
     session: &mut dyn Engine,
 ) -> Result<Tensor, Box<dyn Error + Send + Sync>> {
-    use tenferro_einsum::TypedTensorReadEinsumExt;
+    use tenferro_einsum::EinsumOps;
     Ok(match inputs {
-        BorrowedEinsumViews::F64(views) => views.einsum_read("ij,jk->ik", session)?.into(),
-        BorrowedEinsumViews::C64(views) => views.einsum_read("ij,jk->ik", session)?.into(),
+        BorrowedEinsumViews::F64(views) => views.einsum("ij,jk->ik", session)?.into(),
+        BorrowedEinsumViews::C64(views) => views.einsum("ij,jk->ik", session)?.into(),
     })
 }
 
@@ -435,8 +448,8 @@ fn concrete_operation(
     lhs: &Tensor,
     rhs: &Tensor,
 ) -> Result<Tensor, Box<dyn Error + Send + Sync>> {
-    use tenferro_einsum::TensorEinsumExt;
-    use tenferro_linalg::TensorLinalgExt;
+    use tenferro_einsum::EinsumOps;
+    use tenferro_linalg::LinalgOps;
     static GATHER: std::sync::OnceLock<tenferro_tensor::GatherConfig> = std::sync::OnceLock::new();
     let gather = GATHER.get_or_init(|| tenferro_tensor::GatherConfig {
         offset_dims: vec![],
@@ -486,7 +499,7 @@ fn eager_operation(
     lhs: &EagerTensor,
     rhs: &EagerTensor,
 ) -> Result<EagerTensor, Box<dyn Error + Send + Sync>> {
-    use tenferro_einsum::{EagerSessionEinsumExt, EinsumSubscripts};
+    use tenferro_einsum::{EagerEinsumOps, EinsumSubscripts};
     static SUBS: std::sync::OnceLock<EinsumSubscripts> = std::sync::OnceLock::new();
     let subs = SUBS.get_or_init(|| EinsumSubscripts::new(&[&[0, 1], &[1, 2]], &[0, 2]));
     Ok(match operation {
@@ -495,7 +508,7 @@ fn eager_operation(
             .with_eager_session(engine, |session| session.add(lhs, rhs))?,
         "einsum" => lhs.runtime().with_eager_session(engine, |session| {
             session
-                .einsum_subscripts(&[lhs, rhs], subs)
+                .einsum(&[lhs, rhs], subs)
                 .map_err(Box::<dyn Error + Send + Sync>::from)
         })?,
         _ => return Err(format!("unsupported operation: {operation}").into()),
@@ -776,9 +789,9 @@ fn check_einsum_ad(
     b: &Tensor,
     expected: &[f64],
 ) -> Result<f64, Box<dyn Error + Send + Sync>> {
-    let value = check_tensor_shape(&output.to_tensor(engine)?, expected, a.shape())?;
+    let value = check_tensor_shape(&eager_to_tensor(engine, output)?, expected, a.shape())?;
     let loss = eager_reduce_sum(engine, output, &[0, 1])?;
-    let _ = loss.backward(engine)?;
+    let _ = eager_backward(engine, &loss)?;
     let av = TensorRead::from_tensor(a).as_slice::<f64>()?;
     let bv = TensorRead::from_tensor(b).as_slice::<f64>()?;
     let n = a.shape()[0];
@@ -817,8 +830,9 @@ fn check_complex_einsum_ad(
     b: &Tensor,
     expected: &Tensor,
 ) -> Result<f64, Box<dyn Error + Send + Sync>> {
-    let value = check_tensor_reference(&output.to_tensor(engine)?, expected)?;
-    eager_reduce_sum(engine, output, &[0, 1])?.backward(engine)?;
+    let value = check_tensor_reference(&eager_to_tensor(engine, output)?, expected)?;
+    let loss = eager_reduce_sum(engine, output, &[0, 1])?;
+    eager_backward(engine, &loss)?;
     let av = a.as_slice::<Complex64>()?;
     let bv = b.as_slice::<Complex64>()?;
     let n = a.shape()[0];
@@ -1034,7 +1048,7 @@ fn check_eager(
     output: &EagerTensor,
     expected: &[f64],
 ) -> Result<f64, Box<dyn Error + Send + Sync>> {
-    let tensor = output.to_tensor(engine)?;
+    let tensor = eager_to_tensor(engine, output)?;
     check_tensor(&tensor, expected)
 }
 
@@ -1048,7 +1062,7 @@ fn check_active_ad(
 ) -> Result<f64, Box<dyn Error + Send + Sync>> {
     let value = check_eager(engine, output, expected)?;
     let loss = eager_reduce_sum(engine, output, &[0])?;
-    let _ = loss.backward(engine)?;
+    let _ = eager_backward(engine, &loss)?;
     for (input, expected_gradient) in [(lhs, 1.0), (rhs, rhs_gradient)] {
         let gradient = input.grad()?.ok_or("active AD gradient is missing")?;
         if gradient.shape() != [expected.len()]
@@ -1318,13 +1332,13 @@ fn run_generic_einsum(
     provider: &str,
     timing: (usize, usize, u128, usize, usize),
 ) -> Result<serde_json::Value, BoxError> {
-    use tenferro_einsum::{ConcreteEinsumPlan, TensorEinsumExt};
-    use tenferro_tensor::TensorWrite;
+    use tenferro_einsum::{ConcreteEinsumPlan, EinsumOps};
+    use tenferro_tensor::{Dest, TensorWrite};
     let (warmups, samples_count, target_ns, process_index, sample_start) = timing;
     let descriptor = einsum.descriptor(api_tier, provider)?;
     let (lhs, rhs, expected) = einsum.inputs()?;
     let subscripts = einsum.subscripts.as_str();
-    let plan = ConcreteEinsumPlan::prepare([&lhs, &rhs], subscripts)?;
+    let plan = ConcreteEinsumPlan::prepare(&[&lhs, &rhs], subscripts, &Default::default())?;
     let config = match einsum.dot_general_config() {
         Ok(config) => Some(config),
         Err(error) if api_tier == "dot-general-into-shared" => return Err(error),
@@ -1343,12 +1357,8 @@ fn run_generic_einsum(
     let checked = backend.session_scope(|session| {
         let mut value =
             check_tensor_reference(&[&lhs, &rhs].einsum(subscripts, session)?, &expected)?;
-        value += check_tensor_reference(&plan.execute([&lhs, &rhs], session)?, &expected)?;
-        plan.execute_into(
-            [&lhs, &rhs],
-            session,
-            TensorWrite::from_tensor(&mut checked_out),
-        )?;
+        value += check_tensor_reference(&plan.execute(&[&lhs, &rhs], session)?, &expected)?;
+        plan.execute_into(&[&lhs, &rhs], session, Dest::overwrite(&mut checked_out))?;
         value += check_tensor_reference(&checked_out, &expected)?;
         if let Some(config) = config.as_ref() {
             let mut dot_out = nan_output()?;
@@ -1399,13 +1409,9 @@ fn run_generic_einsum(
             || -> Result<Option<Tensor>, BoxError> {
                 Ok(match api_tier {
                     "concrete-shared" => Some([&lhs, &rhs].einsum(subscripts, session)?),
-                    "prepared-repeat" => Some(plan.execute([&lhs, &rhs], session)?),
+                    "prepared-repeat" => Some(plan.execute(&[&lhs, &rhs], session)?),
                     "prepared-into-repeat" => {
-                        plan.execute_into(
-                            [&lhs, &rhs],
-                            session,
-                            TensorWrite::from_tensor(&mut out),
-                        )?;
+                        plan.execute_into(&[&lhs, &rhs], session, Dest::overwrite(&mut out))?;
                         None
                     }
                     "dot-general-into-shared" => {
@@ -1447,8 +1453,8 @@ mod tests {
             check_tensor_shape(&actual, &expected, a.shape()).unwrap();
             let runtime = EagerRuntime::new().unwrap();
             let (left, right, _) = einsum_inputs(size).unwrap();
-            let lhs = EagerTensor::requires_grad_in(left, runtime.clone()).unwrap();
-            let rhs = EagerTensor::requires_grad_in(right, runtime).unwrap();
+            let lhs = runtime.clone().variable_from(left).unwrap();
+            let rhs = runtime.variable_from(right).unwrap();
             let output = eager_operation(&mut backend, "einsum", &lhs, &rhs).unwrap();
             check_einsum_ad(&mut backend, &output, &lhs, &rhs, &a, &b, &expected).unwrap();
         }
@@ -1506,8 +1512,12 @@ mod tests {
     fn complex_prepared_einsum_executes_and_revalidates_rebound_inputs() {
         for size in [4, 16, 256] {
             let (lhs, rhs, expected) = complex_einsum_inputs(size).unwrap();
-            let plan =
-                tenferro_einsum::ConcreteEinsumPlan::prepare([&lhs, &rhs], "ij,jk->ik").unwrap();
+            let plan = tenferro_einsum::ConcreteEinsumPlan::prepare(
+                &[&lhs, &rhs],
+                "ij,jk->ik",
+                &Default::default(),
+            )
+            .unwrap();
             let swapped = Tensor::from_vec_col_major(
                 lhs.shape().to_vec(),
                 matmul_reference(
@@ -1529,16 +1539,16 @@ mod tests {
                         (&rhs, &lhs, &swapped),
                         (&lhs, &rhs, &expected),
                     ] {
-                        check_tensor_reference(&plan.execute([a, b], session)?, reference)?;
+                        check_tensor_reference(&plan.execute(&[a, b], session)?, reference)?;
                     }
                     let wrong_dtype =
                         Tensor::from_vec_col_major(lhs.shape().to_vec(), vec![1.0_f64; size])?;
-                    assert!(plan.execute([&lhs, &wrong_dtype], session).is_err());
+                    assert!(plan.execute(&[&lhs, &wrong_dtype], session).is_err());
                     let wrong_shape = Tensor::from_vec_col_major(
                         vec![size],
                         vec![Complex64::new(1.0, 0.0); size],
                     )?;
-                    assert!(plan.execute([&lhs, &wrong_shape], session).is_err());
+                    assert!(plan.execute(&[&lhs, &wrong_shape], session).is_err());
                     Ok::<_, Box<dyn Error + Send + Sync>>(())
                 })
                 .unwrap();
@@ -1666,15 +1676,19 @@ mod tests {
                 let mut backend = tenferro_einsum_benchmark::cpu_engine(None).unwrap();
                 let output = concrete_fresh("einsum", &mut backend, &a, &b).unwrap();
                 check_tensor_reference(&output, &expected).unwrap();
-                let plan =
-                    tenferro_einsum::ConcreteEinsumPlan::prepare([&a, &b], "ij,jk->ik").unwrap();
+                let plan = tenferro_einsum::ConcreteEinsumPlan::prepare(
+                    &[&a, &b],
+                    "ij,jk->ik",
+                    &Default::default(),
+                )
+                .unwrap();
                 backend
                     .session_scope(|session| {
                         check_tensor_reference(
                             &concrete_operation("einsum", session, &a, &b)?,
                             &expected,
                         )?;
-                        check_tensor_reference(&plan.execute([&a, &b], session)?, &expected)?;
+                        check_tensor_reference(&plan.execute(&[&a, &b], session)?, &expected)?;
                         Ok::<_, Box<dyn Error + Send + Sync>>(())
                     })
                     .unwrap();
@@ -1753,17 +1767,15 @@ mod tests {
             let ctx = EagerRuntime::new().unwrap();
             let mut engine = tenferro_einsum_benchmark::cpu_engine(None).unwrap();
             let (left, right, _) = complex_einsum_inputs(size).unwrap();
-            let lhs = EagerTensor::requires_grad_in(left, ctx.clone()).unwrap();
-            let rhs = EagerTensor::requires_grad_in(right, ctx).unwrap();
+            let lhs = ctx.clone().variable_from(left).unwrap();
+            let rhs = ctx.variable_from(right).unwrap();
             let output = eager_operation(&mut engine, "einsum", &lhs, &rhs).unwrap();
             check_complex_einsum_ad(&mut engine, &output, &lhs, &rhs, &a, &b, &expected).unwrap();
             assert!(lhs.grad().unwrap().is_none());
             assert!(rhs.grad().unwrap().is_none());
             if size == 4 {
-                eager_reduce_sum(&mut engine, &output, &[0, 1])
-                    .unwrap()
-                    .backward(&mut engine)
-                    .unwrap();
+                let loss = eager_reduce_sum(&mut engine, &output, &[0, 1]).unwrap();
+                eager_backward(&mut engine, &loss).unwrap();
                 let av = a.as_slice::<Complex64>().unwrap().to_vec();
                 let bv = b.as_slice::<Complex64>().unwrap().to_vec();
                 let loss = |a: &[Complex64], b: &[Complex64]| {
@@ -1803,8 +1815,7 @@ mod tests {
         for size in [4, 16, 256] {
             let (lhs, rhs, expected) = complex_einsum_inputs(size).unwrap();
             let mut backend = tenferro_einsum_benchmark::cpu_engine(None).unwrap();
-            let (runtime, program) =
-                compiled_einsum(&backend, matrix_dimension(size).unwrap(), lhs.dtype()).unwrap();
+            let (runtime, program) = compiled_einsum(&backend, lhs.dtype()).unwrap();
             check_compiled_einsum(&runtime, &mut backend, &program, &lhs, &rhs).unwrap();
             // A wrong-dtype input must be refused by the prepared program.
             let real_input =
@@ -1820,12 +1831,10 @@ mod tests {
             ];
             assert!(runtime.run(&mut [&mut backend], &prepared, &wrong).is_err());
             let context = EagerRuntime::new().unwrap();
-            let a = EagerTensor::from_tensor_in(lhs, context.clone()).unwrap();
-            let b = EagerTensor::from_tensor_in(rhs, context).unwrap();
-            let output = eager_operation(&mut backend, "einsum", &a, &b)
-                .unwrap()
-                .to_tensor(&mut backend)
-                .unwrap();
+            let a = context.clone().constant_from(lhs).unwrap();
+            let b = context.constant_from(rhs).unwrap();
+            let eager_output = eager_operation(&mut backend, "einsum", &a, &b).unwrap();
+            let output = eager_to_tensor(&mut backend, &eager_output).unwrap();
             check_tensor_reference(&output, &expected).unwrap();
             for (tier, surface, contract) in [
                 ("eager-no-ad", "eager", "einsum.einsum.ordinary.eager"),
@@ -1852,7 +1861,7 @@ mod tests {
             );
             assert_ne!(expected, swapped);
             let mut backend = tenferro_einsum_benchmark::cpu_engine(None).unwrap();
-            let (runtime, program) = compiled_einsum(&backend, n, lhs.dtype()).unwrap();
+            let (runtime, program) = compiled_einsum(&backend, lhs.dtype()).unwrap();
             check_compiled_einsum(&runtime, &mut backend, &program, &lhs, &rhs).unwrap();
             let descriptor = case_descriptor(
                 "einsum",
@@ -2068,7 +2077,7 @@ mod tests {
             let mut backend = tenferro_einsum_benchmark::cpu_engine(None).unwrap();
             backend
                 .session_scope(|session| {
-                    use tenferro_einsum::TensorEinsumExt;
+                    use tenferro_einsum::EinsumOps;
                     check_tensor_reference(&[&lhs, &rhs].einsum(subscripts, session)?, &expected)
                 })
                 .unwrap();
@@ -2152,16 +2161,12 @@ mod tests {
     fn check_active_ad_rejects_nonfinite_expected_gradient() {
         let runtime = EagerRuntime::new().unwrap();
         let mut engine = tenferro_einsum_benchmark::cpu_engine(None).unwrap();
-        let lhs = EagerTensor::requires_grad_in(
-            Tensor::from_vec_col_major(vec![1], vec![1.0]).unwrap(),
-            runtime.clone(),
-        )
-        .unwrap();
-        let rhs = EagerTensor::requires_grad_in(
-            Tensor::from_vec_col_major(vec![1], vec![2.0]).unwrap(),
-            runtime,
-        )
-        .unwrap();
+        let lhs = runtime
+            .variable_from(Tensor::from_vec_col_major(vec![1], vec![1.0]).unwrap())
+            .unwrap();
+        let rhs = runtime
+            .variable_from(Tensor::from_vec_col_major(vec![1], vec![2.0]).unwrap())
+            .unwrap();
         let output = eager_operation(&mut engine, "add", &lhs, &rhs).unwrap();
         assert!(check_active_ad(&mut engine, &output, &lhs, &rhs, &[3.0], f64::NAN).is_err());
     }
@@ -2291,7 +2296,6 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     let compiled = if api_tier.starts_with("compiled-") {
         Some(compiled_einsum(
             concrete.as_ref().ok_or("concrete backend missing")?,
-            matrix_dimension(size)?,
             lhs.dtype(),
         )?)
     } else {
@@ -2308,8 +2312,9 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         .transpose()?;
     let prepared = if api_tier.starts_with("prepared-") {
         Some(tenferro_einsum::ConcreteEinsumPlan::prepare(
-            [&lhs, rhs],
+            &[&lhs, rhs],
             "ij,jk->ik",
+            &Default::default(),
         )?)
     } else {
         None
@@ -2328,14 +2333,14 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         };
         let tracked = api_tier == "eager-ad";
         let left = if tracked {
-            EagerTensor::requires_grad_in(left, ctx.clone())?
+            ctx.variable_from(left)?
         } else {
-            EagerTensor::from_tensor_in(left, ctx.clone())?
+            ctx.constant_from(left)?
         };
         let right = if tracked {
-            EagerTensor::requires_grad_in(right, ctx.clone())?
+            ctx.variable_from(right)?
         } else {
-            EagerTensor::from_tensor_in(right, ctx.clone())?
+            ctx.constant_from(right)?
         };
         Some((left, right))
     } else {
@@ -2377,7 +2382,7 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
                     &prepared
                         .as_ref()
                         .ok_or("prepared plan missing")?
-                        .execute([&lhs, rhs], session)?,
+                        .execute(&[&lhs, rhs], session)?,
                     &expected_values,
                 )
             })?
@@ -2393,13 +2398,10 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         "eager-no-ad" => {
             let (left, right) = eager_pair.as_ref().ok_or("eager inputs missing")?;
             let engine = engine.as_mut().ok_or("eager engine missing")?;
-            check_tensor_reference(
-                &add_chain(left, right, calls, |a, b| {
-                    eager_operation(engine, &operation, a, b)
-                })?
-                .to_tensor(engine)?,
-                &expected_values,
-            )?
+            let value = add_chain(left, right, calls, |a, b| {
+                eager_operation(engine, &operation, a, b)
+            })?;
+            check_tensor_reference(&eager_to_tensor(engine, &value)?, &expected_values)?
         }
         "eager-ad" => {
             let (left, right) = eager_pair.as_ref().ok_or("eager inputs missing")?;
@@ -2527,7 +2529,6 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     } else {
         match api_tier.as_str() {
             "compiled-setup" => {
-                let n = matrix_dimension(size)?;
                 let dtype = lhs.dtype();
                 measure(
                     warmups,
@@ -2535,7 +2536,7 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
                     target_ns,
                     process_index,
                     sample_start,
-                    || trace_compile_einsum(n, dtype),
+                    || trace_compile_einsum(dtype),
                 )?
             }
             "compiled-repeat" => {
@@ -2562,8 +2563,9 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
                 sample_start,
                 || {
                     Ok(tenferro_einsum::ConcreteEinsumPlan::prepare(
-                        [&lhs, rhs],
+                        &[&lhs, rhs],
                         "ij,jk->ik",
+                        &Default::default(),
                     )?)
                 },
             )?,
@@ -2580,7 +2582,7 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
                             if let Some(views) = borrowed.as_ref() {
                                 borrowed_einsum(views, session)
                             } else if let Some(plan) = prepared.as_ref() {
-                                Ok(plan.execute([&lhs, rhs], session)?)
+                                Ok(plan.execute(&[&lhs, rhs], session)?)
                             } else {
                                 execute_shared(&operation, session, &lhs, rhs, calls)
                             }

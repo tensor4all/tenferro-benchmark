@@ -15,8 +15,10 @@ config_path = pathlib.Path(sys.argv[1])
 config = json.loads(config_path.read_text())
 
 assert config["build"]["dockerfile"] == "Dockerfile"
-assert config["containerEnv"]["OPENBLAS_ROOT"] == "/opt/openblas"
-assert config["containerEnv"]["MKLROOT"] == "/opt/intel/oneapi/mkl/latest"
+# tenferro-rs 0.12 links no vendor BLAS/LAPACK provider (tenferro-rs #2608), so
+# the image no longer sets a provider prefix for the harness build.
+assert "OPENBLAS_ROOT" not in config["containerEnv"]
+assert "MKLROOT" not in config["containerEnv"]
 assert config["containerEnv"]["USE_CUDA"] == "0"
 command = config["postCreateCommand"]
 assert "prepare_cpu_benchmark_python_venv" in command
@@ -36,10 +38,6 @@ esac
 for required in \
     build-essential \
     cmake \
-    intel-oneapi-mkl-devel \
-    OPENBLAS_VERSION \
-    OPENBLAS_MAX_THREADS \
-    install_openblas.sh \
     python3.12-venv \
     ripgrep \
     rustup \
@@ -47,33 +45,16 @@ for required in \
     grep -q "$required" "$ROOT/.devcontainer/Dockerfile"
 done
 
-if grep -q "libopenblas-dev" "$ROOT/.devcontainer/Dockerfile"; then
-    echo "CPU devcontainer must build OpenBLAS instead of installing Ubuntu libopenblas-dev" >&2
-    exit 1
-fi
-
-for required in \
-    "USE_THREAD=1" \
-    "USE_OPENMP=0" \
-    "NUM_THREADS=" \
-    "openblas_get_config" \
-    "openblas_get_parallel" \
-    "ldconfig"; do
-    grep -q "$required" "$ROOT/.devcontainer/install_openblas.sh"
+# The provider-selectable images are gone with the vendor backend: no image may
+# keep an OpenBLAS/MKL prefix or a provider source build for the harness.
+for image in .devcontainer/Dockerfile .devcontainer/cuda/Dockerfile; do
+    if grep -q "OPENBLAS_ROOT\|install_openblas.sh\|intel-oneapi-mkl" "$ROOT/$image"; then
+        echo "$image must not install or configure a vendor BLAS/LAPACK provider" >&2
+        exit 1
+    fi
 done
-
-for required in \
-    OPENBLAS_VERSION \
-    OPENBLAS_MAX_THREADS \
-    install_openblas.sh \
-    "\${OPENBLAS_ROOT}/lib"; do
-    grep -q "$required" "$ROOT/.devcontainer/cuda/Dockerfile"
-done
-
-if grep -q "libopenblas-dev" "$ROOT/.devcontainer/cuda/Dockerfile"; then
-    echo "CUDA devcontainer must build OpenBLAS instead of installing Ubuntu libopenblas-dev" >&2
-    exit 1
-fi
+test ! -e "$ROOT/.devcontainer/install_openblas.sh"
+test ! -e "$ROOT/.devcontainer/openblas"
 
 python3 - "$ROOT" <<'PY'
 import json
@@ -84,31 +65,13 @@ root = pathlib.Path(sys.argv[1])
 config = json.loads((root / ".devcontainer/cuda/devcontainer.json").read_text())
 assert config["initializeCommand"] == ["mkdir", "-p", "${localWorkspaceFolder}/.venv"]
 assert config["containerEnv"]["UV_NO_SYNC"] == "1"
+assert "OPENBLAS_ROOT" not in config["containerEnv"]
 mounts = "\n".join(config.get("mounts", []))
 assert "source=tenferro-benchmark-cuda-venv-${devcontainerId}" in mounts
 assert "target=${containerWorkspaceFolder}/.venv,type=volume" in mounts
 command = config["postCreateCommand"]
 assert command.startswith("sudo mkdir -p")
 assert "chown -R vscode:vscode" in command
-PY
-
-python3 - "$ROOT/.devcontainer/openblas/devcontainer.json" <<'PY'
-import json
-from pathlib import Path
-import sys
-
-path = Path(sys.argv[1])
-config = json.loads(path.read_text())
-assert config["build"] == {"dockerfile": "Dockerfile", "context": "../.."}
-assert "prepare_cpu_benchmark_python_venv" in config["postCreateCommand"]
-assert "verify-openblas-pytorch --threads 1" in config["postCreateCommand"]
-dockerfile = (path.parent / "Dockerfile").read_text()
-assert "BENCHMARK_TORCH_WHEEL=" in dockerfile
-assert "UV_NO_SYNC=1" in dockerfile
-assert "blas-openblas" in dockerfile
-assert "USE_MKL=0" in dockerfile
-assert "OPENBLAS_TARGET=CORE2" in dockerfile
-assert "COPY --from=pytorch-builder" in dockerfile
 PY
 
 grep -q 'devcontainer up --workspace-folder .' "$ROOT/README.md"

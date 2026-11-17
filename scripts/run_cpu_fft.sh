@@ -25,12 +25,10 @@ export BENCH_COMMAND_START_NS="$(python3 -c 'import time; print(time.monotonic_n
 
 # shellcheck source=scripts/publish_run.sh
 source "$SCRIPT_DIR/publish_run.sh"
+# shellcheck source=scripts/host_os.sh
+source "$SCRIPT_DIR/host_os.sh"
 
-# shellcheck source=scripts/cpu_blas_provider.sh
-source "$SCRIPT_DIR/cpu_blas_provider.sh"
 
-TENFERRO_CPU_FEATURES="$(normalize_cpu_blas_features "${TENFERRO_CPU_FEATURES:-}")"
-export TENFERRO_CPU_FEATURES
 
 default_target_profile() {
     case "$(benchmark_host_os)" in
@@ -63,7 +61,6 @@ source "$SCRIPT_DIR/python_venv.sh"
 reset_benchmark_python_venv "$PROJECT_DIR"
 prepare_cpu_benchmark_python_venv "$PROJECT_DIR"
 
-ensure_blas_env_for_features "$TENFERRO_CPU_FEATURES"
 
 # shellcheck source=scripts/benchmark_host_idle.sh
 source "$SCRIPT_DIR/benchmark_host_idle.sh"
@@ -93,7 +90,6 @@ fi
 
 mkdir -p "$RUN_DIR"
 
-blas_impl_for_metadata="$(blas_impl_for_features "$TENFERRO_CPU_FEATURES")"
 collect_run_metadata() {
     local output="$1"
     local metadata_args=(
@@ -102,8 +98,7 @@ collect_run_metadata() {
         --suite-file "${SUITE_FILE#$PROJECT_DIR/}"
         --timestamp "$RUN_TIMESTAMP_RFC3339"
         --tenferro-dir "$TENFERRO_DIR"
-        --features "$TENFERRO_CPU_FEATURES"
-        --blas "$blas_impl_for_metadata"
+        --features native
         --output "$output"
     )
     [[ -n "$TENFERRO_COMMIT" ]] && metadata_args+=(--tenferro-commit "$TENFERRO_COMMIT")
@@ -134,7 +129,7 @@ echo "Timestamp:    $BENCHMARK_TIMESTAMP"
 echo "Suite:        $SUITE_ID"
 echo "Target:       $BENCHMARK_TARGET_PROFILE"
 echo "Run dir:      $RUN_DIR"
-echo "Features:     $TENFERRO_CPU_FEATURES"
+echo "Features:     native"
 echo "FFT lengths:  ${FFT_BENCH_LENGTHS:-1048576}"
 [[ -n "$TENFERRO_COMMIT" ]] && echo "tenferro-rs:  $TENFERRO_COMMIT"
 echo ""
@@ -150,7 +145,7 @@ for NUM_THREADS in "${THREAD_COUNTS[@]}"; do
     collect_run_metadata "$RUN_T_YAML"
 
     assert_benchmark_host_idle
-    cargo run --release --no-default-features --features "$TENFERRO_CPU_FEATURES" --bin benchmark_cpu_fft -- \
+    cargo run --release --no-default-features --features native --bin benchmark_cpu_fft -- \
         --num-threads "$NUM_THREADS" \
         --lengths "${FFT_BENCH_LENGTHS:-1048576}" \
         --output "$CSV"

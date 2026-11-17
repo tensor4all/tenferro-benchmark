@@ -96,7 +96,7 @@ export BENCH_COMMAND="${BENCH_COMMAND:-$(for v in BENCHMARK_TARGET_PROFILE GPU_B
 "$PYTHON" "$SCRIPT_DIR/collect_run_metadata.py" \
     --suite-id gpu/perf_issues --target-profile "$BENCHMARK_TARGET_PROFILE" \
     --suite-file benchmarks/gpu/perf_issues.yaml --timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-    --tenferro-dir "$PROJECT_DIR/extern/tenferro-rs" --features cuda --blas none \
+    --tenferro-dir "$PROJECT_DIR/extern/tenferro-rs" --features cuda \
     --cuda-device-ordinal "$PHYSICAL_DEVICE_ORDINAL" --output "$RUN_DIR/run_t1.yaml"
 "$PYTHON" - "$RUN_DIR/run_t1.yaml" <<'PY'
 import os, sys, subprocess, yaml

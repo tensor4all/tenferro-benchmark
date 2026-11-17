@@ -72,8 +72,8 @@ module load cuda/12.4        # sets PATH and LD_LIBRARY_PATH, not CUDA_HOME
 source "$HOME/opt/cutensor/env.sh"
 export BENCHMARK_TARGET_PROFILE=nvidia-gpu GPU_BENCH_NO_PULL=1
 export GPU_BENCH_DEVICE=0    # physical index of the GPU PBS allocated
-# native: a CUDA-only node has no OpenBLAS prefix, and the GPU suites need none.
-TENFERRO_CPU_FEATURES=native ./scripts/setup_extern_deps.sh
+# The CUDA-only node needs no CPU provider prefix (tenferro-rs #2608).
+./scripts/setup_extern_deps.sh
 ./scripts/run_gpu_linalg_ad_latency.sh   # builds incrementally, then collects
 ```
 

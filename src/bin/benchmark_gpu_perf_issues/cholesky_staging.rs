@@ -1,6 +1,6 @@
 //! #2436 / #2440 / #2445: factorization with intrinsic solver-info readback.
 use super::*;
-use tenferro_linalg::EagerSessionLinalgExt;
+use tenferro_linalg::EagerLinalgOps;
 
 pub(super) fn run(p: &Value, timing: &Timing, device: usize) -> Result<CaseOutcome> {
     let n = param_usize(p, "n")?;
@@ -73,7 +73,8 @@ pub(super) fn run(p: &Value, timing: &Timing, device: usize) -> Result<CaseOutco
         let runtime = EagerRuntime::new()?;
         let eager = runtime.with_eager_session(&mut bk, |s| s.constant_from(a))?;
         let first = runtime.with_eager_session(&mut bk, |s| s.cholesky(&eager))?;
-        let error = check(&first.to_tensor(&mut bk)?)?;
+        let first = runtime.with_eager_session(&mut bk, |s| s.duplicate_value(&first))?;
+        let error = check(&first)?;
         let measurement = runtime.with_eager_session(&mut bk, |s| -> Result<Measurement> {
             measure(timing, bytes, |it| {
                 let mut outputs = Vec::with_capacity(it);

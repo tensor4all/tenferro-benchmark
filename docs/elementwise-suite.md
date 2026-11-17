@@ -71,9 +71,9 @@ parallelism matches. Raw runs land in
 (`run.yaml`, `run_t<N>.yaml`, `elementwise_t<N>_<timestamp>.csv`) and the report
 is written to `result/<target_profile>/cpu/elementwise.md`.
 
-The elementwise path uses no BLAS, so the script defaults to
-`TENFERRO_CPU_FEATURES=native` (tenferro's own kernels) and needs no
-OpenBLAS/MKL installation; override the variable to measure another provider.
+The elementwise path uses no BLAS and tenferro-rs 0.12 has one CPU backend, so
+the script builds the `native` feature set (tenferro's own kernels) and needs
+no vendor library installation.
 
 ## Suite file
 

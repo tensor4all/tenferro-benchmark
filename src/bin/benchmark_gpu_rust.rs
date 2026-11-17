@@ -13,7 +13,7 @@ use std::time::{Duration, Instant};
 use serde_json::{json, Value};
 use tenferro_ad::{EagerRuntime, EagerSession, EagerTensor};
 use tenferro_cpu::CpuEngine;
-use tenferro_einsum::{EagerSessionEinsumExt, TraceContextEinsumExt};
+use tenferro_einsum::{EagerEinsumOps, TracedEinsumOps};
 use tenferro_einsum_benchmark::fingerprint::Fingerprint;
 use tenferro_einsum_benchmark::spd_from_base;
 use tenferro_einsum_benchmark::tensornetwork::{
@@ -26,8 +26,7 @@ use tenferro_gpu::cuda::{
     cuda_runtime_engine_registration, download_tensor, gpu_available, upload_tensor, CudaEngine,
     CudaRuntime,
 };
-use tenferro_linalg::{EagerSessionLinalgExt, TracedTensorLinalgExt};
-use tenferro_runtime::program::ProgramInputSpec;
+use tenferro_linalg::{EagerLinalgOps, Eigh, Qr, Svd, TracedLinalgOps};
 use tenferro_runtime::{
     CompiledGraph, DType, DotGeneralConfig, Error as TfError, ExecutionEngine, GraphCompiler,
     Prepared, Runtime, TensorRead, TraceContext, TracedTensor,
@@ -83,7 +82,9 @@ trait EagerTensorDataCompat {
 
 impl EagerTensorDataCompat for EagerTensor {
     fn data(&self, engine: &mut CudaEngine) -> Result<Tensor, String> {
-        self.to_tensor(engine).map_err(|e| format!("{e}"))
+        self.runtime()
+            .with_eager_session(engine, |session| session.duplicate_value(self))
+            .map_err(|e| format!("{e}"))
     }
 }
 
@@ -1073,27 +1074,21 @@ fn run_trace_tensor_network(
         let mut compute_bk = open_cuda_engine(device_ordinal)?;
         let transfer_rt = compute_bk.runtime().clone();
         let trace_inputs = build_trace_inputs(&network, &spec, &transfer_rt)?;
-        let mut trace = TraceContext::new();
+        let trace = TraceContext::new();
         let values = network
             .inputs
             .iter()
             .map(|ixs| {
                 trace
-                    .input(ProgramInputSpec::new(
-                        DType::F32,
-                        vec![spec.bond_dim; ixs.len()].into_iter().map(Into::into),
-                    ))
+                    .input_symbolic_shape(DType::F32, ixs.len())
                     .map_err(|e| format!("trace input: {e}"))
             })
             .collect::<Result<Vec<_>, _>>()?;
-        let output = contract_tree_trace(&mut trace, &network.tree, &values)?;
-        let graph = trace
-            .finish(&[output])
-            .map_err(|e| format!("finish trace: {e}"))?;
+        let output = contract_tree_trace(&trace, &network.tree, &values)?;
         sync_cubecl_runtime(&transfer_rt)?;
 
         let program = GraphCompiler::new()
-            .compile_traced_graph(&graph)
+            .compile(&output)
             .map_err(|e| format!("compile: {e}"))?;
         let runtime = cuda_runtime_with_extensions(&compute_bk, false)?;
         let reads: Vec<TensorRead<'_>> = trace_inputs
@@ -1524,26 +1519,21 @@ fn run_semantic_trace_einsum(
             .map(|(i, shape)| tensor_f64(shape, normal_data(shape, seed + i as u64)))
             .collect();
 
-        let mut trace = TraceContext::new();
+        let trace = TraceContext::new();
         let values = shapes
             .iter()
             .map(|shape| {
                 trace
-                    .input(ProgramInputSpec::new(
-                        DType::F64,
-                        shape.iter().copied().map(Into::into),
-                    ))
+                    .input_symbolic_shape(DType::F64, shape.len())
                     .map_err(|e| format!("trace input: {e}"))
             })
             .collect::<Result<Vec<_>, _>>()?;
+        let refs: Vec<&TracedTensor> = values.iter().collect();
         let output = trace
-            .einsum(&values, expr)
+            .einsum(&refs, expr)
             .map_err(|e| format!("einsum ({expr}): {e}"))?;
-        let graph = trace
-            .finish(&[output])
-            .map_err(|e| format!("finish trace: {e}"))?;
         let program = GraphCompiler::new()
-            .compile_traced_graph(&graph)
+            .compile(&output)
             .map_err(|e| format!("compile: {e}"))?;
 
         let mut compute_bk = open_cuda_engine(device_ordinal)?;
@@ -2059,7 +2049,10 @@ fn build_cpu_eager_inputs(
 ) -> EagerInputs {
     let cpu_ctx = EagerRuntime::new().expect("CPU reference runtime");
     let cpu = |t: Tensor| {
-        EagerTensor::from_tensor_in(t, cpu_ctx.clone()).expect("benchmark tensor should be valid")
+        cpu_ctx
+            .clone()
+            .constant_from(t)
+            .expect("benchmark tensor should be valid")
     };
 
     match op {
@@ -2223,19 +2216,22 @@ fn run_eager_op_in(
                 vec![session.dot_general(&inputs.a, inputs.b.as_ref().unwrap(), batched_config)?]
             }
             "einsum" => vec![session
-                .einsum_subscripts(refs, subscripts)
+                .einsum(refs, subscripts)
                 .map_err(|e| TfError::Internal(e.to_string()))?],
             "qr" => {
-                let (q, r) = session.qr(&inputs.a)?;
+                let Qr { q, r } = session.qr(&inputs.a)?;
                 vec![q, r]
             }
             "solve" => vec![session.solve(&inputs.a, inputs.b.as_ref().unwrap())?],
             "svd" => {
-                let (u, s, vh) = session.svd(&inputs.a)?;
+                let Svd { u, s, vh } = session.svd(&inputs.a)?;
                 vec![u, s, vh]
             }
             "eigh" => {
-                let (w, v) = session.eigh(&inputs.a)?;
+                let Eigh {
+                    values: w,
+                    vectors: v,
+                } = session.eigh(&inputs.a)?;
                 vec![w, v]
             }
             _ => {
@@ -2514,7 +2510,7 @@ fn build_trace_graph_inner(
                 normal_data(&[m, n], seed)
             };
             let (a, a_data) = inp!(&[m, n], d);
-            let (q, r) = a.qr()?;
+            let Qr { q, r } = a.qr()?;
             Ok((vec![q, r], vec![(a, a_data)]))
         }
         "solve" => {
@@ -2535,7 +2531,7 @@ fn build_trace_graph_inner(
                 normal_data(&[m, n], seed)
             };
             let (a, a_data) = inp!(&[m, n], d);
-            let (u, s, vh) = a.svd()?;
+            let Svd { u, s, vh } = a.svd()?;
             Ok((vec![u, s, vh], vec![(a, a_data)]))
         }
         "eigh" => {
@@ -2547,7 +2543,10 @@ fn build_trace_graph_inner(
                 normal_data(&[n, n], seed)
             };
             let (a, a_data) = inp!(&[n, n], d);
-            let (w, v) = a.eigh()?;
+            let Eigh {
+                values: w,
+                vectors: v,
+            } = a.eigh()?;
             Ok((vec![w, v], vec![(a, a_data)]))
         }
         _ => Err(TfError::Internal(format!("unsupported trace op: {op}"))),

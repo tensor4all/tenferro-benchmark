@@ -60,9 +60,6 @@ jobs:
           collection_script=$(cat <<'SCRIPT'
             set -euo pipefail
             trap 'echo "CPU collection failed at line $LINENO: $BASH_COMMAND" >&2' ERR
-            test -d "$MKLROOT"
-            export TENFERRO_CPU_FEATURES=blas-mkl
-            export PUBLICATION_GATE_FEATURES=blas-mkl
             export BENCHMARK_TARGET_PROFILE=amd-cpu
             export PUBLICATION_GATE_PROFILE=quick
             export BENCHMARK_ALLOW_BUSY_HOST=1

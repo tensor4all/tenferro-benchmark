@@ -5,9 +5,9 @@ use super::*;
 mod alloc_counter;
 use tenferro_einsum::ConcreteEinsumPlan;
 use tenferro_linalg::LinalgBackend;
-use tenferro_runtime::TypedTensorSessionOpsExt;
+use tenferro_runtime::CoreOps;
 use tenferro_tensor::{
-    ContractionScalar, DynRank, Host, Rank, StridedSliceSpec, TensorScalar, TensorViewMut,
+    ContractionScalar, Dest, DynRank, Host, Rank, StridedSliceSpec, TensorScalar, TensorViewMut,
     TensorWrite, TypedTensor, TypedTensorViewMut,
 };
 
@@ -339,17 +339,17 @@ fn gemm(p: &Value, timing: &Timing, threads: usize) -> Result<CaseOutcome> {
     let n = param_usize(p, "n")?;
     let a = Tensor::from_vec_col_major([n, n], vec![1_f64; n * n])?;
     let b = Tensor::from_vec_col_major([n, n], vec![2_f64; n * n])?;
-    let plan = ConcreteEinsumPlan::prepare([&a, &b], "ij,jk->ik")?;
+    let plan = ConcreteEinsumPlan::prepare(&[&a, &b], "ij,jk->ik", &Default::default())?;
     let mut backend = checked_backend(threads)?;
     let mut held = backend.open_session()?;
     let result = held.with_session(|s| -> Result<CaseOutcome> {
         check(
-            data(&plan.execute([&a, &b], s)?)?,
+            data(&plan.execute(&[&a, &b], s)?)?,
             &vec![2. * n as f64; n * n],
         )?;
         Ok(outcome(
             Some(measure(timing, n * n * 8, || {
-                Ok(plan.execute([&a, &b], s)?)
+                Ok(plan.execute(&[&a, &b], s)?)
             })?),
             json!({"requested_threads":threads,"flops_per_op":2*n*n*n}),
             vec!["prepared allocating einsum execution"],
@@ -363,7 +363,7 @@ fn prepared(p: &Value, threads: usize) -> Result<CaseOutcome> {
     let n = param_usize(p, "n")?;
     let a = Tensor::from_vec_col_major([n, n], vec![1_f64; n * n])?;
     let b = Tensor::from_vec_col_major([n, n], vec![2_f64; n * n])?;
-    let plan = ConcreteEinsumPlan::prepare([&a, &b], "ij,jk->ik")?;
+    let plan = ConcreteEinsumPlan::prepare(&[&a, &b], "ij,jk->ik", &Default::default())?;
     let config = matmul_config(&[1], &[0]);
     let mut out = Tensor::from_vec_col_major([n, n], vec![0_f64; n * n])?;
     let mut backend = checked_backend(threads)?;
@@ -372,7 +372,7 @@ fn prepared(p: &Value, threads: usize) -> Result<CaseOutcome> {
         let direct = param_str(p,"arm")? == "direct";
         let mut op = || -> Result<()> {
             if direct { s.dot_general_read_into(TensorRead::from_tensor(&a), TensorRead::from_tensor(&b), &config, TensorWrite::Tensor(&mut out))?; }
-            else { plan.execute_into([&a,&b], s, TensorWrite::Tensor(&mut out))?; }
+            else { plan.execute_into(&[&a,&b], s, Dest::overwrite(&mut out))?; }
             Ok(())
         };
         op()?;

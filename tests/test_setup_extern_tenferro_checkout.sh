@@ -27,21 +27,21 @@ git -C "$TMP/source" clone --bare "$TMP/source" "$TMP/tenferro-rs.git" >/dev/nul
 
 mkdir -p "$TMP/project-main/scripts"
 cp "$ROOT/scripts/setup_extern_deps.sh" "$TMP/project-main/scripts/setup_extern_deps.sh"
-cp "$ROOT/scripts/cpu_blas_provider.sh" "$TMP/project-main/scripts/cpu_blas_provider.sh"
 
 (
   cd "$TMP/project-main"
   # Simulate a fresh macOS environment even inside the Linux devcontainer.
-  unset OPENBLAS_ROOT MKLROOT TENFERRO_CPU_FEATURES
+  unset OPENBLAS_ROOT MKLROOT
   BENCHMARK_HOST_OS=Darwin \
   TENFERRO_REPO_URL="$TMP/tenferro-rs.git" \
   TENFERRO_REF=main \
     bash scripts/setup_extern_deps.sh >"$TMP/project-main.log" 2>&1
 
   test "$(git -C extern/tenferro-rs rev-parse HEAD)" = "$NEW_COMMIT"
-  grep -q 'TENFERRO_CPU_FEATURES=blas-accelerate' "$TMP/project-main.log"
-  if grep -q 'OPENBLAS_ROOT=' "$TMP/project-main.log"; then
-    echo "macOS Accelerate setup should not require or export OPENBLAS_ROOT" >&2
+  # tenferro-rs 0.12 links no vendor provider, so setup exports no provider
+  # prefix and requires none.
+  if grep -q 'OPENBLAS_ROOT=\|MKLROOT=\|TENFERRO_CPU_FEATURES=' "$TMP/project-main.log"; then
+    echo "setup must not export a vendor provider prefix" >&2
     cat "$TMP/project-main.log" >&2
     exit 1
   fi
@@ -49,7 +49,6 @@ cp "$ROOT/scripts/cpu_blas_provider.sh" "$TMP/project-main/scripts/cpu_blas_prov
 
 mkdir -p "$TMP/project/scripts"
 cp "$ROOT/scripts/setup_extern_deps.sh" "$TMP/project/scripts/setup_extern_deps.sh"
-cp "$ROOT/scripts/cpu_blas_provider.sh" "$TMP/project/scripts/cpu_blas_provider.sh"
 
 (
   cd "$TMP/project"
@@ -88,7 +87,6 @@ cp "$ROOT/scripts/cpu_blas_provider.sh" "$TMP/project/scripts/cpu_blas_provider.
 
 mkdir -p "$TMP/project-with-sibling/scripts"
 cp "$ROOT/scripts/setup_extern_deps.sh" "$TMP/project-with-sibling/scripts/setup_extern_deps.sh"
-cp "$ROOT/scripts/cpu_blas_provider.sh" "$TMP/project-with-sibling/scripts/cpu_blas_provider.sh"
 git clone "$TMP/tenferro-rs.git" "$TMP/tenferro-rs" >/dev/null 2>&1
 git -C "$TMP/tenferro-rs" checkout -q --detach "$OLD_COMMIT"
 
@@ -110,7 +108,6 @@ git -C "$TMP/tenferro-rs" checkout -q --detach "$OLD_COMMIT"
 # Without TENFERRO_REF, an update checks out the revision in pins/tenferro-rs.rev.
 mkdir -p "$TMP/project-pinned/scripts" "$TMP/project-pinned/pins"
 cp "$ROOT/scripts/setup_extern_deps.sh" "$TMP/project-pinned/scripts/setup_extern_deps.sh"
-cp "$ROOT/scripts/cpu_blas_provider.sh" "$TMP/project-pinned/scripts/cpu_blas_provider.sh"
 printf '%s\n' "$OLD_COMMIT" >"$TMP/project-pinned/pins/tenferro-rs.rev"
 
 (
@@ -134,7 +131,6 @@ test "$(tr -d '[:space:]' <"$ROOT/pins/tenferro-rs.rev")" != ""
 # instead of refusing it as "exists, but it is not a git checkout".
 mkdir -p "$TMP/project-worktree/scripts" "$TMP/project-worktree/pins"
 cp "$ROOT/scripts/setup_extern_deps.sh" "$TMP/project-worktree/scripts/setup_extern_deps.sh"
-cp "$ROOT/scripts/cpu_blas_provider.sh" "$TMP/project-worktree/scripts/cpu_blas_provider.sh"
 printf '%s\n' "$NEW_COMMIT" >"$TMP/project-worktree/pins/tenferro-rs.rev"
 git clone "$TMP/tenferro-rs.git" "$TMP/worktree-source" >/dev/null 2>&1
 git -C "$TMP/worktree-source" checkout -q --detach "$NEW_COMMIT"

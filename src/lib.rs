@@ -5,22 +5,20 @@ pub mod verification_mode;
 
 use std::fmt::Display;
 
-use tenferro_einsum::{ContractionTree, EinsumOptimize, Subscripts, TraceContextEinsumExt};
-use tenferro_runtime::program::ProgramInputSpec;
+use tenferro_einsum::{
+    ContractionTree, EinsumOptimize, EinsumOptions, Subscripts, TracedEinsumOps,
+};
 use tenferro_runtime::{
     CompiledGraph, CompilerOptions, DType, GraphCompiler, OptimizerConfig, TraceContext,
 };
 
-/// The compiled tenferro CPU backend as this harness names it in result rows:
-/// `faer` for the `native` build, `blas` for a vendor BLAS build. tenferro-rs
-/// #2004 made the backend a compile-time choice, so the compiled provider id is
-/// the only authority for what a row measured.
+/// The compiled tenferro CPU backend as this harness names it in result rows.
+///
+/// tenferro-rs 0.12 has one CPU backend (#2608), so this is always `faer`.
+/// The id the compiled crate reports is the authority for what a row measured.
 pub fn compiled_cpu_provider() -> &'static str {
-    if tenferro_cpu::cpu_provider_id() == "tenferro.cpu.blas" {
-        "blas"
-    } else {
-        "faer"
-    }
+    debug_assert_eq!(tenferro_cpu::cpu_provider_id(), "tenferro.cpu.faer");
+    "faer"
 }
 
 /// Number of workers a benchmark process runs on when the caller does not name
@@ -65,36 +63,26 @@ pub fn compile_einsum(
     shapes: &[Vec<usize>],
     tree: &ContractionTree,
 ) -> Result<CompiledEinsum, String> {
-    let mut trace = TraceContext::new();
+    let trace = TraceContext::new();
     let inputs = shapes
         .iter()
-        .map(|shape| {
-            trace.input(ProgramInputSpec::new(
-                DType::F64,
-                shape.iter().copied().map(Into::into),
-            ))
-        })
+        .map(|shape| trace.input_concrete_shape(DType::F64, shape))
         .collect::<Result<Vec<_>, _>>()
         .map_err(|e| format!("{e}"))?;
-    let einsum_subscripts = subs.into();
+    let einsum_subscripts: tenferro_einsum::EinsumSubscripts = subs.into();
     let pairs: Vec<(usize, usize)> = (0..tree.step_count())
         .map(|idx| tree.step_pair(idx).expect("step index is in 0..step_count"))
         .collect();
     let shape_refs: Vec<&[usize]> = shapes.iter().map(Vec::as_slice).collect();
     let owned_tree =
         ContractionTree::from_pairs(subs, &shape_refs, &pairs).map_err(|e| format!("{e}"))?;
+    let input_refs: Vec<&_> = inputs.iter().collect();
+    let options = EinsumOptions::default().optimize(EinsumOptimize::Tree(owned_tree));
     let output = trace
-        .einsum_subscripts_with(
-            &inputs,
-            &einsum_subscripts,
-            EinsumOptimize::Tree(owned_tree),
-        )
+        .einsum_with(&input_refs, &einsum_subscripts, &options)
         .map_err(|e| format!("{e}"))?;
-    let graph = trace.finish(&[output]).map_err(|e| format!("{e}"))?;
     let mut compiler = GraphCompiler::with_compiler_options(compiler_options_from_env());
-    let program = compiler
-        .compile_traced_graph(&graph)
-        .map_err(|e| format!("{e}"))?;
+    let program = compiler.compile(&output).map_err(|e| format!("{e}"))?;
 
     Ok(CompiledEinsum {
         program,
@@ -244,7 +232,10 @@ mod spd_fixture_tests {
                         "n={n}: {upper} vs {lower}"
                     );
                 }
-                assert!(fixture[j + n * j] > 0.0, "n={n}: diagonal {j} is not positive");
+                assert!(
+                    fixture[j + n * j] > 0.0,
+                    "n={n}: diagonal {j} is not positive"
+                );
             }
         }
     }

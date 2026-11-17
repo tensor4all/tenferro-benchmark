@@ -15,7 +15,7 @@
 #       placeholder config is refused before anything is built. Optional
 #       BENCH_AA_DIR names the A/A directory the detector uses.
 #
-# Environment: BENCHMARK_TARGET_PROFILE (amd-cpu | mac-cpu), TENFERRO_CPU_FEATURES
+# Environment: BENCHMARK_TARGET_PROFILE (amd-cpu | mac-cpu)
 # (default native). Writes data/results/<profile>/cpu/session_matrix_{aa,paired}/<ts>/
 # with plan.json, one run directory per round and arm, and detector output;
 # the latest report goes to result/<profile>/cpu/session_matrix_{aa,paired}.md.
@@ -36,11 +36,10 @@ case "$BENCHMARK_TARGET_PROFILE" in
         exit 2
         ;;
 esac
-export TENFERRO_CPU_FEATURES="${TENFERRO_CPU_FEATURES:-native}"
 PYTHON="$PROJECT_DIR/.venv/bin/python"
 [[ -x "$PYTHON" ]] || PYTHON=python3
 TIMESTAMP="$(date -u +%Y%m%d_%H%M%S)"
-COMMAND="BENCHMARK_TARGET_PROFILE=$BENCHMARK_TARGET_PROFILE TENFERRO_CPU_FEATURES=$TENFERRO_CPU_FEATURES $(printf '%q ' "$0" "$MODE" "$@")"
+COMMAND="BENCHMARK_TARGET_PROFILE=$BENCHMARK_TARGET_PROFILE $(printf '%q ' "$0" "$MODE" "$@")"
 
 HARNESS="$(git -C "$PROJECT_DIR" rev-parse HEAD)"
 
@@ -87,8 +86,8 @@ print("THREADS=(" + " ".join(str(t) for t in config["threads"]) + ")")
 print(f"export BENCH_COVERAGE={config['cases']['coverage']}")
 if config["cases"].get("case_ids"):
     print("export BENCH_INSTANCE=" + ",".join(config["cases"]["case_ids"]))
-if config["build"]["features"] != __import__("os").environ["TENFERRO_CPU_FEATURES"]:
-    sys.exit("ERROR: build.features does not match TENFERRO_CPU_FEATURES")
+if config["build"]["features"] != "native":
+    sys.exit("ERROR: build.features is not the one CPU feature set (`native`)")
 PY
 )" || exit 1
         eval "$declared"

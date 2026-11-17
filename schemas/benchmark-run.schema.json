@@ -243,6 +243,7 @@
       }
     },
     "blas": {
+      "description": "Historical only: the vendor BLAS/LAPACK provider a run linked before tenferro-rs 0.12 (tenferro-rs #2608). Current runs link no vendor provider and record no blas block; the definition stays so committed run records still validate.",
       "oneOf": [
         {
           "type": "object",

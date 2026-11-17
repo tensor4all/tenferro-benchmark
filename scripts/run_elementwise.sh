@@ -37,7 +37,6 @@ set -euo pipefail
 # it explicitly.
 #
 # Environment variables:
-# - TENFERRO_CPU_FEATURES: Cargo CPU backend features. Defaults to `native`
 #   (tenferro's own kernels): the elementwise path uses no BLAS, so this suite
 #   does not need an OpenBLAS/MKL installation and runs outside the devcontainer.
 # - BENCHMARK_TIMESTAMP: override the run directory / CSV timestamp.
@@ -53,14 +52,12 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 export BENCH_COMMAND_START_NS="$(python3 -c 'import time; print(time.monotonic_ns())')"
 
-# shellcheck source=scripts/cpu_blas_provider.sh
-source "$SCRIPT_DIR/cpu_blas_provider.sh"
 # shellcheck source=scripts/publish_run.sh
 source "$SCRIPT_DIR/publish_run.sh"
+# shellcheck source=scripts/host_os.sh
+source "$SCRIPT_DIR/host_os.sh"
 
-TENFERRO_CPU_FEATURES="$(normalize_cpu_blas_features "${TENFERRO_CPU_FEATURES:-native}")"
-export TENFERRO_CPU_FEATURES
-CARGO_FEATURES="$TENFERRO_CPU_FEATURES"
+CARGO_FEATURES="native"
 
 default_target_profile() {
     case "$(benchmark_host_os)" in
@@ -89,7 +86,6 @@ if [[ "${SKIP_EXTERN_SETUP:-0}" != "1" ]]; then
 fi
 
 # A BLAS selection needs MKLROOT / OPENBLAS_ROOT; `native` needs nothing.
-ensure_blas_env_for_features "$TENFERRO_CPU_FEATURES"
 
 RESULTS_ROOT="$PROJECT_DIR/data/results"
 REPORTS_DIR="$PROJECT_DIR/result"
@@ -115,7 +111,6 @@ fi
 
 "${PYTHON[@]}" "$SCRIPT_DIR/validate_benchmark_suite.py" "$SUITE_FILE"
 
-blas_impl="$(blas_impl_for_features "$TENFERRO_CPU_FEATURES")"
 tenferro_dir="${TENFERRO_RS_DIR:-$PROJECT_DIR/extern/tenferro-rs}"
 tenferro_commit=""
 if [[ -d "$tenferro_dir/.git" ]] && command -v git >/dev/null 2>&1; then
@@ -131,7 +126,6 @@ write_run_metadata() {
         --timestamp "$RUN_TIMESTAMP_RFC3339"
         --tenferro-dir "$tenferro_dir"
         --features "$CARGO_FEATURES"
-        --blas "$blas_impl"
         --output "$output"
     )
     [[ -n "$tenferro_commit" ]] && args+=(--tenferro-commit "$tenferro_commit")

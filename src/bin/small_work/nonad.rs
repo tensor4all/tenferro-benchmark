@@ -1,10 +1,8 @@
 //! #98: equal-output non-AD extension calls, with and without session reuse.
 use super::*;
 use tenferro_ad::EagerSession;
-use tenferro_einsum::{
-    EagerSessionEinsumExt, EinsumSubscripts, TensorEinsumExt, TensorReadEinsumExt,
-};
-use tenferro_linalg::{EagerSessionLinalgExt, TensorLinalgExt, TensorReadLinalgExt};
+use tenferro_einsum::{EagerEinsumOps, EinsumOps, EinsumSubscripts};
+use tenferro_linalg::{EagerLinalgOps, LinalgOps, Qr, Svd};
 use tenferro_tensor::TensorValue;
 
 fn fixture(n: usize, seed: usize) -> Vec<f64> {
@@ -114,28 +112,28 @@ fn direct(
     use Outputs::*;
     if let Some(reads) = views {
         return Ok(match op {
-            "einsum" | "einsum3" => One([reads.einsum_read_subscripts(subs, session)?]),
+            "einsum" | "einsum3" => One([reads.einsum(subs, session)?]),
             "qr" => {
-                let (q, r) = reads[0].clone().qr_read(session)?;
+                let Qr { q, r } = reads[0].clone().qr(session)?;
                 Two([q, r])
             }
             "svd" => {
-                let (u, s, v) = reads[0].clone().svd_read(session)?;
+                let Svd { u, s, vh: v } = reads[0].clone().svd(session)?;
                 Three([u, s, v])
             }
-            "solve" => One([reads[0].clone().solve_read(reads[1].clone(), session)?]),
+            "solve" => One([reads[0].clone().solve(&reads[1].clone(), session)?]),
             _ => return Err("unknown operation".into()),
         });
     }
     Ok(match op {
-        "einsum" => One([[&input[0], &input[1]].einsum_subscripts(subs, session)?]),
-        "einsum3" => One([[&input[0], &input[1], &input[2]].einsum_subscripts(subs, session)?]),
+        "einsum" => One([[&input[0], &input[1]].einsum(subs, session)?]),
+        "einsum3" => One([[&input[0], &input[1], &input[2]].einsum(subs, session)?]),
         "qr" => {
-            let (q, r) = input[0].qr(session)?;
+            let Qr { q, r } = input[0].qr(session)?;
             Two([q, r])
         }
         "svd" => {
-            let (u, s, v) = input[0].svd(session)?;
+            let Svd { u, s, vh: v } = input[0].svd(session)?;
             Three([u, s, v])
         }
         "solve" => One([input[0].solve(&input[1], session)?]),
@@ -150,14 +148,14 @@ fn eager(
 ) -> Result<Outputs<EagerTensor>, BoxError> {
     use Outputs::*;
     Ok(match op {
-        "einsum" => One([session.einsum_subscripts(&[&input[0], &input[1]], subs)?]),
-        "einsum3" => One([session.einsum_subscripts(&[&input[0], &input[1], &input[2]], subs)?]),
+        "einsum" => One([session.einsum(&[&input[0], &input[1]], subs)?]),
+        "einsum3" => One([session.einsum(&[&input[0], &input[1], &input[2]], subs)?]),
         "qr" => {
-            let (q, r) = session.qr(&input[0])?;
+            let Qr { q, r } = session.qr(&input[0])?;
             Two([q, r])
         }
         "svd" => {
-            let (u, s, v) = session.svd(&input[0])?;
+            let Svd { u, s, vh: v } = session.svd(&input[0])?;
             Three([u, s, v])
         }
         "solve" => One([session.solve(&input[0], &input[1])?]),
@@ -349,7 +347,7 @@ pub fn run(case_id: &str) -> Result<(), BoxError> {
         // Fresh standalone process, no capture_trace guard is ever entered.
         let mut eager_input: Vec<_> = input
             .into_iter()
-            .map(|t| EagerTensor::from_tensor_in(t, runtime.clone()))
+            .map(|t| runtime.constant_from(t))
             .collect::<Result<_, _>>()?;
         if views.is_some() {
             eager_input = runtime.with_eager_session(&mut backend, |s| {
@@ -381,7 +379,7 @@ pub fn run(case_id: &str) -> Result<(), BoxError> {
         let tensors = validated
             .as_slice()
             .iter()
-            .map(|tensor| tensor.to_tensor(&mut backend))
+            .map(|tensor| runtime.with_eager_session(&mut backend, |s| s.duplicate_value(tensor)))
             .collect::<tenferro_ad::Result<Vec<_>>>()?;
         residual = check(&op, n, &a, &expected, &tensors)?;
         if tier == "eager-shared" {

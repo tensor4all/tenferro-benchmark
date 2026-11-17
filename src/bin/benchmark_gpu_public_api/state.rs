@@ -3,7 +3,7 @@ use serde_json::Value;
 use std::path::Path;
 use tenferro_ad::{EagerRuntime, EagerSession, EagerTensor};
 use tenferro_gpu::cuda::{upload_tensor, CudaEngine, CudaRuntime};
-use tenferro_linalg::{EagerSessionLinalgExt, HouseholderQr, QrOptions, TensorLinalgExt};
+use tenferro_linalg::{EagerLinalgOps, HouseholderQr, LinalgOps, QrOptions};
 use tenferro_tensor::{DType, Engine, Tensor};
 
 enum Output<T> {

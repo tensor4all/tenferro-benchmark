@@ -29,7 +29,6 @@ Use the repository devcontainer image and provider policy. Collect sequential
 
 ```bash
 devcontainer exec --workspace-folder . bash -lc '
-  export TENFERRO_CPU_FEATURES=blas-mkl BENCHMARK_TARGET_PROFILE=amd-cpu
   export BENCH_COVERAGE=full BENCH_EFFORT=standard
   ./scripts/run_small_work.sh 1 4'
 ```

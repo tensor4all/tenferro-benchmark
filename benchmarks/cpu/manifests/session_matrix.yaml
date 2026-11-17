@@ -2,7 +2,7 @@
 # quick is the routine coverage choice (F2 reproducer plus controls);
 # full is the selectable expanded matrix. Measurement effort (scan/standard/
 # confirm) is chosen independently; see docs/regression-detection.md.
-manifest_version: 4
+manifest_version: 5
 suite_id: cpu/session_matrix
 source: data/instances/session_matrix.json
 generated_by: scripts/generate_session_matrix_cases.py

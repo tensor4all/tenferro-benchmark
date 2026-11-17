@@ -17,7 +17,7 @@ use tenferro_gpu::cuda::{
     cuda_runtime_engine_registration, download_tensor, gpu_available, upload_tensor, CudaEngine,
     CudaRuntime,
 };
-use tenferro_linalg::{EagerSessionLinalgExt, TracedTensorLinalgExt};
+use tenferro_linalg::{EagerLinalgOps, Eigh, Lu, Qr, Svd, TracedLinalgOps};
 use tenferro_runtime::{ExecutionEngine, GraphCompiler, Runtime, TraceContext, TracedTensor};
 use tenferro_tensor::{DeviceKind, GpuBackendKind, Tensor};
 
@@ -768,22 +768,25 @@ fn run_eager_case(
                     },
                 )
                 .map_err(|e| format!("eager forward: {e}"))?;
-            let derivative = match phase {
-                "jvp" => ctx.jvp(
-                    &mut *engine,
-                    &output,
-                    &wrt,
-                    tangent.as_ref().expect("jvp tangent prepared"),
-                ),
-                "vjp" => ctx.vjp(
-                    &mut *engine,
-                    &output,
-                    &wrt,
-                    cotangent.as_ref().expect("vjp cotangent prepared"),
-                ),
-                other => return Err(format!("unsupported phase: {other}")),
-            }
-            .map_err(|e| format!("eager {phase}: {e}"))?;
+            let derivative = ctx
+                .with_eager_session(&mut *engine, |session| match phase {
+                    "jvp" => session.jvp(
+                        &output,
+                        &wrt,
+                        tangent.as_ref().expect("jvp tangent prepared"),
+                    ),
+                    "vjp" => session.vjp(
+                        &output,
+                        &wrt,
+                        cotangent.as_ref().expect("vjp cotangent prepared"),
+                    ),
+                    other => Err(tenferro_ad::Error::runtime_state(
+                        "gpu_linalg_ad",
+                        tenferro_runtime::ErrorPhase::Execution,
+                        format!("unsupported phase: {other}"),
+                    )),
+                })
+                .map_err(|e| format!("eager {phase}: {e}"))?;
             retained.push((output, derivative));
         }
         sync_runtime(rt)?;
@@ -794,11 +797,9 @@ fn run_eager_case(
             .ok_or_else(|| "eager sample produced no result".to_string())?;
         // Conversion is not part of the measured region.
         let tensors = vec![
-            output
-                .to_tensor(&mut *engine)
+            ctx.with_eager_session(&mut *engine, |session| session.duplicate_value(&output))
                 .map_err(|e| format!("eager output materialization: {e}"))?,
-            derivative
-                .to_tensor(&mut *engine)
+            ctx.with_eager_session(&mut *engine, |session| session.duplicate_value(&derivative))
                 .map_err(|e| format!("eager derivative materialization: {e}"))?,
         ];
         Ok((elapsed, tensors))
@@ -862,21 +863,21 @@ fn eager_forward(
 ) -> tenferro_ad::error::Result<EagerTensor> {
     match *loss {
         LossKind::SvdS { .. } => {
-            let (_, s, _) = session.svd(wrt)?;
+            let Svd { s, .. } = session.svd(wrt)?;
             session.reduce_sum(&s, Some(&[0]))
         }
         LossKind::Qr { .. } => {
-            let (q, r) = session.qr(wrt)?;
+            let Qr { q, r } = session.qr(wrt)?;
             let q_sum = session.reduce_sum(&q, Some(&[0, 1]))?;
             let r_sum = session.reduce_sum(&r, Some(&[0, 1]))?;
             session.add(&q_sum, &r_sum)
         }
         LossKind::Eigh { .. } => {
-            let (w, _) = session.eigh(wrt)?;
+            let Eigh { values: w, .. } = session.eigh(wrt)?;
             session.reduce_sum(&w, Some(&[0]))
         }
         LossKind::Lu { .. } => {
-            let (_, l, u, _) = session.lu(wrt)?;
+            let Lu { l, u, .. } = session.lu(wrt)?;
             let l_sum = session.reduce_sum(&l, Some(&[0, 1]))?;
             let u_sum = session.reduce_sum(&u, Some(&[0, 1]))?;
             session.add(&l_sum, &u_sum)
@@ -1008,7 +1009,7 @@ fn build_loss(
     match *loss {
         LossKind::SvdS { matrix_seed } => {
             let a = upload_traced(trace, rt, &[n, n], well_conditioned_matrix(n, matrix_seed))?;
-            let (_, s, _) = a.svd().map_err(|e| format!("svd: {e}"))?;
+            let Svd { s, .. } = a.svd().map_err(|e| format!("svd: {e}"))?;
             let out = s
                 .reduce_sum(Some(&[0]))
                 .map_err(|e| format!("reduce: {e}"))?;
@@ -1016,7 +1017,7 @@ fn build_loss(
         }
         LossKind::Qr { matrix_seed } => {
             let a = upload_traced(trace, rt, &[n, n], well_conditioned_matrix(n, matrix_seed))?;
-            let (q, r) = a.qr().map_err(|e| format!("qr: {e}"))?;
+            let Qr { q, r } = a.qr().map_err(|e| format!("qr: {e}"))?;
             let q_sum = q
                 .reduce_sum(Some(&[0, 1]))
                 .map_err(|e| format!("reduce: {e}"))?;
@@ -1028,7 +1029,7 @@ fn build_loss(
         }
         LossKind::Eigh { matrix_seed } => {
             let a = upload_traced(trace, rt, &[n, n], spd_matrix(n, matrix_seed))?;
-            let (w, _) = a.eigh().map_err(|e| format!("eigh: {e}"))?;
+            let Eigh { values: w, .. } = a.eigh().map_err(|e| format!("eigh: {e}"))?;
             let out = w
                 .reduce_sum(Some(&[0]))
                 .map_err(|e| format!("reduce: {e}"))?;
@@ -1036,7 +1037,7 @@ fn build_loss(
         }
         LossKind::Lu { matrix_seed } => {
             let a = upload_traced(trace, rt, &[n, n], well_conditioned_matrix(n, matrix_seed))?;
-            let (_, l, u, _) = a.lu().map_err(|e| format!("lu: {e}"))?;
+            let Lu { l, u, .. } = a.lu().map_err(|e| format!("lu: {e}"))?;
             let l_sum = l
                 .reduce_sum(Some(&[0, 1]))
                 .map_err(|e| format!("reduce: {e}"))?;

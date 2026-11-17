@@ -8,15 +8,14 @@
 # Builds the existing real checkout in place, or re-points its symlink at
 # <tenferro-rs-dir> and restores the previous link target afterwards. Writes shell assignments to
 # <out-var-file>: TENFERRO_REV, TENFERRO_DIRTY, TENFERRO_DIR, BIN_DIR.
-# Default bins: benchmark_cpu_session (the cross-revision binary). Honors
-# TENFERRO_CPU_FEATURES (default native; BLAS features need their provider
-# environment, e.g. OPENBLAS_ROOT/MKLROOT) and BENCH_BUILD_PROFILE (default
-# release). The build clears RUSTC_WRAPPER so a compiler cache cannot mix
-# artifacts across tenferro-rs revisions.
+# Default bins: benchmark_cpu_session (the cross-revision binary). The build
+# uses the harness's one CPU feature set (`native`) and honors
+# BENCH_BUILD_PROFILE (default release). It clears RUSTC_WRAPPER so a compiler
+# cache cannot mix artifacts across tenferro-rs revisions.
 #
-# Feature names follow tenferro-rs #2004. Revisions before that change used the
-# old harness/feature names (cpu-faer/cpu-blas/system-*); build such a revision
-# with the matching older harness revision instead of this one.
+# tenferro-rs 0.12 has one CPU backend (#2608): there is no vendor BLAS/LAPACK
+# provider to select, so this build links nothing but the crate's own kernels.
+# Build a revision older than that with the matching older harness revision.
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -30,15 +29,7 @@ if [[ ! -d "$TENFERRO_DIR/crates/tenferro-cpu" ]]; then
     echo "ERROR: $TENFERRO_DIR is not a tenferro-rs checkout" >&2
     exit 1
 fi
-# shellcheck source=scripts/cpu_blas_provider.sh
-source "$SCRIPT_DIR/cpu_blas_provider.sh"
-FEATURES="${TENFERRO_CPU_FEATURES:-native}"
-ensure_blas_env_for_features "$FEATURES"
-# shellcheck source=scripts/link_preflight.sh
-source "$SCRIPT_DIR/link_preflight.sh"
-case "$FEATURES" in
-    blas-mkl|blas-openblas) require_link_preflight "$FEATURES" >&2 ;;
-esac
+FEATURES=native
 PROFILE="${BENCH_BUILD_PROFILE:-release}"
 LINK="$PROJECT_DIR/extern/tenferro-rs"
 
@@ -72,7 +63,7 @@ profile_flag=()
 subdir=debug
 if [[ "$PROFILE" == release ]]; then profile_flag=(--release); subdir=release; fi
 RUSTC_WRAPPER= CARGO_TARGET_DIR="$target" cargo build -j 16 "${profile_flag[@]+"${profile_flag[@]}"}" \
-    --no-default-features --features "$FEATURES" "${bin_args[@]+"${bin_args[@]}"}" >&2
+    --no-default-features --features native "${bin_args[@]+"${bin_args[@]}"}" >&2
 
 bin_dir="$target/$subdir"
 {

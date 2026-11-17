@@ -2,14 +2,8 @@
 name = "cpu-followup-mwe"
 version = "0.1.0"
 edition = "2021"
-build = "build.rs"
 
 [workspace]
-
-[features]
-default = ["system-mkl"]
-system-mkl = ["tenferro-cpu/blas", "tenferro-ad/blas", "tenferro-fft/blas", "tenferro-linalg/blas"]
-system-openblas = ["tenferro-cpu/blas", "tenferro-ad/blas", "tenferro-fft/blas", "tenferro-linalg/blas"]
 
 [dependencies]
 tenferro-ad = { path = "../../extern/tenferro-rs/crates/tenferro-ad", default-features = false }

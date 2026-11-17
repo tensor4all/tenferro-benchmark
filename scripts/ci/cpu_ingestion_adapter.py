@@ -63,7 +63,10 @@ def validate_selection(document):
         raise ValueError('CPU nightly thread selection mismatch')
 
 
-BLAS_IMPLEMENTATIONS = ('accelerate', 'openblas', 'mkl')
+# Historical runs named the vendor BLAS implementation their provider-selecting
+# build linked; tenferro-rs 0.12 runs name the one CPU backend the harness
+# always builds, so both spellings map to the same workload identity.
+BLAS_IMPLEMENTATIONS = ('accelerate', 'openblas', 'mkl', 'faer')
 
 CPU_SUITES = ('einsum', 'cpu_ops', 'linalg_jvp_vjp', 'fft', 'public_api',
               'small_work', 'session_matrix', 'permutation', 'overhead_smoke', 'perf_issues')
@@ -94,12 +97,14 @@ def build_source(bundle: Path, descriptor: dict, suite: str, profile: str, sourc
     if not metadata.get('tenferro_rs', {}).get('commit'):
         raise ValueError('CPU metadata measured revision is missing')
     features = metadata.get('tenferro_rs', {}).get('features', [])
-    if profile == 'amd-cpu' and ('blas-mkl' not in features or metadata.get('blas', {}).get('implementation') != 'mkl'):
-        raise ValueError('Standard Linux CPU publication requires recorded MKL collection')
+    # tenferro-rs 0.12 has one CPU backend (tenferro-rs #2608): a run cannot
+    # link a vendor BLAS/LAPACK provider, so it must not record one either.
+    if 'blas' in metadata:
+        raise ValueError('the run records a vendor BLAS/LAPACK provider it cannot link')
+    if any(str(feature).startswith('blas-') for feature in features):
+        raise ValueError('the run records vendor BLAS/LAPACK features it cannot build')
     if profile == 'amd-cpu' and metadata.get('python_backends', {}).get('pytorch', {}).get('provider') != 'mkl':
         raise ValueError('Standard Linux CPU publication requires recorded MKL-backed PyTorch')
-    if profile == 'mac-cpu' and 'blas-accelerate' not in features:
-        raise ValueError('Standard macOS CPU publication requires recorded Accelerate collection')
     metadata = dict(metadata, suite_id=suite)
     if suite == 'cpu/perf_issues':
         from benchmark_perf_issues import build_summary

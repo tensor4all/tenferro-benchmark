@@ -16,12 +16,10 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_DIR"
-source "$SCRIPT_DIR/cpu_blas_provider.sh"
 source "$SCRIPT_DIR/thread_env.sh"
 source "$SCRIPT_DIR/benchmark_host_idle.sh"
 # shellcheck source=scripts/publish_run.sh
 source "$SCRIPT_DIR/publish_run.sh"
-export TENFERRO_CPU_FEATURES="$(normalize_cpu_blas_features "${TENFERRO_CPU_FEATURES:-}")"
 export BENCHMARK_TARGET_PROFILE="${BENCHMARK_TARGET_PROFILE:-mac-cpu}"
 TENFERRO_DIR="${BENCH_TENFERRO_DIR:-extern/tenferro-rs}"
 PYTHON="$PROJECT_DIR/.venv/bin/python"
@@ -36,12 +34,11 @@ else
     export BENCH_COMMAND_BUDGET_SECONDS="${BENCH_COMMAND_BUDGET_SECONDS:-300}"
 fi
 COMMAND="$(printf '%q ' "$0" "$@")"
-for var in BENCHMARK_TARGET_PROFILE TENFERRO_CPU_FEATURES BENCH_COVERAGE BENCH_EFFORT \
+for var in BENCHMARK_TARGET_PROFILE BENCH_COVERAGE BENCH_EFFORT \
     BENCH_INSTANCE BENCH_CONFIRM_CONFIG BENCH_AA_WARMUPS BENCH_AA_RUNS BENCH_SESSION_BINARY BENCH_COMMAND_BUDGET_SECONDS; do
     if [[ -n "${!var:-}" ]]; then COMMAND="$var=${!var} $COMMAND"; fi
 done
 # Also needed by prebuilt binaries: sets the provider library paths.
-ensure_blas_env_for_features "$TENFERRO_CPU_FEATURES"
 if [[ -n "${BENCH_SESSION_BINARY:-}" ]]; then
     BINARY="$BENCH_SESSION_BINARY"
 else
@@ -53,7 +50,7 @@ else
             -c url.https://github.com/tensor4all/tenferro-rs.git.insteadOf=git@github.com:tensor4all/tenferro-rs.git \
             pull --ff-only
     fi
-    cargo build --release --no-default-features --features "$TENFERRO_CPU_FEATURES" --bin benchmark_cpu_session
+    cargo build --release --no-default-features --features native --bin benchmark_cpu_session
     BINARY="${CARGO_TARGET_DIR:-$PROJECT_DIR/target}/release/benchmark_cpu_session"
 fi
 BUILD_END_NS="$($PYTHON -c 'import time; print(time.monotonic_ns())')"
@@ -72,7 +69,7 @@ for threads in "${THREAD_COUNTS[@]}"; do
     "$PYTHON" scripts/collect_run_metadata.py --suite-id cpu/session_matrix \
         --target-profile "$BENCHMARK_TARGET_PROFILE" --suite-file benchmarks/cpu/session_matrix.yaml \
         --timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --tenferro-dir "$TENFERRO_DIR" \
-        --features "$TENFERRO_CPU_FEATURES" --blas "$(blas_impl_for_features "$TENFERRO_CPU_FEATURES")" \
+        --features native \
         --command "$COMMAND" --collection-json "$SELECTION" \
         --output "$RUN_DIR/run_t${threads}.yaml"
     assert_benchmark_host_idle

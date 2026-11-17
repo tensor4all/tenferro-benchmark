@@ -3,10 +3,10 @@
 use num_complex::{Complex32, Complex64};
 use serde_json::{json, Value};
 use std::{error::Error, hint::black_box, time::Instant};
-use tenferro_ad::{EagerRuntime, EagerTensor};
+use tenferro_ad::EagerRuntime;
 use tenferro_cpu::CpuEngine;
-use tenferro_fft::{FftExecutor, FftNorm};
-use tenferro_linalg::{EagerSessionLinalgExt, TensorLinalgExt};
+use tenferro_fft::{FftExecutor, FftNorm, FftOptions};
+use tenferro_linalg::{EagerLinalgOps, LinalgOps};
 use tenferro_tensor::{Engine, Tensor};
 
 type Result<T> = std::result::Result<T, Box<dyn Error + Send + Sync>>;
@@ -118,10 +118,7 @@ pub fn run(
                 }
             }
             let runtime = EagerRuntime::new()?;
-            let x = EagerTensor::from_tensor_in(
-                Tensor::from_vec_col_major(shape, data)?,
-                runtime.clone(),
-            )?;
+            let x = runtime.constant_from(Tensor::from_vec_col_major(shape, data)?)?;
             runtime.with_eager_session(&mut backend, |s| -> tenferro_ad::Result<Value> {
                 let output = if operation == "gelu" {
                     s.gelu(&x)?
@@ -218,14 +215,22 @@ pub fn run(
                 .collect();
             let mut executor = FftExecutor::default();
             backend.with_backend_session(|s| {
-                let output = executor.ifft(&input, None, -1, FftNorm::Backward, s)?;
+                let output = executor.ifft_with(
+                    &input,
+                    &FftOptions::default().axis(-1).norm(FftNorm::Backward),
+                    s,
+                )?;
                 let got = output.as_slice::<Complex32>()?;
                 for (i, want) in &expected {
                     let g = Complex64::new(got[*i].re as f64, got[*i].im as f64);
                     assert!((g - want).norm() < 1e-5);
                 }
                 measure(n * 8, warmups, samples, target_ns, || {
-                    Ok(executor.ifft(&input, None, -1, FftNorm::Backward, s)?)
+                    Ok(executor.ifft_with(
+                        &input,
+                        &FftOptions::default().axis(-1).norm(FftNorm::Backward),
+                        s,
+                    )?)
                 })
             })??
         }
@@ -234,14 +239,22 @@ pub fn run(
             let input = Tensor::from_vec_col_major(vec![n], vec![Complex32::new(1.0, 0.0); n])?;
             let mut executor = FftExecutor::default();
             backend.with_backend_session(|s| {
-                let output = executor.ifft(&input, None, -1, FftNorm::Backward, s)?;
+                let output = executor.ifft_with(
+                    &input,
+                    &FftOptions::default().axis(-1).norm(FftNorm::Backward),
+                    s,
+                )?;
                 let values = output.as_slice::<Complex32>()?;
                 for (i, value) in values.iter().enumerate() {
                     let want = if i == 0 { 1.0 } else { 0.0 };
                     assert!((value.re - want).abs() < 1e-5 && value.im.abs() < 1e-5);
                 }
                 measure(n * 8, warmups, samples, target_ns, || {
-                    Ok(executor.ifft(&input, None, -1, FftNorm::Backward, s)?)
+                    Ok(executor.ifft_with(
+                        &input,
+                        &FftOptions::default().axis(-1).norm(FftNorm::Backward),
+                        s,
+                    )?)
                 })
             })??
         }
@@ -277,13 +290,13 @@ pub fn run(
             let a = Tensor::from_vec_col_major(vec![n, n], data)?;
             let rhs = Tensor::from_vec_col_major(vec![n, nrhs], sums.repeat(nrhs))?;
             backend.with_backend_session(|s| {
-                let output = a.triangular_solve(&rhs, true, true, false, false, s)?;
+                let output = a.triangular_solve(&rhs, s)?;
                 assert!(output
                     .as_slice::<f64>()?
                     .iter()
                     .all(|x| (x - 1.0).abs() < 1e-10));
                 measure(n * nrhs * 8, warmups, samples, target_ns, || {
-                    Ok(a.triangular_solve(&rhs, true, true, false, false, s)?)
+                    Ok(a.triangular_solve(&rhs, s)?)
                 })
             })??
         }
@@ -303,14 +316,11 @@ pub fn run(
                 }
             }
             let runtime = EagerRuntime::new()?;
-            let a = EagerTensor::from_tensor_in(
-                Tensor::from_vec_col_major(vec![m, n], data)?,
-                runtime.clone(),
-            )?;
-            let rhs = EagerTensor::from_tensor_in(
-                Tensor::from_vec_col_major(vec![m, nrhs], sums.repeat(nrhs))?,
-                runtime.clone(),
-            )?;
+            let a = runtime.constant_from(Tensor::from_vec_col_major(vec![m, n], data)?)?;
+            let rhs = runtime.constant_from(Tensor::from_vec_col_major(
+                vec![m, nrhs],
+                sums.repeat(nrhs),
+            )?)?;
             runtime.with_eager_session(&mut backend, |s| -> tenferro_ad::Result<Value> {
                 let output = s.lstsq(&a, &rhs)?;
                 let got = s.duplicate_value(&output)?;

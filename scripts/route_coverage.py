@@ -72,12 +72,80 @@ def _last_ident(path: str) -> str | None:
     return names[-1] if names else None
 
 
+REGISTRY_FAMILY = re.compile(r"^\s*family:\s*([a-z_]+);", re.M)
+REGISTRY_LAYER = re.compile(r"^\s*layer\s+([a-z_]+)\s*\{", re.M)
+REGISTRY_TRAIT = re.compile(r"^\s*trait_def:\s*pub\s+trait\s+([A-Za-z_][A-Za-z0-9_]*)", re.M)
+REGISTRY_OP = re.compile(r"^\s*op\s+([a-z_][a-z0-9_]*)\s*\{", re.M)
+REGISTRY_OPTIONS = re.compile(r"^\s*options:\s*([A-Za-z_][A-Za-z0-9_]*)\s*;", re.M)
+REGISTRY_INTO = re.compile(r"^\s*into:\s*\[([^\]]*)\]", re.M)
+
+
+def _brace_block(text: str, start: int) -> str:
+    """Body of the brace-block that opens at or after `start`."""
+    brace = text.find("{", start)
+    if brace < 0:
+        return ""
+    depth, j = 1, brace + 1
+    while depth and j < len(text):
+        depth += {"{": 1, "}": -1}.get(text[j], 0)
+        j += 1
+    return text[brace + 1:j - 1]
+
+
+def registered_ops(root: Path) -> dict[str, set[str]]:
+    """Methods the `api_ops!` registries generate for each operation trait.
+
+    tenferro-rs 0.12 spells every operation family through a macro-generated
+    registry (`crates/*/src/api/registry.rs`), so a static scan of the hand
+    written sources cannot see the trait methods. This reads the registry and
+    derives the generated names: `op`, `op_with` when the operation has an
+    options type, and `op_into` for the concrete layer, which is the only layer
+    that declares destinations.
+    """
+    methods: dict[str, set[str]] = defaultdict(set)
+    for path in sorted(root.glob("crates/*/src/api/registry.rs")):
+        text = path.read_text(errors="replace")
+        layers = {}
+        handwritten: dict[str, set[str]] = defaultdict(set)
+        for match in REGISTRY_LAYER.finditer(text):
+            body = _brace_block(text, match.end() - 1)
+            trait = REGISTRY_TRAIT.search(body)
+            if not trait:
+                continue
+            layers[match.group(1)] = trait.group(1)
+            # A layer may declare hand-written members next to its generated
+            # operations (for example the consuming eager `fft_in_place`).
+            handwritten[trait.group(1)] = set(FN.findall(body))
+        ops = []
+        for match in REGISTRY_OP.finditer(text):
+            body = _brace_block(text, match.end() - 1)
+            options = REGISTRY_OPTIONS.search(body)
+            into = REGISTRY_INTO.search(body)
+            ops.append((
+                match.group(1),
+                bool(options and options.group(1) != "none"),
+                bool(into and into.group(1).strip()),
+            ))
+        for trait, names in handwritten.items():
+            methods[trait] |= names
+        for layer, trait in layers.items():
+            for name, has_options, has_into in ops:
+                methods[trait].add(name)
+                if has_options:
+                    methods[trait].add(f"{name}_with")
+                if has_into and layer == "concrete":
+                    methods[trait].add(f"{name}_into")
+    return methods
+
+
 class SourceIndex:
     """Names defined in tenferro-rs and the methods callable through each."""
 
     def __init__(self, root: Path):
         self.defined: set[str] = set()
         self.methods: dict[str, set[str]] = defaultdict(set)
+        for trait, names in registered_ops(root).items():
+            self.methods[trait] |= names
         files = sorted(root.glob("crates/*/src/**/*.rs"))
         if not files:
             raise SystemExit(f"no tenferro-rs sources under {root}")

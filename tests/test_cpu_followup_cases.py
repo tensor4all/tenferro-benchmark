@@ -190,7 +190,9 @@ class NightlyMwePathTest(unittest.TestCase):
         script=(ROOT/'scripts/run_perf_issues.sh').read_text()
         self.assertIn('perf_issues_needs_followup_mwe.py',script)
         self.assertIn('run_cpu_followup.sh" --prepare-mwe',script)
-        self.assertIn('MKLROOT is unset',script)
+        # The build needs no vendor provider (tenferro-rs #2608), so the
+        # nightly must not gate it on MKLROOT.
+        self.assertNotIn('MKLROOT',script)
         self.assertLess(script.index('perf_issues_needs_followup_mwe.py'),
                         script.index('benchmark_perf_issues.py'))
 

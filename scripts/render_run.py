@@ -132,7 +132,14 @@ def _sample_backend(backend: str) -> str:
     """The CSV backend name of one raw sample record."""
     # run_cpu_ops.sh renames the publication gate's provider rows to the
     # comparison column `tenferro-eager`.
-    providers = {"native", "blas-openblas", "blas-accelerate", "blas-mkl", "cuda"}
+    providers = {
+        "native",
+        "blas-openblas",
+        "blas-accelerate",
+        "blas-mkl",
+        "faer",
+        "cuda",
+    }
     return "tenferro-eager" if backend in providers else backend
 
 

@@ -58,19 +58,17 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 export BENCH_COMMAND_START_NS="$(python3 -c 'import time; print(time.monotonic_ns())')"
 
-# shellcheck source=scripts/cpu_blas_provider.sh
-source "$SCRIPT_DIR/cpu_blas_provider.sh"
 # shellcheck source=scripts/publish_run.sh
 source "$SCRIPT_DIR/publish_run.sh"
+# shellcheck source=scripts/host_os.sh
+source "$SCRIPT_DIR/host_os.sh"
 
-TENFERRO_CPU_FEATURES="$(normalize_cpu_blas_features "${TENFERRO_CPU_FEATURES:-}")"
-export TENFERRO_CPU_FEATURES
 
 PERMUTATION_EXTRA_FEATURES="${PERMUTATION_EXTRA_FEATURES:-}"
 # `strided-rs` is on by default: its crates come from crates.io, so the
 # participant is available out of the box. `hptt` stays opt-in via PERMUTATION_EXTRA_FEATURES since it
 # additionally requires cmake and a C++ toolchain.
-CARGO_FEATURES="$TENFERRO_CPU_FEATURES,strided-rs"
+CARGO_FEATURES="native,strided-rs"
 [[ -n "$PERMUTATION_EXTRA_FEATURES" ]] && CARGO_FEATURES="$CARGO_FEATURES,$PERMUTATION_EXTRA_FEATURES"
 
 default_target_profile() {
@@ -100,7 +98,6 @@ if [[ "${SKIP_EXTERN_SETUP:-0}" != "1" ]]; then
     source "$SCRIPT_DIR/setup_extern_deps.sh"
 fi
 
-ensure_blas_env_for_features "$TENFERRO_CPU_FEATURES"
 
 RESULTS_ROOT="$PROJECT_DIR/data/results"
 REPORTS_DIR="$PROJECT_DIR/result"
@@ -131,7 +128,6 @@ fi
 THREAD_ENV_EXTRA_KEYS=(JULIA_NUM_THREADS)
 begin_thread_envs_snapshot "$RUN_DIR/thread_env.txt"
 
-blas_impl="$(blas_impl_for_features "$TENFERRO_CPU_FEATURES")"
 tenferro_dir="${TENFERRO_RS_DIR:-$PROJECT_DIR/extern/tenferro-rs}"
 tenferro_commit=""
 if [[ -d "$tenferro_dir/.git" ]] && command -v git >/dev/null 2>&1; then
@@ -147,7 +143,6 @@ write_run_metadata() {
         --timestamp "$RUN_TIMESTAMP_RFC3339"
         --tenferro-dir "$tenferro_dir"
         --features "$CARGO_FEATURES"
-        --blas "$blas_impl"
         --output "$output"
     )
     [[ -n "$tenferro_commit" ]] && args+=(--tenferro-commit "$tenferro_commit")

@@ -1,0 +1,4 @@
+{"backend": "tenferro-cuda-direct", "build_seconds": 0.191, "process_seconds": 1.671289685, "scope": "backend process wall time includes startup, preparation, validation and samples; recorded by the suite's own collector"}
+{"backend": "tenferro-cuda-eager", "build_seconds": 0.191, "process_seconds": 1.627278882, "scope": "backend process wall time includes startup, preparation, validation and samples; recorded by the suite's own collector"}
+{"backend": "pytorch-cuda", "build_seconds": 0.0, "process_seconds": 4.34044173, "scope": "backend process wall time includes startup, preparation, validation and samples; recorded by the suite's own collector"}
+{"backend": "jax-cuda", "build_seconds": 0.0, "process_seconds": 3.003258242, "scope": "backend process wall time includes startup, preparation, validation and samples; recorded by the suite's own collector"}

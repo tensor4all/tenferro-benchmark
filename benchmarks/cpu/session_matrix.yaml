@@ -25,7 +25,6 @@ defaults:
     rtol: 1.0e-11
     atol: 1.0e-11
 backends:
-- tenferro-blas-shared-session
 - tenferro-faer-shared-session
 - pytorch-python-loop
 problems:

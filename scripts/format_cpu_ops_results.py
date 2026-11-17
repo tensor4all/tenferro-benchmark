@@ -131,7 +131,7 @@ def normalize_backend(row: dict[str, str]) -> str:
     # spell these labels cpu-faer / system-openblas / system-accelerate /
     # system-mkl, so accept both sets.
     if backend in {
-        "native", "blas-openblas", "blas-accelerate", "blas-mkl",
+        "native", "blas-openblas", "blas-accelerate", "blas-mkl", "faer",
         "cpu-faer", "system-openblas", "system-accelerate", "system-mkl",
     }:
         return "tenferro-eager"

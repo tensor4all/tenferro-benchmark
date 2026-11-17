@@ -59,21 +59,8 @@ export BENCH_COMMAND_START_NS="$(python3 -c 'import time; print(time.monotonic_n
 
 # shellcheck source=scripts/publish_run.sh
 source "$SCRIPT_DIR/publish_run.sh"
-# shellcheck source=scripts/link_preflight.sh
-source "$SCRIPT_DIR/link_preflight.sh"
-
-# Before any suite: every library this run will link -- the harness's vendor arm and, when
-# perf_issues runs with MKLROOT set, the follow-up MWE it builds at the very end -- has to link and
-# load here. Checked once by the outermost invocation (the per-thread re-invocations skip it).
-if [[ "${RUN_ALL_MAIN_ONLY:-0}" != "1" ]]; then
-    # shellcheck source=scripts/cpu_blas_provider.sh
-    source "$SCRIPT_DIR/cpu_blas_provider.sh"
-    if ! require_link_preflight_for_run \
-        "$(normalize_cpu_blas_features "${TENFERRO_CPU_FEATURES:-}")" "${RUN_PERF_ISSUES_SUITE:-1}"; then
-        echo "ERROR: link preflight failed; nothing was built or measured." >&2
-        exit 1
-    fi
-fi
+# shellcheck source=scripts/host_os.sh
+source "$SCRIPT_DIR/host_os.sh"
 
 if [[ $# -gt 1 && "${RUN_ALL_MAIN_ONLY:-0}" != "1" ]]; then
     THREAD_COUNTS=("$@")
@@ -163,11 +150,7 @@ if [[ $# -gt 1 && "${RUN_ALL_MAIN_ONLY:-0}" != "1" ]]; then
     exit 0
 fi
 
-# shellcheck source=scripts/cpu_blas_provider.sh
-source "$SCRIPT_DIR/cpu_blas_provider.sh"
 
-TENFERRO_CPU_FEATURES="$(normalize_cpu_blas_features "${TENFERRO_CPU_FEATURES:-}")"
-export TENFERRO_CPU_FEATURES
 
 RESULTS_ROOT="$PROJECT_DIR/data/results"
 REPORTS_DIR="$PROJECT_DIR/result"
@@ -206,7 +189,12 @@ HAVE_JULIA=0
 if command -v julia >/dev/null 2>&1; then
     HAVE_JULIA=1
     echo "Instantiating Julia project (OMEinsum.jl)..."
-    (cd "$PROJECT_DIR" && julia --project="$PROJECT_DIR" -e 'import Pkg; Pkg.instantiate()')
+    # A broken or incomplete Julia project must not abort the run before any
+    # backend is measured; the column is skipped, as when Julia is absent.
+    if ! (cd "$PROJECT_DIR" && julia --project="$PROJECT_DIR" -e 'import Pkg; Pkg.instantiate()'); then
+        echo "WARNING: could not instantiate the Julia project; skipping omeinsum-jl column." >&2
+        HAVE_JULIA=0
+    fi
 else
     echo "WARNING: julia not found on PATH; skipping omeinsum-jl column." >&2
 fi
@@ -266,16 +254,13 @@ write_run_metadata() {
     local run_yaml="$1"
     local timestamp="$2"
     local tenferro_dir="${TENFERRO_RS_DIR:-$PROJECT_DIR/extern/tenferro-rs}"
-    local blas_impl
-    blas_impl="$(blas_impl_for_features "$TENFERRO_CPU_FEATURES")"
     local args=(
         --suite-id "$CPU_SUITE_ID"
         --target-profile "$BENCHMARK_TARGET_PROFILE"
         --suite-file "${CPU_SUITE_FILE#$PROJECT_DIR/}"
         --timestamp "$timestamp"
         --tenferro-dir "$tenferro_dir"
-        --features "$TENFERRO_CPU_FEATURES"
-        --blas "$blas_impl"
+        --features native
         --output "$run_yaml"
     )
     if [[ -n "$TENFERRO_COMMIT" ]]; then
@@ -284,140 +269,145 @@ write_run_metadata() {
     run_python_script "$PROJECT_DIR/scripts/collect_run_metadata.py" "${args[@]}"
 }
 
-TENFERRO_DIR_FOR_COMMIT="${TENFERRO_RS_DIR:-$PROJECT_DIR/extern/tenferro-rs}"
-TENFERRO_COMMIT="$(resolve_git_commit "$TENFERRO_DIR_FOR_COMMIT")"
+# Set RUN_EINSUM_SUITE=0 to collect a follow-up suite only: the main einsum
+# / cpu_ops path is skipped and no einsum run directory is written.
+if [[ "${RUN_EINSUM_SUITE:-1}" == "1" ]]; then
+    TENFERRO_DIR_FOR_COMMIT="${TENFERRO_RS_DIR:-$PROJECT_DIR/extern/tenferro-rs}"
+    TENFERRO_COMMIT="$(resolve_git_commit "$TENFERRO_DIR_FOR_COMMIT")"
 
-export BENCHMARK_TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-RUN_TIMESTAMP_RFC3339="$(python3 - <<'PY'
+    export BENCHMARK_TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+    RUN_TIMESTAMP_RFC3339="$(python3 - <<'PY'
 from datetime import datetime, timezone
 print(datetime.now(timezone.utc).isoformat())
 PY
-)"
-CPU_RUN_DIR="$RESULTS_ROOT/$BENCHMARK_TARGET_PROFILE/cpu/einsum/$BENCHMARK_TIMESTAMP"
-CPU_RUN_YAML="$CPU_RUN_DIR/run.yaml"
-CPU_LATEST_REPORT="$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/cpu/einsum.md"
-CPU_OPS_LATEST_REPORT="$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/cpu/cpu_ops.md"
-CPU_LINALG_AD_LATEST_REPORT="$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/cpu/linalg_jvp_vjp.md"
-CPU_FFT_LATEST_REPORT="$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/cpu/fft.md"
-CPU_PUBLIC_API_LATEST_REPORT="$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/cpu/public_api.md"
-CPU_PERMUTATION_LATEST_REPORT="$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/cpu/permutation.md"
+    )"
+    CPU_RUN_DIR="$RESULTS_ROOT/$BENCHMARK_TARGET_PROFILE/cpu/einsum/$BENCHMARK_TIMESTAMP"
+    CPU_RUN_YAML="$CPU_RUN_DIR/run.yaml"
+    CPU_LATEST_REPORT="$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/cpu/einsum.md"
+    CPU_OPS_LATEST_REPORT="$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/cpu/cpu_ops.md"
+    CPU_LINALG_AD_LATEST_REPORT="$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/cpu/linalg_jvp_vjp.md"
+    CPU_FFT_LATEST_REPORT="$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/cpu/fft.md"
+    CPU_PUBLIC_API_LATEST_REPORT="$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/cpu/public_api.md"
+    CPU_PERMUTATION_LATEST_REPORT="$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/cpu/permutation.md"
 
-mkdir -p "$CPU_RUN_DIR" "$(dirname "$CPU_LATEST_REPORT")"
-export BENCHMARK_RESULTS_DIR="$CPU_RUN_DIR"
+    mkdir -p "$CPU_RUN_DIR" "$(dirname "$CPU_LATEST_REPORT")"
+    export BENCHMARK_RESULTS_DIR="$CPU_RUN_DIR"
 
-ensure_blas_env_for_features "$TENFERRO_CPU_FEATURES"
-configure_cpu_thread_env "$NUM_THREADS"
+    configure_cpu_thread_env "$NUM_THREADS"
 
-# Host and thread-environment snapshots for this run's report header.
-write_cpu_info_section > "$CPU_RUN_DIR/cpu_info.md"
-write_thread_env_section > "$CPU_RUN_DIR/thread_env.txt"
+    # Host and thread-environment snapshots for this run's report header.
+    write_cpu_info_section > "$CPU_RUN_DIR/cpu_info.md"
+    write_thread_env_section > "$CPU_RUN_DIR/thread_env.txt"
 
-export BENCH_SUITE_FILE="${BENCH_SUITE_FILE:-${CPU_SUITE_FILE#$PROJECT_DIR/}}"
-BENCH_SUITE_INCLUDE="$(resolve_suite_instance_ids "$CPU_SUITE_FILE")"
-export BENCH_SUITE_INCLUDE
-SUITE_INSTANCE_COUNT="$(printf '%s' "$BENCH_SUITE_INCLUDE" | awk -F, '{print NF}')"
+    export BENCH_SUITE_FILE="${BENCH_SUITE_FILE:-${CPU_SUITE_FILE#$PROJECT_DIR/}}"
+    BENCH_SUITE_INCLUDE="$(resolve_suite_instance_ids "$CPU_SUITE_FILE")"
+    export BENCH_SUITE_INCLUDE
+    SUITE_INSTANCE_COUNT="$(printf '%s' "$BENCH_SUITE_INCLUDE" | awk -F, '{print NF}')"
 
-echo "============================================"
-echo " CPU einsum benchmark suite"
-echo "============================================"
-echo "Project dir:  $PROJECT_DIR"
-echo "Threads:      $NUM_THREADS"
-echo "Timestamp:    $BENCHMARK_TIMESTAMP"
-echo "Suite:        $CPU_SUITE_ID"
-echo "Suite file:   ${CPU_SUITE_FILE#$PROJECT_DIR/}"
-echo "Instances:    $SUITE_INSTANCE_COUNT from ${CPU_SUITE_FILE#$PROJECT_DIR/}"
-echo "Target:       $BENCHMARK_TARGET_PROFILE"
-echo "Run dir:      $CPU_RUN_DIR"
-echo "Features:     $TENFERRO_CPU_FEATURES"
-[[ -n "$TENFERRO_COMMIT" ]] && echo "tenferro-rs:  $TENFERRO_COMMIT"
-print_cpu_thread_env
-echo ""
-
-write_run_metadata "$CPU_RUN_YAML" "$RUN_TIMESTAMP_RFC3339"
-
-# ---------------------------------------------------------------------------
-# Einsum benchmarks (tenferro-rs + PyTorch + JAX)
-# ---------------------------------------------------------------------------
-"$SCRIPT_DIR/run_all_rust.sh" "$NUM_THREADS"
-
-# ---------------------------------------------------------------------------
-# Python benchmarks (PyTorch + JAX)
-# ---------------------------------------------------------------------------
-if ! "$SCRIPT_DIR/run_all_python.sh" "$NUM_THREADS"; then
-    echo "WARNING: Python benchmarks failed or are not configured; continuing with missing Python results." >&2
-fi
-
-# ---------------------------------------------------------------------------
-# OMEinsum.jl (Julia) -- fresh process per invocation, forced through each
-# instance's precomputed contraction path (mode omeinsum_path); see
-# docs/einsum-suite.md. configure_cpu_thread_env above already exported
-# JULIA_NUM_THREADS, which the runner also uses to pin
-# LinearAlgebra.BLAS.set_num_threads for parity with the other backends.
-# ---------------------------------------------------------------------------
-JULIA_LOG="$CPU_RUN_DIR/julia_omeinsum_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
-if [[ "$HAVE_JULIA" == "1" ]]; then
+    echo "============================================"
+    echo " CPU einsum benchmark suite"
+    echo "============================================"
+    echo "Project dir:  $PROJECT_DIR"
+    echo "Threads:      $NUM_THREADS"
+    echo "Timestamp:    $BENCHMARK_TIMESTAMP"
+    echo "Suite:        $CPU_SUITE_ID"
+    echo "Suite file:   ${CPU_SUITE_FILE#$PROJECT_DIR/}"
+    echo "Instances:    $SUITE_INSTANCE_COUNT from ${CPU_SUITE_FILE#$PROJECT_DIR/}"
+    echo "Target:       $BENCHMARK_TARGET_PROFILE"
+    echo "Run dir:      $CPU_RUN_DIR"
+    echo "Features:     native"
+    [[ -n "$TENFERRO_COMMIT" ]] && echo "tenferro-rs:  $TENFERRO_COMMIT"
+    print_cpu_thread_env
     echo ""
-    echo "Running OMEinsum.jl einsum benchmark (threads=$NUM_THREADS)..."
-    if ! (
-        cd "$PROJECT_DIR"
-        JULIA_PROJECT="$PROJECT_DIR" \
-            julia --project="$PROJECT_DIR" "$SCRIPT_DIR/benchmark_einsum_omeinsum.jl" | tee "$JULIA_LOG"
-    ); then
-        echo "WARNING: OMEinsum.jl benchmark failed; continuing without julia results." >&2
+
+    write_run_metadata "$CPU_RUN_YAML" "$RUN_TIMESTAMP_RFC3339"
+
+    # ---------------------------------------------------------------------------
+    # Einsum benchmarks (tenferro-rs + PyTorch + JAX)
+    # ---------------------------------------------------------------------------
+    "$SCRIPT_DIR/run_all_rust.sh" "$NUM_THREADS"
+
+    # ---------------------------------------------------------------------------
+    # Python benchmarks (PyTorch + JAX)
+    # ---------------------------------------------------------------------------
+    if ! "$SCRIPT_DIR/run_all_python.sh" "$NUM_THREADS"; then
+        echo "WARNING: Python benchmarks failed or are not configured; continuing with missing Python results." >&2
     fi
-fi
 
-# ---------------------------------------------------------------------------
-# Focused CPU benchmark items (primal linalg, JVP/VJP on trace, backward on eager)
-# ---------------------------------------------------------------------------
-CPU_OPS_LOG="$CPU_RUN_DIR/cpu_ops_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.csv"
-export PUBLICATION_GATE_TENFERRO_MODE="${PUBLICATION_GATE_TENFERRO_MODE:-both}"
-if [[ "${SKIP_CPU_OPS:-0}" != "1" ]]; then
-    echo ""
-    echo "Running CPU ops benchmarks (linalg JVP/VJP on tenferro-trace)..."
-    if [[ -x "$SCRIPT_DIR/run_cpu_ops.sh" ]]; then
-        if ! "$SCRIPT_DIR/run_cpu_ops.sh" "$NUM_THREADS"; then
-            echo "WARNING: CPU benchmark items failed; continuing without CPU item results." >&2
-        fi
-    elif [[ -f "$SCRIPT_DIR/run_cpu_ops.sh" ]]; then
-        if ! bash "$SCRIPT_DIR/run_cpu_ops.sh" "$NUM_THREADS"; then
-            echo "WARNING: CPU benchmark items failed; continuing without CPU item results." >&2
+    # ---------------------------------------------------------------------------
+    # OMEinsum.jl (Julia) -- fresh process per invocation, forced through each
+    # instance's precomputed contraction path (mode omeinsum_path); see
+    # docs/einsum-suite.md. configure_cpu_thread_env above already exported
+    # JULIA_NUM_THREADS, which the runner also uses to pin
+    # LinearAlgebra.BLAS.set_num_threads for parity with the other backends.
+    # ---------------------------------------------------------------------------
+    JULIA_LOG="$CPU_RUN_DIR/julia_omeinsum_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
+    if [[ "$HAVE_JULIA" == "1" ]]; then
+        echo ""
+        echo "Running OMEinsum.jl einsum benchmark (threads=$NUM_THREADS)..."
+        if ! (
+            cd "$PROJECT_DIR"
+            JULIA_PROJECT="$PROJECT_DIR" \
+                julia --project="$PROJECT_DIR" "$SCRIPT_DIR/benchmark_einsum_omeinsum.jl" | tee "$JULIA_LOG"
+        ); then
+            echo "WARNING: OMEinsum.jl benchmark failed; continuing without julia results." >&2
         fi
     fi
-else
-    echo "Skipping CPU ops benchmarks (SKIP_CPU_OPS=1)."
+
+    # ---------------------------------------------------------------------------
+    # Focused CPU benchmark items (primal linalg, JVP/VJP on trace, backward on eager)
+    # ---------------------------------------------------------------------------
+    CPU_OPS_LOG="$CPU_RUN_DIR/cpu_ops_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.csv"
+    export PUBLICATION_GATE_TENFERRO_MODE="${PUBLICATION_GATE_TENFERRO_MODE:-both}"
+    if [[ "${SKIP_CPU_OPS:-0}" != "1" ]]; then
+        echo ""
+        echo "Running CPU ops benchmarks (linalg JVP/VJP on tenferro-trace)..."
+        if [[ -x "$SCRIPT_DIR/run_cpu_ops.sh" ]]; then
+            if ! "$SCRIPT_DIR/run_cpu_ops.sh" "$NUM_THREADS"; then
+                echo "WARNING: CPU benchmark items failed; continuing without CPU item results." >&2
+            fi
+        elif [[ -f "$SCRIPT_DIR/run_cpu_ops.sh" ]]; then
+            if ! bash "$SCRIPT_DIR/run_cpu_ops.sh" "$NUM_THREADS"; then
+                echo "WARNING: CPU benchmark items failed; continuing without CPU item results." >&2
+            fi
+        fi
+    else
+        echo "Skipping CPU ops benchmarks (SKIP_CPU_OPS=1)."
+    fi
+
+    # CPU benchmark entrypoints may reset .venv and replace Python wheels before
+    # measuring. Refresh metadata after those setup hooks so provider detection
+    # matches the Python backends that were actually timed.
+    if [[ "$(benchmark_host_os)" == "Linux" && "$BENCHMARK_TARGET_PROFILE" != "nvidia-gpu" && -d "$PROJECT_DIR/.venv" ]]; then
+        export UV_NO_SYNC=1
+    fi
+    write_run_metadata "$CPU_RUN_YAML" "$RUN_TIMESTAMP_RFC3339"
+
+    # ---------------------------------------------------------------------------
+    # Collect all logs, then render this run's reports from its recorded inputs
+    # ---------------------------------------------------------------------------
+    TENFERRO_TRACE_LOG="$CPU_RUN_DIR/tenferro_trace_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
+    TENFERRO_EAGER_LOG="$CPU_RUN_DIR/tenferro_eager_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
+    PYTORCH_LOG="$CPU_RUN_DIR/pytorch_cpu_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
+    JAX_LOG="$CPU_RUN_DIR/jax_cpu_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
+    # JULIA_LOG is already set above (before the Julia run step); reused here.
+    EINSUM_REPORT="$CPU_RUN_DIR/report.md"
+    CPU_REPORT="$CPU_RUN_DIR/cpu_ops_report.md"
+    LINALG_AD_REPORT="$CPU_RUN_DIR/linalg_jvp_vjp_report.md"
+
+    LOGS=()
+    [ -f "$TENFERRO_TRACE_LOG" ] && LOGS+=("$TENFERRO_TRACE_LOG")
+    [ -f "$TENFERRO_EAGER_LOG" ] && LOGS+=("$TENFERRO_EAGER_LOG")
+    [ -f "$PYTORCH_LOG" ]        && LOGS+=("$PYTORCH_LOG")
+    [ -f "$JAX_LOG" ]            && LOGS+=("$JAX_LOG")
+    [ "$HAVE_JULIA" == "1" ] && [ -f "$JULIA_LOG" ] && [ -s "$JULIA_LOG" ] && LOGS+=("$JULIA_LOG")
+
+    echo "Finalizing and publishing this run from its recorded inputs..."
+    finalize_benchmark_run "$PROJECT_DIR" "$CPU_RUN_DIR"
+    publish_cpu_runs "$PROJECT_DIR" "$CPU_RUN_DIR"
 fi
 
-# CPU benchmark entrypoints may reset .venv and replace Python wheels before
-# measuring. Refresh metadata after those setup hooks so provider detection
-# matches the Python backends that were actually timed.
-if [[ "$(benchmark_host_os)" == "Linux" && "$BENCHMARK_TARGET_PROFILE" != "nvidia-gpu" && -d "$PROJECT_DIR/.venv" ]]; then
-    export UV_NO_SYNC=1
-fi
-write_run_metadata "$CPU_RUN_YAML" "$RUN_TIMESTAMP_RFC3339"
 
-# ---------------------------------------------------------------------------
-# Collect all logs, then render this run's reports from its recorded inputs
-# ---------------------------------------------------------------------------
-TENFERRO_TRACE_LOG="$CPU_RUN_DIR/tenferro_trace_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
-TENFERRO_EAGER_LOG="$CPU_RUN_DIR/tenferro_eager_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
-PYTORCH_LOG="$CPU_RUN_DIR/pytorch_cpu_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
-JAX_LOG="$CPU_RUN_DIR/jax_cpu_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
-# JULIA_LOG is already set above (before the Julia run step); reused here.
-EINSUM_REPORT="$CPU_RUN_DIR/report.md"
-CPU_REPORT="$CPU_RUN_DIR/cpu_ops_report.md"
-LINALG_AD_REPORT="$CPU_RUN_DIR/linalg_jvp_vjp_report.md"
-
-LOGS=()
-[ -f "$TENFERRO_TRACE_LOG" ] && LOGS+=("$TENFERRO_TRACE_LOG")
-[ -f "$TENFERRO_EAGER_LOG" ] && LOGS+=("$TENFERRO_EAGER_LOG")
-[ -f "$PYTORCH_LOG" ]        && LOGS+=("$PYTORCH_LOG")
-[ -f "$JAX_LOG" ]            && LOGS+=("$JAX_LOG")
-[ "$HAVE_JULIA" == "1" ] && [ -f "$JULIA_LOG" ] && [ -s "$JULIA_LOG" ] && LOGS+=("$JULIA_LOG")
-
-echo "Finalizing and publishing this run from its recorded inputs..."
-finalize_benchmark_run "$PROJECT_DIR" "$CPU_RUN_DIR"
-publish_cpu_runs "$PROJECT_DIR" "$CPU_RUN_DIR"
 echo ""
 
 # Opt-in: cpu/fft suite, run sequentially after CPU ops so FFT timing does not
@@ -474,17 +464,18 @@ echo "Results:"
 for log in "${LOGS[@]+"${LOGS[@]}"}"; do
     echo "  $log"
 done
-[ -f "$CPU_RUN_YAML" ] && echo "  Run YAML: $CPU_RUN_YAML"
-[ -f "$EINSUM_REPORT" ] && echo "  Report:   $EINSUM_REPORT"
-[ -f "$CPU_LATEST_REPORT" ] && echo "  Latest:   $CPU_LATEST_REPORT"
-[ -f "$CPU_REPORT" ] && echo "  Report:   $CPU_REPORT"
-[ -f "$CPU_OPS_LATEST_REPORT" ] && echo "  Latest:   $CPU_OPS_LATEST_REPORT"
-[ -f "$LINALG_AD_REPORT" ] && echo "  Report:   $LINALG_AD_REPORT"
-[ -f "$CPU_LINALG_AD_LATEST_REPORT" ] && echo "  Latest:   $CPU_LINALG_AD_LATEST_REPORT"
-[ -f "$CPU_FFT_LATEST_REPORT" ] && echo "  Latest:   $CPU_FFT_LATEST_REPORT"
-[ -f "$CPU_PUBLIC_API_LATEST_REPORT" ] && echo "  Latest:   $CPU_PUBLIC_API_LATEST_REPORT"
-[ -f "$CPU_PERMUTATION_LATEST_REPORT" ] && echo "  Latest:   $CPU_PERMUTATION_LATEST_REPORT"
-if [[ "${RUN_ALL_MAIN_ONLY:-0}" == "1" && -n "${RUN_ALL_COLLECTED_RUNS_FILE:-}" ]]; then
+[ -n "${CPU_RUN_YAML:-}" ] && [ -f "$CPU_RUN_YAML" ] && echo "  Run YAML: $CPU_RUN_YAML"
+[ -n "${EINSUM_REPORT:-}" ] && [ -f "$EINSUM_REPORT" ] && echo "  Report:   $EINSUM_REPORT"
+[ -n "${CPU_LATEST_REPORT:-}" ] && [ -f "$CPU_LATEST_REPORT" ] && echo "  Latest:   $CPU_LATEST_REPORT"
+[ -n "${CPU_REPORT:-}" ] && [ -f "$CPU_REPORT" ] && echo "  Report:   $CPU_REPORT"
+[ -n "${CPU_OPS_LATEST_REPORT:-}" ] && [ -f "$CPU_OPS_LATEST_REPORT" ] && echo "  Latest:   $CPU_OPS_LATEST_REPORT"
+[ -n "${LINALG_AD_REPORT:-}" ] && [ -f "$LINALG_AD_REPORT" ] && echo "  Report:   $LINALG_AD_REPORT"
+[ -n "${CPU_LINALG_AD_LATEST_REPORT:-}" ] && [ -f "$CPU_LINALG_AD_LATEST_REPORT" ] && echo "  Latest:   $CPU_LINALG_AD_LATEST_REPORT"
+[ -n "${CPU_FFT_LATEST_REPORT:-}" ] && [ -f "$CPU_FFT_LATEST_REPORT" ] && echo "  Latest:   $CPU_FFT_LATEST_REPORT"
+[ -n "${CPU_PUBLIC_API_LATEST_REPORT:-}" ] && [ -f "$CPU_PUBLIC_API_LATEST_REPORT" ] && echo "  Latest:   $CPU_PUBLIC_API_LATEST_REPORT"
+[ -n "${CPU_PERMUTATION_LATEST_REPORT:-}" ] && [ -f "$CPU_PERMUTATION_LATEST_REPORT" ] && echo "  Latest:   $CPU_PERMUTATION_LATEST_REPORT"
+if [[ "${RUN_ALL_MAIN_ONLY:-0}" == "1" && "${RUN_EINSUM_SUITE:-1}" == "1" && \
+      -n "${RUN_ALL_COLLECTED_RUNS_FILE:-}" ]]; then
     printf '%s\n' "$CPU_RUN_DIR" >> "$RUN_ALL_COLLECTED_RUNS_FILE"
 fi
 true

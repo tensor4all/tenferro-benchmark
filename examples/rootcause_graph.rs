@@ -1,7 +1,8 @@
 // Temporary diagnostic: semantic graph inventory and empty executor handoff.
 use std::{hint::black_box, time::Instant};
 use tenferro_ad::AdContext;
-use tenferro_linalg::TracedTensorLinalgExt;
+use tenferro_linalg::Qr;
+use tenferro_linalg::TracedLinalgOps;
 use tenferro_runtime::{GraphCompiler, TraceContext};
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ad = AdContext::builder()
@@ -9,20 +10,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .build()?;
     let trace = TraceContext::new();
     let a = trace.from_vec_col_major(vec![2, 2], vec![3.0_f64, 0.2, 0.2, 4.0])?;
+    let a = &a;
     let b = trace.from_vec_col_major(vec![2, 1], vec![1.0_f64, 2.0])?;
-    let (q, r) = a.qr()?;
+    let b = &b;
+    let Qr { q, r } = a.qr()?;
     let loss = (&q.reduce_sum(Some(&[0, 1]))? + &r.reduce_sum(Some(&[0, 1]))?)?;
-    let qr_grad = ad.grad(&loss, &a)?;
+    let qr_grad = ad.grad(&loss, a)?;
     let x = a.solve(&b)?;
     let solve_loss = x.reduce_sum(Some(&[0, 1]))?;
-    let ga = ad.grad(&solve_loss, &a)?;
-    let gb = ad.grad(&solve_loss, &b)?;
+    let ga = ad.grad(&solve_loss, a)?;
+    let gb = ad.grad(&solve_loss, b)?;
     for (label, outs) in [
-        ("qr_vjp", vec![&loss, &qr_grad]),
-        ("solve", vec![&x]),
-        ("solve_backward", vec![&ga, &gb, &solve_loss]),
+        ("qr_vjp", vec![loss, qr_grad]),
+        ("solve", vec![x]),
+        ("solve_backward", vec![ga, gb, solve_loss]),
     ] {
-        let p = GraphCompiler::new().compile_many(&outs)?;
+        let refs: Vec<&tenferro_runtime::TracedTensor> = outs.iter().collect();
+        let p = GraphCompiler::new().compile_many(&refs)?;
         println!("GRAPH {label} {} ops", p.program().operations().len());
         for o in p.program().operations() {
             println!("{:?}", o.op());

@@ -212,10 +212,9 @@ fn timed(
         let runtime = EagerRuntime::new()?;
         let mut engine = cpu_backend()?;
         let _guard = runtime.no_grad();
-        let x = EagerTensor::from_tensor_in(fixture.x.duplicate()?, Arc::clone(&runtime))?;
-        let mask = EagerTensor::from_tensor_in(fixture.mask.duplicate()?, Arc::clone(&runtime))?;
-        let indices =
-            EagerTensor::from_tensor_in(fixture.indices.duplicate()?, Arc::clone(&runtime))?;
+        let x = runtime.constant_from(fixture.x.duplicate()?)?;
+        let mask = runtime.constant_from(fixture.mask.duplicate()?)?;
+        let indices = runtime.constant_from(fixture.indices.duplicate()?)?;
         runtime.with_eager_session(&mut engine, |s| -> BenchResult<_> {
             let output = eager_op(case.benchmark, &x, &mask, &indices, s)?;
             validate(

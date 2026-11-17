@@ -1,0 +1,7 @@
+{
+  "arm": "tenferro-cuda-direct",
+  "status": "disabled",
+  "reason": "GPU_BENCH_CPU_SELECT is not 1: the arm runs on the allocation unpinned",
+  "exit_code": 0,
+  "finished_at": "2026-11-17T09:35:31Z"
+}

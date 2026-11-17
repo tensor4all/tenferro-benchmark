@@ -1,0 +1,103 @@
+{
+ "compared_output_pairs": 66,
+ "disagreements": [
+  {
+   "suite_id": "gpu/dense",
+   "problem_id": "dense_batched_matmul_f64_b1024_256",
+   "arms": [
+    "jax-cuda",
+    "tenferro-cuda-eager"
+   ],
+   "output": 0,
+   "problems": [
+    "dot_seeded_re 4459.885801835579 != -1436.318927059271 (relative 6.582e-05)"
+   ]
+  },
+  {
+   "suite_id": "gpu/dense",
+   "problem_id": "dense_batched_matmul_f64_b1024_256",
+   "arms": [
+    "jax-cuda",
+    "tenferro-cuda-trace"
+   ],
+   "output": 0,
+   "problems": [
+    "dot_seeded_re 4459.885801835579 != -1436.318927059271 (relative 6.582e-05)"
+   ]
+  },
+  {
+   "suite_id": "gpu/dense",
+   "problem_id": "dense_batched_matmul_f64_b1024_256",
+   "arms": [
+    "pytorch-cuda",
+    "tenferro-cuda-eager"
+   ],
+   "output": 0,
+   "problems": [
+    "dot_seeded_re 4459.885801835579 != -1436.318927059271 (relative 6.582e-05)"
+   ]
+  },
+  {
+   "suite_id": "gpu/dense",
+   "problem_id": "dense_batched_matmul_f64_b1024_256",
+   "arms": [
+    "pytorch-cuda",
+    "tenferro-cuda-trace"
+   ],
+   "output": 0,
+   "problems": [
+    "dot_seeded_re 4459.885801835579 != -1436.318927059271 (relative 6.582e-05)"
+   ]
+  },
+  {
+   "suite_id": "gpu/dense",
+   "problem_id": "dense_batched_matmul_f64_b16_32",
+   "arms": [
+    "jax-cuda",
+    "tenferro-cuda-eager"
+   ],
+   "output": 0,
+   "problems": [
+    "dot_seeded_re -5.385958017747072 != 201.52718687183088 (relative 4.315e-03)"
+   ]
+  },
+  {
+   "suite_id": "gpu/dense",
+   "problem_id": "dense_batched_matmul_f64_b16_32",
+   "arms": [
+    "jax-cuda",
+    "tenferro-cuda-trace"
+   ],
+   "output": 0,
+   "problems": [
+    "dot_seeded_re -5.385958017747072 != 201.52718687183088 (relative 4.315e-03)"
+   ]
+  },
+  {
+   "suite_id": "gpu/dense",
+   "problem_id": "dense_batched_matmul_f64_b16_32",
+   "arms": [
+    "pytorch-cuda",
+    "tenferro-cuda-eager"
+   ],
+   "output": 0,
+   "problems": [
+    "dot_seeded_re -5.385958017747072 != 201.52718687183088 (relative 4.315e-03)"
+   ]
+  },
+  {
+   "suite_id": "gpu/dense",
+   "problem_id": "dense_batched_matmul_f64_b16_32",
+   "arms": [
+    "pytorch-cuda",
+    "tenferro-cuda-trace"
+   ],
+   "output": 0,
+   "problems": [
+    "dot_seeded_re -5.385958017747072 != 201.52718687183088 (relative 4.315e-03)"
+   ]
+  }
+ ],
+ "single_arm_cases": [],
+ "rtol": 1e-09
+}

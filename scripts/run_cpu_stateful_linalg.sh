@@ -4,20 +4,17 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_DIR"
-source "$SCRIPT_DIR/cpu_blas_provider.sh"
 source "$SCRIPT_DIR/thread_env.sh"
 source "$SCRIPT_DIR/benchmark_host_idle.sh"
-export TENFERRO_CPU_FEATURES="$(normalize_cpu_blas_features "${TENFERRO_CPU_FEATURES:-}")"
 export BENCHMARK_TARGET_PROFILE="${BENCHMARK_TARGET_PROFILE:-amd-cpu}"
 export UV_NO_SYNC=1
 THREAD_COUNTS=("${@:-1}")
 if [[ "${SKIP_EXTERN_SETUP:-0}" != 1 ]]; then source "$SCRIPT_DIR/setup_extern_deps.sh"; fi
-ensure_blas_env_for_features "$TENFERRO_CPU_FEATURES"
 PYTHON="$PROJECT_DIR/.venv/bin/python"
 [[ -x "$PYTHON" ]] || PYTHON=python3
 START_NS="$($PYTHON -c 'import time; print(time.monotonic_ns())')"
 "$PYTHON" "$SCRIPT_DIR/validate_benchmark_suite.py" benchmarks/cpu/stateful_linalg.yaml
-cargo build --release --no-default-features --features "$TENFERRO_CPU_FEATURES" --bin benchmark_cpu_stateful_linalg
+cargo build --release --no-default-features --features native --bin benchmark_cpu_stateful_linalg
 BUILD_NS="$($PYTHON -c 'import time; print(time.monotonic_ns())')"
 if [[ -z "${BENCHMARK_COMMIT:-}" ]]; then BENCHMARK_COMMIT="$(git rev-parse HEAD)"; fi
 export BENCHMARK_COMMIT
@@ -32,7 +29,7 @@ for threads in "${THREAD_COUNTS[@]}"; do
     "$PYTHON" "$SCRIPT_DIR/collect_run_metadata.py" --suite-id cpu/stateful_linalg \
         --target-profile "$BENCHMARK_TARGET_PROFILE" --suite-file benchmarks/cpu/stateful_linalg.yaml \
         --timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --tenferro-dir extern/tenferro-rs \
-        --features "$TENFERRO_CPU_FEATURES" --blas "$(blas_impl_for_features "$TENFERRO_CPU_FEATURES")" \
+        --features native \
         --output "$RUN_DIR/run_t${threads}.yaml"
     "$PYTHON" - "$RUN_DIR/run_t${threads}.yaml" <<'PY'
 import os,sys,yaml

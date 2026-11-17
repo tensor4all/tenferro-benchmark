@@ -1,0 +1,432 @@
+{
+  "schema_version": 1,
+  "target_profile": "nvidia-gpu",
+  "suite_id": "gpu/nn",
+  "timestamp": "2026-11-17T09:15:52+00:00",
+  "tenferro_commit": "ce9125d0cff4ee40841120759b5df45252c27f22",
+  "hardware": {
+    "gpu": "NVIDIA A100-SXM4-80GB",
+    "cpu": "AMD EPYC 7713 64-Core Processor",
+    "host": "b8e17af19547"
+  },
+  "unit": "ms",
+  "rows": [
+    {
+      "case": "gelu_f64_n1048576",
+      "group": "gelu",
+      "backend": "jax-cuda",
+      "median": 0.61116625,
+      "iqr": 0.01026262500000008,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 4
+    },
+    {
+      "case": "gelu_f64_n1048576",
+      "group": "gelu",
+      "backend": "pytorch-cuda",
+      "median": 0.01853028125,
+      "iqr": 5.203125000000086e-05,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "gelu_f64_n1048576",
+      "group": "gelu",
+      "backend": "tenferro-cuda-direct",
+      "median": null,
+      "status": "unsupported",
+      "verified": true,
+      "reason": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+    },
+    {
+      "case": "gelu_f64_n1048576",
+      "group": "gelu",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": true,
+      "reason": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+    },
+    {
+      "case": "gelu_tanh_f64_n1048576",
+      "group": "gelu_tanh",
+      "backend": "jax-cuda",
+      "median": 0.91012075,
+      "iqr": 0.213548375,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 4
+    },
+    {
+      "case": "gelu_tanh_f64_n1048576",
+      "group": "gelu_tanh",
+      "backend": "pytorch-cuda",
+      "median": 0.01166371875,
+      "iqr": 7.860937500000012e-05,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "gelu_tanh_f64_n1048576",
+      "group": "gelu_tanh",
+      "backend": "tenferro-cuda-direct",
+      "median": null,
+      "status": "unsupported",
+      "verified": true,
+      "reason": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+    },
+    {
+      "case": "gelu_tanh_f64_n1048576",
+      "group": "gelu_tanh",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": true,
+      "reason": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+    },
+    {
+      "case": "layer_norm_f64_n1048576",
+      "group": "layer_norm",
+      "backend": "jax-cuda",
+      "median": 0.134157875,
+      "iqr": 0.003524125000000017,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 16
+    },
+    {
+      "case": "layer_norm_f64_n1048576",
+      "group": "layer_norm",
+      "backend": "pytorch-cuda",
+      "median": 0.0372849375,
+      "iqr": 0.00013251562499999592,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "layer_norm_f64_n1048576",
+      "group": "layer_norm",
+      "backend": "tenferro-cuda-direct",
+      "median": null,
+      "status": "unsupported",
+      "verified": true,
+      "reason": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+    },
+    {
+      "case": "layer_norm_f64_n1048576",
+      "group": "layer_norm",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": true,
+      "reason": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+    },
+    {
+      "case": "log_softmax_f64_n1048576",
+      "group": "log_softmax",
+      "backend": "jax-cuda",
+      "median": 0.06057521875,
+      "iqr": 0.004367499999999996,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "log_softmax_f64_n1048576",
+      "group": "log_softmax",
+      "backend": "pytorch-cuda",
+      "median": 0.01591465625,
+      "iqr": 3.171874999999963e-05,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "log_softmax_f64_n1048576",
+      "group": "log_softmax",
+      "backend": "tenferro-cuda-direct",
+      "median": null,
+      "status": "unsupported",
+      "verified": true,
+      "reason": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+    },
+    {
+      "case": "log_softmax_f64_n1048576",
+      "group": "log_softmax",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": true,
+      "reason": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+    },
+    {
+      "case": "masked_log_softmax_f64_n1048576",
+      "group": "masked_log_softmax",
+      "backend": "jax-cuda",
+      "median": 0.063983625,
+      "iqr": 0.002883718749999986,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "masked_log_softmax_f64_n1048576",
+      "group": "masked_log_softmax",
+      "backend": "pytorch-cuda",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent stable single PyTorch public masked-softmax operation; masked_fill plus softmax would change the operation contract."
+    },
+    {
+      "case": "masked_log_softmax_f64_n1048576",
+      "group": "masked_log_softmax",
+      "backend": "tenferro-cuda-direct",
+      "median": null,
+      "status": "unsupported",
+      "verified": true,
+      "reason": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+    },
+    {
+      "case": "masked_log_softmax_f64_n1048576",
+      "group": "masked_log_softmax",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": true,
+      "reason": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+    },
+    {
+      "case": "masked_softmax_f64_n1048576",
+      "group": "masked_softmax",
+      "backend": "jax-cuda",
+      "median": 0.71377375,
+      "iqr": 0.027758749999999943,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 4
+    },
+    {
+      "case": "masked_softmax_f64_n1048576",
+      "group": "masked_softmax",
+      "backend": "pytorch-cuda",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent stable single PyTorch public masked-softmax operation; masked_fill plus softmax would change the operation contract."
+    },
+    {
+      "case": "masked_softmax_f64_n1048576",
+      "group": "masked_softmax",
+      "backend": "tenferro-cuda-direct",
+      "median": null,
+      "status": "unsupported",
+      "verified": true,
+      "reason": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+    },
+    {
+      "case": "masked_softmax_f64_n1048576",
+      "group": "masked_softmax",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": true,
+      "reason": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+    },
+    {
+      "case": "rms_norm_f64_n1048576",
+      "group": "rms_norm",
+      "backend": "jax-cuda",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API."
+    },
+    {
+      "case": "rms_norm_f64_n1048576",
+      "group": "rms_norm",
+      "backend": "pytorch-cuda",
+      "median": 0.0371211875,
+      "iqr": 3.828125000000793e-05,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "rms_norm_f64_n1048576",
+      "group": "rms_norm",
+      "backend": "tenferro-cuda-direct",
+      "median": null,
+      "status": "unsupported",
+      "verified": true,
+      "reason": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+    },
+    {
+      "case": "rms_norm_f64_n1048576",
+      "group": "rms_norm",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": true,
+      "reason": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+    },
+    {
+      "case": "sigmoid_f64_n1048576",
+      "group": "sigmoid",
+      "backend": "jax-cuda",
+      "median": 0.05875178125,
+      "iqr": 0.001135296874999997,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "sigmoid_f64_n1048576",
+      "group": "sigmoid",
+      "backend": "pytorch-cuda",
+      "median": 0.01226465625,
+      "iqr": 0.00015110937499999977,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "sigmoid_f64_n1048576",
+      "group": "sigmoid",
+      "backend": "tenferro-cuda-direct",
+      "median": null,
+      "status": "unsupported",
+      "verified": true,
+      "reason": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+    },
+    {
+      "case": "sigmoid_f64_n1048576",
+      "group": "sigmoid",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": true,
+      "reason": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+    },
+    {
+      "case": "silu_f64_n1048576",
+      "group": "silu",
+      "backend": "jax-cuda",
+      "median": 0.0686408125,
+      "iqr": 0.007570156250000015,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "silu_f64_n1048576",
+      "group": "silu",
+      "backend": "pytorch-cuda",
+      "median": 0.0139071875,
+      "iqr": 0.0019251406249999985,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "silu_f64_n1048576",
+      "group": "silu",
+      "backend": "tenferro-cuda-direct",
+      "median": null,
+      "status": "unsupported",
+      "verified": true,
+      "reason": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+    },
+    {
+      "case": "silu_f64_n1048576",
+      "group": "silu",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": true,
+      "reason": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+    },
+    {
+      "case": "softmax_f64_n1048576",
+      "group": "softmax",
+      "backend": "jax-cuda",
+      "median": 0.4380405,
+      "iqr": 0.022608624999999993,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 8
+    },
+    {
+      "case": "softmax_f64_n1048576",
+      "group": "softmax",
+      "backend": "pytorch-cuda",
+      "median": 0.02037996875,
+      "iqr": 3.2343750000000254e-05,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "softmax_f64_n1048576",
+      "group": "softmax",
+      "backend": "tenferro-cuda-direct",
+      "median": null,
+      "status": "unsupported",
+      "verified": true,
+      "reason": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+    },
+    {
+      "case": "softmax_f64_n1048576",
+      "group": "softmax",
+      "backend": "tenferro-cuda-eager",
+      "median": null,
+      "status": "unsupported",
+      "verified": true,
+      "reason": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+    },
+    {
+      "case": "softplus_f64_n1048576",
+      "group": "softplus",
+      "backend": "jax-cuda",
+      "median": 0.05955146875,
+      "iqr": 0.0024906250000000033,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "softplus_f64_n1048576",
+      "group": "softplus",
+      "backend": "pytorch-cuda",
+      "median": 0.0318015,
+      "iqr": 6.125000000000574e-05,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "softplus_f64_n1048576",
+      "group": "softplus",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.04852365625,
+      "iqr": 0.00032017187500000405,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "softplus_f64_n1048576",
+      "group": "softplus",
+      "backend": "tenferro-cuda-eager",
+      "median": 0.080031125,
+      "iqr": 0.0007187187499999997,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 16
+    }
+  ]
+}

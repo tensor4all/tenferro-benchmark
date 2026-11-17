@@ -2,9 +2,9 @@
 use std::{error::Error, hint::black_box, time::Instant};
 use tenferro_ad::{EagerRuntime, EagerTensor};
 use tenferro_cpu::CpuEngine;
-use tenferro_einsum::TensorEinsumExt;
-use tenferro_linalg::{EagerSessionLinalgExt, HouseholderQr, QrOptions, TensorLinalgExt};
-use tenferro_runtime::TensorSessionOpsExt;
+use tenferro_einsum::EinsumOps;
+use tenferro_linalg::{EagerLinalgOps, HouseholderQr, LinalgOps, Qr, QrOptions};
+use tenferro_runtime::CoreOps;
 use tenferro_tensor::{Engine, Tensor, TensorRead};
 type Result<T> = std::result::Result<T, Box<dyn Error + Send + Sync>>;
 const BATCH: usize = 64;
@@ -239,12 +239,12 @@ fn bcgs(
         let h2 = [q, &y1].einsum("ji,jk->ik", s)?;
         let p2 = [q, &h2].einsum("ij,jk->ik", s)?;
         let y2 = y1.sub(&p2, s)?;
-        let (qb, rb) = y2.qr(s)?;
+        let Qr { q: qb, r: rb } = y2.qr(s)?;
         let h = h1.add(&h2, s)?;
-        let newq = Tensor::concatenate(&[q, &qb], 1, s)?;
-        let top = Tensor::concatenate(&[r, &h], 1, s)?;
-        let bottom = Tensor::concatenate(&[&zeros[i], &rb], 1, s)?;
-        let newr = Tensor::concatenate(&[&top, &bottom], 0, s)?;
+        let newq = CoreOps::concatenate(&[q, &qb], 1, s)?;
+        let top = CoreOps::concatenate(&[r, &h], 1, s)?;
+        let bottom = CoreOps::concatenate(&[&zeros[i], &rb], 1, s)?;
+        let newr = CoreOps::concatenate(&[&top, &bottom], 0, s)?;
         if let Some(start) = start {
             out.append_ns += start.elapsed().as_nanos();
         }
@@ -433,7 +433,7 @@ fn main() -> Result<()> {
         "eager-fresh" | "eager-shared" => {
             let runtime = EagerRuntime::new()?;
             let _guard = runtime.no_grad();
-            let initial_input = EagerTensor::from_tensor_in(input, runtime.clone())?;
+            let initial_input = runtime.clone().constant_from(input)?;
             if initial_input.tracks_grad() {
                 return Err("tracked initial fixture".into());
             }
@@ -441,7 +441,7 @@ fn main() -> Result<()> {
                 runtime.with_eager_session(&mut backend, |s| s.householder_qr(&initial_input))?;
             let eager_blocks: Vec<_> = blocks
                 .into_iter()
-                .map(|b| EagerTensor::from_tensor_in(b, runtime.clone()))
+                .map(|b| runtime.clone().constant_from(b))
                 .collect::<std::result::Result<_, _>>()?;
             if eager_blocks.iter().any(EagerTensor::tracks_grad) {
                 return Err("tracked fixture".into());
