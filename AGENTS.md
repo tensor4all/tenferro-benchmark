@@ -198,6 +198,14 @@ Expected latest report paths:
 - `result/nvidia-gpu/gpu/linalg_ad_throughput.md`
 - `result/nvidia-gpu/gpu/permutation.md`
 - `result/nvidia-gpu/gpu/perf_issues.md`
+- `result/nvidia-gpu/gpu/fft.md`
+- `result/nvidia-gpu/gpu/isolated_ops.md`
+- `result/nvidia-gpu/gpu/linalg_public_api_throughput.md`
+- `result/nvidia-gpu/gpu/linalg_public_api_latency.md`
+- `result/nvidia-gpu/gpu/lstsq.md`
+- `result/nvidia-gpu/gpu/nn.md`
+- `result/nvidia-gpu/gpu/reuse_contraction.md`
+- `result/nvidia-gpu/gpu/structural.md`
 
 Raw runs are written under:
 

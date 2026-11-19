@@ -52,8 +52,10 @@ import report_summary  # noqa: E402
 from result_status import case_outcomes  # noqa: E402
 
 # Maintained reports from AGENTS.md "Expected latest report paths" plus the
-# CPU per-call latency suites and the three GPU reports it lists in the design.
-# Everything else is a diagnostic.
+# CPU per-call latency suites and every GPU report that
+# `scripts/regenerate_report_summaries.py` regenerates from a recorded run
+# (its own ``MAINTAINED``; tests/test_generate_dashboard.py keeps the two in
+# step).  Everything else is a diagnostic.
 MAINTAINED: set[tuple[str, str]] = {
     ("mac-cpu", "cpu/einsum"),
     ("mac-cpu", "cpu/cpu_ops"),
@@ -83,6 +85,16 @@ MAINTAINED: set[tuple[str, str]] = {
     ("nvidia-gpu", "gpu/linalg_ad_latency"),
     ("nvidia-gpu", "gpu/permutation"),
     ("nvidia-gpu", "gpu/perf_issues"),
+    ("nvidia-gpu", "gpu/dense_throughput"),
+    ("nvidia-gpu", "gpu/linalg_ad_throughput"),
+    ("nvidia-gpu", "gpu/fft"),
+    ("nvidia-gpu", "gpu/isolated_ops"),
+    ("nvidia-gpu", "gpu/linalg_public_api_throughput"),
+    ("nvidia-gpu", "gpu/linalg_public_api_latency"),
+    ("nvidia-gpu", "gpu/lstsq"),
+    ("nvidia-gpu", "gpu/nn"),
+    ("nvidia-gpu", "gpu/reuse_contraction"),
+    ("nvidia-gpu", "gpu/structural"),
 }
 
 PROFILE_ORDER = ["nvidia-gpu", "zen5-cpu", "zen2-cpu", "mac-cpu", "amd-cpu"]
