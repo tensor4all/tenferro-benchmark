@@ -15,6 +15,7 @@ import re
 import sys
 import tempfile
 import unittest
+import unittest.mock
 from contextlib import nullcontext
 from dataclasses import replace
 from html import unescape
@@ -1116,14 +1117,35 @@ class RegimePagesTests(unittest.TestCase):
         output = self.generate()
         page = (output / "nvidia-gpu/gpu/linalg_ad_throughput.html").read_text()
         self.assertIn("This suite has no throughput-regime case.", page)
-        # gpu/linalg_ad_throughput is a diagnostic suite: it is not on the family
-        # latency overview, so the notice must not promise that page (#383 review).
-        self.assertIn("latency section of this page", page)
-        self.assertIn("diagnostic suite", page)
+        # gpu/linalg_ad_throughput is a maintained suite: its latency cases are
+        # also on the family latency overview, and the notice says so.
+        self.assertIn("latency page</a>", page)
+        self.assertNotIn("diagnostic suite", page)
         self.assertNotIn("Throughput-regime cases", page)
         self.assertIn("Latency and per-call overhead (1)", page)
         # The deferred batch is stated where the numbers are, not hidden.
         self.assertIn("timed in deferred-batch mode", page)
+
+    def test_all_latency_diagnostic_suite_page_does_not_promise_the_overview(self):
+        # A diagnostic suite (outside MAINTAINED) is not on the family latency
+        # overview, so the notice must not promise that page (#383 review).
+        self.add_suite(
+            "linalg_ad_throughput",
+            suite_yaml(
+                "gpu/linalg_ad_throughput",
+                "  regime: throughput\n  measure: deferred_batch\n  run: {runs: 7}\n",
+                "  - {id: qr_jvp_f64_256, family: linalg_ad, regime: latency, "
+                "linalg_ad: {n: 256}}\n",
+            ),
+            [("qr_jvp_f64_256", 1.426)],
+        )
+        maintained = dashboard.MAINTAINED - {("nvidia-gpu", "gpu/linalg_ad_throughput")}
+        with unittest.mock.patch.object(dashboard, "MAINTAINED", maintained):
+            output = self.generate()
+        page = (output / "nvidia-gpu/gpu/linalg_ad_throughput.html").read_text()
+        self.assertIn("This suite has no throughput-regime case.", page)
+        self.assertIn("latency section of this page", page)
+        self.assertIn("diagnostic suite", page)
 
     def test_moved_case_leaves_the_throughput_page(self):
         self.add_suite(

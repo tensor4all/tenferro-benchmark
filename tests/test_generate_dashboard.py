@@ -650,6 +650,17 @@ class RegenerateSummariesTests(unittest.TestCase):
         self.assertEqual(document["hardware"]["gpu"], "NVIDIA A100 80GB PCIe")
         self.assertEqual(document["rows"][0]["case"], "dense_matmul_f64_16")
 
+    def test_every_regenerated_gpu_report_is_published_on_the_family_page(self):
+        import regenerate_report_summaries as regenerate
+
+        # A GPU report the regeneration script maintains (and CI --check
+        # re-derives) must not be filed under "Diagnostic reports": the two
+        # MAINTAINED tables drifted once, hiding every fft, structural,
+        # reuse_contraction, isolated_ops and linalg_public_api case from the
+        # GPU throughput page.
+        missing = sorted(set(regenerate.MAINTAINED) - dashboard.MAINTAINED)
+        self.assertEqual(missing, [])
+
     def test_missing_declared_raw_run_fails_instead_of_skipping_the_page(self):
         import regenerate_report_summaries as regenerate
 
