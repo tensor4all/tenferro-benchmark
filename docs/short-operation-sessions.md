@@ -41,7 +41,7 @@ witness. Prepared trace retains this execution scope. Eager primal operations no
 use the public borrowed EagerSession APIs, entering the session outside timing
 and reusing it across measured samples. Input handles and consumed operation
 descriptors are restored before each sample. Eager backward rows use the same
-borrowed session: the reverse pass runs through `EagerSession::engine()`, the
+borrowed session: the reverse pass is `EagerSession::backward(&loss)`, the
 gradients are validated against scalar references before timing, and accumulated
 gradients are cleared after every sample outside timing. They time one operation
 per sample instead of a calibrated batch, because the reverse pass scans every

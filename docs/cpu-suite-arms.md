@@ -68,12 +68,12 @@ predated #311; nothing was dropped, the arm had never been measured.
 
 The `_backward` cases (`grad_sum_matmul_backward`, `grad_sum_*_backward`) are the eager arm's
 reverse-mode counterpart. Since #471 they are timed like the primal rows: inside the borrowed
-session the closure runs the forward pass and then `loss.backward(session.engine())`, reborrowing
-the engine the session holds. Before timing, one pass on a fresh fixture must reproduce scalar
+session the closure runs the forward pass and then `session.backward(&loss)`
+(`EagerSession::backward`, tenferro-rs 0.12). Before timing, one pass on a fresh fixture must reproduce scalar
 reference gradients (`check_sum_*_grads` in `src/bin/publication_gate.rs`), otherwise the row is
 `error: gradient mismatch`; accumulated gradients are cleared after every sample, outside timing,
 and the row writes `borrowed_session_outside_timing_grads_cleared_outside_timing`. A backward
-sample holds one operation, not a calibrated batch: `EagerTensor::backward` scans every live
+sample holds one operation, not a calibrated batch: the reverse pass scans every live
 gradient slot of the shared runtime, so N retained fixtures would add O(N) work to each call
 (2x2 `grad_sum_matmul`: ~87 us/op at N = 128 against ~37 us/op at N = 1). Runs recorded
 before #471 (including the zen5-cpu collection of 2026-11-12) still show
