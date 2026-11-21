@@ -210,3 +210,100 @@ pub(super) fn run(
         .max(verify(rt, &destinations[count - 1], expected, case)?);
     Ok((Some(timing), error))
 }
+
+/// The eager elementwise output-reuse forms `EagerSession::{op}_into` (tenferro-rs #2701).
+///
+/// The `_into` and `_read_into` cases share one eager call: an eager operand is always read
+/// through its retained value, so the two direct input kinds have no separate eager spelling.
+pub(super) fn eager_op(op: &str) -> Option<&'static str> {
+    Some(match op {
+        "add_into" | "add_read_into" => "add",
+        "sub_into" | "sub_read_into" => "sub",
+        "mul_into" | "mul_read_into" => "mul",
+        "div_into" | "div_read_into" => "div",
+        "neg_into" | "neg_read_into" => "neg",
+        "conj_into" | "conj_read_into" => "conj",
+        _ => return None,
+    })
+}
+
+fn execute_eager(
+    op: &'static str,
+    s: &mut tenferro_ad::EagerSession<'_>,
+    a: &tenferro_ad::EagerTensor,
+    b: &tenferro_ad::EagerTensor,
+    out: TensorWrite<'_>,
+) -> Result<()> {
+    let dest = Dest::Overwrite(out);
+    match op {
+        "add" => s.add_into(a, b, dest)?,
+        "sub" => s.sub_into(a, b, dest)?,
+        "mul" => s.mul_into(a, b, dest)?,
+        "div" => s.div_into(a, b, dest)?,
+        "neg" => s.neg_into(a, dest)?,
+        "conj" => s.conj_into(a, dest)?,
+        _ => return Err(format!("unknown eager output reuse operation {op}").into()),
+    }
+    Ok(())
+}
+
+/// Eager output reuse: the same preallocated-destination sampling as [`run`].
+///
+/// Eager values and destinations are created before the clock; the timed loop is only the
+/// `_into` calls plus the closing synchronization.
+#[allow(clippy::too_many_arguments)]
+pub(super) fn run_eager(
+    case: &Case,
+    op: &'static str,
+    inputs: &[tenferro_ad::EagerTensor],
+    expected: &Tensor,
+    rt: &CudaRuntime,
+    s: &mut tenferro_ad::EagerSession<'_>,
+    settings: &Settings,
+    bytes: usize,
+) -> Result<(Option<Value>, f64)> {
+    let a = &inputs[0];
+    let b = inputs.get(1).unwrap_or(a);
+    let n = expected.shape().iter().product::<usize>();
+    let shape = expected.shape().to_vec();
+    let zero = match expected.dtype() {
+        DType::F32 => Tensor::from_vec_col_major(shape, vec![0f32; n])?,
+        DType::F64 => Tensor::from_vec_col_major(shape, vec![0f64; n])?,
+        DType::C32 => Tensor::from_vec_col_major(shape, vec![Complex32::new(0., 0.); n])?,
+        DType::C64 => Tensor::from_vec_col_major(shape, vec![Complex64::new(0., 0.); n])?,
+        _ => return Err("invalid reuse dtype".into()),
+    };
+    let cap = if settings.verify_only {
+        1
+    } else {
+        ((256 << 20) / bytes.max(1)).clamp(1, 4096)
+    };
+    let mut destinations = (0..cap)
+        .map(|_| Ok(upload_tensor(rt, &zero)?))
+        .collect::<Result<Vec<_>>>()?;
+    execute_eager(op, s, a, b, TensorWrite::from_tensor(&mut destinations[0]))?;
+    let error = verify(rt, &destinations[0], expected, case)?;
+    if settings.verify_only {
+        return Ok((None, error));
+    }
+    let timing = sample_batches(settings, bytes, |count| {
+        let mut writes = destinations[..count]
+            .iter_mut()
+            .map(|t| Some(TensorWrite::from_tensor(t)))
+            .collect::<Vec<_>>();
+        rt.synchronize()?;
+        let start = Instant::now();
+        for write in &mut writes {
+            execute_eager(op, s, a, b, write.take().unwrap())?;
+        }
+        rt.synchronize()?;
+        let elapsed = start.elapsed().as_nanos();
+        black_box(&writes);
+        Ok(elapsed)
+    })?;
+    let count = timing["operations_per_sample"].as_u64().unwrap() as usize;
+    let error = error
+        .max(verify(rt, &destinations[0], expected, case)?)
+        .max(verify(rt, &destinations[count - 1], expected, case)?);
+    Ok((Some(timing), error))
+}

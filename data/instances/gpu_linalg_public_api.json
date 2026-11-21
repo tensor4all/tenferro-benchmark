@@ -1309,10 +1309,6 @@
       ],
       "variant": "default",
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
-        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-      },
       "unavailable": {
         "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
         "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
@@ -1345,11 +1341,7 @@
       "column_range": [
         0,
         8
-      ],
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
-        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-      }
+      ]
     },
     {
       "id": "householder_q_columns_complement_f32_64x32",
@@ -1366,10 +1358,6 @@
         32,
         64
       ],
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
-        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-      },
       "unavailable": {
         "jax-cuda": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs.",
         "jax-cuda-jit": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs."
@@ -1403,10 +1391,6 @@
       ],
       "variant": "default",
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
-        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-      },
       "unavailable": {
         "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
         "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
@@ -1439,11 +1423,7 @@
       "column_range": [
         0,
         8
-      ],
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
-        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-      }
+      ]
     },
     {
       "id": "householder_q_columns_complement_f64_64x32",
@@ -1460,10 +1440,6 @@
         32,
         64
       ],
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
-        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-      },
       "unavailable": {
         "jax-cuda": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs.",
         "jax-cuda-jit": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs."
@@ -1497,10 +1473,6 @@
       ],
       "variant": "default",
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
-        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-      },
       "unavailable": {
         "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
         "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
@@ -1533,11 +1505,7 @@
       "column_range": [
         0,
         8
-      ],
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
-        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-      }
+      ]
     },
     {
       "id": "householder_q_columns_complement_c32_64x32",
@@ -1554,10 +1522,6 @@
         32,
         64
       ],
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
-        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-      },
       "unavailable": {
         "jax-cuda": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs.",
         "jax-cuda-jit": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs."
@@ -1591,10 +1555,6 @@
       ],
       "variant": "default",
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
-        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-      },
       "unavailable": {
         "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
         "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
@@ -1627,11 +1587,7 @@
       "column_range": [
         0,
         8
-      ],
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
-        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-      }
+      ]
     },
     {
       "id": "householder_q_columns_complement_c64_64x32",
@@ -1648,10 +1604,6 @@
         32,
         64
       ],
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
-        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-      },
       "unavailable": {
         "jax-cuda": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs.",
         "jax-cuda-jit": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs."
@@ -1685,10 +1637,6 @@
       ],
       "variant": "default",
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
-        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-      },
       "unavailable": {
         "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
         "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
@@ -1721,11 +1669,7 @@
       "column_range": [
         0,
         8
-      ],
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
-        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-      }
+      ]
     },
     {
       "id": "householder_q_columns_complement_f32_512x256",
@@ -1742,10 +1686,6 @@
         256,
         512
       ],
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
-        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-      },
       "unavailable": {
         "jax-cuda": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs.",
         "jax-cuda-jit": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs."
@@ -1779,10 +1719,6 @@
       ],
       "variant": "default",
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
-        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-      },
       "unavailable": {
         "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
         "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
@@ -1815,11 +1751,7 @@
       "column_range": [
         0,
         8
-      ],
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
-        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-      }
+      ]
     },
     {
       "id": "householder_q_columns_complement_f64_512x256",
@@ -1836,10 +1768,6 @@
         256,
         512
       ],
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
-        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-      },
       "unavailable": {
         "jax-cuda": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs.",
         "jax-cuda-jit": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs."
@@ -1873,10 +1801,6 @@
       ],
       "variant": "default",
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
-        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-      },
       "unavailable": {
         "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
         "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
@@ -1909,11 +1833,7 @@
       "column_range": [
         0,
         8
-      ],
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
-        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-      }
+      ]
     },
     {
       "id": "householder_q_columns_complement_c32_512x256",
@@ -1930,10 +1850,6 @@
         256,
         512
       ],
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
-        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-      },
       "unavailable": {
         "jax-cuda": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs.",
         "jax-cuda-jit": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs."
@@ -1967,10 +1883,6 @@
       ],
       "variant": "default",
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
-        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-      },
       "unavailable": {
         "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
         "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
@@ -2003,11 +1915,7 @@
       "column_range": [
         0,
         8
-      ],
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
-        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-      }
+      ]
     },
     {
       "id": "householder_q_columns_complement_c64_512x256",
@@ -2024,10 +1932,6 @@
         256,
         512
       ],
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
-        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
-      },
       "unavailable": {
         "jax-cuda": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs.",
         "jax-cuda-jit": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs."
