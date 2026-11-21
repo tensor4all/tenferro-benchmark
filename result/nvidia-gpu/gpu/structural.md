@@ -2,17 +2,17 @@
 
 Measured cells: **60**. Unsupported cells: **4**, including **0** numerically verified but timing-excluded cells. Unsupported cells do not count as measured coverage.
 
-Logical traffic: this run measured a plain device copy of 67108864 bytes at **1448.0 GB/s** on this device. Every record carries the logical bytes the case must move per operation and the ratio of the case's implied rate to that copy rate, in the sampling table below. Logical bytes are the declared array sizes, not device DRAM traffic: a case whose operands stay in cache moves less DRAM than its arrays suggest, so a ratio above 1 is recorded, not rejected.
+Logical traffic: this run measured a plain device copy of 67108864 bytes at **1420.7 GB/s** on this device. Every record carries the logical bytes the case must move per operation and the ratio of the case's implied rate to that copy rate, in the sampling table below. Logical bytes are the declared array sizes, not device DRAM traffic: a case whose operands stay in cache moves less DRAM than its arrays suggest, so a ratio above 1 is recorded, not rejected.
 
-Raw run: `data/results/nvidia-gpu/gpu/structural/20261117_091552/`.
+Raw run: `data/results/nvidia-gpu/gpu/structural/20261121_082311/`.
 
 Isolated public APIs and explicit unsupported timing contracts. Issue 155.
 
-This run compiled **1 NVRTC modules** in 1 of its arms, because the CUDA artifact cache started cold. The untimed wall of the cases that compiled is **41.5 s** of its 52.4 s of recorded case wall clock, and that wall also holds their fixture read, transfers and verification, so it is not a compile time.
+This run compiled **1 NVRTC modules** in 1 of its arms, because the CUDA artifact cache started cold. The untimed wall of the cases that compiled is **35.8 s** of its 44.6 s of recorded case wall clock, and that wall also holds their fixture read, transfers and verification, so it is not a compile time.
 
 Values are median (IQR) **µs per operation**. Samples time batches of declared operations plus device synchronization; retained output memory is limited to 256 MiB. Batch counts and raw durations are preserved in JSONL.
 
-Cases marked † (**6** of 16) were sampled with a different number of operations per sample on different arms (see Ops/sample in the sampling table). Each value is still per operation, but the arms amortise launch and synchronization over different batch sizes, so a ratio between their columns is approximate and is not presented as a like-for-like comparison.
+Cases marked † (**7** of 16) were sampled with a different number of operations per sample on different arms (see Ops/sample in the sampling table). Each value is still per operation, but the arms amortise launch and synchronization over different batch sizes, so a ratio between their columns is approximate and is not presented as a like-for-like comparison.
 
 Setup, input transfers, library/plan initialization, JIT compilation, validation downloads and output destruction are outside timing. Intrinsic output allocation is inside timing; output-reuse rows instead use preallocated destinations across samples. Accumulating destinations are restored from prepared GPU seeds and synchronized before every batch clock, including initialization and calibration. Direct and eager each use one entered session across samples; direct FFT uses cached `FftExecutor`. JAX eager and compiled JIT are separate arms.
 
@@ -24,91 +24,91 @@ Stack selects actual public Tensor.stack/EagerSession.stack with two distinct in
 
 | Case | tenferro-cuda-direct | tenferro-cuda-eager | pytorch-cuda | jax-cuda |
 | --- | ---: | ---: | ---: | ---: |
-| pad_default_f64_n1048576 | 50.154 (4.457) | 48.422 (4.038) | 18.714 (1.515) | 99.278 (4.697) |
-| slice_default_f64_n1048576 † | 32.144 (1.197) | unsupported | 10.048 (0.223) | 93.552 (2.683) |
-| reverse_default_f64_n1048576 | 29.140 (6.604) | 29.437 (0.785) | 12.288 (0.473) | 71.494 (3.769) |
-| concatenate_default_f64_n1048576 | 63.822 (7.886) | 67.240 (11.419) | 25.922 (0.502) | 119.708 (4.334) |
-| extract_diag_default_f64_n1048576 † | 24.307 (1.127) | 27.663 (3.365) | 7.434 (0.057) | 63.424 (1.711) |
-| embed_diag_default_f64_n1024 | 28.986 (4.566) | 28.636 (5.785) | 12.916 (0.217) | 60.056 (3.338) |
-| tril_default_f64_n1048576 | 33.001 (3.720) | 32.894 (3.816) | 13.568 (1.722) | 51.140 (4.832) |
-| triu_default_f64_n1048576 | 33.112 (4.207) | 35.091 (4.759) | 13.558 (0.217) | 50.356 (1.432) |
-| take_along_axis_broadcast_indices_f64_n1048576 † | 75.432 (3.747) | 89.111 (4.812) | 19.717 (1.019) | 53.783 (0.822) |
-| scatter_default_f64_n1048576 | 81.338 (2.890) | 82.582 (5.531) | 26.889 (1.945) | 113.193 (3.213) |
-| cast_default_f64_n1048576 † | 30.964 (1.644) | 61.215 (3.640) | 11.110 (1.467) | 90.300 (2.040) |
-| broadcast_in_dim_f64_n1048576 | 45.627 (4.375) | unsupported | 9.301 (0.185) | 82.074 (2.369) |
-| dynamic_slice_in_bounds_f64_n1048576 † | 28.579 (1.036) | 29.830 (3.073) | unsupported | 98.799 (4.579) |
-| gather_axis0_f64_n1048576 † | 53.536 (2.019) | 58.573 (3.895) | 10.609 (0.228) | 92.349 (5.722) |
-| reshape_copy_f64_n1048576 | 31.364 (0.569) | 28.538 (3.894) | 10.035 (0.201) | unsupported |
-| stack_axis0_f64_n1048576 | 147.424 (7.629) | 154.834 (6.732) | 25.465 (0.158) | 104.777 (0.838) |
+| pad_default_f64_n1048576 † | 39.312 (0.265) | 42.376 (0.828) | 15.765 (0.202) | 78.348 (2.835) |
+| slice_default_f64_n1048576 † | 23.495 (0.110) | unsupported | 9.721 (0.387) | 79.229 (2.375) |
+| reverse_default_f64_n1048576 | 22.466 (0.699) | 23.334 (0.300) | 10.700 (0.098) | 60.795 (0.972) |
+| concatenate_default_f64_n1048576 | 52.613 (4.213) | 51.881 (0.231) | 25.617 (0.297) | 131.350 (10.931) |
+| extract_diag_default_f64_n1048576 † | 18.663 (1.486) | 20.138 (0.123) | 7.362 (0.054) | 62.680 (1.052) |
+| embed_diag_default_f64_n1024 | 21.416 (0.220) | 22.713 (0.205) | 11.430 (0.301) | 67.005 (3.392) |
+| tril_default_f64_n1048576 | 26.885 (0.193) | 26.824 (0.198) | 11.014 (0.028) | 59.528 (0.753) |
+| triu_default_f64_n1048576 | 26.097 (0.108) | 26.817 (0.260) | 11.148 (0.041) | 69.862 (2.682) |
+| take_along_axis_broadcast_indices_f64_n1048576 † | 62.284 (0.865) | 67.892 (0.122) | 16.872 (0.533) | 73.131 (5.601) |
+| scatter_default_f64_n1048576 | 63.488 (0.258) | 66.143 (0.332) | 22.927 (0.079) | 127.456 (9.106) |
+| cast_default_f64_n1048576 † | 23.475 (1.140) | 46.532 (0.543) | 9.288 (0.035) | 101.292 (4.848) |
+| broadcast_in_dim_f64_n1048576 | 33.615 (0.140) | unsupported | 7.839 (0.153) | 94.513 (0.943) |
+| dynamic_slice_in_bounds_f64_n1048576 † | 21.192 (0.175) | 22.971 (0.085) | unsupported | 105.088 (2.402) |
+| gather_axis0_f64_n1048576 † | 41.506 (0.079) | 44.909 (1.185) | 9.889 (0.203) | 102.053 (11.785) |
+| reshape_copy_f64_n1048576 | 24.857 (0.185) | 23.405 (0.229) | 8.881 (0.191) | unsupported |
+| stack_axis0_f64_n1048576 | 115.844 (0.632) | 122.024 (1.567) | 25.558 (0.178) | 111.824 (1.948) |
 
 ## Sampling
 
 | Case | Backend | Ops/sample | Samples | Median batch ms | Bytes/op | Copy ratio | Verification error/tolerance |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| broadcast_in_dim_f64_n1048576 | jax-cuda | 32 | 15 | 2.626 | 8396800 | 0.071 | 0 |
-| broadcast_in_dim_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.298 | 8396800 | 0.623 | 0 |
-| broadcast_in_dim_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.460 | 8396800 | 0.127 | 0 |
+| broadcast_in_dim_f64_n1048576 | jax-cuda | 32 | 15 | 3.024 | 8396800 | 0.063 | 0 |
+| broadcast_in_dim_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.251 | 8396800 | 0.754 | 0 |
+| broadcast_in_dim_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.076 | 8396800 | 0.176 | 0 |
 | broadcast_in_dim_f64_n1048576 | tenferro-cuda-eager | — | — | — | 8396800 | unavailable | Eager broadcast returns a lazy broadcast view, not the materialized full output required by this case. |
-| cast_default_f64_n1048576 | jax-cuda | 32 | 15 | 2.890 | 12582912 | 0.096 | 0 |
-| cast_default_f64_n1048576 | pytorch-cuda | 64 | 15 | 0.711 | 12582912 | 0.782 | 0 |
-| cast_default_f64_n1048576 | tenferro-cuda-direct | 64 | 15 | 1.982 | 12582912 | 0.281 | 0 |
-| cast_default_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 1.959 | 12582912 | 0.142 | 0 |
-| concatenate_default_f64_n1048576 | jax-cuda | 16 | 15 | 1.915 | 33554432 | 0.194 | 0 |
-| concatenate_default_f64_n1048576 | pytorch-cuda | 16 | 15 | 0.415 | 33554432 | 0.894 | 0 |
-| concatenate_default_f64_n1048576 | tenferro-cuda-direct | 16 | 15 | 1.021 | 33554432 | 0.363 | 0 |
-| concatenate_default_f64_n1048576 | tenferro-cuda-eager | 16 | 15 | 1.076 | 33554432 | 0.345 | 0 |
-| dynamic_slice_in_bounds_f64_n1048576 | jax-cuda | 32 | 15 | 3.162 | 10485776 | 0.073 | 0 |
+| cast_default_f64_n1048576 | jax-cuda | 32 | 15 | 3.241 | 12582912 | 0.087 | 0 |
+| cast_default_f64_n1048576 | pytorch-cuda | 64 | 15 | 0.594 | 12582912 | 0.954 | 0 |
+| cast_default_f64_n1048576 | tenferro-cuda-direct | 64 | 15 | 1.502 | 12582912 | 0.377 | 0 |
+| cast_default_f64_n1048576 | tenferro-cuda-eager | 64 | 15 | 2.978 | 12582912 | 0.190 | 0 |
+| concatenate_default_f64_n1048576 | jax-cuda | 16 | 15 | 2.102 | 33554432 | 0.180 | 0 |
+| concatenate_default_f64_n1048576 | pytorch-cuda | 16 | 15 | 0.410 | 33554432 | 0.922 | 0 |
+| concatenate_default_f64_n1048576 | tenferro-cuda-direct | 16 | 15 | 0.842 | 33554432 | 0.449 | 0 |
+| concatenate_default_f64_n1048576 | tenferro-cuda-eager | 16 | 15 | 0.830 | 33554432 | 0.455 | 0 |
+| dynamic_slice_in_bounds_f64_n1048576 | jax-cuda | 32 | 15 | 3.363 | 10485776 | 0.070 | 0 |
 | dynamic_slice_in_bounds_f64_n1048576 | pytorch-cuda | — | — | — | 10485776 | unavailable | No matched single materializing multidimensional slice API with CUDA-resident start indices and clamping; index construction/composed slicing is not substituted. |
-| dynamic_slice_in_bounds_f64_n1048576 | tenferro-cuda-direct | 128 | 15 | 3.658 | 10485776 | 0.253 | 0 |
-| dynamic_slice_in_bounds_f64_n1048576 | tenferro-cuda-eager | 64 | 15 | 1.909 | 10485776 | 0.243 | 0 |
-| embed_diag_default_f64_n1024 | jax-cuda | 32 | 15 | 1.922 | 8396800 | 0.097 | 0 |
-| embed_diag_default_f64_n1024 | pytorch-cuda | 32 | 15 | 0.413 | 8396800 | 0.449 | 0 |
-| embed_diag_default_f64_n1024 | tenferro-cuda-direct | 32 | 15 | 0.928 | 8396800 | 0.200 | 0 |
-| embed_diag_default_f64_n1024 | tenferro-cuda-eager | 32 | 15 | 0.916 | 8396800 | 0.202 | 0 |
-| extract_diag_default_f64_n1048576 | jax-cuda | 32 | 15 | 2.030 | 8396800 | 0.091 | 0 |
-| extract_diag_default_f64_n1048576 | pytorch-cuda | 512 | 15 | 3.806 | 8396800 | 0.780 | 0 |
-| extract_diag_default_f64_n1048576 | tenferro-cuda-direct | 128 | 15 | 3.111 | 8396800 | 0.239 | 0 |
-| extract_diag_default_f64_n1048576 | tenferro-cuda-eager | 128 | 15 | 3.541 | 8396800 | 0.210 | 0 |
-| gather_axis0_f64_n1048576 | jax-cuda | 32 | 15 | 2.955 | 12587008 | 0.094 | 0 |
-| gather_axis0_f64_n1048576 | pytorch-cuda | 64 | 15 | 0.679 | 12587008 | 0.819 | 0 |
-| gather_axis0_f64_n1048576 | tenferro-cuda-direct | 64 | 15 | 3.426 | 12587008 | 0.162 | 0 |
-| gather_axis0_f64_n1048576 | tenferro-cuda-eager | 64 | 15 | 3.749 | 12587008 | 0.148 | 0 |
-| pad_default_f64_n1048576 | jax-cuda | 31 | 15 | 3.078 | 16908288 | 0.118 | 0 |
-| pad_default_f64_n1048576 | pytorch-cuda | 31 | 15 | 0.580 | 16908288 | 0.624 | 0 |
-| pad_default_f64_n1048576 | tenferro-cuda-direct | 31 | 15 | 1.555 | 16908288 | 0.233 | 0 |
-| pad_default_f64_n1048576 | tenferro-cuda-eager | 31 | 15 | 1.501 | 16908288 | 0.241 | 0 |
+| dynamic_slice_in_bounds_f64_n1048576 | tenferro-cuda-direct | 128 | 15 | 2.713 | 10485776 | 0.348 | 0 |
+| dynamic_slice_in_bounds_f64_n1048576 | tenferro-cuda-eager | 128 | 15 | 2.940 | 10485776 | 0.321 | 0 |
+| embed_diag_default_f64_n1024 | jax-cuda | 32 | 15 | 2.144 | 8396800 | 0.088 | 0 |
+| embed_diag_default_f64_n1024 | pytorch-cuda | 32 | 15 | 0.366 | 8396800 | 0.517 | 0 |
+| embed_diag_default_f64_n1024 | tenferro-cuda-direct | 32 | 15 | 0.685 | 8396800 | 0.276 | 0 |
+| embed_diag_default_f64_n1024 | tenferro-cuda-eager | 32 | 15 | 0.727 | 8396800 | 0.260 | 0 |
+| extract_diag_default_f64_n1048576 | jax-cuda | 64 | 15 | 4.011 | 8396800 | 0.094 | 0 |
+| extract_diag_default_f64_n1048576 | pytorch-cuda | 512 | 15 | 3.769 | 8396800 | 0.803 | 0 |
+| extract_diag_default_f64_n1048576 | tenferro-cuda-direct | 128 | 15 | 2.389 | 8396800 | 0.317 | 0 |
+| extract_diag_default_f64_n1048576 | tenferro-cuda-eager | 128 | 15 | 2.578 | 8396800 | 0.293 | 0 |
+| gather_axis0_f64_n1048576 | jax-cuda | 32 | 15 | 3.266 | 12587008 | 0.087 | 0 |
+| gather_axis0_f64_n1048576 | pytorch-cuda | 64 | 15 | 0.633 | 12587008 | 0.896 | 0 |
+| gather_axis0_f64_n1048576 | tenferro-cuda-direct | 64 | 15 | 2.656 | 12587008 | 0.213 | 0 |
+| gather_axis0_f64_n1048576 | tenferro-cuda-eager | 64 | 15 | 2.874 | 12587008 | 0.197 | 0 |
+| pad_default_f64_n1048576 | jax-cuda | 31 | 15 | 2.429 | 16908288 | 0.152 | 0 |
+| pad_default_f64_n1048576 | pytorch-cuda | 31 | 15 | 0.489 | 16908288 | 0.755 | 0 |
+| pad_default_f64_n1048576 | tenferro-cuda-direct | 31 | 15 | 1.219 | 16908288 | 0.303 | 0 |
+| pad_default_f64_n1048576 | tenferro-cuda-eager | 2 | 15 | 0.085 | 16908288 | 0.281 | 0 |
 | reshape_copy_f64_n1048576 | jax-cuda | — | — | — | 16777216 | unavailable | No established single-call JAX reshape API that guarantees owned output materialization; native reshape may alias input. Reshape plus copy is a different composed contract. |
-| reshape_copy_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.321 | 16777216 | 1.155 | 0 |
-| reshape_copy_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.004 | 16777216 | 0.369 | 0 |
-| reshape_copy_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 0.913 | 16777216 | 0.406 | 0 |
-| reverse_default_f64_n1048576 | jax-cuda | 32 | 15 | 2.288 | 16777216 | 0.162 | 0 |
-| reverse_default_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.393 | 16777216 | 0.943 | 0 |
-| reverse_default_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.932 | 16777216 | 0.398 | 0 |
-| reverse_default_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 0.942 | 16777216 | 0.394 | 0 |
-| scatter_default_f64_n1048576 | jax-cuda | 32 | 15 | 3.622 | 25165824 | 0.154 | 0 |
-| scatter_default_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.860 | 25165824 | 0.646 | 0 |
-| scatter_default_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.603 | 25165824 | 0.214 | 0 |
-| scatter_default_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 2.643 | 25165824 | 0.210 | 0 |
-| slice_default_f64_n1048576 | jax-cuda | 32 | 15 | 2.994 | 12582912 | 0.093 | 0 |
-| slice_default_f64_n1048576 | pytorch-cuda | 64 | 15 | 0.643 | 12582912 | 0.865 | 0 |
-| slice_default_f64_n1048576 | tenferro-cuda-direct | 64 | 15 | 2.057 | 12582912 | 0.270 | 0 |
+| reshape_copy_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.284 | 16777216 | 1.330 | 0 |
+| reshape_copy_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.795 | 16777216 | 0.475 | 0 |
+| reshape_copy_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 0.749 | 16777216 | 0.505 | 0 |
+| reverse_default_f64_n1048576 | jax-cuda | 32 | 15 | 1.945 | 16777216 | 0.194 | 0 |
+| reverse_default_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.342 | 16777216 | 1.104 | 0 |
+| reverse_default_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.719 | 16777216 | 0.526 | 0 |
+| reverse_default_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 0.747 | 16777216 | 0.506 | 0 |
+| scatter_default_f64_n1048576 | jax-cuda | 32 | 15 | 4.079 | 25165824 | 0.139 | 0 |
+| scatter_default_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.734 | 25165824 | 0.773 | 0 |
+| scatter_default_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.032 | 25165824 | 0.279 | 0 |
+| scatter_default_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 2.117 | 25165824 | 0.268 | 0 |
+| slice_default_f64_n1048576 | jax-cuda | 32 | 15 | 2.535 | 12582912 | 0.112 | 0 |
+| slice_default_f64_n1048576 | pytorch-cuda | 64 | 15 | 0.622 | 12582912 | 0.911 | 0 |
+| slice_default_f64_n1048576 | tenferro-cuda-direct | 64 | 15 | 1.504 | 12582912 | 0.377 | 0 |
 | slice_default_f64_n1048576 | tenferro-cuda-eager | — | — | — | 12582912 | unavailable | EagerSession::slice returns a lazy metadata view; it is not equivalent to the materializing direct slice / torch.slice_copy / JAX slice contract. No copy is added inside its timer. |
-| stack_axis0_f64_n1048576 | jax-cuda | 16 | 15 | 1.676 | 33554432 | 0.221 | 0 |
-| stack_axis0_f64_n1048576 | pytorch-cuda | 16 | 15 | 0.407 | 33554432 | 0.910 | 0 |
-| stack_axis0_f64_n1048576 | tenferro-cuda-direct | 16 | 15 | 2.359 | 33554432 | 0.157 | 0 |
-| stack_axis0_f64_n1048576 | tenferro-cuda-eager | 16 | 15 | 2.477 | 33554432 | 0.150 | 0 |
-| take_along_axis_broadcast_indices_f64_n1048576 | jax-cuda | 64 | 15 | 3.442 | 12587008 | 0.162 | 0 |
-| take_along_axis_broadcast_indices_f64_n1048576 | pytorch-cuda | 64 | 15 | 1.262 | 12587008 | 0.441 | 0 |
-| take_along_axis_broadcast_indices_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.414 | 12587008 | 0.115 | 0 |
-| take_along_axis_broadcast_indices_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 2.852 | 12587008 | 0.098 | 0 |
-| tril_default_f64_n1048576 | jax-cuda | 32 | 15 | 1.636 | 16777216 | 0.227 | 0 |
-| tril_default_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.434 | 16777216 | 0.854 | 0 |
-| tril_default_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.056 | 16777216 | 0.351 | 0 |
-| tril_default_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 1.053 | 16777216 | 0.352 | 0 |
-| triu_default_f64_n1048576 | jax-cuda | 32 | 15 | 1.611 | 16777216 | 0.230 | 0 |
-| triu_default_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.434 | 16777216 | 0.855 | 0 |
-| triu_default_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.060 | 16777216 | 0.350 | 0 |
-| triu_default_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 1.123 | 16777216 | 0.330 | 0 |
+| stack_axis0_f64_n1048576 | jax-cuda | 16 | 15 | 1.789 | 33554432 | 0.211 | 0 |
+| stack_axis0_f64_n1048576 | pytorch-cuda | 16 | 15 | 0.409 | 33554432 | 0.924 | 0 |
+| stack_axis0_f64_n1048576 | tenferro-cuda-direct | 16 | 15 | 1.853 | 33554432 | 0.204 | 0 |
+| stack_axis0_f64_n1048576 | tenferro-cuda-eager | 16 | 15 | 1.952 | 33554432 | 0.194 | 0 |
+| take_along_axis_broadcast_indices_f64_n1048576 | jax-cuda | 32 | 15 | 2.340 | 12587008 | 0.121 | 0 |
+| take_along_axis_broadcast_indices_f64_n1048576 | pytorch-cuda | 64 | 15 | 1.080 | 12587008 | 0.525 | 0 |
+| take_along_axis_broadcast_indices_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.993 | 12587008 | 0.142 | 0 |
+| take_along_axis_broadcast_indices_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 2.173 | 12587008 | 0.130 | 0 |
+| tril_default_f64_n1048576 | jax-cuda | 32 | 15 | 1.905 | 16777216 | 0.198 | 0 |
+| tril_default_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.352 | 16777216 | 1.072 | 0 |
+| tril_default_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.860 | 16777216 | 0.439 | 0 |
+| tril_default_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 0.858 | 16777216 | 0.440 | 0 |
+| triu_default_f64_n1048576 | jax-cuda | 32 | 15 | 2.236 | 16777216 | 0.169 | 0 |
+| triu_default_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.357 | 16777216 | 1.059 | 0 |
+| triu_default_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.835 | 16777216 | 0.452 | 0 |
+| triu_default_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 0.858 | 16777216 | 0.440 | 0 |
 
 ## Run metadata
 
@@ -116,8 +116,8 @@ Stack selects actual public Tensor.stack/EagerSession.stack with two distinct in
 schema_version: 1
 target_profile: nvidia-gpu
 suite_id: gpu/structural
-suite_file: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261117_091552/gpu_structural.yaml
-timestamp: '2026-11-17T09:15:52+00:00'
+suite_file: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261121_082311/gpu_structural.yaml
+timestamp: '2026-11-21T08:23:11+00:00'
 tenferro_rs:
   path: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/extern/tenferro-rs
   commit: ce9125d0cff4ee40841120759b5df45252c27f22
@@ -127,7 +127,7 @@ tenferro_rs:
   resolved_path: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/extern/tenferro-rs
 harness:
   path: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark
-  commit: 2e63ea288fb120038b7a88288485bf2cb7e76866
+  commit: a741cd656e4d51e77d8369154bf789e5f0147f5c
   dirty: false
 resolved_deps:
   strided-perm:
@@ -139,166 +139,102 @@ resolved_deps:
   - 0.1.0
   - 0.5.1
 host:
-  cpu: AMD EPYC 7713 64-Core Processor
+  cpu: AMD EPYC 7543 32-Core Processor
   logical_cpus: 128
   power:
     cpufreq_boost: '1'
     governor: schedutil
-    scaling_max_freq_khz: '2000000'
+    scaling_max_freq_khz: '2800000'
     smt:
-      active: '0'
-      control: notsupported
+      active: '1'
+      control: 'on'
   numa:
     nodes: 2
     cpulists:
-      '0': 0-63
-      '1': 64-127
+      '0': 0-31,64-95
+      '1': 32-63,96-127
   smt_siblings:
-  - '0'
-  - '1'
-  - '2'
-  - '3'
-  - '4'
-  - '5'
-  - '6'
-  - '7'
-  - '8'
-  - '9'
-  - '10'
-  - '11'
-  - '12'
-  - '13'
-  - '14'
-  - '15'
-  - '16'
-  - '17'
-  - '18'
-  - '19'
-  - '20'
-  - '21'
-  - '22'
-  - '23'
-  - '24'
-  - '25'
-  - '26'
-  - '27'
-  - '28'
-  - '29'
-  - '30'
-  - '31'
-  - '32'
-  - '33'
-  - '34'
-  - '35'
-  - '36'
-  - '37'
-  - '38'
-  - '39'
-  - '40'
-  - '41'
-  - '42'
-  - '43'
-  - '44'
-  - '45'
-  - '46'
-  - '47'
-  - '48'
-  - '49'
-  - '50'
-  - '51'
-  - '52'
-  - '53'
-  - '54'
-  - '55'
-  - '56'
-  - '57'
-  - '58'
-  - '59'
-  - '60'
-  - '61'
-  - '62'
-  - '63'
-  - '64'
-  - '65'
-  - '66'
-  - '67'
-  - '68'
-  - '69'
-  - '70'
-  - '71'
-  - '72'
-  - '73'
-  - '74'
-  - '75'
-  - '76'
-  - '77'
-  - '78'
-  - '79'
-  - '80'
-  - '81'
-  - '82'
-  - '83'
-  - '84'
-  - '85'
-  - '86'
-  - '87'
-  - '88'
-  - '89'
-  - '90'
-  - '91'
-  - '92'
-  - '93'
-  - '94'
-  - '95'
-  - '96'
-  - '97'
-  - '98'
-  - '99'
-  - '100'
-  - '101'
-  - '102'
-  - '103'
-  - '104'
-  - '105'
-  - '106'
-  - '107'
-  - '108'
-  - '109'
-  - '110'
-  - '111'
-  - '112'
-  - '113'
-  - '114'
-  - '115'
-  - '116'
-  - '117'
-  - '118'
-  - '119'
-  - '120'
-  - '121'
-  - '122'
-  - '123'
-  - '124'
-  - '125'
-  - '126'
-  - '127'
+  - 0,64
+  - 1,65
+  - 2,66
+  - 3,67
+  - 4,68
+  - 5,69
+  - 6,70
+  - 7,71
+  - 8,72
+  - 9,73
+  - 10,74
+  - 11,75
+  - 12,76
+  - 13,77
+  - 14,78
+  - 15,79
+  - 16,80
+  - 17,81
+  - 18,82
+  - 19,83
+  - 20,84
+  - 21,85
+  - 22,86
+  - 23,87
+  - 24,88
+  - 25,89
+  - 26,90
+  - 27,91
+  - 28,92
+  - 29,93
+  - 30,94
+  - 31,95
+  - 32,96
+  - 33,97
+  - 34,98
+  - 35,99
+  - 36,100
+  - 37,101
+  - 38,102
+  - 39,103
+  - 40,104
+  - 41,105
+  - 42,106
+  - 43,107
+  - 44,108
+  - 45,109
+  - 46,110
+  - 47,111
+  - 48,112
+  - 49,113
+  - 50,114
+  - 51,115
+  - 52,116
+  - 53,117
+  - 54,118
+  - 55,119
+  - 56,120
+  - 57,121
+  - 58,122
+  - 59,123
+  - 60,124
+  - 61,125
+  - 62,126
+  - 63,127
   l3_domains:
-  - 0-7
-  - 8-15
-  - 16-23
-  - 24-31
-  - 32-39
-  - 40-47
-  - 48-55
-  - 56-63
-  - 64-71
-  - 72-79
-  - 80-87
-  - 88-95
-  - 96-103
-  - 104-111
-  - 112-119
-  - 120-127
+  - 0-3,64-67
+  - 4-7,68-71
+  - 8-11,72-75
+  - 12-15,76-79
+  - 16-19,80-83
+  - 20-23,84-87
+  - 24-27,88-91
+  - 28-31,92-95
+  - 32-35,96-99
+  - 36-39,100-103
+  - 40-43,104-107
+  - 44-47,108-111
+  - 48-51,112-115
+  - 52-55,116-119
+  - 56-59,120-123
+  - 60-63,124-127
 build:
   toolchain:
     rustc: null
@@ -307,8 +243,8 @@ build:
     target_cpu: null
 environment:
   container: devcontainer
-  hostname: b8e17af19547
-  os: Linux-6.8.0-147-generic-x86_64-with-glibc2.39
+  hostname: 7894e3c40841
+  os: Linux-6.8.0-138-generic-x86_64-with-glibc2.39
   arch: x86_64
   cpu: x86_64
   affinity:
@@ -319,22 +255,22 @@ environment:
     thread_budget: '1'
     measured_cpus: 0-127
     l3_domains:
-    - 0-7
-    - 8-15
-    - 16-23
-    - 24-31
-    - 32-39
-    - 40-47
-    - 48-55
-    - 56-63
-    - 64-71
-    - 72-79
-    - 80-87
-    - 88-95
-    - 96-103
-    - 104-111
-    - 112-119
-    - 120-127
+    - 0-3,64-67
+    - 4-7,68-71
+    - 8-11,72-75
+    - 12-15,76-79
+    - 16-19,80-83
+    - 20-23,84-87
+    - 24-27,88-91
+    - 28-31,92-95
+    - 32-35,96-99
+    - 36-39,100-103
+    - 40-43,104-107
+    - 44-47,108-111
+    - 48-51,112-115
+    - 52-55,116-119
+    - 56-59,120-123
+    - 60-63,124-127
     cpu_boost: enabled
     scaling_governor: schedutil
     scaling_driver: acpi-cpufreq
@@ -347,7 +283,7 @@ environment:
     CUDA_HOME: /opt/tenferro-benchmark-ci/cuda
     CUDA_PATH: /opt/tenferro-benchmark-ci/cuda
     TENFERRO_CUTENSOR_PATH: /opt/tenferro-benchmark-ci/cutensor/lib/libcutensor.so.2
-    GPU_RUNTIME_SHA256: f876805d95374305db5787a72cee40a6848d0fc64ee71d7b306c264971c36869
+    GPU_RUNTIME_SHA256: 3d603f753ad72a63b928ce8e1b63847b8a21f94f0919276124993a6548126185
     UV_PROJECT_ENVIRONMENT: /opt/tenferro-benchmark-ci/venv
     BENCH_RUNS: '15'
     BENCH_WARMUPS: '3'
@@ -413,10 +349,10 @@ julia:
   reason: julia not found on PATH
 cuda:
   device_ordinal: 0
-  device_name: NVIDIA A100-SXM4-80GB
-  device_uuid: GPU-704abe6c-29a2-539e-7ccd-01f9de4eed3b
+  device_name: NVIDIA A100 80GB PCIe
+  device_uuid: GPU-98d8618e-77c8-160a-92f2-117e34fd43df
   device_memory_bytes: 85899345920
-  driver_version: 595.91.07
+  driver_version: 595.112.07
   runtime_version: '12.8'
   cuda_version: '13.2'
   toolkit_version: null
@@ -432,37 +368,37 @@ gpu_memory_calibration:
   method: torch.Tensor.copy_ between two contiguous device buffers, one copy per sample,
     device synchronized before and after the clock
   device_ordinal: 0
-  device_name: NVIDIA A100-SXM4-80GB
+  device_name: NVIDIA A100 80GB PCIe
   buffer_bytes: 67108864
   traffic_bytes_per_copy: 134217728
   traffic_model: one read plus one write of buffer_bytes per copy
   warmups: 3
   sample_ms:
-  - 0.09343
-  - 0.09155
-  - 0.09247
-  - 0.0982
-  - 0.09269
-  - 0.091049
-  - 0.09239
-  - 0.09502
+  - 0.093801
+  - 0.093301
+  - 0.096251
+  - 0.094811
+  - 0.093461
+  - 0.09439
+  - 0.09599
+  - 0.093821
+  - 0.095131
+  - 0.095041
+  - 0.094051
+  - 0.096051
+  - 0.094471
+  - 0.094081
   - 0.09532
-  - 0.09225
-  - 0.092109
-  - 0.09379
-  - 0.09318
-  - 0.09191
-  - 0.09403
-  median_ms: 0.09269
-  bytes_per_second: 1448028136800.0864
+  median_ms: 0.094471
+  bytes_per_second: 1420729409024.992
   torch_version: 2.11.0+cu128
   cuda_version: '12.8'
-  timestamp: '2026-11-17T09:37:06.533277+00:00'
+  timestamp: '2026-11-21T08:34:19.353401+00:00'
 gpu_assignment:
   role: benchmark
   physical_device_index: 0
-  device_uuid: GPU-704abe6c-29a2-539e-7ccd-01f9de4eed3b
-  cuda_visible_devices: GPU-704abe6c-29a2-539e-7ccd-01f9de4eed3b
+  device_uuid: GPU-98d8618e-77c8-160a-92f2-117e34fd43df
+  cuda_visible_devices: GPU-98d8618e-77c8-160a-92f2-117e34fd43df
   process_device_ordinal: 0
   verification_only: false
 collection:
@@ -487,7 +423,7 @@ collection:
     /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/scripts/benchmark_gpu_public_api.py: d1ff68f86496d991bcbc730138fe6e3076001b3f23cc1a94c44b96f6857cb8ed
     /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/scripts/gpu_public_api_ops.py: e88823db3f4a1fe43dc13c4743c9d78ece6af76a968724091af318dd8d7f2528
     scripts/run_gpu_public_api.sh: 7995bcf409258185e07210969a738896f64860b67df251fcd1100d11128a5431
-    data/results/nvidia-gpu/gpu/structural/20261117_091552/fixtures/manifest.json: a320918ec2ed38973c5dcd570dd59f21d7fabb60d8cfb2d95483f723ae9fa443
+    data/results/nvidia-gpu/gpu/structural/20261121_082311/fixtures/manifest.json: a320918ec2ed38973c5dcd570dd59f21d7fabb60d8cfb2d95483f723ae9fa443
     target/release/benchmark_gpu_public_api: c67dd59529f9c6644708d8bc0a5a5fabc82f29fff70f5532c20f6a3066720813
   reference_numpy_version: 2.4.2
   measurement_cpu:
@@ -498,33 +434,33 @@ collection:
         status: disabled
         reason: 'GPU_BENCH_CPU_SELECT is not 1: the arm runs on the allocation unpinned'
         exit_code: 0
-        finished_at: '2026-11-17T09:38:08Z'
+        finished_at: '2026-11-21T08:35:11Z'
       pytorch-cuda:
         arm: pytorch-cuda
         status: disabled
         reason: 'GPU_BENCH_CPU_SELECT is not 1: the arm runs on the allocation unpinned'
         exit_code: 0
-        finished_at: '2026-11-17T09:38:01Z'
+        finished_at: '2026-11-21T08:35:05Z'
       tenferro-cuda-direct:
         arm: tenferro-cuda-direct
         status: disabled
         reason: 'GPU_BENCH_CPU_SELECT is not 1: the arm runs on the allocation unpinned'
         exit_code: 0
-        finished_at: '2026-11-17T09:37:53Z'
+        finished_at: '2026-11-21T08:34:58Z'
       tenferro-cuda-eager:
         arm: tenferro-cuda-eager
         status: disabled
         reason: 'GPU_BENCH_CPU_SELECT is not 1: the arm runs on the allocation unpinned'
         exit_code: 0
-        finished_at: '2026-11-17T09:37:56Z'
+        finished_at: '2026-11-21T08:35:01Z'
   compile:
-    case_wall_seconds: 52.353
+    case_wall_seconds: 44.641
     compiling_processes: 1
     modules_compiled: 1
     compile_time_ms: null
     compile_time_scope: 'not measured: no compile interval was recorded; `compile_modules`
       counts the NVRTC modules and the untimed wall is the case wall'
-    untimed_wall_seconds: 41.544
+    untimed_wall_seconds: 35.818
 ```
 
 ## Untimed work over the recorded budget
@@ -533,63 +469,63 @@ Each row records the wall clock it spent outside its timed region. These cases s
 
 | Case | Backend | Warning |
 | --- | --- | --- |
-| pad_default_f64_n1048576 | tenferro-cuda-direct | pad_default_f64_n1048576 untimed 182.2 ms is 748% of the 24.4 ms timed region (budget 20%) |
-| slice_default_f64_n1048576 | tenferro-cuda-direct | slice_default_f64_n1048576 untimed 44.3 ms is 143% of the 31.0 ms timed region (budget 20%) |
-| reverse_default_f64_n1048576 | tenferro-cuda-direct | reverse_default_f64_n1048576 untimed 92.5 ms is 613% of the 15.1 ms timed region (budget 20%) |
-| concatenate_default_f64_n1048576 | tenferro-cuda-direct | concatenate_default_f64_n1048576 untimed 303.0 ms is 1890% of the 16.0 ms timed region (budget 20%) |
-| extract_diag_default_f64_n1048576 | tenferro-cuda-direct | extract_diag_default_f64_n1048576 untimed 44.2 ms is 95% of the 46.7 ms timed region (budget 20%) |
-| embed_diag_default_f64_n1024 | tenferro-cuda-direct | embed_diag_default_f64_n1024 untimed 90.7 ms is 633% of the 14.3 ms timed region (budget 20%) |
-| tril_default_f64_n1048576 | tenferro-cuda-direct | tril_default_f64_n1048576 untimed 93.6 ms is 563% of the 16.6 ms timed region (budget 20%) |
-| triu_default_f64_n1048576 | tenferro-cuda-direct | triu_default_f64_n1048576 untimed 89.1 ms is 537% of the 16.6 ms timed region (budget 20%) |
-| take_along_axis_broadcast_indices_f64_n1048576 | tenferro-cuda-direct | take_along_axis_broadcast_indices_f64_n1048576 untimed 41543.6 ms is 111640% of the 37.2 ms timed region (budget 20%) |
-| scatter_default_f64_n1048576 | tenferro-cuda-direct | scatter_default_f64_n1048576 untimed 43.7 ms is 110% of the 39.5 ms timed region (budget 20%) |
-| cast_default_f64_n1048576 | tenferro-cuda-direct | cast_default_f64_n1048576 untimed 36.0 ms is 120% of the 30.0 ms timed region (budget 20%) |
-| broadcast_in_dim_f64_n1048576 | tenferro-cuda-direct | broadcast_in_dim_f64_n1048576 untimed 38.3 ms is 176% of the 21.7 ms timed region (budget 20%) |
-| dynamic_slice_in_bounds_f64_n1048576 | tenferro-cuda-direct | dynamic_slice_in_bounds_f64_n1048576 untimed 20.4 ms is 37% of the 55.1 ms timed region (budget 20%) |
-| gather_axis0_f64_n1048576 | tenferro-cuda-direct | gather_axis0_f64_n1048576 untimed 27.3 ms is 53% of the 52.0 ms timed region (budget 20%) |
-| reshape_copy_f64_n1048576 | tenferro-cuda-direct | reshape_copy_f64_n1048576 untimed 45.0 ms is 289% of the 15.6 ms timed region (budget 20%) |
-| stack_axis0_f64_n1048576 | tenferro-cuda-direct | stack_axis0_f64_n1048576 untimed 71.9 ms is 205% of the 35.1 ms timed region (budget 20%) |
-| pad_default_f64_n1048576 | tenferro-cuda-eager | pad_default_f64_n1048576 untimed 183.0 ms is 772% of the 23.7 ms timed region (budget 20%) |
-| reverse_default_f64_n1048576 | tenferro-cuda-eager | reverse_default_f64_n1048576 untimed 97.0 ms is 670% of the 14.5 ms timed region (budget 20%) |
-| concatenate_default_f64_n1048576 | tenferro-cuda-eager | concatenate_default_f64_n1048576 untimed 179.4 ms is 1102% of the 16.3 ms timed region (budget 20%) |
-| extract_diag_default_f64_n1048576 | tenferro-cuda-eager | extract_diag_default_f64_n1048576 untimed 12.2 ms is 23% of the 52.7 ms timed region (budget 20%) |
-| embed_diag_default_f64_n1024 | tenferro-cuda-eager | embed_diag_default_f64_n1024 untimed 85.4 ms is 498% of the 17.2 ms timed region (budget 20%) |
-| tril_default_f64_n1048576 | tenferro-cuda-eager | tril_default_f64_n1048576 untimed 92.1 ms is 546% of the 16.9 ms timed region (budget 20%) |
-| triu_default_f64_n1048576 | tenferro-cuda-eager | triu_default_f64_n1048576 untimed 103.0 ms is 590% of the 17.5 ms timed region (budget 20%) |
-| take_along_axis_broadcast_indices_f64_n1048576 | tenferro-cuda-eager | take_along_axis_broadcast_indices_f64_n1048576 untimed 44.2 ms is 97% of the 45.4 ms timed region (budget 20%) |
-| scatter_default_f64_n1048576 | tenferro-cuda-eager | scatter_default_f64_n1048576 untimed 105.7 ms is 262% of the 40.3 ms timed region (budget 20%) |
-| cast_default_f64_n1048576 | tenferro-cuda-eager | cast_default_f64_n1048576 untimed 78.2 ms is 260% of the 30.1 ms timed region (budget 20%) |
-| dynamic_slice_in_bounds_f64_n1048576 | tenferro-cuda-eager | dynamic_slice_in_bounds_f64_n1048576 untimed 20.8 ms is 72% of the 28.8 ms timed region (budget 20%) |
-| gather_axis0_f64_n1048576 | tenferro-cuda-eager | gather_axis0_f64_n1048576 untimed 33.2 ms is 58% of the 57.7 ms timed region (budget 20%) |
-| reshape_copy_f64_n1048576 | tenferro-cuda-eager | reshape_copy_f64_n1048576 untimed 89.7 ms is 625% of the 14.4 ms timed region (budget 20%) |
-| stack_axis0_f64_n1048576 | tenferro-cuda-eager | stack_axis0_f64_n1048576 untimed 220.6 ms is 593% of the 37.2 ms timed region (budget 20%) |
-| pad_default_f64_n1048576 | pytorch-cuda | pad_default_f64_n1048576 untimed 293.0 ms is 3186% of the 9.2 ms timed region (budget 20%) |
-| slice_default_f64_n1048576 | pytorch-cuda | slice_default_f64_n1048576 untimed 71.0 ms is 731% of the 9.7 ms timed region (budget 20%) |
-| reverse_default_f64_n1048576 | pytorch-cuda | reverse_default_f64_n1048576 untimed 151.9 ms is 2495% of the 6.1 ms timed region (budget 20%) |
-| concatenate_default_f64_n1048576 | pytorch-cuda | concatenate_default_f64_n1048576 untimed 316.9 ms is 5037% of the 6.3 ms timed region (budget 20%) |
-| extract_diag_default_f64_n1048576 | pytorch-cuda | extract_diag_default_f64_n1048576 untimed 23.3 ms is 41% of the 57.2 ms timed region (budget 20%) |
-| embed_diag_default_f64_n1024 | pytorch-cuda | embed_diag_default_f64_n1024 untimed 136.6 ms is 2200% of the 6.2 ms timed region (budget 20%) |
-| tril_default_f64_n1048576 | pytorch-cuda | tril_default_f64_n1048576 untimed 144.8 ms is 2124% of the 6.8 ms timed region (budget 20%) |
-| triu_default_f64_n1048576 | pytorch-cuda | triu_default_f64_n1048576 untimed 148.5 ms is 2228% of the 6.7 ms timed region (budget 20%) |
-| take_along_axis_broadcast_indices_f64_n1048576 | pytorch-cuda | take_along_axis_broadcast_indices_f64_n1048576 untimed 104.0 ms is 540% of the 19.3 ms timed region (budget 20%) |
-| scatter_default_f64_n1048576 | pytorch-cuda | scatter_default_f64_n1048576 untimed 72.5 ms is 542% of the 13.4 ms timed region (budget 20%) |
-| cast_default_f64_n1048576 | pytorch-cuda | cast_default_f64_n1048576 untimed 44.5 ms is 392% of the 11.4 ms timed region (budget 20%) |
-| broadcast_in_dim_f64_n1048576 | pytorch-cuda | broadcast_in_dim_f64_n1048576 untimed 147.2 ms is 3141% of the 4.7 ms timed region (budget 20%) |
-| gather_axis0_f64_n1048576 | pytorch-cuda | gather_axis0_f64_n1048576 untimed 69.4 ms is 681% of the 10.2 ms timed region (budget 20%) |
-| reshape_copy_f64_n1048576 | pytorch-cuda | reshape_copy_f64_n1048576 untimed 151.0 ms is 3051% of the 4.9 ms timed region (budget 20%) |
-| stack_axis0_f64_n1048576 | pytorch-cuda | stack_axis0_f64_n1048576 untimed 517.8 ms is 8464% of the 6.1 ms timed region (budget 20%) |
-| pad_default_f64_n1048576 | jax-cuda | pad_default_f64_n1048576 untimed 560.8 ms is 1191% of the 47.1 ms timed region (budget 20%) |
-| slice_default_f64_n1048576 | jax-cuda | slice_default_f64_n1048576 untimed 122.2 ms is 270% of the 45.2 ms timed region (budget 20%) |
-| reverse_default_f64_n1048576 | jax-cuda | reverse_default_f64_n1048576 untimed 349.3 ms is 997% of the 35.0 ms timed region (budget 20%) |
-| concatenate_default_f64_n1048576 | jax-cuda | concatenate_default_f64_n1048576 untimed 733.5 ms is 2543% of the 28.8 ms timed region (budget 20%) |
-| extract_diag_default_f64_n1048576 | jax-cuda | extract_diag_default_f64_n1048576 untimed 74.6 ms is 237% of the 31.4 ms timed region (budget 20%) |
-| embed_diag_default_f64_n1024 | jax-cuda | embed_diag_default_f64_n1024 untimed 221.8 ms is 773% of the 28.7 ms timed region (budget 20%) |
-| tril_default_f64_n1048576 | jax-cuda | tril_default_f64_n1048576 untimed 256.5 ms is 1008% of the 25.5 ms timed region (budget 20%) |
-| triu_default_f64_n1048576 | jax-cuda | triu_default_f64_n1048576 untimed 278.0 ms is 1151% of the 24.1 ms timed region (budget 20%) |
-| take_along_axis_broadcast_indices_f64_n1048576 | jax-cuda | take_along_axis_broadcast_indices_f64_n1048576 untimed 126.4 ms is 242% of the 52.3 ms timed region (budget 20%) |
-| scatter_default_f64_n1048576 | jax-cuda | scatter_default_f64_n1048576 untimed 236.0 ms is 421% of the 56.1 ms timed region (budget 20%) |
-| cast_default_f64_n1048576 | jax-cuda | cast_default_f64_n1048576 untimed 86.3 ms is 194% of the 44.5 ms timed region (budget 20%) |
-| broadcast_in_dim_f64_n1048576 | jax-cuda | broadcast_in_dim_f64_n1048576 untimed 201.5 ms is 504% of the 40.0 ms timed region (budget 20%) |
-| dynamic_slice_in_bounds_f64_n1048576 | jax-cuda | dynamic_slice_in_bounds_f64_n1048576 untimed 117.8 ms is 244% of the 48.3 ms timed region (budget 20%) |
-| gather_axis0_f64_n1048576 | jax-cuda | gather_axis0_f64_n1048576 untimed 109.6 ms is 245% of the 44.7 ms timed region (budget 20%) |
-| stack_axis0_f64_n1048576 | jax-cuda | stack_axis0_f64_n1048576 untimed 741.3 ms is 2930% of the 25.3 ms timed region (budget 20%) |
+| pad_default_f64_n1048576 | tenferro-cuda-direct | pad_default_f64_n1048576 untimed 163.3 ms is 881% of the 18.5 ms timed region (budget 20%) |
+| slice_default_f64_n1048576 | tenferro-cuda-direct | slice_default_f64_n1048576 untimed 38.3 ms is 170% of the 22.6 ms timed region (budget 20%) |
+| reverse_default_f64_n1048576 | tenferro-cuda-direct | reverse_default_f64_n1048576 untimed 85.5 ms is 772% of the 11.1 ms timed region (budget 20%) |
+| concatenate_default_f64_n1048576 | tenferro-cuda-direct | concatenate_default_f64_n1048576 untimed 183.9 ms is 1425% of the 12.9 ms timed region (budget 20%) |
+| extract_diag_default_f64_n1048576 | tenferro-cuda-direct | extract_diag_default_f64_n1048576 untimed 9.2 ms is 25% of the 37.2 ms timed region (budget 20%) |
+| embed_diag_default_f64_n1024 | tenferro-cuda-direct | embed_diag_default_f64_n1024 untimed 67.1 ms is 652% of the 10.3 ms timed region (budget 20%) |
+| tril_default_f64_n1048576 | tenferro-cuda-direct | tril_default_f64_n1048576 untimed 89.0 ms is 689% of the 12.9 ms timed region (budget 20%) |
+| triu_default_f64_n1048576 | tenferro-cuda-direct | triu_default_f64_n1048576 untimed 78.5 ms is 626% of the 12.5 ms timed region (budget 20%) |
+| take_along_axis_broadcast_indices_f64_n1048576 | tenferro-cuda-direct | take_along_axis_broadcast_indices_f64_n1048576 untimed 35817.9 ms is 119459% of the 30.0 ms timed region (budget 20%) |
+| scatter_default_f64_n1048576 | tenferro-cuda-direct | scatter_default_f64_n1048576 untimed 46.7 ms is 153% of the 30.5 ms timed region (budget 20%) |
+| cast_default_f64_n1048576 | tenferro-cuda-direct | cast_default_f64_n1048576 untimed 31.1 ms is 138% of the 22.5 ms timed region (budget 20%) |
+| broadcast_in_dim_f64_n1048576 | tenferro-cuda-direct | broadcast_in_dim_f64_n1048576 untimed 34.1 ms is 211% of the 16.1 ms timed region (budget 20%) |
+| dynamic_slice_in_bounds_f64_n1048576 | tenferro-cuda-direct | dynamic_slice_in_bounds_f64_n1048576 untimed 20.0 ms is 49% of the 40.8 ms timed region (budget 20%) |
+| gather_axis0_f64_n1048576 | tenferro-cuda-direct | gather_axis0_f64_n1048576 untimed 23.7 ms is 59% of the 39.9 ms timed region (budget 20%) |
+| reshape_copy_f64_n1048576 | tenferro-cuda-direct | reshape_copy_f64_n1048576 untimed 34.0 ms is 282% of the 12.1 ms timed region (budget 20%) |
+| stack_axis0_f64_n1048576 | tenferro-cuda-direct | stack_axis0_f64_n1048576 untimed 65.3 ms is 235% of the 27.8 ms timed region (budget 20%) |
+| pad_default_f64_n1048576 | tenferro-cuda-eager | pad_default_f64_n1048576 untimed 149.1 ms is 11579% of the 1.3 ms timed region (budget 20%) |
+| reverse_default_f64_n1048576 | tenferro-cuda-eager | reverse_default_f64_n1048576 untimed 91.3 ms is 814% of the 11.2 ms timed region (budget 20%) |
+| concatenate_default_f64_n1048576 | tenferro-cuda-eager | concatenate_default_f64_n1048576 untimed 173.6 ms is 1393% of the 12.5 ms timed region (budget 20%) |
+| extract_diag_default_f64_n1048576 | tenferro-cuda-eager | extract_diag_default_f64_n1048576 untimed 13.5 ms is 35% of the 38.8 ms timed region (budget 20%) |
+| embed_diag_default_f64_n1024 | tenferro-cuda-eager | embed_diag_default_f64_n1024 untimed 70.5 ms is 645% of the 10.9 ms timed region (budget 20%) |
+| tril_default_f64_n1048576 | tenferro-cuda-eager | tril_default_f64_n1048576 untimed 79.4 ms is 615% of the 12.9 ms timed region (budget 20%) |
+| triu_default_f64_n1048576 | tenferro-cuda-eager | triu_default_f64_n1048576 untimed 84.3 ms is 644% of the 13.1 ms timed region (budget 20%) |
+| take_along_axis_broadcast_indices_f64_n1048576 | tenferro-cuda-eager | take_along_axis_broadcast_indices_f64_n1048576 untimed 39.0 ms is 119% of the 32.6 ms timed region (budget 20%) |
+| scatter_default_f64_n1048576 | tenferro-cuda-eager | scatter_default_f64_n1048576 untimed 81.3 ms is 256% of the 31.8 ms timed region (budget 20%) |
+| cast_default_f64_n1048576 | tenferro-cuda-eager | cast_default_f64_n1048576 untimed 68.0 ms is 153% of the 44.6 ms timed region (budget 20%) |
+| dynamic_slice_in_bounds_f64_n1048576 | tenferro-cuda-eager | dynamic_slice_in_bounds_f64_n1048576 untimed 21.6 ms is 49% of the 44.1 ms timed region (budget 20%) |
+| gather_axis0_f64_n1048576 | tenferro-cuda-eager | gather_axis0_f64_n1048576 untimed 25.6 ms is 59% of the 43.3 ms timed region (budget 20%) |
+| reshape_copy_f64_n1048576 | tenferro-cuda-eager | reshape_copy_f64_n1048576 untimed 70.8 ms is 628% of the 11.3 ms timed region (budget 20%) |
+| stack_axis0_f64_n1048576 | tenferro-cuda-eager | stack_axis0_f64_n1048576 untimed 173.5 ms is 586% of the 29.6 ms timed region (budget 20%) |
+| pad_default_f64_n1048576 | pytorch-cuda | pad_default_f64_n1048576 untimed 270.3 ms is 3668% of the 7.4 ms timed region (budget 20%) |
+| slice_default_f64_n1048576 | pytorch-cuda | slice_default_f64_n1048576 untimed 64.5 ms is 663% of the 9.7 ms timed region (budget 20%) |
+| reverse_default_f64_n1048576 | pytorch-cuda | reverse_default_f64_n1048576 untimed 143.8 ms is 2804% of the 5.1 ms timed region (budget 20%) |
+| concatenate_default_f64_n1048576 | pytorch-cuda | concatenate_default_f64_n1048576 untimed 296.1 ms is 4825% of the 6.1 ms timed region (budget 20%) |
+| extract_diag_default_f64_n1048576 | pytorch-cuda | extract_diag_default_f64_n1048576 untimed 21.1 ms is 37% of the 56.6 ms timed region (budget 20%) |
+| embed_diag_default_f64_n1024 | pytorch-cuda | embed_diag_default_f64_n1024 untimed 141.8 ms is 2564% of the 5.5 ms timed region (budget 20%) |
+| tril_default_f64_n1048576 | pytorch-cuda | tril_default_f64_n1048576 untimed 148.2 ms is 2803% of the 5.3 ms timed region (budget 20%) |
+| triu_default_f64_n1048576 | pytorch-cuda | triu_default_f64_n1048576 untimed 131.8 ms is 2458% of the 5.4 ms timed region (budget 20%) |
+| take_along_axis_broadcast_indices_f64_n1048576 | pytorch-cuda | take_along_axis_broadcast_indices_f64_n1048576 untimed 107.6 ms is 657% of the 16.4 ms timed region (budget 20%) |
+| scatter_default_f64_n1048576 | pytorch-cuda | scatter_default_f64_n1048576 untimed 70.2 ms is 638% of the 11.0 ms timed region (budget 20%) |
+| cast_default_f64_n1048576 | pytorch-cuda | cast_default_f64_n1048576 untimed 41.3 ms is 462% of the 8.9 ms timed region (budget 20%) |
+| broadcast_in_dim_f64_n1048576 | pytorch-cuda | broadcast_in_dim_f64_n1048576 untimed 135.2 ms is 3573% of the 3.8 ms timed region (budget 20%) |
+| gather_axis0_f64_n1048576 | pytorch-cuda | gather_axis0_f64_n1048576 untimed 64.9 ms is 683% of the 9.5 ms timed region (budget 20%) |
+| reshape_copy_f64_n1048576 | pytorch-cuda | reshape_copy_f64_n1048576 untimed 133.0 ms is 3103% of the 4.3 ms timed region (budget 20%) |
+| stack_axis0_f64_n1048576 | pytorch-cuda | stack_axis0_f64_n1048576 untimed 461.2 ms is 7315% of the 6.3 ms timed region (budget 20%) |
+| pad_default_f64_n1048576 | jax-cuda | pad_default_f64_n1048576 untimed 402.3 ms is 1085% of the 37.1 ms timed region (budget 20%) |
+| slice_default_f64_n1048576 | jax-cuda | slice_default_f64_n1048576 untimed 104.2 ms is 275% of the 37.8 ms timed region (budget 20%) |
+| reverse_default_f64_n1048576 | jax-cuda | reverse_default_f64_n1048576 untimed 179.2 ms is 612% of the 29.3 ms timed region (budget 20%) |
+| concatenate_default_f64_n1048576 | jax-cuda | concatenate_default_f64_n1048576 untimed 365.9 ms is 1167% of the 31.4 ms timed region (budget 20%) |
+| extract_diag_default_f64_n1048576 | jax-cuda | extract_diag_default_f64_n1048576 untimed 68.6 ms is 114% of the 60.2 ms timed region (budget 20%) |
+| embed_diag_default_f64_n1024 | jax-cuda | embed_diag_default_f64_n1024 untimed 213.9 ms is 632% of the 33.8 ms timed region (budget 20%) |
+| tril_default_f64_n1048576 | jax-cuda | tril_default_f64_n1048576 untimed 199.5 ms is 699% of the 28.5 ms timed region (budget 20%) |
+| triu_default_f64_n1048576 | jax-cuda | triu_default_f64_n1048576 untimed 187.9 ms is 556% of the 33.8 ms timed region (budget 20%) |
+| take_along_axis_broadcast_indices_f64_n1048576 | jax-cuda | take_along_axis_broadcast_indices_f64_n1048576 untimed 135.7 ms is 388% of the 34.9 ms timed region (budget 20%) |
+| scatter_default_f64_n1048576 | jax-cuda | scatter_default_f64_n1048576 untimed 132.2 ms is 214% of the 61.8 ms timed region (budget 20%) |
+| cast_default_f64_n1048576 | jax-cuda | cast_default_f64_n1048576 untimed 87.0 ms is 180% of the 48.2 ms timed region (budget 20%) |
+| broadcast_in_dim_f64_n1048576 | jax-cuda | broadcast_in_dim_f64_n1048576 untimed 203.7 ms is 450% of the 45.3 ms timed region (budget 20%) |
+| dynamic_slice_in_bounds_f64_n1048576 | jax-cuda | dynamic_slice_in_bounds_f64_n1048576 untimed 118.4 ms is 228% of the 51.8 ms timed region (budget 20%) |
+| gather_axis0_f64_n1048576 | jax-cuda | gather_axis0_f64_n1048576 untimed 113.4 ms is 233% of the 48.7 ms timed region (budget 20%) |
+| stack_axis0_f64_n1048576 | jax-cuda | stack_axis0_f64_n1048576 untimed 502.3 ms is 1865% of the 26.9 ms timed region (budget 20%) |

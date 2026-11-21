@@ -2,9 +2,9 @@
 
 Measured cells: **124**. Unsupported cells: **8**, including **6** numerically verified but timing-excluded cells. Unsupported cells do not count as measured coverage.
 
-Logical traffic: this run measured a plain device copy of 67108864 bytes at **1426.8 GB/s** on this device. Every record carries the logical bytes the case must move per operation and the ratio of the case's implied rate to that copy rate, in the sampling table below. Logical bytes are the declared array sizes, not device DRAM traffic: a case whose operands stay in cache moves less DRAM than its arrays suggest, so a ratio above 1 is recorded, not rejected.
+Logical traffic: this run measured a plain device copy of 67108864 bytes at **1412.2 GB/s** on this device. Every record carries the logical bytes the case must move per operation and the ratio of the case's implied rate to that copy rate, in the sampling table below. Logical bytes are the declared array sizes, not device DRAM traffic: a case whose operands stay in cache moves less DRAM than its arrays suggest, so a ratio above 1 is recorded, not rejected.
 
-Raw run: `data/results/nvidia-gpu/gpu/isolated_ops/20261117_091552/`.
+Raw run: `data/results/nvidia-gpu/gpu/isolated_ops/20261121_082311/`.
 
 Isolated public APIs and explicit unsupported timing contracts. Issue 155.
 
@@ -12,7 +12,7 @@ This run did not compile: no NVRTC module was built in any of its arms. That des
 
 Values are median (IQR) **µs per operation**. Samples time batches of declared operations plus device synchronization; retained output memory is limited to 256 MiB. Batch counts and raw durations are preserved in JSONL.
 
-Cases marked † (**13** of 33) were sampled with a different number of operations per sample on different arms (see Ops/sample in the sampling table). Each value is still per operation, but the arms amortise launch and synchronization over different batch sizes, so a ratio between their columns is approximate and is not presented as a like-for-like comparison.
+Cases marked † (**9** of 33) were sampled with a different number of operations per sample on different arms (see Ops/sample in the sampling table). Each value is still per operation, but the arms amortise launch and synchronization over different batch sizes, so a ratio between their columns is approximate and is not presented as a like-for-like comparison.
 
 Setup, input transfers, library/plan initialization, JIT compilation, validation downloads and output destruction are outside timing. Intrinsic output allocation is inside timing; output-reuse rows instead use preallocated destinations across samples. Accumulating destinations are restored from prepared GPU seeds and synchronized before every batch clock, including initialization and calibration. Direct and eager each use one entered session across samples; direct FFT uses cached `FftExecutor`. JAX eager and compiled JIT are separate arms.
 
@@ -20,176 +20,176 @@ All measured output elements are checked against independently generated NumPy/S
 
 | Case | tenferro-cuda-direct | tenferro-cuda-eager | pytorch-cuda | jax-cuda |
 | --- | ---: | ---: | ---: | ---: |
-| add_f64_n1048576 † | 31.955 (7.785) | 91.187 (28.785) | 12.093 (0.109) | 63.472 (3.703) |
-| sub_f64_n1048576 | 27.852 (4.196) | 93.088 (16.769) | 12.193 (2.183) | 66.078 (6.996) |
-| mul_f64_n1048576 | 27.936 (4.216) | 103.235 (19.488) | 12.375 (2.386) | 65.595 (3.375) |
-| div_f64_n1048576 | 31.137 (4.590) | 98.701 (18.643) | 13.224 (0.326) | 64.421 (2.342) |
-| rem_f64_n1048576 † | 66.872 (8.010) | 136.567 (8.884) | 12.221 (2.503) | 63.607 (3.077) |
-| pow_f64_n1048576 | 64.938 (7.186) | 127.348 (9.210) | 36.459 (1.446) | 69.065 (1.958) |
-| maximum_f64_n1048576 | 50.025 (15.764) | 120.583 (15.043) | 12.077 (0.112) | 76.860 (9.464) |
-| minimum_f64_n1048576 | 47.628 (6.858) | 116.421 (7.690) | 12.183 (2.083) | 69.874 (4.715) |
-| neg_f64_n1048576 | 25.155 (1.821) | 56.459 (10.572) | 10.513 (3.388) | 66.616 (1.623) |
-| abs_f64_n1048576 | 25.221 (3.883) | 57.977 (3.258) | 9.720 (0.840) | 62.576 (5.812) |
-| sign_f64_n1048576 | 25.308 (2.785) | 63.896 (10.561) | 9.562 (0.031) | 56.811 (3.526) |
-| conj_c64_n1048576 | 39.847 (10.239) | 83.534 (15.329) | 25.254 (0.313) | 65.336 (61.342) |
-| exp_f64_n1048576 | 26.884 (7.393) | 60.976 (11.052) | 12.226 (3.108) | 51.432 (4.510) |
-| expm1_f64_n1048576 | 27.455 (8.902) | 63.674 (7.829) | 12.084 (2.515) | 55.350 (4.844) |
-| log_f64_n1048576 | 30.065 (7.932) | 66.182 (2.934) | 15.411 (0.123) | 53.724 (2.627) |
-| log1p_f64_n1048576 | 33.786 (7.744) | 69.513 (10.973) | 16.203 (0.831) | 57.657 (1.080) |
-| erf_f64_n1048576 | 36.337 (3.390) | 71.293 (13.931) | 17.757 (1.886) | 79.066 (3.015) |
-| sin_f64_n1048576 | 31.927 (8.990) | 65.313 (12.657) | 13.838 (2.235) | 57.252 (5.656) |
-| cos_f64_n1048576 | 28.105 (0.237) | 65.418 (9.158) | 13.774 (0.062) | 58.131 (2.783) |
-| tanh_f64_n1048576 † | 29.898 (3.235) | 60.979 (12.452) | 10.013 (0.035) | 63.230 (10.412) |
-| sqrt_f64_n1048576 | 25.573 (4.607) | 62.185 (7.417) | 9.636 (0.086) | 61.123 (2.209) |
-| rsqrt_f64_n1048576 † | 26.128 (1.767) | 61.920 (5.739) | 9.721 (0.647) | 96.380 (4.659) |
-| compare_f64_n1048576 † | 26.393 (2.363) | 104.692 (17.042) | 8.734 (0.271) | 64.023 (2.201) |
-| where_select_f64_n1048576 † | 30.227 (5.563) | 138.661 (14.798) | 14.286 (1.299) | 68.970 (7.459) |
-| clamp_f64_n1048576 † | 89.577 (22.855) | 179.424 (24.306) | 12.262 (1.225) | 61.776 (1.305) |
-| reduce_sum_f64_n1048576 † | 35.709 (2.626) | 70.374 (5.085) | 8.882 (0.204) | 64.361 (1.539) |
-| reduce_prod_f64_n1048576 † | 36.224 (2.258) | 68.751 (7.552) | 8.909 (0.022) | 64.587 (3.197) |
-| reduce_max_f64_n1048576 † | 38.149 (4.711) | 69.471 (12.433) | 8.462 (0.065) | 58.241 (1.907) |
-| reduce_min_f64_n1048576 † | 39.090 (3.786) | 70.625 (2.280) | 8.478 (0.074) | 63.159 (1.173) |
-| reduce_sum_squares_f64_n1048576 † | 38.115 (2.367) | 68.000 (5.155) | unsupported | unsupported |
-| reduce_mean_f64_n1048576 † | unsupported | unsupported | 8.214 (0.095) | 66.137 (7.391) |
-| scale_real_f64_n1048576 | unsupported | unsupported | 9.474 (0.091) | 70.908 (1.998) |
-| scale_complex_c64_n1048576 | unsupported | unsupported | 24.966 (0.800) | 66.858 (2.678) |
+| add_f64_n1048576 † | 22.965 (0.313) | 73.153 (0.742) | 12.913 (0.328) | 62.725 (1.102) |
+| sub_f64_n1048576 | 22.907 (0.184) | 73.371 (0.792) | 12.070 (0.265) | 63.923 (0.468) |
+| mul_f64_n1048576 | 22.877 (0.249) | 73.390 (1.019) | 12.380 (0.040) | 67.042 (1.294) |
+| div_f64_n1048576 | 22.749 (0.150) | 73.263 (0.614) | 13.048 (0.190) | 68.030 (11.030) |
+| rem_f64_n1048576 | 41.123 (0.229) | 94.985 (1.477) | 12.281 (0.156) | 58.822 (0.965) |
+| pow_f64_n1048576 | 43.579 (0.393) | 95.924 (0.480) | 29.308 (0.038) | 66.228 (1.222) |
+| maximum_f64_n1048576 | 29.438 (0.255) | 81.245 (0.638) | 12.304 (0.246) | 67.626 (1.489) |
+| minimum_f64_n1048576 | 29.584 (0.242) | 81.264 (0.986) | 12.350 (0.190) | 68.908 (1.424) |
+| neg_f64_n1048576 | 18.724 (0.276) | 42.223 (0.423) | 7.955 (0.069) | 65.048 (5.550) |
+| abs_f64_n1048576 | 18.804 (0.334) | 42.084 (0.303) | 7.947 (0.041) | 65.932 (1.300) |
+| sign_f64_n1048576 | 19.154 (0.309) | 42.553 (0.430) | 7.938 (0.052) | 66.460 (10.050) |
+| conj_c64_n1048576 | 34.868 (0.277) | 64.191 (0.938) | 25.241 (0.184) | 65.124 (2.476) |
+| exp_f64_n1048576 | 19.578 (0.110) | 42.589 (0.715) | 8.310 (0.050) | 66.171 (2.606) |
+| expm1_f64_n1048576 | 20.445 (0.182) | 43.832 (0.826) | 9.880 (0.178) | 66.497 (1.359) |
+| log_f64_n1048576 | 22.350 (0.203) | 46.462 (0.675) | 12.666 (0.097) | 67.078 (2.795) |
+| log1p_f64_n1048576 | 22.302 (0.500) | 46.301 (0.443) | 13.094 (0.047) | 65.683 (2.015) |
+| erf_f64_n1048576 | 25.152 (0.135) | 48.446 (0.582) | 14.493 (0.030) | 84.984 (5.856) |
+| sin_f64_n1048576 | 21.476 (0.188) | 44.641 (0.336) | 11.274 (0.030) | 64.523 (1.717) |
+| cos_f64_n1048576 | 22.853 (1.370) | 45.116 (0.744) | 11.340 (0.052) | 52.338 (1.923) |
+| tanh_f64_n1048576 | 20.899 (0.483) | 42.289 (0.651) | 8.234 (0.045) | 53.754 (0.880) |
+| sqrt_f64_n1048576 | 20.040 (0.187) | 42.320 (0.375) | 8.008 (0.050) | 57.104 (0.905) |
+| rsqrt_f64_n1048576 | 19.764 (0.197) | 41.904 (0.512) | 7.967 (0.042) | 77.907 (0.992) |
+| compare_f64_n1048576 † | 18.681 (0.172) | 69.387 (0.585) | 7.443 (0.089) | 58.673 (7.847) |
+| where_select_f64_n1048576 | 24.567 (0.135) | 97.957 (0.496) | 14.248 (0.105) | 75.534 (1.240) |
+| clamp_f64_n1048576 † | 68.104 (0.116) | 124.807 (1.368) | 10.342 (0.047) | 58.991 (3.556) |
+| reduce_sum_f64_n1048576 † | 25.777 (0.135) | 48.309 (0.458) | 7.191 (0.011) | 126.829 (1.568) |
+| reduce_prod_f64_n1048576 † | 26.739 (1.379) | 48.743 (1.605) | 7.275 (0.007) | 127.337 (2.312) |
+| reduce_max_f64_n1048576 † | 26.624 (0.080) | 49.366 (0.604) | 7.328 (0.009) | 127.742 (2.186) |
+| reduce_min_f64_n1048576 † | 27.474 (1.066) | 49.610 (0.989) | 7.348 (0.006) | 122.902 (8.448) |
+| reduce_sum_squares_f64_n1048576 † | 25.552 (0.263) | 48.767 (0.417) | unsupported | unsupported |
+| reduce_mean_f64_n1048576 † | unsupported | unsupported | 7.145 (0.004) | 130.147 (30.493) |
+| scale_real_f64_n1048576 | unsupported | unsupported | 9.584 (0.059) | 75.133 (5.550) |
+| scale_complex_c64_n1048576 | unsupported | unsupported | 25.656 (0.070) | 77.029 (2.990) |
 
 ## Sampling
 
 | Case | Backend | Ops/sample | Samples | Median batch ms | Bytes/op | Copy ratio | Verification error/tolerance |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| abs_f64_n1048576 | jax-cuda | 32 | 15 | 2.002 | 16777216 | 0.188 | 0 |
-| abs_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.311 | 16777216 | 1.210 | 0 |
-| abs_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.807 | 16777216 | 0.466 | 0 |
-| abs_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 1.855 | 16777216 | 0.203 | 0 |
-| add_f64_n1048576 | jax-cuda | 32 | 15 | 2.031 | 25165824 | 0.278 | 0 |
-| add_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.387 | 25165824 | 1.459 | 0 |
-| add_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.023 | 25165824 | 0.552 | 0 |
-| add_f64_n1048576 | tenferro-cuda-eager | 16 | 15 | 1.459 | 25165824 | 0.193 | 0 |
-| clamp_f64_n1048576 | jax-cuda | 32 | 15 | 1.977 | 16777232 | 0.190 | 0 |
-| clamp_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.392 | 16777232 | 0.959 | 0 |
-| clamp_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.866 | 16777232 | 0.131 | 0 |
-| clamp_f64_n1048576 | tenferro-cuda-eager | 16 | 15 | 2.871 | 16777232 | 0.066 | 0 |
-| compare_f64_n1048576 | jax-cuda | 32 | 15 | 2.049 | 17825792 | 0.195 | 0 |
-| compare_f64_n1048576 | pytorch-cuda | 64 | 15 | 0.559 | 17825792 | 1.430 | 0 |
-| compare_f64_n1048576 | tenferro-cuda-direct | 128 | 15 | 3.378 | 17825792 | 0.473 | 0 |
-| compare_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 3.350 | 17825792 | 0.119 | 0 |
-| conj_c64_n1048576 | jax-cuda | 16 | 15 | 1.045 | 33554432 | 0.360 | 0 |
-| conj_c64_n1048576 | pytorch-cuda | 16 | 15 | 0.404 | 33554432 | 0.931 | 0 |
-| conj_c64_n1048576 | tenferro-cuda-direct | 16 | 15 | 0.638 | 33554432 | 0.590 | 0 |
-| conj_c64_n1048576 | tenferro-cuda-eager | 16 | 15 | 1.337 | 33554432 | 0.282 | 0 |
-| cos_f64_n1048576 | jax-cuda | 32 | 15 | 1.860 | 16777216 | 0.202 | 5.905e-08 |
-| cos_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.441 | 16777216 | 0.854 | 5.905e-08 |
-| cos_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.899 | 16777216 | 0.418 | 5.905e-08 |
-| cos_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 2.093 | 16777216 | 0.180 | 5.905e-08 |
-| div_f64_n1048576 | jax-cuda | 32 | 15 | 2.061 | 25165824 | 0.274 | 0 |
-| div_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.423 | 25165824 | 1.334 | 0 |
-| div_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.996 | 25165824 | 0.566 | 0 |
-| div_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 3.158 | 25165824 | 0.179 | 0 |
-| erf_f64_n1048576 | jax-cuda | 32 | 15 | 2.530 | 16777216 | 0.149 | 8.536e-08 |
-| erf_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.568 | 16777216 | 0.662 | 8.536e-08 |
-| erf_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.163 | 16777216 | 0.324 | 8.536e-08 |
-| erf_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 2.281 | 16777216 | 0.165 | 8.536e-08 |
-| exp_f64_n1048576 | jax-cuda | 32 | 15 | 1.646 | 16777216 | 0.229 | 1.095e-07 |
-| exp_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.391 | 16777216 | 0.962 | 1.095e-07 |
-| exp_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.860 | 16777216 | 0.437 | 1.095e-07 |
-| exp_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 1.951 | 16777216 | 0.193 | 1.095e-07 |
-| expm1_f64_n1048576 | jax-cuda | 32 | 15 | 1.771 | 16777216 | 0.212 | 7.39e-08 |
-| expm1_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.387 | 16777216 | 0.973 | 7.39e-08 |
-| expm1_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.879 | 16777216 | 0.428 | 7.39e-08 |
-| expm1_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 2.038 | 16777216 | 0.185 | 7.39e-08 |
-| log1p_f64_n1048576 | jax-cuda | 32 | 15 | 1.845 | 16777216 | 0.204 | 1.11e-07 |
-| log1p_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.518 | 16777216 | 0.726 | 1.11e-07 |
-| log1p_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.081 | 16777216 | 0.348 | 1.11e-07 |
-| log1p_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 2.224 | 16777216 | 0.169 | 1.11e-07 |
-| log_f64_n1048576 | jax-cuda | 32 | 15 | 1.719 | 16777216 | 0.219 | 4.308e-08 |
-| log_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.493 | 16777216 | 0.763 | 4.308e-08 |
-| log_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.962 | 16777216 | 0.391 | 4.308e-08 |
-| log_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 2.118 | 16777216 | 0.178 | 4.308e-08 |
-| maximum_f64_n1048576 | jax-cuda | 32 | 15 | 2.460 | 25165824 | 0.229 | 0 |
-| maximum_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.386 | 25165824 | 1.460 | 0 |
-| maximum_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.601 | 25165824 | 0.353 | 0 |
-| maximum_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 3.859 | 25165824 | 0.146 | 0 |
-| minimum_f64_n1048576 | jax-cuda | 32 | 15 | 2.236 | 25165824 | 0.252 | 0 |
-| minimum_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.390 | 25165824 | 1.448 | 0 |
-| minimum_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.524 | 25165824 | 0.370 | 0 |
-| minimum_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 3.725 | 25165824 | 0.152 | 0 |
-| mul_f64_n1048576 | jax-cuda | 32 | 15 | 2.099 | 25165824 | 0.269 | 0 |
-| mul_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.396 | 25165824 | 1.425 | 0 |
-| mul_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.894 | 25165824 | 0.631 | 0 |
-| mul_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 3.304 | 25165824 | 0.171 | 0 |
-| neg_f64_n1048576 | jax-cuda | 32 | 15 | 2.132 | 16777216 | 0.177 | 0 |
-| neg_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.336 | 16777216 | 1.118 | 0 |
-| neg_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.805 | 16777216 | 0.467 | 0 |
-| neg_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 1.807 | 16777216 | 0.208 | 0 |
-| pow_f64_n1048576 | jax-cuda | 32 | 15 | 2.210 | 25165824 | 0.255 | 1.48e-07 |
-| pow_f64_n1048576 | pytorch-cuda | 32 | 15 | 1.167 | 25165824 | 0.484 | 1.48e-07 |
-| pow_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.078 | 25165824 | 0.272 | 1.48e-07 |
-| pow_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 4.075 | 25165824 | 0.139 | 1.48e-07 |
-| reduce_max_f64_n1048576 | jax-cuda | 32 | 15 | 1.864 | 8396800 | 0.101 | 0 |
-| reduce_max_f64_n1048576 | pytorch-cuda | 256 | 15 | 2.166 | 8396800 | 0.695 | 0 |
-| reduce_max_f64_n1048576 | tenferro-cuda-direct | 64 | 15 | 2.442 | 8396800 | 0.154 | 0 |
-| reduce_max_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 2.223 | 8396800 | 0.085 | 0 |
-| reduce_mean_f64_n1048576 | jax-cuda | 32 | 15 | 2.116 | 8396800 | 0.089 | 6.5e-09 |
-| reduce_mean_f64_n1048576 | pytorch-cuda | 256 | 15 | 2.103 | 8396800 | 0.716 | 3.9e-09 |
+| abs_f64_n1048576 | jax-cuda | 32 | 15 | 2.110 | 16777216 | 0.180 | 0 |
+| abs_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.254 | 16777216 | 1.495 | 0 |
+| abs_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.602 | 16777216 | 0.632 | 0 |
+| abs_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 1.347 | 16777216 | 0.282 | 0 |
+| add_f64_n1048576 | jax-cuda | 32 | 15 | 2.007 | 25165824 | 0.284 | 0 |
+| add_f64_n1048576 | pytorch-cuda | 8 | 15 | 0.103 | 25165824 | 1.380 | 0 |
+| add_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.735 | 25165824 | 0.776 | 0 |
+| add_f64_n1048576 | tenferro-cuda-eager | 16 | 15 | 1.170 | 25165824 | 0.244 | 0 |
+| clamp_f64_n1048576 | jax-cuda | 32 | 15 | 1.888 | 16777232 | 0.201 | 0 |
+| clamp_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.331 | 16777232 | 1.149 | 0 |
+| clamp_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.179 | 16777232 | 0.174 | 0 |
+| clamp_f64_n1048576 | tenferro-cuda-eager | 16 | 15 | 1.997 | 16777232 | 0.095 | 0 |
+| compare_f64_n1048576 | jax-cuda | 64 | 15 | 3.755 | 17825792 | 0.215 | 0 |
+| compare_f64_n1048576 | pytorch-cuda | 16 | 15 | 0.119 | 17825792 | 1.696 | 0 |
+| compare_f64_n1048576 | tenferro-cuda-direct | 128 | 15 | 2.391 | 17825792 | 0.676 | 0 |
+| compare_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 2.220 | 17825792 | 0.182 | 0 |
+| conj_c64_n1048576 | jax-cuda | 16 | 15 | 1.042 | 33554432 | 0.365 | 0 |
+| conj_c64_n1048576 | pytorch-cuda | 16 | 15 | 0.404 | 33554432 | 0.941 | 0 |
+| conj_c64_n1048576 | tenferro-cuda-direct | 16 | 15 | 0.558 | 33554432 | 0.681 | 0 |
+| conj_c64_n1048576 | tenferro-cuda-eager | 16 | 15 | 1.027 | 33554432 | 0.370 | 0 |
+| cos_f64_n1048576 | jax-cuda | 32 | 15 | 1.675 | 16777216 | 0.227 | 5.905e-08 |
+| cos_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.363 | 16777216 | 1.048 | 5.905e-08 |
+| cos_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.731 | 16777216 | 0.520 | 5.905e-08 |
+| cos_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 1.444 | 16777216 | 0.263 | 5.905e-08 |
+| div_f64_n1048576 | jax-cuda | 32 | 15 | 2.177 | 25165824 | 0.262 | 0 |
+| div_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.418 | 25165824 | 1.366 | 0 |
+| div_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.728 | 25165824 | 0.783 | 0 |
+| div_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 2.344 | 25165824 | 0.243 | 0 |
+| erf_f64_n1048576 | jax-cuda | 32 | 15 | 2.719 | 16777216 | 0.140 | 8.536e-08 |
+| erf_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.464 | 16777216 | 0.820 | 8.536e-08 |
+| erf_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.805 | 16777216 | 0.472 | 8.536e-08 |
+| erf_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 1.550 | 16777216 | 0.245 | 8.536e-08 |
+| exp_f64_n1048576 | jax-cuda | 32 | 15 | 2.117 | 16777216 | 0.180 | 1.095e-07 |
+| exp_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.266 | 16777216 | 1.430 | 1.095e-07 |
+| exp_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.626 | 16777216 | 0.607 | 1.095e-07 |
+| exp_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 1.363 | 16777216 | 0.279 | 1.095e-07 |
+| expm1_f64_n1048576 | jax-cuda | 32 | 15 | 2.128 | 16777216 | 0.179 | 7.39e-08 |
+| expm1_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.316 | 16777216 | 1.202 | 7.39e-08 |
+| expm1_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.654 | 16777216 | 0.581 | 7.39e-08 |
+| expm1_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 1.403 | 16777216 | 0.271 | 7.39e-08 |
+| log1p_f64_n1048576 | jax-cuda | 32 | 15 | 2.102 | 16777216 | 0.181 | 1.11e-07 |
+| log1p_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.419 | 16777216 | 0.907 | 1.11e-07 |
+| log1p_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.714 | 16777216 | 0.533 | 1.11e-07 |
+| log1p_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 1.482 | 16777216 | 0.257 | 1.11e-07 |
+| log_f64_n1048576 | jax-cuda | 32 | 15 | 2.147 | 16777216 | 0.177 | 4.308e-08 |
+| log_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.405 | 16777216 | 0.938 | 4.308e-08 |
+| log_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.715 | 16777216 | 0.532 | 4.308e-08 |
+| log_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 1.487 | 16777216 | 0.256 | 4.308e-08 |
+| maximum_f64_n1048576 | jax-cuda | 32 | 15 | 2.164 | 25165824 | 0.264 | 0 |
+| maximum_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.394 | 25165824 | 1.448 | 0 |
+| maximum_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.942 | 25165824 | 0.605 | 0 |
+| maximum_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 2.600 | 25165824 | 0.219 | 0 |
+| minimum_f64_n1048576 | jax-cuda | 32 | 15 | 2.205 | 25165824 | 0.259 | 0 |
+| minimum_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.395 | 25165824 | 1.443 | 0 |
+| minimum_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.947 | 25165824 | 0.602 | 0 |
+| minimum_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 2.600 | 25165824 | 0.219 | 0 |
+| mul_f64_n1048576 | jax-cuda | 32 | 15 | 2.145 | 25165824 | 0.266 | 0 |
+| mul_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.396 | 25165824 | 1.439 | 0 |
+| mul_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.732 | 25165824 | 0.779 | 0 |
+| mul_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 2.348 | 25165824 | 0.243 | 0 |
+| neg_f64_n1048576 | jax-cuda | 32 | 15 | 2.082 | 16777216 | 0.183 | 0 |
+| neg_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.255 | 16777216 | 1.493 | 0 |
+| neg_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.599 | 16777216 | 0.635 | 0 |
+| neg_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 1.351 | 16777216 | 0.281 | 0 |
+| pow_f64_n1048576 | jax-cuda | 32 | 15 | 2.119 | 25165824 | 0.269 | 1.48e-07 |
+| pow_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.938 | 25165824 | 0.608 | 1.48e-07 |
+| pow_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.395 | 25165824 | 0.409 | 1.48e-07 |
+| pow_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 3.070 | 25165824 | 0.186 | 1.48e-07 |
+| reduce_max_f64_n1048576 | jax-cuda | 16 | 15 | 2.044 | 8396800 | 0.047 | 0 |
+| reduce_max_f64_n1048576 | pytorch-cuda | 512 | 15 | 3.752 | 8396800 | 0.811 | 0 |
+| reduce_max_f64_n1048576 | tenferro-cuda-direct | 128 | 15 | 3.408 | 8396800 | 0.223 | 0 |
+| reduce_max_f64_n1048576 | tenferro-cuda-eager | 64 | 15 | 3.159 | 8396800 | 0.120 | 0 |
+| reduce_mean_f64_n1048576 | jax-cuda | 16 | 15 | 2.082 | 8396800 | 0.046 | 6.5e-09 |
+| reduce_mean_f64_n1048576 | pytorch-cuda | 512 | 15 | 3.658 | 8396800 | 0.832 | 3.9e-09 |
 | reduce_mean_f64_n1048576 | tenferro-cuda-direct | — | — | — | 8396800 | unavailable | CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer. |
 | reduce_mean_f64_n1048576 | tenferro-cuda-eager | — | — | — | 8396800 | unavailable | CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer. |
-| reduce_min_f64_n1048576 | jax-cuda | 32 | 15 | 2.021 | 8396800 | 0.093 | 0 |
-| reduce_min_f64_n1048576 | pytorch-cuda | 256 | 15 | 2.170 | 8396800 | 0.694 | 0 |
-| reduce_min_f64_n1048576 | tenferro-cuda-direct | 64 | 15 | 2.502 | 8396800 | 0.151 | 0 |
-| reduce_min_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 2.260 | 8396800 | 0.083 | 0 |
-| reduce_prod_f64_n1048576 | jax-cuda | 32 | 15 | 2.067 | 8396800 | 0.091 | 4.436e-06 |
-| reduce_prod_f64_n1048576 | pytorch-cuda | 256 | 15 | 2.281 | 8396800 | 0.661 | 4.216e-06 |
-| reduce_prod_f64_n1048576 | tenferro-cuda-direct | 64 | 15 | 2.318 | 8396800 | 0.162 | 4.438e-06 |
-| reduce_prod_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 2.200 | 8396800 | 0.086 | 4.438e-06 |
-| reduce_sum_f64_n1048576 | jax-cuda | 32 | 15 | 2.060 | 8396800 | 0.091 | 4.449e-06 |
-| reduce_sum_f64_n1048576 | pytorch-cuda | 256 | 15 | 2.274 | 8396800 | 0.663 | 2.961e-06 |
-| reduce_sum_f64_n1048576 | tenferro-cuda-direct | 64 | 15 | 2.285 | 8396800 | 0.165 | 3.305e-06 |
-| reduce_sum_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 2.252 | 8396800 | 0.084 | 3.305e-06 |
+| reduce_min_f64_n1048576 | jax-cuda | 16 | 15 | 1.966 | 8396800 | 0.048 | 0 |
+| reduce_min_f64_n1048576 | pytorch-cuda | 512 | 15 | 3.762 | 8396800 | 0.809 | 0 |
+| reduce_min_f64_n1048576 | tenferro-cuda-direct | 128 | 15 | 3.517 | 8396800 | 0.216 | 0 |
+| reduce_min_f64_n1048576 | tenferro-cuda-eager | 64 | 15 | 3.175 | 8396800 | 0.120 | 0 |
+| reduce_prod_f64_n1048576 | jax-cuda | 16 | 15 | 2.037 | 8396800 | 0.047 | 4.436e-06 |
+| reduce_prod_f64_n1048576 | pytorch-cuda | 512 | 15 | 3.725 | 8396800 | 0.817 | 4.216e-06 |
+| reduce_prod_f64_n1048576 | tenferro-cuda-direct | 128 | 15 | 3.423 | 8396800 | 0.222 | 4.438e-06 |
+| reduce_prod_f64_n1048576 | tenferro-cuda-eager | 64 | 15 | 3.120 | 8396800 | 0.122 | 4.438e-06 |
+| reduce_sum_f64_n1048576 | jax-cuda | 16 | 15 | 2.029 | 8396800 | 0.047 | 4.449e-06 |
+| reduce_sum_f64_n1048576 | pytorch-cuda | 512 | 15 | 3.682 | 8396800 | 0.827 | 2.961e-06 |
+| reduce_sum_f64_n1048576 | tenferro-cuda-direct | 128 | 15 | 3.300 | 8396800 | 0.231 | 3.305e-06 |
+| reduce_sum_f64_n1048576 | tenferro-cuda-eager | 64 | 15 | 3.092 | 8396800 | 0.123 | 3.305e-06 |
 | reduce_sum_squares_f64_n1048576 | jax-cuda | — | — | — | 8396800 | unavailable | No equivalent single axis-wise sum-of-squares API; multiplying then reducing is not used as a synthetic reference arm. |
 | reduce_sum_squares_f64_n1048576 | pytorch-cuda | — | — | — | 8396800 | unavailable | No equivalent single axis-wise sum-of-squares API; multiplying then reducing is not used as a synthetic reference arm. |
-| reduce_sum_squares_f64_n1048576 | tenferro-cuda-direct | 64 | 15 | 2.439 | 8396800 | 0.154 | 4.939e-07 |
-| reduce_sum_squares_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 2.176 | 8396800 | 0.087 | 4.939e-07 |
-| rem_f64_n1048576 | jax-cuda | 32 | 15 | 2.035 | 25165824 | 0.277 | 0 |
-| rem_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.391 | 25165824 | 1.443 | 0 |
-| rem_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.140 | 25165824 | 0.264 | 0 |
-| rem_f64_n1048576 | tenferro-cuda-eager | 16 | 15 | 2.185 | 25165824 | 0.129 | 0 |
-| rsqrt_f64_n1048576 | jax-cuda | 4 | 15 | 0.386 | 16777216 | 0.122 | 6.504e-08 |
-| rsqrt_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.311 | 16777216 | 1.210 | 6.504e-08 |
-| rsqrt_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.836 | 16777216 | 0.450 | 6.504e-08 |
-| rsqrt_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 1.981 | 16777216 | 0.190 | 6.504e-08 |
-| scale_complex_c64_n1048576 | jax-cuda | 16 | 15 | 1.070 | 33554448 | 0.352 | 4.129e-08 |
-| scale_complex_c64_n1048576 | pytorch-cuda | 16 | 15 | 0.399 | 33554448 | 0.942 | 0 |
+| reduce_sum_squares_f64_n1048576 | tenferro-cuda-direct | 128 | 15 | 3.271 | 8396800 | 0.233 | 4.939e-07 |
+| reduce_sum_squares_f64_n1048576 | tenferro-cuda-eager | 64 | 15 | 3.121 | 8396800 | 0.122 | 4.939e-07 |
+| rem_f64_n1048576 | jax-cuda | 32 | 15 | 1.882 | 25165824 | 0.303 | 0 |
+| rem_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.393 | 25165824 | 1.451 | 0 |
+| rem_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.316 | 25165824 | 0.433 | 0 |
+| rem_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 3.040 | 25165824 | 0.188 | 0 |
+| rsqrt_f64_n1048576 | jax-cuda | 32 | 15 | 2.493 | 16777216 | 0.152 | 6.504e-08 |
+| rsqrt_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.255 | 16777216 | 1.491 | 6.504e-08 |
+| rsqrt_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.632 | 16777216 | 0.601 | 6.504e-08 |
+| rsqrt_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 1.341 | 16777216 | 0.284 | 6.504e-08 |
+| scale_complex_c64_n1048576 | jax-cuda | 16 | 15 | 1.232 | 33554448 | 0.308 | 4.129e-08 |
+| scale_complex_c64_n1048576 | pytorch-cuda | 16 | 15 | 0.410 | 33554448 | 0.926 | 0 |
 | scale_complex_c64_n1048576 | tenferro-cuda-direct | — | — | — | 33554448 | unavailable | Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route. |
 | scale_complex_c64_n1048576 | tenferro-cuda-eager | — | — | — | 33554448 | unavailable | Eager scale host-placement bug fixed by upstream 917d5341. API now uploads its internal scalar through constant_from_host; no public preuploaded factor parameter. Numerical validation only; internal scalar transfer excludes standard timing. |
-| scale_real_f64_n1048576 | jax-cuda | 32 | 15 | 2.269 | 16777224 | 0.166 | 0 |
-| scale_real_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.303 | 16777224 | 1.241 | 0 |
+| scale_real_f64_n1048576 | jax-cuda | 32 | 15 | 2.404 | 16777224 | 0.158 | 0 |
+| scale_real_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.307 | 16777224 | 1.240 | 0 |
 | scale_real_f64_n1048576 | tenferro-cuda-direct | — | — | — | 16777224 | unavailable | Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route. |
 | scale_real_f64_n1048576 | tenferro-cuda-eager | — | — | — | 16777224 | unavailable | Eager scale host-placement bug fixed by upstream 917d5341. API now uploads its internal scalar through constant_from_host; no public preuploaded factor parameter. Numerical validation only; internal scalar transfer excludes standard timing. |
-| sign_f64_n1048576 | jax-cuda | 32 | 15 | 1.818 | 16777216 | 0.207 | 0 |
-| sign_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.306 | 16777216 | 1.230 | 0 |
-| sign_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.810 | 16777216 | 0.465 | 0 |
-| sign_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 2.045 | 16777216 | 0.184 | 0 |
-| sin_f64_n1048576 | jax-cuda | 32 | 15 | 1.832 | 16777216 | 0.205 | 4.153e-08 |
-| sin_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.443 | 16777216 | 0.850 | 4.153e-08 |
-| sin_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.022 | 16777216 | 0.368 | 4.153e-08 |
-| sin_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 2.090 | 16777216 | 0.180 | 4.153e-08 |
-| sqrt_f64_n1048576 | jax-cuda | 32 | 15 | 1.956 | 16777216 | 0.192 | 0 |
-| sqrt_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.308 | 16777216 | 1.220 | 0 |
-| sqrt_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.818 | 16777216 | 0.460 | 0 |
-| sqrt_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 1.990 | 16777216 | 0.189 | 0 |
-| sub_f64_n1048576 | jax-cuda | 32 | 15 | 2.114 | 25165824 | 0.267 | 0 |
-| sub_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.390 | 25165824 | 1.447 | 0 |
-| sub_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.891 | 25165824 | 0.633 | 0 |
-| sub_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 2.979 | 25165824 | 0.189 | 0 |
-| tanh_f64_n1048576 | jax-cuda | 16 | 15 | 1.012 | 16777216 | 0.186 | 4.437e-08 |
-| tanh_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.320 | 16777216 | 1.174 | 4.437e-08 |
-| tanh_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.957 | 16777216 | 0.393 | 4.437e-08 |
-| tanh_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 1.951 | 16777216 | 0.193 | 4.437e-08 |
-| where_select_f64_n1048576 | jax-cuda | 32 | 15 | 2.207 | 26214400 | 0.266 | 0 |
-| where_select_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.457 | 26214400 | 1.286 | 0 |
-| where_select_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.967 | 26214400 | 0.608 | 0 |
-| where_select_f64_n1048576 | tenferro-cuda-eager | 16 | 15 | 2.219 | 26214400 | 0.133 | 0 |
+| sign_f64_n1048576 | jax-cuda | 32 | 15 | 2.127 | 16777216 | 0.179 | 0 |
+| sign_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.254 | 16777216 | 1.497 | 0 |
+| sign_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.613 | 16777216 | 0.620 | 0 |
+| sign_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 1.362 | 16777216 | 0.279 | 0 |
+| sin_f64_n1048576 | jax-cuda | 32 | 15 | 2.065 | 16777216 | 0.184 | 4.153e-08 |
+| sin_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.361 | 16777216 | 1.054 | 4.153e-08 |
+| sin_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.687 | 16777216 | 0.553 | 4.153e-08 |
+| sin_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 1.429 | 16777216 | 0.266 | 4.153e-08 |
+| sqrt_f64_n1048576 | jax-cuda | 32 | 15 | 1.827 | 16777216 | 0.208 | 0 |
+| sqrt_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.256 | 16777216 | 1.483 | 0 |
+| sqrt_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.641 | 16777216 | 0.593 | 0 |
+| sqrt_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 1.354 | 16777216 | 0.281 | 0 |
+| sub_f64_n1048576 | jax-cuda | 32 | 15 | 2.046 | 25165824 | 0.279 | 0 |
+| sub_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.386 | 25165824 | 1.476 | 0 |
+| sub_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.733 | 25165824 | 0.778 | 0 |
+| sub_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 2.348 | 25165824 | 0.243 | 0 |
+| tanh_f64_n1048576 | jax-cuda | 32 | 15 | 1.720 | 16777216 | 0.221 | 4.437e-08 |
+| tanh_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.263 | 16777216 | 1.443 | 4.437e-08 |
+| tanh_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.669 | 16777216 | 0.568 | 4.437e-08 |
+| tanh_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 1.353 | 16777216 | 0.281 | 4.437e-08 |
+| where_select_f64_n1048576 | jax-cuda | 32 | 15 | 2.417 | 26214400 | 0.246 | 0 |
+| where_select_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.456 | 26214400 | 1.303 | 0 |
+| where_select_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.786 | 26214400 | 0.756 | 0 |
+| where_select_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 3.135 | 26214400 | 0.189 | 0 |
 
 ## Run metadata
 
@@ -197,8 +197,8 @@ All measured output elements are checked against independently generated NumPy/S
 schema_version: 1
 target_profile: nvidia-gpu
 suite_id: gpu/isolated_ops
-suite_file: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261117_091552/gpu_isolated_ops.yaml
-timestamp: '2026-11-17T09:15:52+00:00'
+suite_file: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261121_082311/gpu_isolated_ops.yaml
+timestamp: '2026-11-21T08:23:11+00:00'
 tenferro_rs:
   path: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/extern/tenferro-rs
   commit: ce9125d0cff4ee40841120759b5df45252c27f22
@@ -208,7 +208,7 @@ tenferro_rs:
   resolved_path: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/extern/tenferro-rs
 harness:
   path: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark
-  commit: 2e63ea288fb120038b7a88288485bf2cb7e76866
+  commit: a741cd656e4d51e77d8369154bf789e5f0147f5c
   dirty: false
 resolved_deps:
   strided-perm:
@@ -220,166 +220,102 @@ resolved_deps:
   - 0.1.0
   - 0.5.1
 host:
-  cpu: AMD EPYC 7713 64-Core Processor
+  cpu: AMD EPYC 7543 32-Core Processor
   logical_cpus: 128
   power:
     cpufreq_boost: '1'
     governor: schedutil
-    scaling_max_freq_khz: '2000000'
+    scaling_max_freq_khz: '2800000'
     smt:
-      active: '0'
-      control: notsupported
+      active: '1'
+      control: 'on'
   numa:
     nodes: 2
     cpulists:
-      '0': 0-63
-      '1': 64-127
+      '0': 0-31,64-95
+      '1': 32-63,96-127
   smt_siblings:
-  - '0'
-  - '1'
-  - '2'
-  - '3'
-  - '4'
-  - '5'
-  - '6'
-  - '7'
-  - '8'
-  - '9'
-  - '10'
-  - '11'
-  - '12'
-  - '13'
-  - '14'
-  - '15'
-  - '16'
-  - '17'
-  - '18'
-  - '19'
-  - '20'
-  - '21'
-  - '22'
-  - '23'
-  - '24'
-  - '25'
-  - '26'
-  - '27'
-  - '28'
-  - '29'
-  - '30'
-  - '31'
-  - '32'
-  - '33'
-  - '34'
-  - '35'
-  - '36'
-  - '37'
-  - '38'
-  - '39'
-  - '40'
-  - '41'
-  - '42'
-  - '43'
-  - '44'
-  - '45'
-  - '46'
-  - '47'
-  - '48'
-  - '49'
-  - '50'
-  - '51'
-  - '52'
-  - '53'
-  - '54'
-  - '55'
-  - '56'
-  - '57'
-  - '58'
-  - '59'
-  - '60'
-  - '61'
-  - '62'
-  - '63'
-  - '64'
-  - '65'
-  - '66'
-  - '67'
-  - '68'
-  - '69'
-  - '70'
-  - '71'
-  - '72'
-  - '73'
-  - '74'
-  - '75'
-  - '76'
-  - '77'
-  - '78'
-  - '79'
-  - '80'
-  - '81'
-  - '82'
-  - '83'
-  - '84'
-  - '85'
-  - '86'
-  - '87'
-  - '88'
-  - '89'
-  - '90'
-  - '91'
-  - '92'
-  - '93'
-  - '94'
-  - '95'
-  - '96'
-  - '97'
-  - '98'
-  - '99'
-  - '100'
-  - '101'
-  - '102'
-  - '103'
-  - '104'
-  - '105'
-  - '106'
-  - '107'
-  - '108'
-  - '109'
-  - '110'
-  - '111'
-  - '112'
-  - '113'
-  - '114'
-  - '115'
-  - '116'
-  - '117'
-  - '118'
-  - '119'
-  - '120'
-  - '121'
-  - '122'
-  - '123'
-  - '124'
-  - '125'
-  - '126'
-  - '127'
+  - 0,64
+  - 1,65
+  - 2,66
+  - 3,67
+  - 4,68
+  - 5,69
+  - 6,70
+  - 7,71
+  - 8,72
+  - 9,73
+  - 10,74
+  - 11,75
+  - 12,76
+  - 13,77
+  - 14,78
+  - 15,79
+  - 16,80
+  - 17,81
+  - 18,82
+  - 19,83
+  - 20,84
+  - 21,85
+  - 22,86
+  - 23,87
+  - 24,88
+  - 25,89
+  - 26,90
+  - 27,91
+  - 28,92
+  - 29,93
+  - 30,94
+  - 31,95
+  - 32,96
+  - 33,97
+  - 34,98
+  - 35,99
+  - 36,100
+  - 37,101
+  - 38,102
+  - 39,103
+  - 40,104
+  - 41,105
+  - 42,106
+  - 43,107
+  - 44,108
+  - 45,109
+  - 46,110
+  - 47,111
+  - 48,112
+  - 49,113
+  - 50,114
+  - 51,115
+  - 52,116
+  - 53,117
+  - 54,118
+  - 55,119
+  - 56,120
+  - 57,121
+  - 58,122
+  - 59,123
+  - 60,124
+  - 61,125
+  - 62,126
+  - 63,127
   l3_domains:
-  - 0-7
-  - 8-15
-  - 16-23
-  - 24-31
-  - 32-39
-  - 40-47
-  - 48-55
-  - 56-63
-  - 64-71
-  - 72-79
-  - 80-87
-  - 88-95
-  - 96-103
-  - 104-111
-  - 112-119
-  - 120-127
+  - 0-3,64-67
+  - 4-7,68-71
+  - 8-11,72-75
+  - 12-15,76-79
+  - 16-19,80-83
+  - 20-23,84-87
+  - 24-27,88-91
+  - 28-31,92-95
+  - 32-35,96-99
+  - 36-39,100-103
+  - 40-43,104-107
+  - 44-47,108-111
+  - 48-51,112-115
+  - 52-55,116-119
+  - 56-59,120-123
+  - 60-63,124-127
 build:
   toolchain:
     rustc: null
@@ -388,8 +324,8 @@ build:
     target_cpu: null
 environment:
   container: devcontainer
-  hostname: b8e17af19547
-  os: Linux-6.8.0-147-generic-x86_64-with-glibc2.39
+  hostname: 7894e3c40841
+  os: Linux-6.8.0-138-generic-x86_64-with-glibc2.39
   arch: x86_64
   cpu: x86_64
   affinity:
@@ -400,22 +336,22 @@ environment:
     thread_budget: '1'
     measured_cpus: 0-127
     l3_domains:
-    - 0-7
-    - 8-15
-    - 16-23
-    - 24-31
-    - 32-39
-    - 40-47
-    - 48-55
-    - 56-63
-    - 64-71
-    - 72-79
-    - 80-87
-    - 88-95
-    - 96-103
-    - 104-111
-    - 112-119
-    - 120-127
+    - 0-3,64-67
+    - 4-7,68-71
+    - 8-11,72-75
+    - 12-15,76-79
+    - 16-19,80-83
+    - 20-23,84-87
+    - 24-27,88-91
+    - 28-31,92-95
+    - 32-35,96-99
+    - 36-39,100-103
+    - 40-43,104-107
+    - 44-47,108-111
+    - 48-51,112-115
+    - 52-55,116-119
+    - 56-59,120-123
+    - 60-63,124-127
     cpu_boost: enabled
     scaling_governor: schedutil
     scaling_driver: acpi-cpufreq
@@ -428,7 +364,7 @@ environment:
     CUDA_HOME: /opt/tenferro-benchmark-ci/cuda
     CUDA_PATH: /opt/tenferro-benchmark-ci/cuda
     TENFERRO_CUTENSOR_PATH: /opt/tenferro-benchmark-ci/cutensor/lib/libcutensor.so.2
-    GPU_RUNTIME_SHA256: f876805d95374305db5787a72cee40a6848d0fc64ee71d7b306c264971c36869
+    GPU_RUNTIME_SHA256: 3d603f753ad72a63b928ce8e1b63847b8a21f94f0919276124993a6548126185
     UV_PROJECT_ENVIRONMENT: /opt/tenferro-benchmark-ci/venv
     BENCH_RUNS: '15'
     BENCH_WARMUPS: '3'
@@ -494,10 +430,10 @@ julia:
   reason: julia not found on PATH
 cuda:
   device_ordinal: 0
-  device_name: NVIDIA A100-SXM4-80GB
-  device_uuid: GPU-704abe6c-29a2-539e-7ccd-01f9de4eed3b
+  device_name: NVIDIA A100 80GB PCIe
+  device_uuid: GPU-98d8618e-77c8-160a-92f2-117e34fd43df
   device_memory_bytes: 85899345920
-  driver_version: 595.91.07
+  driver_version: 595.112.07
   runtime_version: '12.8'
   cuda_version: '13.2'
   toolkit_version: null
@@ -513,37 +449,37 @@ gpu_memory_calibration:
   method: torch.Tensor.copy_ between two contiguous device buffers, one copy per sample,
     device synchronized before and after the clock
   device_ordinal: 0
-  device_name: NVIDIA A100-SXM4-80GB
+  device_name: NVIDIA A100 80GB PCIe
   buffer_bytes: 67108864
   traffic_bytes_per_copy: 134217728
   traffic_model: one read plus one write of buffer_bytes per copy
   warmups: 3
   sample_ms:
-  - 0.11819
-  - 0.09682
-  - 0.09527
-  - 0.091259
-  - 0.0933
-  - 0.09448
-  - 0.09514
-  - 0.09167
-  - 0.09503
-  - 0.094499
-  - 0.09345
-  - 0.09282
-  - 0.09372
-  - 0.09348
-  - 0.09407
-  median_ms: 0.09407
-  bytes_per_second: 1426785670245.5618
+  - 0.093701
+  - 0.093641
+  - 0.095661
+  - 0.09642
+  - 0.09259
+  - 0.095541
+  - 0.094881
+  - 0.094611
+  - 0.095651
+  - 0.095041
+  - 0.093701
+  - 0.093681
+  - 0.096531
+  - 0.09567
+  - 0.095751
+  median_ms: 0.095041
+  bytes_per_second: 1412208709925.1902
   torch_version: 2.11.0+cu128
   cuda_version: '12.8'
-  timestamp: '2026-11-17T09:38:20.901987+00:00'
+  timestamp: '2026-11-21T08:35:21.319924+00:00'
 gpu_assignment:
   role: benchmark
   physical_device_index: 0
-  device_uuid: GPU-704abe6c-29a2-539e-7ccd-01f9de4eed3b
-  cuda_visible_devices: GPU-704abe6c-29a2-539e-7ccd-01f9de4eed3b
+  device_uuid: GPU-98d8618e-77c8-160a-92f2-117e34fd43df
+  cuda_visible_devices: GPU-98d8618e-77c8-160a-92f2-117e34fd43df
   process_device_ordinal: 0
   verification_only: false
 collection:
@@ -568,7 +504,7 @@ collection:
     /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/scripts/benchmark_gpu_public_api.py: d1ff68f86496d991bcbc730138fe6e3076001b3f23cc1a94c44b96f6857cb8ed
     /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/scripts/gpu_public_api_ops.py: e88823db3f4a1fe43dc13c4743c9d78ece6af76a968724091af318dd8d7f2528
     scripts/run_gpu_public_api.sh: 7995bcf409258185e07210969a738896f64860b67df251fcd1100d11128a5431
-    data/results/nvidia-gpu/gpu/isolated_ops/20261117_091552/fixtures/manifest.json: 3c1a75f9c57996b228c04da1d4cbf34e4137a074e44ddca9f1c37e5824580bd8
+    data/results/nvidia-gpu/gpu/isolated_ops/20261121_082311/fixtures/manifest.json: 3c1a75f9c57996b228c04da1d4cbf34e4137a074e44ddca9f1c37e5824580bd8
     target/release/benchmark_gpu_public_api: c67dd59529f9c6644708d8bc0a5a5fabc82f29fff70f5532c20f6a3066720813
   reference_numpy_version: 2.4.2
   measurement_cpu:
@@ -579,27 +515,27 @@ collection:
         status: disabled
         reason: 'GPU_BENCH_CPU_SELECT is not 1: the arm runs on the allocation unpinned'
         exit_code: 0
-        finished_at: '2026-11-17T09:39:04Z'
+        finished_at: '2026-11-21T08:35:42Z'
       pytorch-cuda:
         arm: pytorch-cuda
         status: disabled
         reason: 'GPU_BENCH_CPU_SELECT is not 1: the arm runs on the allocation unpinned'
         exit_code: 0
-        finished_at: '2026-11-17T09:38:41Z'
+        finished_at: '2026-11-21T08:35:35Z'
       tenferro-cuda-direct:
         arm: tenferro-cuda-direct
         status: disabled
         reason: 'GPU_BENCH_CPU_SELECT is not 1: the arm runs on the allocation unpinned'
         exit_code: 0
-        finished_at: '2026-11-17T09:38:30Z'
+        finished_at: '2026-11-21T08:35:26Z'
       tenferro-cuda-eager:
         arm: tenferro-cuda-eager
         status: disabled
         reason: 'GPU_BENCH_CPU_SELECT is not 1: the arm runs on the allocation unpinned'
         exit_code: 0
-        finished_at: '2026-11-17T09:38:35Z'
+        finished_at: '2026-11-21T08:35:30Z'
   compile:
-    case_wall_seconds: 30.722
+    case_wall_seconds: 14.221
     compiling_processes: 0
     modules_compiled: 0
     compile_time_ms: null
@@ -614,127 +550,126 @@ Each row records the wall clock it spent outside its timed region. These cases s
 
 | Case | Backend | Warning |
 | --- | --- | --- |
-| add_f64_n1048576 | tenferro-cuda-direct | add_f64_n1048576 untimed 156.8 ms is 1030% of the 15.2 ms timed region (budget 20%) |
-| sub_f64_n1048576 | tenferro-cuda-direct | sub_f64_n1048576 untimed 91.5 ms is 622% of the 14.7 ms timed region (budget 20%) |
-| mul_f64_n1048576 | tenferro-cuda-direct | mul_f64_n1048576 untimed 111.2 ms is 751% of the 14.8 ms timed region (budget 20%) |
-| div_f64_n1048576 | tenferro-cuda-direct | div_f64_n1048576 untimed 108.0 ms is 571% of the 18.9 ms timed region (budget 20%) |
-| rem_f64_n1048576 | tenferro-cuda-direct | rem_f64_n1048576 untimed 112.8 ms is 344% of the 32.8 ms timed region (budget 20%) |
-| pow_f64_n1048576 | tenferro-cuda-direct | pow_f64_n1048576 untimed 102.2 ms is 303% of the 33.7 ms timed region (budget 20%) |
-| maximum_f64_n1048576 | tenferro-cuda-direct | maximum_f64_n1048576 untimed 104.3 ms is 412% of the 25.3 ms timed region (budget 20%) |
-| minimum_f64_n1048576 | tenferro-cuda-direct | minimum_f64_n1048576 untimed 104.8 ms is 439% of the 23.9 ms timed region (budget 20%) |
-| neg_f64_n1048576 | tenferro-cuda-direct | neg_f64_n1048576 untimed 97.6 ms is 763% of the 12.8 ms timed region (budget 20%) |
-| abs_f64_n1048576 | tenferro-cuda-direct | abs_f64_n1048576 untimed 82.3 ms is 632% of the 13.0 ms timed region (budget 20%) |
-| sign_f64_n1048576 | tenferro-cuda-direct | sign_f64_n1048576 untimed 80.0 ms is 601% of the 13.3 ms timed region (budget 20%) |
-| conj_c64_n1048576 | tenferro-cuda-direct | conj_c64_n1048576 untimed 116.5 ms is 1050% of the 11.1 ms timed region (budget 20%) |
-| exp_f64_n1048576 | tenferro-cuda-direct | exp_f64_n1048576 untimed 95.5 ms is 667% of the 14.3 ms timed region (budget 20%) |
-| expm1_f64_n1048576 | tenferro-cuda-direct | expm1_f64_n1048576 untimed 86.5 ms is 556% of the 15.6 ms timed region (budget 20%) |
-| log_f64_n1048576 | tenferro-cuda-direct | log_f64_n1048576 untimed 81.5 ms is 504% of the 16.2 ms timed region (budget 20%) |
-| log1p_f64_n1048576 | tenferro-cuda-direct | log1p_f64_n1048576 untimed 96.3 ms is 588% of the 16.4 ms timed region (budget 20%) |
-| erf_f64_n1048576 | tenferro-cuda-direct | erf_f64_n1048576 untimed 106.0 ms is 589% of the 18.0 ms timed region (budget 20%) |
-| sin_f64_n1048576 | tenferro-cuda-direct | sin_f64_n1048576 untimed 80.9 ms is 493% of the 16.4 ms timed region (budget 20%) |
-| cos_f64_n1048576 | tenferro-cuda-direct | cos_f64_n1048576 untimed 80.3 ms is 556% of the 14.4 ms timed region (budget 20%) |
-| tanh_f64_n1048576 | tenferro-cuda-direct | tanh_f64_n1048576 untimed 90.7 ms is 624% of the 14.5 ms timed region (budget 20%) |
-| sqrt_f64_n1048576 | tenferro-cuda-direct | sqrt_f64_n1048576 untimed 89.8 ms is 656% of the 13.7 ms timed region (budget 20%) |
-| rsqrt_f64_n1048576 | tenferro-cuda-direct | rsqrt_f64_n1048576 untimed 106.9 ms is 783% of the 13.6 ms timed region (budget 20%) |
-| compare_f64_n1048576 | tenferro-cuda-direct | compare_f64_n1048576 untimed 60.7 ms is 112% of the 54.0 ms timed region (budget 20%) |
-| where_select_f64_n1048576 | tenferro-cuda-direct | where_select_f64_n1048576 untimed 98.5 ms is 577% of the 17.1 ms timed region (budget 20%) |
-| clamp_f64_n1048576 | tenferro-cuda-direct | clamp_f64_n1048576 untimed 111.1 ms is 239% of the 46.5 ms timed region (budget 20%) |
-| reduce_sum_f64_n1048576 | tenferro-cuda-direct | reduce_sum_f64_n1048576 untimed 10.0 ms is 28% of the 35.6 ms timed region (budget 20%) |
-| reduce_prod_f64_n1048576 | tenferro-cuda-direct | reduce_prod_f64_n1048576 untimed 9.8 ms is 28% of the 35.5 ms timed region (budget 20%) |
-| reduce_max_f64_n1048576 | tenferro-cuda-direct | reduce_max_f64_n1048576 untimed 9.7 ms is 26% of the 37.6 ms timed region (budget 20%) |
-| reduce_min_f64_n1048576 | tenferro-cuda-direct | reduce_min_f64_n1048576 untimed 9.4 ms is 24% of the 38.6 ms timed region (budget 20%) |
-| reduce_sum_squares_f64_n1048576 | tenferro-cuda-direct | reduce_sum_squares_f64_n1048576 untimed 8.3 ms is 21% of the 38.9 ms timed region (budget 20%) |
-| add_f64_n1048576 | tenferro-cuda-eager | add_f64_n1048576 untimed 172.5 ms is 701% of the 24.6 ms timed region (budget 20%) |
-| sub_f64_n1048576 | tenferro-cuda-eager | sub_f64_n1048576 untimed 107.6 ms is 219% of the 49.2 ms timed region (budget 20%) |
-| mul_f64_n1048576 | tenferro-cuda-eager | mul_f64_n1048576 untimed 91.5 ms is 170% of the 53.8 ms timed region (budget 20%) |
-| div_f64_n1048576 | tenferro-cuda-eager | div_f64_n1048576 untimed 113.8 ms is 215% of the 53.0 ms timed region (budget 20%) |
-| rem_f64_n1048576 | tenferro-cuda-eager | rem_f64_n1048576 untimed 118.0 ms is 349% of the 33.8 ms timed region (budget 20%) |
-| pow_f64_n1048576 | tenferro-cuda-eager | pow_f64_n1048576 untimed 94.3 ms is 151% of the 62.3 ms timed region (budget 20%) |
-| maximum_f64_n1048576 | tenferro-cuda-eager | maximum_f64_n1048576 untimed 89.1 ms is 151% of the 58.9 ms timed region (budget 20%) |
-| minimum_f64_n1048576 | tenferro-cuda-eager | minimum_f64_n1048576 untimed 90.1 ms is 161% of the 55.9 ms timed region (budget 20%) |
-| neg_f64_n1048576 | tenferro-cuda-eager | neg_f64_n1048576 untimed 81.0 ms is 273% of the 29.6 ms timed region (budget 20%) |
-| abs_f64_n1048576 | tenferro-cuda-eager | abs_f64_n1048576 untimed 85.5 ms is 297% of the 28.8 ms timed region (budget 20%) |
-| sign_f64_n1048576 | tenferro-cuda-eager | sign_f64_n1048576 untimed 88.8 ms is 280% of the 31.7 ms timed region (budget 20%) |
-| conj_c64_n1048576 | tenferro-cuda-eager | conj_c64_n1048576 untimed 113.1 ms is 543% of the 20.8 ms timed region (budget 20%) |
-| exp_f64_n1048576 | tenferro-cuda-eager | exp_f64_n1048576 untimed 90.8 ms is 272% of the 33.4 ms timed region (budget 20%) |
-| expm1_f64_n1048576 | tenferro-cuda-eager | expm1_f64_n1048576 untimed 87.4 ms is 272% of the 32.1 ms timed region (budget 20%) |
-| log_f64_n1048576 | tenferro-cuda-eager | log_f64_n1048576 untimed 88.7 ms is 269% of the 33.0 ms timed region (budget 20%) |
-| log1p_f64_n1048576 | tenferro-cuda-eager | log1p_f64_n1048576 untimed 97.3 ms is 261% of the 37.3 ms timed region (budget 20%) |
-| erf_f64_n1048576 | tenferro-cuda-eager | erf_f64_n1048576 untimed 109.3 ms is 296% of the 37.0 ms timed region (budget 20%) |
-| sin_f64_n1048576 | tenferro-cuda-eager | sin_f64_n1048576 untimed 86.8 ms is 257% of the 33.7 ms timed region (budget 20%) |
-| cos_f64_n1048576 | tenferro-cuda-eager | cos_f64_n1048576 untimed 88.1 ms is 272% of the 32.4 ms timed region (budget 20%) |
-| tanh_f64_n1048576 | tenferro-cuda-eager | tanh_f64_n1048576 untimed 92.8 ms is 280% of the 33.1 ms timed region (budget 20%) |
-| sqrt_f64_n1048576 | tenferro-cuda-eager | sqrt_f64_n1048576 untimed 86.7 ms is 280% of the 31.0 ms timed region (budget 20%) |
-| rsqrt_f64_n1048576 | tenferro-cuda-eager | rsqrt_f64_n1048576 untimed 101.8 ms is 330% of the 30.9 ms timed region (budget 20%) |
-| compare_f64_n1048576 | tenferro-cuda-eager | compare_f64_n1048576 untimed 59.1 ms is 116% of the 51.0 ms timed region (budget 20%) |
-| where_select_f64_n1048576 | tenferro-cuda-eager | where_select_f64_n1048576 untimed 101.1 ms is 303% of the 33.4 ms timed region (budget 20%) |
-| clamp_f64_n1048576 | tenferro-cuda-eager | clamp_f64_n1048576 untimed 78.2 ms is 172% of the 45.4 ms timed region (budget 20%) |
-| reduce_sum_f64_n1048576 | tenferro-cuda-eager | reduce_sum_f64_n1048576 untimed 10.4 ms is 30% of the 34.8 ms timed region (budget 20%) |
-| reduce_prod_f64_n1048576 | tenferro-cuda-eager | reduce_prod_f64_n1048576 untimed 8.6 ms is 25% of the 34.1 ms timed region (budget 20%) |
-| reduce_max_f64_n1048576 | tenferro-cuda-eager | reduce_max_f64_n1048576 untimed 8.8 ms is 25% of the 34.8 ms timed region (budget 20%) |
-| reduce_min_f64_n1048576 | tenferro-cuda-eager | reduce_min_f64_n1048576 untimed 8.9 ms is 26% of the 34.6 ms timed region (budget 20%) |
-| reduce_sum_squares_f64_n1048576 | tenferro-cuda-eager | reduce_sum_squares_f64_n1048576 untimed 8.6 ms is 25% of the 34.6 ms timed region (budget 20%) |
-| add_f64_n1048576 | pytorch-cuda | add_f64_n1048576 untimed 244.1 ms is 4158% of the 5.9 ms timed region (budget 20%) |
-| sub_f64_n1048576 | pytorch-cuda | sub_f64_n1048576 untimed 102.0 ms is 1604% of the 6.4 ms timed region (budget 20%) |
-| mul_f64_n1048576 | pytorch-cuda | mul_f64_n1048576 untimed 227.8 ms is 3561% of the 6.4 ms timed region (budget 20%) |
-| div_f64_n1048576 | pytorch-cuda | div_f64_n1048576 untimed 103.2 ms is 1603% of the 6.4 ms timed region (budget 20%) |
-| rem_f64_n1048576 | pytorch-cuda | rem_f64_n1048576 untimed 119.0 ms is 1725% of the 6.9 ms timed region (budget 20%) |
-| pow_f64_n1048576 | pytorch-cuda | pow_f64_n1048576 untimed 149.0 ms is 810% of the 18.4 ms timed region (budget 20%) |
-| maximum_f64_n1048576 | pytorch-cuda | maximum_f64_n1048576 untimed 106.6 ms is 1760% of the 6.1 ms timed region (budget 20%) |
-| minimum_f64_n1048576 | pytorch-cuda | minimum_f64_n1048576 untimed 84.2 ms is 1317% of the 6.4 ms timed region (budget 20%) |
-| neg_f64_n1048576 | pytorch-cuda | neg_f64_n1048576 untimed 85.9 ms is 1433% of the 6.0 ms timed region (budget 20%) |
-| abs_f64_n1048576 | pytorch-cuda | abs_f64_n1048576 untimed 87.1 ms is 1607% of the 5.4 ms timed region (budget 20%) |
-| sign_f64_n1048576 | pytorch-cuda | sign_f64_n1048576 untimed 89.9 ms is 1913% of the 4.7 ms timed region (budget 20%) |
-| conj_c64_n1048576 | pytorch-cuda | conj_c64_n1048576 untimed 123.1 ms is 2022% of the 6.1 ms timed region (budget 20%) |
-| exp_f64_n1048576 | pytorch-cuda | exp_f64_n1048576 untimed 117.9 ms is 2070% of the 5.7 ms timed region (budget 20%) |
-| expm1_f64_n1048576 | pytorch-cuda | expm1_f64_n1048576 untimed 89.9 ms is 1393% of the 6.5 ms timed region (budget 20%) |
-| log_f64_n1048576 | pytorch-cuda | log_f64_n1048576 untimed 94.2 ms is 1216% of the 7.8 ms timed region (budget 20%) |
-| log1p_f64_n1048576 | pytorch-cuda | log1p_f64_n1048576 untimed 88.0 ms is 1091% of the 8.1 ms timed region (budget 20%) |
-| erf_f64_n1048576 | pytorch-cuda | erf_f64_n1048576 untimed 114.9 ms is 965% of the 11.9 ms timed region (budget 20%) |
-| sin_f64_n1048576 | pytorch-cuda | sin_f64_n1048576 untimed 105.7 ms is 1471% of the 7.2 ms timed region (budget 20%) |
-| cos_f64_n1048576 | pytorch-cuda | cos_f64_n1048576 untimed 111.9 ms is 1691% of the 6.6 ms timed region (budget 20%) |
-| tanh_f64_n1048576 | pytorch-cuda | tanh_f64_n1048576 untimed 173.5 ms is 3547% of the 4.9 ms timed region (budget 20%) |
-| sqrt_f64_n1048576 | pytorch-cuda | sqrt_f64_n1048576 untimed 91.9 ms is 1831% of the 5.0 ms timed region (budget 20%) |
-| rsqrt_f64_n1048576 | pytorch-cuda | rsqrt_f64_n1048576 untimed 84.9 ms is 1701% of the 5.0 ms timed region (budget 20%) |
-| compare_f64_n1048576 | pytorch-cuda | compare_f64_n1048576 untimed 91.6 ms is 956% of the 9.6 ms timed region (budget 20%) |
-| where_select_f64_n1048576 | pytorch-cuda | where_select_f64_n1048576 untimed 106.0 ms is 864% of the 12.3 ms timed region (budget 20%) |
-| clamp_f64_n1048576 | pytorch-cuda | clamp_f64_n1048576 untimed 72.9 ms is 1157% of the 6.3 ms timed region (budget 20%) |
-| reduce_sum_f64_n1048576 | pytorch-cuda | reduce_sum_f64_n1048576 untimed 32.7 ms is 95% of the 34.3 ms timed region (budget 20%) |
-| reduce_prod_f64_n1048576 | pytorch-cuda | reduce_prod_f64_n1048576 untimed 23.2 ms is 68% of the 34.3 ms timed region (budget 20%) |
-| reduce_max_f64_n1048576 | pytorch-cuda | reduce_max_f64_n1048576 untimed 27.6 ms is 84% of the 32.7 ms timed region (budget 20%) |
-| reduce_min_f64_n1048576 | pytorch-cuda | reduce_min_f64_n1048576 untimed 25.8 ms is 79% of the 32.7 ms timed region (budget 20%) |
-| reduce_mean_f64_n1048576 | pytorch-cuda | reduce_mean_f64_n1048576 untimed 26.9 ms is 80% of the 33.5 ms timed region (budget 20%) |
-| scale_real_f64_n1048576 | pytorch-cuda | scale_real_f64_n1048576 untimed 77.5 ms is 1658% of the 4.7 ms timed region (budget 20%) |
-| scale_complex_c64_n1048576 | pytorch-cuda | scale_complex_c64_n1048576 untimed 129.9 ms is 2133% of the 6.1 ms timed region (budget 20%) |
-| add_f64_n1048576 | jax-cuda | add_f64_n1048576 untimed 462.3 ms is 1240% of the 37.3 ms timed region (budget 20%) |
-| sub_f64_n1048576 | jax-cuda | sub_f64_n1048576 untimed 358.0 ms is 1119% of the 32.0 ms timed region (budget 20%) |
-| mul_f64_n1048576 | jax-cuda | mul_f64_n1048576 untimed 155.7 ms is 497% of the 31.3 ms timed region (budget 20%) |
-| div_f64_n1048576 | jax-cuda | div_f64_n1048576 untimed 339.7 ms is 1097% of the 31.0 ms timed region (budget 20%) |
-| rem_f64_n1048576 | jax-cuda | rem_f64_n1048576 untimed 398.4 ms is 1053% of the 37.8 ms timed region (budget 20%) |
-| pow_f64_n1048576 | jax-cuda | pow_f64_n1048576 untimed 158.3 ms is 442% of the 35.8 ms timed region (budget 20%) |
-| maximum_f64_n1048576 | jax-cuda | maximum_f64_n1048576 untimed 312.2 ms is 836% of the 37.3 ms timed region (budget 20%) |
-| minimum_f64_n1048576 | jax-cuda | minimum_f64_n1048576 untimed 159.9 ms is 465% of the 34.4 ms timed region (budget 20%) |
-| neg_f64_n1048576 | jax-cuda | neg_f64_n1048576 untimed 277.5 ms is 870% of the 31.9 ms timed region (budget 20%) |
-| abs_f64_n1048576 | jax-cuda | abs_f64_n1048576 untimed 329.2 ms is 942% of the 34.9 ms timed region (budget 20%) |
-| sign_f64_n1048576 | jax-cuda | sign_f64_n1048576 untimed 575.1 ms is 2124% of the 27.1 ms timed region (budget 20%) |
-| conj_c64_n1048576 | jax-cuda | conj_c64_n1048576 untimed 542.2 ms is 1976% of the 27.4 ms timed region (budget 20%) |
-| exp_f64_n1048576 | jax-cuda | exp_f64_n1048576 untimed 144.8 ms is 561% of the 25.8 ms timed region (budget 20%) |
-| expm1_f64_n1048576 | jax-cuda | expm1_f64_n1048576 untimed 650.7 ms is 2437% of the 26.7 ms timed region (budget 20%) |
-| log_f64_n1048576 | jax-cuda | log_f64_n1048576 untimed 263.1 ms is 1019% of the 25.8 ms timed region (budget 20%) |
-| log1p_f64_n1048576 | jax-cuda | log1p_f64_n1048576 untimed 155.3 ms is 564% of the 27.5 ms timed region (budget 20%) |
-| erf_f64_n1048576 | jax-cuda | erf_f64_n1048576 untimed 159.5 ms is 413% of the 38.6 ms timed region (budget 20%) |
-| sin_f64_n1048576 | jax-cuda | sin_f64_n1048576 untimed 465.0 ms is 1703% of the 27.3 ms timed region (budget 20%) |
-| cos_f64_n1048576 | jax-cuda | cos_f64_n1048576 untimed 176.1 ms is 629% of the 28.0 ms timed region (budget 20%) |
-| tanh_f64_n1048576 | jax-cuda | tanh_f64_n1048576 untimed 125.8 ms is 637% of the 19.8 ms timed region (budget 20%) |
-| sqrt_f64_n1048576 | jax-cuda | sqrt_f64_n1048576 untimed 135.6 ms is 458% of the 29.6 ms timed region (budget 20%) |
-| rsqrt_f64_n1048576 | jax-cuda | rsqrt_f64_n1048576 untimed 139.8 ms is 2317% of the 6.0 ms timed region (budget 20%) |
-| compare_f64_n1048576 | jax-cuda | compare_f64_n1048576 untimed 111.1 ms is 323% of the 34.4 ms timed region (budget 20%) |
-| where_select_f64_n1048576 | jax-cuda | where_select_f64_n1048576 untimed 124.7 ms is 331% of the 37.7 ms timed region (budget 20%) |
-| clamp_f64_n1048576 | jax-cuda | clamp_f64_n1048576 untimed 676.8 ms is 2269% of the 29.8 ms timed region (budget 20%) |
-| reduce_sum_f64_n1048576 | jax-cuda | reduce_sum_f64_n1048576 untimed 187.2 ms is 601% of the 31.2 ms timed region (budget 20%) |
-| reduce_prod_f64_n1048576 | jax-cuda | reduce_prod_f64_n1048576 untimed 192.9 ms is 623% of the 31.0 ms timed region (budget 20%) |
-| reduce_max_f64_n1048576 | jax-cuda | reduce_max_f64_n1048576 untimed 287.8 ms is 1024% of the 28.1 ms timed region (budget 20%) |
-| reduce_min_f64_n1048576 | jax-cuda | reduce_min_f64_n1048576 untimed 90.1 ms is 296% of the 30.4 ms timed region (budget 20%) |
-| reduce_mean_f64_n1048576 | jax-cuda | reduce_mean_f64_n1048576 untimed 94.1 ms is 274% of the 34.4 ms timed region (budget 20%) |
-| scale_real_f64_n1048576 | jax-cuda | scale_real_f64_n1048576 untimed 5755.2 ms is 16986% of the 33.9 ms timed region (budget 20%) |
-| scale_complex_c64_n1048576 | jax-cuda | scale_complex_c64_n1048576 untimed 5159.7 ms is 32137% of the 16.1 ms timed region (budget 20%) |
+| add_f64_n1048576 | tenferro-cuda-direct | add_f64_n1048576 untimed 137.1 ms is 1243% of the 11.0 ms timed region (budget 20%) |
+| sub_f64_n1048576 | tenferro-cuda-direct | sub_f64_n1048576 untimed 76.2 ms is 693% of the 11.0 ms timed region (budget 20%) |
+| mul_f64_n1048576 | tenferro-cuda-direct | mul_f64_n1048576 untimed 84.6 ms is 767% of the 11.0 ms timed region (budget 20%) |
+| div_f64_n1048576 | tenferro-cuda-direct | div_f64_n1048576 untimed 84.8 ms is 776% of the 10.9 ms timed region (budget 20%) |
+| rem_f64_n1048576 | tenferro-cuda-direct | rem_f64_n1048576 untimed 94.9 ms is 471% of the 20.2 ms timed region (budget 20%) |
+| pow_f64_n1048576 | tenferro-cuda-direct | pow_f64_n1048576 untimed 76.1 ms is 363% of the 21.0 ms timed region (budget 20%) |
+| maximum_f64_n1048576 | tenferro-cuda-direct | maximum_f64_n1048576 untimed 92.4 ms is 653% of the 14.2 ms timed region (budget 20%) |
+| minimum_f64_n1048576 | tenferro-cuda-direct | minimum_f64_n1048576 untimed 85.9 ms is 605% of the 14.2 ms timed region (budget 20%) |
+| neg_f64_n1048576 | tenferro-cuda-direct | neg_f64_n1048576 untimed 78.2 ms is 864% of the 9.1 ms timed region (budget 20%) |
+| abs_f64_n1048576 | tenferro-cuda-direct | abs_f64_n1048576 untimed 66.7 ms is 733% of the 9.1 ms timed region (budget 20%) |
+| sign_f64_n1048576 | tenferro-cuda-direct | sign_f64_n1048576 untimed 66.3 ms is 721% of the 9.2 ms timed region (budget 20%) |
+| conj_c64_n1048576 | tenferro-cuda-direct | conj_c64_n1048576 untimed 103.1 ms is 1233% of the 8.4 ms timed region (budget 20%) |
+| exp_f64_n1048576 | tenferro-cuda-direct | exp_f64_n1048576 untimed 80.5 ms is 857% of the 9.4 ms timed region (budget 20%) |
+| expm1_f64_n1048576 | tenferro-cuda-direct | expm1_f64_n1048576 untimed 71.5 ms is 727% of the 9.8 ms timed region (budget 20%) |
+| log_f64_n1048576 | tenferro-cuda-direct | log_f64_n1048576 untimed 67.6 ms is 628% of the 10.7 ms timed region (budget 20%) |
+| log1p_f64_n1048576 | tenferro-cuda-direct | log1p_f64_n1048576 untimed 78.3 ms is 709% of the 11.0 ms timed region (budget 20%) |
+| erf_f64_n1048576 | tenferro-cuda-direct | erf_f64_n1048576 untimed 100.4 ms is 830% of the 12.1 ms timed region (budget 20%) |
+| sin_f64_n1048576 | tenferro-cuda-direct | sin_f64_n1048576 untimed 77.8 ms is 751% of the 10.4 ms timed region (budget 20%) |
+| cos_f64_n1048576 | tenferro-cuda-direct | cos_f64_n1048576 untimed 86.4 ms is 766% of the 11.3 ms timed region (budget 20%) |
+| tanh_f64_n1048576 | tenferro-cuda-direct | tanh_f64_n1048576 untimed 86.3 ms is 859% of the 10.1 ms timed region (budget 20%) |
+| sqrt_f64_n1048576 | tenferro-cuda-direct | sqrt_f64_n1048576 untimed 81.1 ms is 844% of the 9.6 ms timed region (budget 20%) |
+| rsqrt_f64_n1048576 | tenferro-cuda-direct | rsqrt_f64_n1048576 untimed 91.1 ms is 960% of the 9.5 ms timed region (budget 20%) |
+| compare_f64_n1048576 | tenferro-cuda-direct | compare_f64_n1048576 untimed 57.8 ms is 161% of the 35.9 ms timed region (budget 20%) |
+| where_select_f64_n1048576 | tenferro-cuda-direct | where_select_f64_n1048576 untimed 92.2 ms is 781% of the 11.8 ms timed region (budget 20%) |
+| clamp_f64_n1048576 | tenferro-cuda-direct | clamp_f64_n1048576 untimed 103.9 ms is 318% of the 32.7 ms timed region (budget 20%) |
+| reduce_sum_f64_n1048576 | tenferro-cuda-direct | reduce_sum_f64_n1048576 untimed 13.0 ms is 26% of the 49.5 ms timed region (budget 20%) |
+| reduce_prod_f64_n1048576 | tenferro-cuda-direct | reduce_prod_f64_n1048576 untimed 12.9 ms is 25% of the 51.4 ms timed region (budget 20%) |
+| reduce_max_f64_n1048576 | tenferro-cuda-direct | reduce_max_f64_n1048576 untimed 14.5 ms is 28% of the 51.1 ms timed region (budget 20%) |
+| reduce_min_f64_n1048576 | tenferro-cuda-direct | reduce_min_f64_n1048576 untimed 11.8 ms is 22% of the 52.7 ms timed region (budget 20%) |
+| reduce_sum_squares_f64_n1048576 | tenferro-cuda-direct | reduce_sum_squares_f64_n1048576 untimed 15.5 ms is 32% of the 49.1 ms timed region (budget 20%) |
+| add_f64_n1048576 | tenferro-cuda-eager | add_f64_n1048576 untimed 147.5 ms is 829% of the 17.8 ms timed region (budget 20%) |
+| sub_f64_n1048576 | tenferro-cuda-eager | sub_f64_n1048576 untimed 92.0 ms is 258% of the 35.6 ms timed region (budget 20%) |
+| mul_f64_n1048576 | tenferro-cuda-eager | mul_f64_n1048576 untimed 73.9 ms is 207% of the 35.7 ms timed region (budget 20%) |
+| div_f64_n1048576 | tenferro-cuda-eager | div_f64_n1048576 untimed 74.8 ms is 212% of the 35.2 ms timed region (budget 20%) |
+| rem_f64_n1048576 | tenferro-cuda-eager | rem_f64_n1048576 untimed 78.4 ms is 171% of the 45.7 ms timed region (budget 20%) |
+| pow_f64_n1048576 | tenferro-cuda-eager | pow_f64_n1048576 untimed 84.8 ms is 184% of the 46.1 ms timed region (budget 20%) |
+| maximum_f64_n1048576 | tenferro-cuda-eager | maximum_f64_n1048576 untimed 76.3 ms is 195% of the 39.0 ms timed region (budget 20%) |
+| minimum_f64_n1048576 | tenferro-cuda-eager | minimum_f64_n1048576 untimed 77.4 ms is 197% of the 39.2 ms timed region (budget 20%) |
+| neg_f64_n1048576 | tenferro-cuda-eager | neg_f64_n1048576 untimed 67.2 ms is 325% of the 20.7 ms timed region (budget 20%) |
+| abs_f64_n1048576 | tenferro-cuda-eager | abs_f64_n1048576 untimed 78.7 ms is 390% of the 20.2 ms timed region (budget 20%) |
+| sign_f64_n1048576 | tenferro-cuda-eager | sign_f64_n1048576 untimed 85.1 ms is 417% of the 20.4 ms timed region (budget 20%) |
+| conj_c64_n1048576 | tenferro-cuda-eager | conj_c64_n1048576 untimed 107.5 ms is 695% of the 15.5 ms timed region (budget 20%) |
+| exp_f64_n1048576 | tenferro-cuda-eager | exp_f64_n1048576 untimed 80.8 ms is 393% of the 20.5 ms timed region (budget 20%) |
+| expm1_f64_n1048576 | tenferro-cuda-eager | expm1_f64_n1048576 untimed 77.4 ms is 364% of the 21.2 ms timed region (budget 20%) |
+| log_f64_n1048576 | tenferro-cuda-eager | log_f64_n1048576 untimed 75.0 ms is 335% of the 22.4 ms timed region (budget 20%) |
+| log1p_f64_n1048576 | tenferro-cuda-eager | log1p_f64_n1048576 untimed 82.5 ms is 372% of the 22.2 ms timed region (budget 20%) |
+| erf_f64_n1048576 | tenferro-cuda-eager | erf_f64_n1048576 untimed 96.3 ms is 412% of the 23.4 ms timed region (budget 20%) |
+| sin_f64_n1048576 | tenferro-cuda-eager | sin_f64_n1048576 untimed 73.2 ms is 338% of the 21.7 ms timed region (budget 20%) |
+| cos_f64_n1048576 | tenferro-cuda-eager | cos_f64_n1048576 untimed 73.7 ms is 335% of the 22.0 ms timed region (budget 20%) |
+| tanh_f64_n1048576 | tenferro-cuda-eager | tanh_f64_n1048576 untimed 80.0 ms is 392% of the 20.4 ms timed region (budget 20%) |
+| sqrt_f64_n1048576 | tenferro-cuda-eager | sqrt_f64_n1048576 untimed 72.8 ms is 358% of the 20.3 ms timed region (budget 20%) |
+| rsqrt_f64_n1048576 | tenferro-cuda-eager | rsqrt_f64_n1048576 untimed 84.1 ms is 419% of the 20.1 ms timed region (budget 20%) |
+| compare_f64_n1048576 | tenferro-cuda-eager | compare_f64_n1048576 untimed 51.5 ms is 155% of the 33.3 ms timed region (budget 20%) |
+| where_select_f64_n1048576 | tenferro-cuda-eager | where_select_f64_n1048576 untimed 87.5 ms is 186% of the 47.1 ms timed region (budget 20%) |
+| clamp_f64_n1048576 | tenferro-cuda-eager | clamp_f64_n1048576 untimed 68.9 ms is 230% of the 30.0 ms timed region (budget 20%) |
+| reduce_sum_f64_n1048576 | tenferro-cuda-eager | reduce_sum_f64_n1048576 untimed 11.5 ms is 25% of the 46.5 ms timed region (budget 20%) |
+| reduce_prod_f64_n1048576 | tenferro-cuda-eager | reduce_prod_f64_n1048576 untimed 10.5 ms is 22% of the 47.5 ms timed region (budget 20%) |
+| reduce_min_f64_n1048576 | tenferro-cuda-eager | reduce_min_f64_n1048576 untimed 10.0 ms is 21% of the 48.0 ms timed region (budget 20%) |
+| reduce_sum_squares_f64_n1048576 | tenferro-cuda-eager | reduce_sum_squares_f64_n1048576 untimed 10.0 ms is 21% of the 47.0 ms timed region (budget 20%) |
+| add_f64_n1048576 | pytorch-cuda | add_f64_n1048576 untimed 207.9 ms is 13423% of the 1.5 ms timed region (budget 20%) |
+| sub_f64_n1048576 | pytorch-cuda | sub_f64_n1048576 untimed 74.4 ms is 1285% of the 5.8 ms timed region (budget 20%) |
+| mul_f64_n1048576 | pytorch-cuda | mul_f64_n1048576 untimed 65.0 ms is 1095% of the 5.9 ms timed region (budget 20%) |
+| div_f64_n1048576 | pytorch-cuda | div_f64_n1048576 untimed 69.0 ms is 1073% of the 6.4 ms timed region (budget 20%) |
+| rem_f64_n1048576 | pytorch-cuda | rem_f64_n1048576 untimed 80.8 ms is 1373% of the 5.9 ms timed region (budget 20%) |
+| pow_f64_n1048576 | pytorch-cuda | pow_f64_n1048576 untimed 90.8 ms is 645% of the 14.1 ms timed region (budget 20%) |
+| maximum_f64_n1048576 | pytorch-cuda | maximum_f64_n1048576 untimed 73.6 ms is 1246% of the 5.9 ms timed region (budget 20%) |
+| minimum_f64_n1048576 | pytorch-cuda | minimum_f64_n1048576 untimed 53.9 ms is 909% of the 5.9 ms timed region (budget 20%) |
+| neg_f64_n1048576 | pytorch-cuda | neg_f64_n1048576 untimed 63.2 ms is 1653% of the 3.8 ms timed region (budget 20%) |
+| abs_f64_n1048576 | pytorch-cuda | abs_f64_n1048576 untimed 75.3 ms is 1972% of the 3.8 ms timed region (budget 20%) |
+| sign_f64_n1048576 | pytorch-cuda | sign_f64_n1048576 untimed 70.3 ms is 1843% of the 3.8 ms timed region (budget 20%) |
+| conj_c64_n1048576 | pytorch-cuda | conj_c64_n1048576 untimed 94.6 ms is 1554% of the 6.1 ms timed region (budget 20%) |
+| exp_f64_n1048576 | pytorch-cuda | exp_f64_n1048576 untimed 92.4 ms is 2313% of the 4.0 ms timed region (budget 20%) |
+| expm1_f64_n1048576 | pytorch-cuda | expm1_f64_n1048576 untimed 64.5 ms is 1352% of the 4.8 ms timed region (budget 20%) |
+| log_f64_n1048576 | pytorch-cuda | log_f64_n1048576 untimed 66.6 ms is 1096% of the 6.1 ms timed region (budget 20%) |
+| log1p_f64_n1048576 | pytorch-cuda | log1p_f64_n1048576 untimed 60.5 ms is 963% of the 6.3 ms timed region (budget 20%) |
+| erf_f64_n1048576 | pytorch-cuda | erf_f64_n1048576 untimed 71.3 ms is 393% of the 18.1 ms timed region (budget 20%) |
+| sin_f64_n1048576 | pytorch-cuda | sin_f64_n1048576 untimed 67.2 ms is 1242% of the 5.4 ms timed region (budget 20%) |
+| cos_f64_n1048576 | pytorch-cuda | cos_f64_n1048576 untimed 70.9 ms is 1283% of the 5.5 ms timed region (budget 20%) |
+| tanh_f64_n1048576 | pytorch-cuda | tanh_f64_n1048576 untimed 74.6 ms is 1890% of the 3.9 ms timed region (budget 20%) |
+| sqrt_f64_n1048576 | pytorch-cuda | sqrt_f64_n1048576 untimed 61.4 ms is 1594% of the 3.8 ms timed region (budget 20%) |
+| rsqrt_f64_n1048576 | pytorch-cuda | rsqrt_f64_n1048576 untimed 56.7 ms is 1479% of the 3.8 ms timed region (budget 20%) |
+| compare_f64_n1048576 | pytorch-cuda | compare_f64_n1048576 untimed 68.1 ms is 3764% of the 1.8 ms timed region (budget 20%) |
+| where_select_f64_n1048576 | pytorch-cuda | where_select_f64_n1048576 untimed 84.0 ms is 1229% of the 6.8 ms timed region (budget 20%) |
+| clamp_f64_n1048576 | pytorch-cuda | clamp_f64_n1048576 untimed 54.7 ms is 1101% of the 5.0 ms timed region (budget 20%) |
+| reduce_sum_f64_n1048576 | pytorch-cuda | reduce_sum_f64_n1048576 untimed 29.4 ms is 53% of the 55.6 ms timed region (budget 20%) |
+| reduce_prod_f64_n1048576 | pytorch-cuda | reduce_prod_f64_n1048576 untimed 22.8 ms is 41% of the 56.0 ms timed region (budget 20%) |
+| reduce_max_f64_n1048576 | pytorch-cuda | reduce_max_f64_n1048576 untimed 23.4 ms is 41% of the 56.6 ms timed region (budget 20%) |
+| reduce_min_f64_n1048576 | pytorch-cuda | reduce_min_f64_n1048576 untimed 24.1 ms is 43% of the 56.4 ms timed region (budget 20%) |
+| reduce_mean_f64_n1048576 | pytorch-cuda | reduce_mean_f64_n1048576 untimed 25.1 ms is 46% of the 54.9 ms timed region (budget 20%) |
+| scale_real_f64_n1048576 | pytorch-cuda | scale_real_f64_n1048576 untimed 65.4 ms is 1422% of the 4.6 ms timed region (budget 20%) |
+| scale_complex_c64_n1048576 | pytorch-cuda | scale_complex_c64_n1048576 untimed 110.8 ms is 1798% of the 6.2 ms timed region (budget 20%) |
+| add_f64_n1048576 | jax-cuda | add_f64_n1048576 untimed 316.2 ms is 1053% of the 30.0 ms timed region (budget 20%) |
+| sub_f64_n1048576 | jax-cuda | sub_f64_n1048576 untimed 119.3 ms is 389% of the 30.7 ms timed region (budget 20%) |
+| mul_f64_n1048576 | jax-cuda | mul_f64_n1048576 untimed 97.8 ms is 304% of the 32.1 ms timed region (budget 20%) |
+| div_f64_n1048576 | jax-cuda | div_f64_n1048576 untimed 126.6 ms is 397% of the 31.9 ms timed region (budget 20%) |
+| rem_f64_n1048576 | jax-cuda | rem_f64_n1048576 untimed 152.5 ms is 540% of the 28.2 ms timed region (budget 20%) |
+| pow_f64_n1048576 | jax-cuda | pow_f64_n1048576 untimed 118.5 ms is 370% of the 32.1 ms timed region (budget 20%) |
+| maximum_f64_n1048576 | jax-cuda | maximum_f64_n1048576 untimed 113.1 ms is 341% of the 33.1 ms timed region (budget 20%) |
+| minimum_f64_n1048576 | jax-cuda | minimum_f64_n1048576 untimed 93.7 ms is 280% of the 33.5 ms timed region (budget 20%) |
+| neg_f64_n1048576 | jax-cuda | neg_f64_n1048576 untimed 104.7 ms is 324% of the 32.3 ms timed region (budget 20%) |
+| abs_f64_n1048576 | jax-cuda | abs_f64_n1048576 untimed 114.4 ms is 362% of the 31.6 ms timed region (budget 20%) |
+| sign_f64_n1048576 | jax-cuda | sign_f64_n1048576 untimed 126.9 ms is 361% of the 35.1 ms timed region (budget 20%) |
+| conj_c64_n1048576 | jax-cuda | conj_c64_n1048576 untimed 169.4 ms is 1070% of the 15.8 ms timed region (budget 20%) |
+| exp_f64_n1048576 | jax-cuda | exp_f64_n1048576 untimed 129.3 ms is 406% of the 31.9 ms timed region (budget 20%) |
+| expm1_f64_n1048576 | jax-cuda | expm1_f64_n1048576 untimed 132.2 ms is 415% of the 31.9 ms timed region (budget 20%) |
+| log_f64_n1048576 | jax-cuda | log_f64_n1048576 untimed 137.3 ms is 427% of the 32.2 ms timed region (budget 20%) |
+| log1p_f64_n1048576 | jax-cuda | log1p_f64_n1048576 untimed 150.3 ms is 474% of the 31.7 ms timed region (budget 20%) |
+| erf_f64_n1048576 | jax-cuda | erf_f64_n1048576 untimed 134.0 ms is 329% of the 40.7 ms timed region (budget 20%) |
+| sin_f64_n1048576 | jax-cuda | sin_f64_n1048576 untimed 169.5 ms is 545% of the 31.1 ms timed region (budget 20%) |
+| cos_f64_n1048576 | jax-cuda | cos_f64_n1048576 untimed 152.1 ms is 593% of the 25.6 ms timed region (budget 20%) |
+| tanh_f64_n1048576 | jax-cuda | tanh_f64_n1048576 untimed 107.8 ms is 416% of the 25.9 ms timed region (budget 20%) |
+| sqrt_f64_n1048576 | jax-cuda | sqrt_f64_n1048576 untimed 112.7 ms is 412% of the 27.4 ms timed region (budget 20%) |
+| rsqrt_f64_n1048576 | jax-cuda | rsqrt_f64_n1048576 untimed 109.0 ms is 289% of the 37.7 ms timed region (budget 20%) |
+| compare_f64_n1048576 | jax-cuda | compare_f64_n1048576 untimed 97.2 ms is 158% of the 61.3 ms timed region (budget 20%) |
+| where_select_f64_n1048576 | jax-cuda | where_select_f64_n1048576 untimed 108.0 ms is 297% of the 36.4 ms timed region (budget 20%) |
+| clamp_f64_n1048576 | jax-cuda | clamp_f64_n1048576 untimed 108.9 ms is 361% of the 30.2 ms timed region (budget 20%) |
+| reduce_sum_f64_n1048576 | jax-cuda | reduce_sum_f64_n1048576 untimed 213.8 ms is 713% of the 30.0 ms timed region (budget 20%) |
+| reduce_prod_f64_n1048576 | jax-cuda | reduce_prod_f64_n1048576 untimed 218.3 ms is 704% of the 31.0 ms timed region (budget 20%) |
+| reduce_max_f64_n1048576 | jax-cuda | reduce_max_f64_n1048576 untimed 305.1 ms is 997% of the 30.6 ms timed region (budget 20%) |
+| reduce_min_f64_n1048576 | jax-cuda | reduce_min_f64_n1048576 untimed 89.6 ms is 308% of the 29.1 ms timed region (budget 20%) |
+| reduce_mean_f64_n1048576 | jax-cuda | reduce_mean_f64_n1048576 untimed 104.8 ms is 362% of the 28.9 ms timed region (budget 20%) |
+| scale_real_f64_n1048576 | jax-cuda | scale_real_f64_n1048576 untimed 132.4 ms is 371% of the 35.7 ms timed region (budget 20%) |
+| scale_complex_c64_n1048576 | jax-cuda | scale_complex_c64_n1048576 untimed 162.2 ms is 877% of the 18.5 ms timed region (budget 20%) |
