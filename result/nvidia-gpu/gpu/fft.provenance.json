@@ -1,57 +1,67 @@
 {
-  "campaign": {
-    "case_outcomes": {
-      "failed": {
-        "cases": [],
-        "count": 0
-      },
-      "skipped": {
-        "cases": [],
-        "count": 0
-      },
-      "unsupported": {
-        "cases": [],
-        "count": 0
-      }
+  "case_outcomes": {
+    "failed": {
+      "cases": [],
+      "count": 0
     },
-    "collected_at": "2026-11-14T08:28:52+00:00",
-    "harness_commit": "76cb137693f0b16de2556cc47d32686deaa05863",
-    "missing_suites": [],
-    "schema_version": 1,
-    "source": {
-      "artifact_id": 14106816828,
-      "artifact_kind": "results",
-      "artifact_name": "runpod-gpu-benchmark-43574267803-attempt1",
-      "artifact_url": "https://github.com/tensor4all/tenferro-benchmark/actions/runs/43574267803/artifacts/14106816828",
-      "conclusion": "success",
-      "created_at": "2026-11-14T08:52:12Z",
-      "digest": "sha256:257621caf257a1877849866199000c217ad2f2743ec355baa96ff93989e4b584",
-      "event": "schedule",
-      "expires_at": "2027-02-12T08:07:09Z",
-      "head_branch": "main",
-      "head_sha": "76cb137693f0b16de2556cc47d32686deaa05863",
-      "repository": "tensor4all/tenferro-benchmark",
-      "run_attempt": 1,
-      "run_id": 43574267803,
-      "run_started_at": "2026-11-14T08:07:09Z",
-      "run_url": "https://github.com/tensor4all/tenferro-benchmark/actions/runs/43574267803",
-      "workflow_path": ".github/workflows/benchmark-runpod-gpu.yml"
+    "skipped": {
+      "cases": [],
+      "count": 0
     },
-    "status": "complete",
-    "suite_id": "gpu/fft",
-    "target_profile": "nvidia-gpu"
+    "unsupported": {
+      "cases": [],
+      "count": 0
+    }
   },
-  "collected_at": "2026-11-17T09:15:52+00:00",
+  "collected_at": "2026-11-21T08:23:11+00:00",
   "files": {
-    "result/nvidia-gpu/gpu/fft.md": "4a983ef1c89ba8c93c0c52d185529b6b5c57c30d372e9effa5a156769f6721d9",
-    "result/nvidia-gpu/gpu/fft.summary.json": "805a31aa2a26651e3b61325c344d3f2de2460731f7093cc2f482be5c367c4783"
+    "data/results/nvidia-gpu/gpu/fft/20261121_082311/arms/jax-cuda.json": "a48135a3354f2555b6876e8eeb5066f7cb9d95cd24899665c30103a49cded26d",
+    "data/results/nvidia-gpu/gpu/fft/20261121_082311/arms/pytorch-cuda.json": "f03a47f999fa1751e4089dff01be05efeb787b27445a9f41bef42e42005b082f",
+    "data/results/nvidia-gpu/gpu/fft/20261121_082311/arms/tenferro-cuda-direct.json": "b12269ada877830bbc30869b955a7e13244ab101bbcf4b3a62a70cb2b6edb96d",
+    "data/results/nvidia-gpu/gpu/fft/20261121_082311/arms/tenferro-cuda-eager.json": "0daf8d728567538689ea9185afcfdc618373fa6de3c0df56963eac8b6f61759c",
+    "data/results/nvidia-gpu/gpu/fft/20261121_082311/instances.json": "4320ab4285a73f8c42bcea2347d5e3b82c94eb52e31df28d172513b3abe1b1d1",
+    "data/results/nvidia-gpu/gpu/fft/20261121_082311/jax-cuda.jsonl": "5326549f9bd367ad694489c45386545844017b7158b8f6238cd1e29bdd755a20",
+    "data/results/nvidia-gpu/gpu/fft/20261121_082311/pytorch-cuda.jsonl": "495e90105b412524a4d862286ed8950f16fe9ee0dcbe5dd73be14d41b5d5fcf2",
+    "data/results/nvidia-gpu/gpu/fft/20261121_082311/records.jsonl": "8b679cfe1ce2635e2cf14d6249432ea1a403b9f3fca55d78631c809183241d14",
+    "data/results/nvidia-gpu/gpu/fft/20261121_082311/report.md": "4c389fc53b5479b9ec7ff6cac4e7e3e4fc96a4c41153406d1cd334cc7f4515b0",
+    "data/results/nvidia-gpu/gpu/fft/20261121_082311/report.summary.json": "fd8017f31b19e48f31a6a646ff96835eaf58be4c7c724a9aa7790cc8f5837e34",
+    "data/results/nvidia-gpu/gpu/fft/20261121_082311/run.yaml": "8f7c771b5fcb91e5d86a886476f7eb104c2d0976522145ae9e312ab40426a0c2",
+    "data/results/nvidia-gpu/gpu/fft/20261121_082311/tenferro-cuda-direct.jsonl": "1ff0c3bc49d70e7b8673a69028f0eb8a8459282a8a49c105db22a59e2a44cb3a",
+    "data/results/nvidia-gpu/gpu/fft/20261121_082311/tenferro-cuda-eager.jsonl": "3c6e6716b8fb8d496799b0957749e623b04de188d2d19bb1e697b001baaaf6c9",
+    "data/results/nvidia-gpu/gpu/fft/20261121_082311/wall_backends.jsonl": "7e871e1671d4cd4f39a43f4a851598d7e4c745e9022d0eacc09b136110bd89e8",
+    "data/results/nvidia-gpu/gpu/fft/20261121_082311/wall_command.json": "c973f21a39d13110bb998ce66794f15c438ef7af349ff499963b7207e53bf3b4",
+    "data/results/nvidia-gpu/gpu/fft/20261121_082311/wall_phases.json": "2c2cc689a60c8a1ccbc7cb563902541324f862e41647034fbe69e2bf984cc5e6",
+    "result/nvidia-gpu/gpu/fft.md": "4c389fc53b5479b9ec7ff6cac4e7e3e4fc96a4c41153406d1cd334cc7f4515b0",
+    "result/nvidia-gpu/gpu/fft.summary.json": "fd8017f31b19e48f31a6a646ff96835eaf58be4c7c724a9aa7790cc8f5837e34"
   },
   "hardware": {
-    "cpu": "AMD EPYC 7713 64-Core Processor",
-    "gpu": "NVIDIA A100-SXM4-80GB",
-    "host": "b8e17af19547"
+    "cpu": "AMD EPYC 7543 32-Core Processor",
+    "gpu": "NVIDIA A100 80GB PCIe",
+    "host": "7894e3c40841"
   },
+  "harness_commit": "a741cd656e4d51e77d8369154bf789e5f0147f5c",
+  "missing_suites": [],
   "schema_version": 1,
+  "source": {
+    "artifact_id": 14700186475,
+    "artifact_kind": "results",
+    "artifact_name": "runpod-gpu-benchmark-44883416365-attempt1",
+    "artifact_url": "https://github.com/tensor4all/tenferro-benchmark/actions/runs/44883416365/artifacts/14700186475",
+    "conclusion": "success",
+    "created_at": "2026-11-21T08:37:40Z",
+    "digest": "sha256:943b7251aac4713ae4e972df8eeb4310eb0423fd1c11bc7daefbf3a1a2ad2a57",
+    "event": "schedule",
+    "expires_at": "2027-02-19T08:07:55Z",
+    "head_branch": "main",
+    "head_sha": "a741cd656e4d51e77d8369154bf789e5f0147f5c",
+    "repository": "tensor4all/tenferro-benchmark",
+    "run_attempt": 1,
+    "run_id": 44883416365,
+    "run_started_at": "2026-11-21T08:07:55Z",
+    "run_url": "https://github.com/tensor4all/tenferro-benchmark/actions/runs/44883416365",
+    "workflow_path": ".github/workflows/benchmark-runpod-gpu.yml"
+  },
+  "status": "complete",
   "suite_id": "gpu/fft",
   "target_profile": "nvidia-gpu",
   "tenferro_commit": "ce9125d0cff4ee40841120759b5df45252c27f22"

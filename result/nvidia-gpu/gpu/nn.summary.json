@@ -2,12 +2,12 @@
   "schema_version": 1,
   "target_profile": "nvidia-gpu",
   "suite_id": "gpu/nn",
-  "timestamp": "2026-11-17T09:15:52+00:00",
+  "timestamp": "2026-11-21T08:23:11+00:00",
   "tenferro_commit": "ce9125d0cff4ee40841120759b5df45252c27f22",
   "hardware": {
-    "gpu": "NVIDIA A100-SXM4-80GB",
-    "cpu": "AMD EPYC 7713 64-Core Processor",
-    "host": "b8e17af19547"
+    "gpu": "NVIDIA A100 80GB PCIe",
+    "cpu": "AMD EPYC 7543 32-Core Processor",
+    "host": "7894e3c40841"
   },
   "unit": "ms",
   "rows": [
@@ -15,8 +15,8 @@
       "case": "gelu_f64_n1048576",
       "group": "gelu",
       "backend": "jax-cuda",
-      "median": 0.61116625,
-      "iqr": 0.01026262500000008,
+      "median": 0.6712985,
+      "iqr": 0.014345124999999959,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 4
@@ -25,8 +25,8 @@
       "case": "gelu_f64_n1048576",
       "group": "gelu",
       "backend": "pytorch-cuda",
-      "median": 0.01853028125,
-      "iqr": 5.203125000000086e-05,
+      "median": 0.015061375,
+      "iqr": 4.439062500000146e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -53,8 +53,8 @@
       "case": "gelu_tanh_f64_n1048576",
       "group": "gelu_tanh",
       "backend": "jax-cuda",
-      "median": 0.91012075,
-      "iqr": 0.213548375,
+      "median": 0.92640075,
+      "iqr": 0.055309249999999976,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 4
@@ -63,8 +63,8 @@
       "case": "gelu_tanh_f64_n1048576",
       "group": "gelu_tanh",
       "backend": "pytorch-cuda",
-      "median": 0.01166371875,
-      "iqr": 7.860937500000012e-05,
+      "median": 0.00943946875,
+      "iqr": 5.078124999999961e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -91,18 +91,18 @@
       "case": "layer_norm_f64_n1048576",
       "group": "layer_norm",
       "backend": "jax-cuda",
-      "median": 0.134157875,
-      "iqr": 0.003524125000000017,
+      "median": 0.1116688125,
+      "iqr": 0.002730499999999997,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 16
+      "operations_per_sample": 32
     },
     {
       "case": "layer_norm_f64_n1048576",
       "group": "layer_norm",
       "backend": "pytorch-cuda",
-      "median": 0.0372849375,
-      "iqr": 0.00013251562499999592,
+      "median": 0.03043621875,
+      "iqr": 9.234374999999781e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -129,8 +129,8 @@
       "case": "log_softmax_f64_n1048576",
       "group": "log_softmax",
       "backend": "jax-cuda",
-      "median": 0.06057521875,
-      "iqr": 0.004367499999999996,
+      "median": 0.0675575,
+      "iqr": 0.009260078124999994,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -139,8 +139,8 @@
       "case": "log_softmax_f64_n1048576",
       "group": "log_softmax",
       "backend": "pytorch-cuda",
-      "median": 0.01591465625,
-      "iqr": 3.171874999999963e-05,
+      "median": 0.0133885625,
+      "iqr": 1.9062499999999982e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -167,8 +167,8 @@
       "case": "masked_log_softmax_f64_n1048576",
       "group": "masked_log_softmax",
       "backend": "jax-cuda",
-      "median": 0.063983625,
-      "iqr": 0.002883718749999986,
+      "median": 0.0571383125,
+      "iqr": 0.004953015625000001,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -204,8 +204,8 @@
       "case": "masked_softmax_f64_n1048576",
       "group": "masked_softmax",
       "backend": "jax-cuda",
-      "median": 0.71377375,
-      "iqr": 0.027758749999999943,
+      "median": 0.70628875,
+      "iqr": 0.039481625000000076,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 4
@@ -250,8 +250,8 @@
       "case": "rms_norm_f64_n1048576",
       "group": "rms_norm",
       "backend": "pytorch-cuda",
-      "median": 0.0371211875,
-      "iqr": 3.828125000000793e-05,
+      "median": 0.03034278125,
+      "iqr": 0.000127796874999999,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -278,8 +278,8 @@
       "case": "sigmoid_f64_n1048576",
       "group": "sigmoid",
       "backend": "jax-cuda",
-      "median": 0.05875178125,
-      "iqr": 0.001135296874999997,
+      "median": 0.06517559375,
+      "iqr": 0.0023603281250000052,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -288,8 +288,8 @@
       "case": "sigmoid_f64_n1048576",
       "group": "sigmoid",
       "backend": "pytorch-cuda",
-      "median": 0.01226465625,
-      "iqr": 0.00015110937499999977,
+      "median": 0.01002196875,
+      "iqr": 5.5624999999998384e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -316,8 +316,8 @@
       "case": "silu_f64_n1048576",
       "group": "silu",
       "backend": "jax-cuda",
-      "median": 0.0686408125,
-      "iqr": 0.007570156250000015,
+      "median": 0.05888771875,
+      "iqr": 0.0014415781249999954,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -326,8 +326,8 @@
       "case": "silu_f64_n1048576",
       "group": "silu",
       "backend": "pytorch-cuda",
-      "median": 0.0139071875,
-      "iqr": 0.0019251406249999985,
+      "median": 0.01116571875,
+      "iqr": 6.045312500000191e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -354,8 +354,8 @@
       "case": "softmax_f64_n1048576",
       "group": "softmax",
       "backend": "jax-cuda",
-      "median": 0.4380405,
-      "iqr": 0.022608624999999993,
+      "median": 0.437580125,
+      "iqr": 0.05599681249999999,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 8
@@ -364,8 +364,8 @@
       "case": "softmax_f64_n1048576",
       "group": "softmax",
       "backend": "pytorch-cuda",
-      "median": 0.02037996875,
-      "iqr": 3.2343750000000254e-05,
+      "median": 0.01656140625,
+      "iqr": 3.9343750000000316e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -392,8 +392,8 @@
       "case": "softplus_f64_n1048576",
       "group": "softplus",
       "backend": "jax-cuda",
-      "median": 0.05955146875,
-      "iqr": 0.0024906250000000033,
+      "median": 0.065964375,
+      "iqr": 0.002138765624999997,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -402,8 +402,8 @@
       "case": "softplus_f64_n1048576",
       "group": "softplus",
       "backend": "pytorch-cuda",
-      "median": 0.0318015,
-      "iqr": 6.125000000000574e-05,
+      "median": 0.02579584375,
+      "iqr": 6.421874999999744e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -412,8 +412,8 @@
       "case": "softplus_f64_n1048576",
       "group": "softplus",
       "backend": "tenferro-cuda-direct",
-      "median": 0.04852365625,
-      "iqr": 0.00032017187500000405,
+      "median": 0.03855253125,
+      "iqr": 0.0004288906249999974,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 32
@@ -422,11 +422,11 @@
       "case": "softplus_f64_n1048576",
       "group": "softplus",
       "backend": "tenferro-cuda-eager",
-      "median": 0.080031125,
-      "iqr": 0.0007187187499999997,
+      "median": 0.061204625,
+      "iqr": 0.0004953125000000044,
       "status": "ok",
       "verified": true,
-      "operations_per_sample": 16
+      "operations_per_sample": 32
     }
   ]
 }
