@@ -67,7 +67,7 @@ with open(out_path, "w", newline="") as f:
         if phase and phase != "primal":
             benchmark = f"{benchmark}_{phase}"
         backend = row["backend"]
-        if backend in {"native", "blas-openblas", "blas-accelerate", "blas-mkl", "cuda"}:
+        if backend in {"native", "blas-openblas", "blas-accelerate", "blas-mkl", "faer", "cuda"}:
             backend = "tenferro-eager"
         writer.writerow(
             {
