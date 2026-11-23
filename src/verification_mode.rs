@@ -131,7 +131,9 @@ pub fn resolve(problem: &Value, defaults: &Value) -> Result<Value, String> {
 
 /// The mode of a problem that already went through [`resolve`].
 pub fn resolved_mode(problem: &Value) -> Option<VerificationMode> {
-    problem["verify"]["mode"].as_str().and_then(VerificationMode::parse)
+    problem["verify"]["mode"]
+        .as_str()
+        .and_then(VerificationMode::parse)
 }
 
 /// The recorded `measure_only` reason of a resolved problem.
@@ -182,9 +184,15 @@ mod tests {
     fn absent_verify_block_is_cpu_reference() {
         let defaults = problem("{}");
         let case = problem("{id: case_a, op: matmul}");
-        assert_eq!(mode_for(&case, &defaults).unwrap(), VerificationMode::CpuReference);
+        assert_eq!(
+            mode_for(&case, &defaults).unwrap(),
+            VerificationMode::CpuReference
+        );
         let resolved = resolve(&case, &defaults).unwrap();
-        assert_eq!(resolved_mode(&resolved), Some(VerificationMode::CpuReference));
+        assert_eq!(
+            resolved_mode(&resolved),
+            Some(VerificationMode::CpuReference)
+        );
         // Resolving a problem with no verify block must not invent tolerances.
         assert!(resolved["verify"]["rtol"].is_null());
     }
@@ -201,19 +209,29 @@ mod tests {
     #[test]
     fn a_problem_overrides_the_suite_default_mode() {
         let defaults = problem("{verify: {mode: analytic, rtol: 1.0e-5, atol: 1.0e-8}}");
-        let case = problem("{id: case_a, verify: {mode: finite_difference, reason: 'suite default is analytic'}}");
-        assert_eq!(mode_for(&case, &defaults).unwrap(), VerificationMode::FiniteDifference);
+        let case = problem(
+            "{id: case_a, verify: {mode: finite_difference, reason: 'suite default is analytic'}}",
+        );
+        assert_eq!(
+            mode_for(&case, &defaults).unwrap(),
+            VerificationMode::FiniteDifference
+        );
     }
 
     #[test]
     fn measure_only_without_a_reason_is_refused() {
         let defaults = problem("{}");
-        for block in ["{id: p, verify: {mode: measure_only}}",
-                      "{id: p, verify: {mode: measure_only, reason: ''}}",
-                      "{id: p, verify: {mode: measure_only, reason: '   '}}"] {
+        for block in [
+            "{id: p, verify: {mode: measure_only}}",
+            "{id: p, verify: {mode: measure_only, reason: ''}}",
+            "{id: p, verify: {mode: measure_only, reason: '   '}}",
+        ] {
             let case = problem(block);
             let error = mode_for(&case, &defaults).expect_err("must be refused");
-            assert!(error.contains("measure_only requires a non-empty verify.reason"), "{error}");
+            assert!(
+                error.contains("measure_only requires a non-empty verify.reason"),
+                "{error}"
+            );
             assert!(resolve(&case, &defaults).is_err());
         }
     }
@@ -221,9 +239,14 @@ mod tests {
     #[test]
     fn measure_only_with_a_reason_resolves_and_keeps_it() {
         let defaults = problem("{}");
-        let case = problem("{id: p, verify: {mode: measure_only, reason: 'n=4096 reference is unaffordable'}}");
+        let case = problem(
+            "{id: p, verify: {mode: measure_only, reason: 'n=4096 reference is unaffordable'}}",
+        );
         let resolved = resolve(&case, &defaults).unwrap();
-        assert_eq!(resolved_mode(&resolved), Some(VerificationMode::MeasureOnly));
+        assert_eq!(
+            resolved_mode(&resolved),
+            Some(VerificationMode::MeasureOnly)
+        );
         assert_eq!(
             resolved_measure_only_reason(&resolved),
             Some("n=4096 reference is unaffordable")
@@ -248,7 +271,10 @@ mod tests {
         ] {
             assert_eq!(VerificationMode::parse(mode.as_str()), Some(mode));
         }
-        assert_eq!(VerificationMode::parse(DEFAULT_MODE), Some(VerificationMode::CpuReference));
+        assert_eq!(
+            VerificationMode::parse(DEFAULT_MODE),
+            Some(VerificationMode::CpuReference)
+        );
     }
 
     #[test]
@@ -263,7 +289,12 @@ mod tests {
         assert_eq!(block["status"], "not_run");
         assert_eq!(block["mode"], "measure_only");
         assert_eq!(block["reason"], "no CUDA GPU available");
-        for field in ["reference_backend", "max_abs_error", "max_rel_error", "residual"] {
+        for field in [
+            "reference_backend",
+            "max_abs_error",
+            "max_rel_error",
+            "residual",
+        ] {
             assert!(block[field].is_null(), "{field} must stay null");
         }
         for mode in [
@@ -276,7 +307,8 @@ mod tests {
             assert_eq!(block["mode"], mode.as_str());
         }
         // A row whose check failed keeps saying so.
-        let block = unchecked_verification("failed", Some(VerificationMode::CpuReference), "mismatch");
+        let block =
+            unchecked_verification("failed", Some(VerificationMode::CpuReference), "mismatch");
         assert_eq!(block["status"], "failed");
     }
 }

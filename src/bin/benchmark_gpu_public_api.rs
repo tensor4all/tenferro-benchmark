@@ -737,6 +737,18 @@ fn run(
                 .into_iter()
                 .map(|a| Ok(session.constant_from(a)?))
                 .collect::<Result<Vec<_>>>()?;
+            if !case.read_op.is_empty() {
+                return read_layout::run_eager(
+                    case,
+                    &input,
+                    &expected.tensor,
+                    &rt,
+                    session,
+                    settings,
+                    bytes,
+                )
+                .map(|(timing, error)| (timing, error, uninstrumented_phases()));
+            }
             if let Some(op) = reuse::eager_op(&case.op) {
                 return reuse::run_eager(
                     case,

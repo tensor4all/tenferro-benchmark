@@ -95,3 +95,77 @@ pub(super) fn run(
         error.max(verify(rt, &final_output, expected, case)?),
     ))
 }
+
+fn execute_eager(
+    op: &str,
+    lhs: &tenferro_ad::EagerTensor,
+    rhs: Option<&tenferro_ad::EagerTensor>,
+    s: &mut tenferro_ad::EagerSession<'_>,
+) -> Result<tenferro_ad::EagerTensor> {
+    let rhs = || rhs.ok_or("missing rhs");
+    Ok(match op {
+        "add" => s.add(lhs, rhs()?)?,
+        "mul" => s.mul(lhs, rhs()?)?,
+        "sub" => s.sub(lhs, rhs()?)?,
+        "div" => s.div(lhs, rhs()?)?,
+        "rem" => s.rem(lhs, rhs()?)?,
+        "pow" => s.pow(lhs, rhs()?)?,
+        "maximum" => s.maximum(lhs, rhs()?)?,
+        "minimum" => s.minimum(lhs, rhs()?)?,
+        "neg" => s.neg(lhs)?,
+        "abs" => s.abs(lhs)?,
+        "sign" => s.sign(lhs)?,
+        "expm1" => s.expm1(lhs)?,
+        "log" => s.log(lhs)?,
+        "log1p" => s.log1p(lhs)?,
+        "erf" => s.erf(lhs)?,
+        "sin" => s.sin(lhs)?,
+        "cos" => s.cos(lhs)?,
+        "sqrt" => s.sqrt(lhs)?,
+        "rsqrt" => s.rsqrt(lhs)?,
+        "exp" => s.exp(lhs)?,
+        "tanh" => s.tanh(lhs)?,
+        "conj" => s.conj(lhs)?,
+        "reduce_sum" => s.reduce_sum(lhs, Some(&[1]))?,
+        "reduce_prod" => s.reduce_prod(lhs, Some(&[1]))?,
+        "reduce_max" => s.reduce_max(lhs, Some(&[1]))?,
+        "reduce_min" => s.reduce_min(lhs, Some(&[1]))?,
+        "reduce_sum_squares" => s.reduce_sum_squares(lhs, Some(&[1]))?,
+        _ => return Err(format!("unknown eager strided operation {op}").into()),
+    })
+}
+
+/// Eager transposed reads: the eager values are transposed once before the clock (an eager
+/// transpose is a metadata view of the retained value), and the timed loop is only the eager
+/// operation on those views. tenferro reads the permuted views in place (tenferro-rs#2701).
+#[allow(clippy::too_many_arguments)]
+pub(super) fn run_eager(
+    case: &Case,
+    inputs: &[tenferro_ad::EagerTensor],
+    expected: &Tensor,
+    rt: &CudaRuntime,
+    session: &mut tenferro_ad::EagerSession<'_>,
+    settings: &Settings,
+    bytes: usize,
+) -> Result<(Option<Value>, f64)> {
+    let views = inputs
+        .iter()
+        .map(|input| Ok(session.transpose(input, &[1, 0])?))
+        .collect::<Result<Vec<_>>>()?;
+    let run = |s: &mut tenferro_ad::EagerSession<'_>| {
+        execute_eager(&case.read_op, &views[0], views.get(1), s)
+    };
+    let check = |s: &mut tenferro_ad::EagerSession<'_>, out: &tenferro_ad::EagerTensor| {
+        let value = s.duplicate_value(out)?;
+        verify(rt, &value, expected, case)
+    };
+    let probe = run(session)?;
+    let error = check(session, &probe)?;
+    drop(probe);
+    if settings.verify_only {
+        return Ok((None, error));
+    }
+    let timing = measure(settings, bytes, rt, || (), |()| run(session))?;
+    let final_output = run(session)?;
+    Ok((Some(timing), error.max(check(session, &final_output)?)))
+}

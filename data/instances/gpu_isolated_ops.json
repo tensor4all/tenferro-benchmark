@@ -762,10 +762,7 @@
         32
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      }
+      "excluded": {}
     },
     {
       "id": "reduce_mean_f64_n1024",
@@ -778,10 +775,7 @@
         32
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      }
+      "excluded": {}
     },
     {
       "id": "add_f32_n1048576",
@@ -1471,10 +1465,7 @@
         1024
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      }
+      "excluded": {}
     },
     {
       "id": "reduce_mean_f64_n1048576",
@@ -1486,10 +1477,7 @@
         1024
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      }
+      "excluded": {}
     },
     {
       "id": "reduce_sum_full_f32_n1024",
@@ -1941,10 +1929,7 @@
         1024
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      },
+      "excluded": {},
       "full_reduction": true
     },
     {
@@ -1969,10 +1954,7 @@
         1024
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      },
+      "excluded": {},
       "full_reduction": true
     },
     {
@@ -1996,10 +1978,7 @@
         1048576
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      },
+      "excluded": {},
       "full_reduction": true
     },
     {
@@ -2022,10 +2001,7 @@
         1048576
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      },
+      "excluded": {},
       "full_reduction": true
     },
     {
@@ -2050,10 +2026,7 @@
       ],
       "alpha": 0.5,
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route.",
-        "tenferro-cuda-eager": "Eager scale host-placement bug fixed by upstream 917d5341. API now uploads its internal scalar through constant_from_host; no public preuploaded factor parameter. Numerical validation only; internal scalar transfer excludes standard timing."
-      },
+      "excluded": {},
       "unavailable": {}
     },
     {
@@ -2067,10 +2040,7 @@
       ],
       "alpha": 0.5,
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route.",
-        "tenferro-cuda-eager": "Eager scale host-placement bug fixed by upstream 917d5341. API now uploads its internal scalar through constant_from_host; no public preuploaded factor parameter. Numerical validation only; internal scalar transfer excludes standard timing."
-      },
+      "excluded": {},
       "unavailable": {}
     },
     {
@@ -2084,10 +2054,7 @@
       ],
       "alpha": 0.5,
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route.",
-        "tenferro-cuda-eager": "Eager scale host-placement bug fixed by upstream 917d5341. API now uploads its internal scalar through constant_from_host; no public preuploaded factor parameter. Numerical validation only; internal scalar transfer excludes standard timing."
-      },
+      "excluded": {},
       "unavailable": {}
     },
     {
@@ -2101,10 +2068,7 @@
       ],
       "alpha": 0.5,
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route.",
-        "tenferro-cuda-eager": "Eager scale host-placement bug fixed by upstream 917d5341. API now uploads its internal scalar through constant_from_host; no public preuploaded factor parameter. Numerical validation only; internal scalar transfer excludes standard timing."
-      },
+      "excluded": {},
       "unavailable": {}
     },
     {
@@ -2118,10 +2082,7 @@
       ],
       "alpha": 0.5,
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route.",
-        "tenferro-cuda-eager": "Eager scale host-placement bug fixed by upstream 917d5341. API now uploads its internal scalar through constant_from_host; no public preuploaded factor parameter. Numerical validation only; internal scalar transfer excludes standard timing."
-      },
+      "excluded": {},
       "beta": 0.75,
       "unavailable": {}
     },
@@ -2136,10 +2097,7 @@
       ],
       "alpha": 0.5,
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route.",
-        "tenferro-cuda-eager": "Eager scale host-placement bug fixed by upstream 917d5341. API now uploads its internal scalar through constant_from_host; no public preuploaded factor parameter. Numerical validation only; internal scalar transfer excludes standard timing."
-      },
+      "excluded": {},
       "beta": 0.75,
       "unavailable": {}
     },
@@ -2153,10 +2111,7 @@
       ],
       "alpha": 0.5,
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route.",
-        "tenferro-cuda-eager": "Eager scale host-placement bug fixed by upstream 917d5341. API now uploads its internal scalar through constant_from_host; no public preuploaded factor parameter. Numerical validation only; internal scalar transfer excludes standard timing."
-      },
+      "excluded": {},
       "unavailable": {}
     },
     {
@@ -2169,10 +2124,7 @@
       ],
       "alpha": 0.5,
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route.",
-        "tenferro-cuda-eager": "Eager scale host-placement bug fixed by upstream 917d5341. API now uploads its internal scalar through constant_from_host; no public preuploaded factor parameter. Numerical validation only; internal scalar transfer excludes standard timing."
-      },
+      "excluded": {},
       "unavailable": {}
     },
     {
@@ -2185,10 +2137,7 @@
       ],
       "alpha": 0.5,
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route.",
-        "tenferro-cuda-eager": "Eager scale host-placement bug fixed by upstream 917d5341. API now uploads its internal scalar through constant_from_host; no public preuploaded factor parameter. Numerical validation only; internal scalar transfer excludes standard timing."
-      },
+      "excluded": {},
       "unavailable": {}
     },
     {
@@ -2201,10 +2150,7 @@
       ],
       "alpha": 0.5,
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route.",
-        "tenferro-cuda-eager": "Eager scale host-placement bug fixed by upstream 917d5341. API now uploads its internal scalar through constant_from_host; no public preuploaded factor parameter. Numerical validation only; internal scalar transfer excludes standard timing."
-      },
+      "excluded": {},
       "unavailable": {}
     },
     {
@@ -2217,10 +2163,7 @@
       ],
       "alpha": 0.5,
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route.",
-        "tenferro-cuda-eager": "Eager scale host-placement bug fixed by upstream 917d5341. API now uploads its internal scalar through constant_from_host; no public preuploaded factor parameter. Numerical validation only; internal scalar transfer excludes standard timing."
-      },
+      "excluded": {},
       "beta": 0.75,
       "unavailable": {}
     },
@@ -2234,10 +2177,7 @@
       ],
       "alpha": 0.5,
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route.",
-        "tenferro-cuda-eager": "Eager scale host-placement bug fixed by upstream 917d5341. API now uploads its internal scalar through constant_from_host; no public preuploaded factor parameter. Numerical validation only; internal scalar transfer excludes standard timing."
-      },
+      "excluded": {},
       "beta": 0.75,
       "unavailable": {}
     },
