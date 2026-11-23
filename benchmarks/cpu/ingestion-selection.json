@@ -32,8 +32,8 @@
       "identities_sha256": "edeba6b3a6946ccb0465e1ec65163105b80fb05f29f138db4fea1b82d7309953"
     },
     "cpu/session_matrix": {
-      "row_count": 114,
-      "identities_sha256": "375a84984917238fbeb07380c6f0de876428180a5dd9de31a2ae5cb1d620c35d"
+      "row_count": 86,
+      "identities_sha256": "b346ea5a400a2a8c36ed7382ed5d8662f413eda009babd3492d10eafb2cfb055"
     },
     "cpu/permutation": {
       "row_count": 92,
