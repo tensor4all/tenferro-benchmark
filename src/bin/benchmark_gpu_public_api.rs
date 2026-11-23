@@ -888,7 +888,13 @@ fn main() -> Result<()> {
             row["batch_output_policy"] = json!("native batch-last; reference axis normalization only during untimed CPU verification");
         }
         if !case.read_op.is_empty() {
-            row["input_layout_policy"] = json!("transposed borrowed TensorRead over prepared CUDA storage; view and read-handle construction outside timing");
+            let (route, layout, setup) = read_layout::provenance(&mode);
+            row["read_route"] = json!(route);
+            row["input_layout_policy"] = json!(layout);
+            row["setup_policy"] = json!(setup);
+            if case.read_op.starts_with("reduce_") {
+                row["read_staging"] = json!("on both arms the CUDA engine stages a permuted (non-flat) view into a compact copy inside the timed operation before reducing (tenferro-gpu CudaEngine::reduce_axes, tenferro-rs 1ba9f335); elementwise reads are read in place");
+            }
         }
         if case.op.contains("_into_accum") {
             row["input_restoration"] = json!("GPU seed copied into each destination before every batch; synchronized outside timing");

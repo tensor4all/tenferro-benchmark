@@ -1,9 +1,29 @@
-//! Transposed borrowed reads; view metadata and read handles are untimed.
+//! Transposed reads, per arm: the direct arm times borrowed `TensorRead`s over views of prepared
+//! CUDA storage, and the eager arm times the eager operation on transposed `EagerTensor` views.
+//! View construction (and, on the direct arm, read handles) is untimed.
 use super::{measure, verify, Case, Result, Settings};
 use num_complex::{Complex32, Complex64};
 use serde_json::Value;
 use tenferro_gpu::cuda::CudaRuntime;
 use tenferro_tensor::{DType, Engine, Tensor, TensorRead, TensorView};
+
+/// The route a `*_strided_read` row on `mode` actually times, as recorded in `records.jsonl`:
+/// `(read_route, input_layout_policy, setup_policy)`. Each arm describes only its own route.
+pub(super) fn provenance(mode: &str) -> (&'static str, &'static str, &'static str) {
+    if mode == "tenferro-cuda-direct" {
+        (
+            "direct: Engine::*_read on borrowed TensorRead (read_layout::run)",
+            "transposed borrowed TensorRead over prepared CUDA storage; view and read-handle construction outside timing",
+            "fixtures, H2D, transposed views, read handles and output validation outside timing",
+        )
+    } else {
+        (
+            "eager: EagerSession op on transposed EagerTensor views (read_layout::run_eager); no TensorRead is built",
+            "EagerTensor values transposed once by EagerSession::transpose (a metadata view of the retained value) outside timing; the timed region is only the eager operation on those views",
+            "fixtures, H2D, eager constant adoption, eager transposes and output validation outside timing; no read handles exist on this route",
+        )
+    }
+}
 
 pub(super) fn transpose(input: &Tensor) -> Result<TensorView<'_>> {
     macro_rules! view {

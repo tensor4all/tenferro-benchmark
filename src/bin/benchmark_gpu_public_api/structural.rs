@@ -219,9 +219,8 @@ pub(super) fn verify_materialized(
                                 "input dtype mismatch",
                             )
                         })?)?;
-                        // SAFETY: compare addresses only while both public raw references
-                        // and their owning tensors remain alive; no pointer escapes the scope.
-                        if unsafe { src.raw_ptr() == out.raw_ptr() } {
+                        // Compare addresses only while both tensors are alive; no pointer escapes.
+                        if src.raw_ptr() == out.raw_ptr() {
                             return Err(tenferro_tensor::Error::unsupported(
                                 "verification.materialized",
                                 "output aliases an input",

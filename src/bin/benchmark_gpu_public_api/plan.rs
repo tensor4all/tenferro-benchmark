@@ -83,7 +83,7 @@ pub(super) fn run(
         if settings.verify_only {
             return Ok((None, error));
         }
-        let timing = measure(settings, bytes, &rt, reads, |args| execute(args))?;
+        let timing = measure(settings, bytes, &rt, reads, &mut execute)?;
         let output = execute(reads())?;
         Ok((
             Some(timing),

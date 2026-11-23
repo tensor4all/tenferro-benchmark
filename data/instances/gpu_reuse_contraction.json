@@ -1650,10 +1650,7 @@
         16,
         64
       ],
-      "issue": 155,
-      "unavailable": {
-        "tenferro-cuda-eager": "A reduction over a permuted view is staged into a compact copy on purpose: tenferro's reduction planner picks its fold strategy from the operand layout, so reading the view in place could change the fold association and the result (tenferro-rs#2721). The direct arm pays the same copy."
-      }
+      "issue": 155
     },
     {
       "id": "reduce_sum_strided_read_f64_n1024",
@@ -1666,10 +1663,7 @@
         16,
         64
       ],
-      "issue": 155,
-      "unavailable": {
-        "tenferro-cuda-eager": "A reduction over a permuted view is staged into a compact copy on purpose: tenferro's reduction planner picks its fold strategy from the operand layout, so reading the view in place could change the fold association and the result (tenferro-rs#2721). The direct arm pays the same copy."
-      }
+      "issue": 155
     },
     {
       "id": "conj_strided_read_c32_n1024",
@@ -1839,10 +1833,7 @@
         512,
         2048
       ],
-      "issue": 155,
-      "unavailable": {
-        "tenferro-cuda-eager": "A reduction over a permuted view is staged into a compact copy on purpose: tenferro's reduction planner picks its fold strategy from the operand layout, so reading the view in place could change the fold association and the result (tenferro-rs#2721). The direct arm pays the same copy."
-      }
+      "issue": 155
     },
     {
       "id": "reduce_sum_strided_read_f64_n1048576",
@@ -1854,10 +1845,7 @@
         512,
         2048
       ],
-      "issue": 155,
-      "unavailable": {
-        "tenferro-cuda-eager": "A reduction over a permuted view is staged into a compact copy on purpose: tenferro's reduction planner picks its fold strategy from the operand layout, so reading the view in place could change the fold association and the result (tenferro-rs#2721). The direct arm pays the same copy."
-      }
+      "issue": 155
     },
     {
       "id": "conj_strided_read_c32_n1048576",
@@ -4960,10 +4948,7 @@
         16,
         64
       ],
-      "issue": 155,
-      "unavailable": {
-        "tenferro-cuda-eager": "A reduction over a permuted view is staged into a compact copy on purpose: tenferro's reduction planner picks its fold strategy from the operand layout, so reading the view in place could change the fold association and the result (tenferro-rs#2721). The direct arm pays the same copy."
-      }
+      "issue": 155
     },
     {
       "id": "reduce_prod_strided_read_f64_n1024",
@@ -4976,10 +4961,7 @@
         16,
         64
       ],
-      "issue": 155,
-      "unavailable": {
-        "tenferro-cuda-eager": "A reduction over a permuted view is staged into a compact copy on purpose: tenferro's reduction planner picks its fold strategy from the operand layout, so reading the view in place could change the fold association and the result (tenferro-rs#2721). The direct arm pays the same copy."
-      }
+      "issue": 155
     },
     {
       "id": "reduce_max_strided_read_f32_n1024",
@@ -4992,10 +4974,7 @@
         16,
         64
       ],
-      "issue": 155,
-      "unavailable": {
-        "tenferro-cuda-eager": "A reduction over a permuted view is staged into a compact copy on purpose: tenferro's reduction planner picks its fold strategy from the operand layout, so reading the view in place could change the fold association and the result (tenferro-rs#2721). The direct arm pays the same copy."
-      }
+      "issue": 155
     },
     {
       "id": "reduce_max_strided_read_f64_n1024",
@@ -5008,10 +4987,7 @@
         16,
         64
       ],
-      "issue": 155,
-      "unavailable": {
-        "tenferro-cuda-eager": "A reduction over a permuted view is staged into a compact copy on purpose: tenferro's reduction planner picks its fold strategy from the operand layout, so reading the view in place could change the fold association and the result (tenferro-rs#2721). The direct arm pays the same copy."
-      }
+      "issue": 155
     },
     {
       "id": "reduce_min_strided_read_f32_n1024",
@@ -5024,10 +5000,7 @@
         16,
         64
       ],
-      "issue": 155,
-      "unavailable": {
-        "tenferro-cuda-eager": "A reduction over a permuted view is staged into a compact copy on purpose: tenferro's reduction planner picks its fold strategy from the operand layout, so reading the view in place could change the fold association and the result (tenferro-rs#2721). The direct arm pays the same copy."
-      }
+      "issue": 155
     },
     {
       "id": "reduce_min_strided_read_f64_n1024",
@@ -5040,10 +5013,7 @@
         16,
         64
       ],
-      "issue": 155,
-      "unavailable": {
-        "tenferro-cuda-eager": "A reduction over a permuted view is staged into a compact copy on purpose: tenferro's reduction planner picks its fold strategy from the operand layout, so reading the view in place could change the fold association and the result (tenferro-rs#2721). The direct arm pays the same copy."
-      }
+      "issue": 155
     },
     {
       "id": "reduce_sum_squares_strided_read_f32_n1024",
@@ -5056,10 +5026,7 @@
         16,
         64
       ],
-      "issue": 155,
-      "unavailable": {
-        "tenferro-cuda-eager": "A reduction over a permuted view is staged into a compact copy on purpose: tenferro's reduction planner picks its fold strategy from the operand layout, so reading the view in place could change the fold association and the result (tenferro-rs#2721). The direct arm pays the same copy."
-      }
+      "issue": 155
     },
     {
       "id": "reduce_sum_squares_strided_read_f64_n1024",
@@ -5072,10 +5039,7 @@
         16,
         64
       ],
-      "issue": 155,
-      "unavailable": {
-        "tenferro-cuda-eager": "A reduction over a permuted view is staged into a compact copy on purpose: tenferro's reduction planner picks its fold strategy from the operand layout, so reading the view in place could change the fold association and the result (tenferro-rs#2721). The direct arm pays the same copy."
-      }
+      "issue": 155
     },
     {
       "id": "sub_strided_read_f32_n1048576",
@@ -5503,10 +5467,7 @@
         512,
         2048
       ],
-      "issue": 155,
-      "unavailable": {
-        "tenferro-cuda-eager": "A reduction over a permuted view is staged into a compact copy on purpose: tenferro's reduction planner picks its fold strategy from the operand layout, so reading the view in place could change the fold association and the result (tenferro-rs#2721). The direct arm pays the same copy."
-      }
+      "issue": 155
     },
     {
       "id": "reduce_prod_strided_read_f64_n1048576",
@@ -5518,10 +5479,7 @@
         512,
         2048
       ],
-      "issue": 155,
-      "unavailable": {
-        "tenferro-cuda-eager": "A reduction over a permuted view is staged into a compact copy on purpose: tenferro's reduction planner picks its fold strategy from the operand layout, so reading the view in place could change the fold association and the result (tenferro-rs#2721). The direct arm pays the same copy."
-      }
+      "issue": 155
     },
     {
       "id": "reduce_max_strided_read_f32_n1048576",
@@ -5533,10 +5491,7 @@
         512,
         2048
       ],
-      "issue": 155,
-      "unavailable": {
-        "tenferro-cuda-eager": "A reduction over a permuted view is staged into a compact copy on purpose: tenferro's reduction planner picks its fold strategy from the operand layout, so reading the view in place could change the fold association and the result (tenferro-rs#2721). The direct arm pays the same copy."
-      }
+      "issue": 155
     },
     {
       "id": "reduce_max_strided_read_f64_n1048576",
@@ -5548,10 +5503,7 @@
         512,
         2048
       ],
-      "issue": 155,
-      "unavailable": {
-        "tenferro-cuda-eager": "A reduction over a permuted view is staged into a compact copy on purpose: tenferro's reduction planner picks its fold strategy from the operand layout, so reading the view in place could change the fold association and the result (tenferro-rs#2721). The direct arm pays the same copy."
-      }
+      "issue": 155
     },
     {
       "id": "reduce_min_strided_read_f32_n1048576",
@@ -5563,10 +5515,7 @@
         512,
         2048
       ],
-      "issue": 155,
-      "unavailable": {
-        "tenferro-cuda-eager": "A reduction over a permuted view is staged into a compact copy on purpose: tenferro's reduction planner picks its fold strategy from the operand layout, so reading the view in place could change the fold association and the result (tenferro-rs#2721). The direct arm pays the same copy."
-      }
+      "issue": 155
     },
     {
       "id": "reduce_min_strided_read_f64_n1048576",
@@ -5578,10 +5527,7 @@
         512,
         2048
       ],
-      "issue": 155,
-      "unavailable": {
-        "tenferro-cuda-eager": "A reduction over a permuted view is staged into a compact copy on purpose: tenferro's reduction planner picks its fold strategy from the operand layout, so reading the view in place could change the fold association and the result (tenferro-rs#2721). The direct arm pays the same copy."
-      }
+      "issue": 155
     },
     {
       "id": "reduce_sum_squares_strided_read_f32_n1048576",
@@ -5593,10 +5539,7 @@
         512,
         2048
       ],
-      "issue": 155,
-      "unavailable": {
-        "tenferro-cuda-eager": "A reduction over a permuted view is staged into a compact copy on purpose: tenferro's reduction planner picks its fold strategy from the operand layout, so reading the view in place could change the fold association and the result (tenferro-rs#2721). The direct arm pays the same copy."
-      }
+      "issue": 155
     },
     {
       "id": "reduce_sum_squares_strided_read_f64_n1048576",
@@ -5608,10 +5551,7 @@
         512,
         2048
       ],
-      "issue": 155,
-      "unavailable": {
-        "tenferro-cuda-eager": "A reduction over a permuted view is staged into a compact copy on purpose: tenferro's reduction planner picks its fold strategy from the operand layout, so reading the view in place could change the fold association and the result (tenferro-rs#2721). The direct arm pays the same copy."
-      }
+      "issue": 155
     }
   ]
 }

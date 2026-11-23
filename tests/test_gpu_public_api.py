@@ -171,6 +171,29 @@ class PublicGpuContracts(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     formatter.load_rows(suite, [path])
 
+    def test_transposed_read_notes_quote_each_arms_recorded_route(self):
+        suite = {"cases": [{"id": "exp_strided_read", "read_op": "exp"}, {"id": "add_into", "op": "add_into"}]}
+        rows = {
+            ("exp_strided_read", "tenferro-cuda-direct"): {"status": "ok", "read_route": "direct route", "input_layout_policy": "borrowed TensorRead"},
+            ("exp_strided_read", "tenferro-cuda-eager"): {"status": "ok", "read_route": "eager route", "input_layout_policy": "EagerTensor views"},
+            ("exp_strided_read", "pytorch-cuda"): {"status": "unsupported", "input_layout_policy": "ignored"},
+            ("exp_strided_read", "jax-cuda"): {"status": "ok"},
+        }
+        notes = formatter.read_route_notes(suite, rows, ["tenferro-cuda-direct", "tenferro-cuda-eager", "pytorch-cuda", "jax-cuda"])
+        self.assertEqual(notes, [
+            "- `tenferro-cuda-direct` transposed reads: direct route; borrowed TensorRead.",
+            "- `tenferro-cuda-eager` transposed reads: eager route; EagerTensor views.",
+            "",
+        ])
+        self.assertNotIn("TensorRead", "".join(line for line in notes if "eager" in line))
+
+    def test_no_reduce_strided_read_is_withheld_by_a_staging_reason(self):
+        suite = json.loads((Path(__file__).parents[1] / "data/instances/gpu_reuse_contraction.json").read_text())
+        reduce_rows = [case for case in suite["cases"] if case.get("read_op", "").startswith("reduce_")]
+        self.assertEqual(len(reduce_rows), 20)
+        for case in reduce_rows:
+            self.assertNotIn("tenferro-cuda-eager", case.get("unavailable", {}), case["id"])
+
     def test_strided_rectangular_fixture_preserves_logical_axes(self):
         case = dict(op="reduce_sum_strided_read", read_op="reduce_sum",
                     n=1024, shape=[16, 64])

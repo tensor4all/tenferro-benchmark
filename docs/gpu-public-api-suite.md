@@ -414,15 +414,27 @@ The `reuse_contraction` suite includes distinct transposed borrowed-read cases
 for `add_read`, `mul_read`, `neg_read`, `exp_read`, `tanh_read`,
 `reduce_sum_read` (logical axis 1), and materialized `conj_read`.
 Rectangular logical shapes 16x64 and 512x2048 prevent swapping logical axes
-from passing unnoticed. Each fixture stores the transposed physical matrix;
-tenferro creates a transposed `TensorView` on its CUDA allocation and prepares
-each move-only `TensorRead` before the clock. PyTorch creates its native
-transposed view before timing. Both receive the same logical values and retain
-their native layouts; no input materialization is charged to just one arm.
-JAX prepares the same logical values outside compilation/timing and compares
-the operation result, without claiming an equivalent public strided-view
-contract. Eager owned tensors are not substitutes for borrowed reads and stay
-unsupported. These cases do not alias other read operations or layouts.
+from passing unnoticed. Each fixture stores the transposed physical matrix.
+The two tenferro arms take different routes, and each row records its own in
+`records.jsonl` (`read_route`, `input_layout_policy`, `setup_policy`):
+
+- `tenferro-cuda-direct` creates a transposed `TensorView` on its CUDA
+  allocation and prepares each move-only `TensorRead` before the clock; the
+  timed region is the `Engine::*_read` call.
+- `tenferro-cuda-eager` builds no `TensorRead`. It transposes the eager values
+  once with `EagerSession::transpose` (a metadata view of the retained value)
+  before the clock; the timed region is the `EagerSession` operation on those
+  views.
+
+On both arms tenferro reads elementwise operands in place. A reduction over a
+permuted view is staged into a compact copy inside the timed operation
+(`CudaEngine::reduce_axes`), so the `reduce_*_strided_read` rows include that
+copy on both arms; such rows also record `read_staging`. PyTorch creates its
+native transposed view before timing. All arms receive the same logical values
+and keep their native layouts. JAX prepares the same logical values outside
+compilation/timing and compares the operation result, without claiming an
+equivalent public strided-view contract. These cases do not alias other read
+operations or layouts.
 
 Full public LU selects 24 square/tall/wide cases (side 32/256,
 F32/F64/C32/C64) through dynamic `TensorLinalgExt::lu` and
