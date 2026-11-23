@@ -19,7 +19,7 @@ pub(super) fn provenance(mode: &str) -> (&'static str, &'static str, &'static st
     } else {
         (
             "eager: EagerSession op on transposed EagerTensor views (read_layout::run_eager); no TensorRead is built",
-            "EagerTensor values transposed once by EagerSession::transpose (a metadata view of the retained value) outside timing; the timed region is only the eager operation on those views",
+            "EagerTensor values transposed once by EagerSession::transpose outside timing; that call copies each value into a fresh compact device buffer (one untimed D2D copy per input, which the direct arm does not make) and returns a permuted view of the copy; the timed region is only the eager operation on those permuted views",
             "fixtures, H2D, eager constant adoption, eager transposes and output validation outside timing; no read handles exist on this route",
         )
     }
@@ -155,9 +155,10 @@ fn execute_eager(
     })
 }
 
-/// Eager transposed reads: the eager values are transposed once before the clock (an eager
-/// transpose is a metadata view of the retained value), and the timed loop is only the eager
-/// operation on those views. tenferro reads the permuted views in place (tenferro-rs#2701).
+/// Eager transposed reads: the eager values are transposed once before the clock. At the pin,
+/// `EagerSession::transpose` duplicates the value into a fresh compact device buffer and returns a
+/// permuted view of that copy (`transpose_in_session`), so each input pays one untimed D2D copy.
+/// The timed loop is only the eager operation on those permuted views (tenferro-rs#2701).
 #[allow(clippy::too_many_arguments)]
 pub(super) fn run_eager(
     case: &Case,

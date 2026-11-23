@@ -422,9 +422,11 @@ The two tenferro arms take different routes, and each row records its own in
   allocation and prepares each move-only `TensorRead` before the clock; the
   timed region is the `Engine::*_read` call.
 - `tenferro-cuda-eager` builds no `TensorRead`. It transposes the eager values
-  once with `EagerSession::transpose` (a metadata view of the retained value)
-  before the clock; the timed region is the `EagerSession` operation on those
-  views.
+  once with `EagerSession::transpose` before the clock. That call copies each
+  value into a fresh compact device buffer and returns a permuted view of the
+  copy, so the eager arm pays one untimed D2D copy per input that the direct
+  arm does not. The timed region is the `EagerSession` operation on those
+  permuted views.
 
 On both arms tenferro reads elementwise operands in place. A reduction over a
 permuted view is staged into a compact copy inside the timed operation
