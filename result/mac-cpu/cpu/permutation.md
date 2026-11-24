@@ -3,7 +3,7 @@
 - Target profile: `mac-cpu`
 - Suite: `cpu/permutation`
 - Suite file: `benchmarks/cpu/permutation.yaml`
-- Timestamp: `2026-11-23T18:23:20.637434+00:00`
+- Timestamp: `2026-11-24T18:52:43.890471+00:00`
 - tenferro-rs commit: `ce9125d0cff4ee40841120759b5df45252c27f22`
 
 ## CPU Information
@@ -30,16 +30,16 @@ Median (p25 / p75) in ms. Missing backends are shown as `-`; the fastest backend
 
 | pattern | label | tenferro-rs (ms) | HPTT (ms) | strided-rs (ms) | Julia Base (ms) | Strided.jl (ms) | memcpy (ms) |
 |---|---|---:|---:|---:|---:|---:|---:|
-| `cyclic_15d_3` | 15D 3^15 cyclic [1,2,...,0] | **6.940 (6.875 / 7.148)** | skipped (rebuild with --features hptt) | 8.991 (8.961 / 9.127) | 11.016 (9.695 / 11.471) | 10.944 (10.685 / 11.306) | - |
-| `memcpy_24d_contiguous` | memcpy baseline (24D 2^24) | - | - | **6.744 (6.723 / 6.767)** | - | - | 6.758 (6.724 / 6.873) |
-| `reverse_15d_3` | 15D 3^15 reverse | 33.198 (30.945 / 33.346) | skipped (rebuild with --features hptt) | 32.133 (31.412 / 33.297) | 123.046 (118.703 / 123.845) | **19.154 (18.549 / 20.248)** | - |
-| `reverse_23d_2` | 23D 2^23 reverse | 28.344 (26.811 / 28.594) | skipped (rebuild with --features hptt) | 24.179 (23.973 / 25.011) | 67.108 (61.649 / 70.981) | **21.823 (21.485 / 22.050)** | - |
-| `rotation_6d_32_32_32_32_16_16` | 6D 32^4x16x16 rotation [5,0,4,1,3,2] | 2326.014 (2282.927 / 2452.880) | skipped (rebuild with --features hptt) | **2208.050 (2197.357 / 2290.306)** | 2617.755 (2110.226 / 2910.968) | 2477.278 (2321.852 / 2526.275) | - |
-| `tn_light_415_24d_contiguous_same_perm` | 24D contiguous source, TN light 415 late-step permutation | **8.351 (8.273 / 8.369)** | skipped (rebuild with --features hptt) | 10.465 (10.425 / 11.020) | 16.552 (16.214 / 16.786) | 9.325 (8.818 / 9.462) | - |
-| `tn_light_415_24d_scattered_to_colmajor` | 24D scattered -> col-major | **12.583 (12.533 / 12.715)** | - | 14.468 (14.387 / 14.547) | 190.592 (184.317 / 197.617) | 15.684 (15.514 / 15.942) | - |
-| `transpose_2d_2048` | 2D 2048^2 transpose [1,0] | 8.968 (8.753 / 9.110) | skipped (rebuild with --features hptt) | 8.863 (8.854 / 8.911) | 13.225 (13.044 / 13.973) | **6.412 (6.372 / 6.453)** | - |
-| `transpose_3d_256_102` | 3D 256^3 transpose [1,0,2] | **16.367 (16.336 / 16.590)** | skipped (rebuild with --features hptt) | 17.721 (17.704 / 17.798) | 18.005 (17.848 / 18.891) | 19.064 (18.322 / 19.250) | - |
-| `transpose_3d_256_201` | 3D 256^3 transpose [2,0,1] | **20.724 (20.574 / 20.885)** | skipped (rebuild with --features hptt) | 22.807 (22.693 / 23.052) | 329.727 (284.529 / 351.251) | 38.676 (38.077 / 38.965) | - |
+| `cyclic_15d_3` | 15D 3^15 cyclic [1,2,...,0] | **8.609 (8.321 / 9.343)** | skipped (rebuild with --features hptt) | 13.555 (12.797 / 14.481) | 15.200 (13.593 / 17.043) | 14.214 (13.310 / 15.009) | - |
+| `memcpy_24d_contiguous` | memcpy baseline (24D 2^24) | - | - | **7.661 (7.140 / 7.972)** | - | - | 9.352 (8.608 / 10.215) |
+| `reverse_15d_3` | 15D 3^15 reverse | 72.251 (63.240 / 80.775) | skipped (rebuild with --features hptt) | 50.341 (48.528 / 54.069) | 131.512 (110.168 / 134.748) | **33.195 (25.641 / 38.914)** | - |
+| `reverse_23d_2` | 23D 2^23 reverse | 36.159 (33.922 / 37.458) | skipped (rebuild with --features hptt) | 27.240 (26.248 / 29.208) | 93.988 (72.724 / 105.294) | **24.030 (22.732 / 27.131)** | - |
+| `rotation_6d_32_32_32_32_16_16` | 6D 32^4x16x16 rotation [5,0,4,1,3,2] | 8536.116 (7683.397 / 9181.607) | skipped (rebuild with --features hptt) | 5470.147 (4502.564 / 8135.464) | **4342.222 (3342.733 / 5794.263)** | 5283.015 (3620.610 / 6273.545) | - |
+| `tn_light_415_24d_contiguous_same_perm` | 24D contiguous source, TN light 415 late-step permutation | 14.495 (13.433 / 16.338) | skipped (rebuild with --features hptt) | 14.723 (13.391 / 15.776) | 16.618 (15.917 / 17.009) | **11.380 (11.176 / 11.899)** | - |
+| `tn_light_415_24d_scattered_to_colmajor` | 24D scattered -> col-major | 22.617 (19.013 / 32.666) | - | 27.698 (22.702 / 35.280) | 201.430 (190.991 / 213.188) | **17.886 (17.663 / 18.256)** | - |
+| `transpose_2d_2048` | 2D 2048^2 transpose [1,0] | 9.448 (8.496 / 9.759) | skipped (rebuild with --features hptt) | 9.713 (9.273 / 10.339) | 27.801 (24.273 / 32.192) | **9.244 (8.774 / 10.210)** | - |
+| `transpose_3d_256_102` | 3D 256^3 transpose [1,0,2] | **20.201 (18.551 / 23.292)** | skipped (rebuild with --features hptt) | 26.759 (24.483 / 29.429) | 24.034 (20.879 / 25.646) | 21.061 (20.158 / 22.732) | - |
+| `transpose_3d_256_201` | 3D 256^3 transpose [2,0,1] | **22.350 (20.956 / 23.133)** | skipped (rebuild with --features hptt) | 24.415 (23.734 / 26.037) | 254.513 (246.464 / 267.644) | 48.766 (43.462 / 54.336) | - |
 
 ## Threads: 4
 
@@ -47,13 +47,13 @@ Median (p25 / p75) in ms. Missing backends are shown as `-`; the fastest backend
 
 | pattern | label | tenferro-rs (ms) | HPTT (ms) | strided-rs (ms) | Julia Base (ms) | Strided.jl (ms) | memcpy (ms) |
 |---|---|---:|---:|---:|---:|---:|---:|
-| `cyclic_15d_3` | 15D 3^15 cyclic [1,2,...,0] | **6.239 (6.186 / 6.532)** | skipped (rebuild with --features hptt) | 9.057 (9.026 / 9.254) | 10.869 (10.246 / 11.589) | 7.517 (7.155 / 7.854) | - |
-| `memcpy_24d_contiguous` | memcpy baseline (24D 2^24) | - | - | **6.611 (6.573 / 6.766)** | - | - | 6.670 (6.568 / 6.708) |
-| `reverse_15d_3` | 15D 3^15 reverse | 19.383 (18.824 / 19.748) | skipped (rebuild with --features hptt) | 17.417 (17.284 / 17.623) | 115.684 (112.893 / 117.729) | **12.306 (11.916 / 12.718)** | - |
-| `reverse_23d_2` | 23D 2^23 reverse | 16.980 (14.761 / 18.146) | skipped (rebuild with --features hptt) | 14.254 (14.146 / 14.467) | 59.098 (56.800 / 61.719) | **13.881 (12.815 / 14.154)** | - |
-| `rotation_6d_32_32_32_32_16_16` | 6D 32^4x16x16 rotation [5,0,4,1,3,2] | 3127.210 (2997.870 / 3252.045) | skipped (rebuild with --features hptt) | 2735.811 (2640.267 / 2801.229) | 3277.399 (2847.954 / 3879.200) | **2576.386 (2290.413 / 2678.136)** | - |
-| `tn_light_415_24d_contiguous_same_perm` | 24D contiguous source, TN light 415 late-step permutation | **7.983 (7.956 / 8.082)** | skipped (rebuild with --features hptt) | 10.001 (9.928 / 10.362) | 16.858 (15.777 / 17.260) | 8.043 (7.980 / 8.193) | - |
-| `tn_light_415_24d_scattered_to_colmajor` | 24D scattered -> col-major | 10.658 (10.473 / 10.795) | - | 12.052 (12.006 / 12.452) | 184.414 (178.907 / 189.726) | **9.769 (9.725 / 9.818)** | - |
-| `transpose_2d_2048` | 2D 2048^2 transpose [1,0] | **3.765 (3.724 / 3.879)** | skipped (rebuild with --features hptt) | 4.319 (4.260 / 4.406) | 13.290 (13.132 / 13.449) | 4.993 (4.933 / 5.020) | - |
-| `transpose_3d_256_102` | 3D 256^3 transpose [1,0,2] | 10.910 (10.065 / 11.214) | skipped (rebuild with --features hptt) | 12.337 (12.086 / 12.636) | 17.325 (17.300 / 17.414) | **10.268 (10.202 / 10.326)** | - |
-| `transpose_3d_256_201` | 3D 256^3 transpose [2,0,1] | **11.959 (11.771 / 12.203)** | skipped (rebuild with --features hptt) | 14.656 (14.519 / 15.139) | 296.077 (270.305 / 305.348) | 15.637 (15.013 / 15.967) | - |
+| `cyclic_15d_3` | 15D 3^15 cyclic [1,2,...,0] | **8.186 (7.785 / 9.031)** | skipped (rebuild with --features hptt) | 10.547 (10.428 / 10.964) | 20.038 (14.372 / 27.477) | 9.247 (7.917 / 9.867) | - |
+| `memcpy_24d_contiguous` | memcpy baseline (24D 2^24) | - | - | **8.436 (8.144 / 8.738)** | - | - | 9.591 (8.054 / 10.040) |
+| `reverse_15d_3` | 15D 3^15 reverse | 25.408 (23.046 / 29.053) | skipped (rebuild with --features hptt) | 26.988 (25.316 / 30.057) | 142.025 (131.729 / 176.315) | **20.133 (14.519 / 22.641)** | - |
+| `reverse_23d_2` | 23D 2^23 reverse | 29.372 (24.577 / 42.100) | skipped (rebuild with --features hptt) | **22.393 (21.689 / 25.909)** | 85.913 (76.010 / 91.879) | 24.605 (18.389 / 28.074) | - |
+| `rotation_6d_32_32_32_32_16_16` | 6D 32^4x16x16 rotation [5,0,4,1,3,2] | **5374.657 (4499.667 / 8889.601)** | skipped (rebuild with --features hptt) | 7569.227 (7103.346 / 9748.239) | 8466.324 (7752.501 / 9741.329) | 7490.750 (3226.871 / 8654.373) | - |
+| `tn_light_415_24d_contiguous_same_perm` | 24D contiguous source, TN light 415 late-step permutation | **8.677 (8.454 / 8.944)** | skipped (rebuild with --features hptt) | 11.961 (10.567 / 12.340) | 18.951 (18.255 / 20.483) | 9.993 (8.536 / 10.337) | - |
+| `tn_light_415_24d_scattered_to_colmajor` | 24D scattered -> col-major | 13.409 (12.307 / 14.569) | - | 14.794 (14.132 / 15.957) | 213.004 (189.550 / 230.695) | **10.856 (10.194 / 11.879)** | - |
+| `transpose_2d_2048` | 2D 2048^2 transpose [1,0] | **5.623 (5.290 / 6.076)** | skipped (rebuild with --features hptt) | 6.190 (6.034 / 6.563) | 25.735 (20.086 / 30.599) | 5.908 (5.687 / 6.432) | - |
+| `transpose_3d_256_102` | 3D 256^3 transpose [1,0,2] | 14.289 (13.532 / 14.885) | skipped (rebuild with --features hptt) | 16.536 (16.068 / 17.587) | 21.331 (20.638 / 22.129) | **11.807 (10.051 / 12.377)** | - |
+| `transpose_3d_256_201` | 3D 256^3 transpose [2,0,1] | **16.929 (15.882 / 17.351)** | skipped (rebuild with --features hptt) | 18.151 (17.492 / 18.450) | 274.777 (259.339 / 298.710) | 21.770 (20.551 / 26.362) | - |
