@@ -140,5 +140,46 @@ class GenerateCPUInventoryTest(unittest.TestCase):
         self.assertEqual(raised.exception.code, 1)
 
 
+ROOT = Path(__file__).resolve().parents[3]
+
+
+def declared_session_matrix_identities(manifest_path: Path, plan: dict) -> list:
+    """The [case, group, backend] rows a quick cpu/session_matrix collection must produce.
+
+    Derived statically from the case manifest and instance file, with the same
+    provider canonicalisation the ingestion adapter applies to collected rows.
+    """
+    import bench_selection
+    manifest = bench_selection.load_manifest(manifest_path)
+    cases = {case['id']: case for case in json.loads((ROOT/manifest['source']).read_text())}
+    threads = plan.get('suite_threads', {}).get('cpu/session_matrix', plan['threads'])
+
+    def backend(provider):
+        provider = 'blas' if provider in cpu_ingestion_adapter.BLAS_IMPLEMENTATIONS else provider
+        return 'pytorch-cpu' if provider == 'pytorch' else 'tenferro-' + provider
+
+    return sorted([case_id, f'threads={thread}', backend(provider)]
+                  for thread in threads for case_id in manifest['coverage'][plan['profile']]
+                  for provider in cases[case_id]['providers'])
+
+
+class CheckedInSessionMatrixLedgerTest(unittest.TestCase):
+    """A change to the session_matrix cases must regenerate the ledger in the same PR.
+
+    Regression: #491 dropped the vendor-BLAS provider slots (114 -> 86 quick
+    identities) without regenerating benchmarks/cpu/ingestion-selection.json, and
+    nothing failed until both CPU nightlies rejected their collections after
+    ~2h40m, every night from 2026-11-17 to 2026-11-23.
+    """
+
+    def test_ledger_matches_the_declared_quick_inventory(self):
+        plan = json.loads(cpu_ingestion_adapter.SELECTION_PATH.read_text())
+        rows = declared_session_matrix_identities(ROOT/'benchmarks/cpu/manifests/session_matrix.yaml', plan)
+        self.assertEqual(plan['suites']['cpu/session_matrix'],
+                         {'row_count': len(rows), 'identities_sha256': identity_fingerprint(rows)},
+                         'cpu/session_matrix cases changed: regenerate benchmarks/cpu/ingestion-selection.json '
+                         'with scripts/ci/generate_cpu_ingestion_selection.py from a collection')
+
+
 if __name__ == '__main__':
     unittest.main()
