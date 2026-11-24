@@ -1,5 +1,6 @@
 """The CPU page refreshes only from zen5-cpu (#515): a scheduled job must collect it."""
 from pathlib import Path
+import re
 import sys
 import tempfile
 import unittest
@@ -8,6 +9,17 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[3]
 WORKFLOWS = ROOT / '.github/workflows'
+
+
+HOSTED = re.compile(r'(ubuntu|macos|windows)-[a-z0-9.-]+')
+
+
+def github_hosted(job) -> bool:
+    """A literal GitHub-hosted image: never a self-hosted label, expression,
+    runner group or reusable workflow (the zen5 host also carries
+    self-hosted/linux/x64)."""
+    runs_on = job.get('runs-on')
+    return 'uses' not in job and isinstance(runs_on, str) and bool(HOSTED.fullmatch(runs_on))
 
 
 def load(path):
@@ -39,7 +51,14 @@ class Zen5WeeklyWorkflowTest(unittest.TestCase):
                 continue
             for name, job in doc.get('jobs', {}).items():
                 with self.subTest(workflow=path.name, job=name):
-                    self.assertNotIn('zen5-cpu', str(job.get('runs-on', '')))
+                    self.assertTrue(github_hosted(job), job.get('runs-on'))
+
+    def test_the_host_runner_check_rejects_a_bare_self_hosted_pr_job(self):
+        for job in ({'runs-on': ['self-hosted', 'linux', 'x64']}, {'runs-on': 'self-hosted'},
+                    {'runs-on': '${{ inputs.runner }}'}, {'runs-on': {'group': 'runpod-tenferro'}},
+                    {'uses': './.github/workflows/benchmark-weekly-zen5-cpu.yml'}):
+            self.assertFalse(github_hosted(job), job)
+        self.assertTrue(github_hosted({'runs-on': 'ubuntu-latest'}))
 
     def test_the_recorded_series_and_the_idle_gate_are_kept(self):
         env = self.job['env']
@@ -65,6 +84,23 @@ class Zen5WeeklyWorkflowTest(unittest.TestCase):
         self.assertLess(stage, check)
         self.assertIn('gh pr create', self.run)
         self.assertNotIn('gh pr merge', self.run)
+
+    def test_failed_perf_issues_cases_do_not_abort_the_collection(self):
+        collect = self.step('Collect the recorded')
+        main = next(line for line in collect.splitlines() if 'RUN_PUBLIC_API_SUITE=0' in line)
+        self.assertIn('RUN_PERF_ISSUES_SUITE=0', main)
+        self.assertIn('run_perf_issues.sh 1 4 8 || rc=$?', collect)
+        # only a finalized record (case_status.json) excuses the nonzero exit
+        self.assertIn('case_status.json', collect)
+        self.assertIn('exit "$rc"', collect)
+
+    def test_a_redispatch_gets_its_own_branch(self):
+        publish = self.step('Open the results pull request')
+        self.assertIn('${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}', publish)
+
+    def test_a_broken_julia_project_fails_instead_of_dropping_the_column(self):
+        self.assertIn("Pkg.instantiate(); using OMEinsum", self.step('Check out tenferro-rs'))
+        self.assertIn('julia_omeinsum_t*.log', self.step('Render the pages per suite'))
 
     def test_the_runner_toolchain_is_required(self):
         guard = self.step('Refuse a host')

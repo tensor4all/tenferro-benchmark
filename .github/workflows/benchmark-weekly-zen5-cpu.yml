@@ -78,6 +78,9 @@ jobs:
           test -z "$(git -C extern/tenferro-rs status --short)"
           taskset -c "$BUILD_CPUS" cargo build --release --no-default-features --features native --bins
           taskset -c "$BUILD_CPUS" bash -c 'uv sync --frozen || uv sync'
+          # run_all.sh turns a failed Pkg.instantiate into a skipped omeinsum-jl
+          # column; fail here instead, before anything is timed.
+          taskset -c "$BUILD_CPUS" julia --project=. -e 'import Pkg; Pkg.instantiate(); using OMEinsum'
 
       - name: Collect the recorded zen5-cpu suites (1, 4, 8 threads)
         run: |
@@ -96,8 +99,26 @@ jobs:
           # permutation stays unverified (benchmarks/unverified-pages.txt) and
           # public_api runs separately: its 1T row is refused by the idle gate
           # sampling the suite itself (#468), so only 4T and 8T are published.
-          RUN_PUBLIC_API_SUITE=0 RUN_PERMUTATION_SUITE=0 taskset -c "$BUILD_CPUS" ./scripts/run_all.sh 1 4 8
+          # perf_issues runs separately too: run_perf_issues.sh exits 1 when any
+          # case fails (the tracked record has 94 failed per row), which under
+          # set -e would abort run_all before overhead_smoke and this job before
+          # publishing.
+          RUN_PUBLIC_API_SUITE=0 RUN_PERMUTATION_SUITE=0 RUN_PERF_ISSUES_SUITE=0 \
+            taskset -c "$BUILD_CPUS" ./scripts/run_all.sh 1 4 8
           taskset -c "$BUILD_CPUS" ./scripts/run_cpu_public_api.sh 4 8
+          rc=0
+          taskset -c "$BUILD_CPUS" ./scripts/run_perf_issues.sh 1 4 8 || rc=$?
+          if (( rc != 0 )); then
+            # Failed cases are a result the page reports ("Complete: NO"); a run
+            # that never finalized (idle-gate refusal, crash) is not.
+            finalized=$(find data/results/zen5-cpu/cpu/perf_issues -mindepth 2 -maxdepth 2 \
+                          -name case_status.json -newer "$RUNNER_TEMP/collect.marker" -print -quit)
+            if [[ -z "$finalized" ]]; then
+              echo "perf_issues exited $rc without a finalized run record" >&2
+              exit "$rc"
+            fi
+            echo "::warning::perf_issues exited $rc with failed cases recorded in $finalized; publishing them"
+          fi
 
       - name: Render the pages per suite, stage the records, then check
         run: |
@@ -106,6 +127,12 @@ jobs:
                                 -newer "$RUNNER_TEMP/collect.marker" | sort)
           printf 'run: %s\n' "${runs[@]}"
           test "${#runs[@]}" -gt 0
+          for run in "${runs[@]}"; do
+            if [[ "$run" == */cpu/einsum/* ]] && ! compgen -G "$run/julia_omeinsum_t*.log" >/dev/null; then
+              echo "$run has no omeinsum-jl arm" >&2
+              exit 1
+            fi
+          done
           # --publish takes the runs of one suite; the collection wrote several.
           uv run python scripts/publish_suite_runs.py "${runs[@]}"
           uv run python scripts/generate_readme_results.py
@@ -132,7 +159,7 @@ jobs:
         run: |
           set -euo pipefail
           day=$(date -u +%Y%m%d)
-          branch="results/zen5-cpu-weekly-$day"
+          branch="results/zen5-cpu-weekly-$day-run${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           git switch -c "$branch"
           git -c user.name='tensor4all-ai-bot' -c user.email='tensor4all-ai-bot@users.noreply.github.com' \
             commit -m "results: weekly zen5-cpu CPU suites at tenferro-rs ${TENFERRO_REF:0:8}"
