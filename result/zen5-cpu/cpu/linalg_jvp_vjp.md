@@ -261,7 +261,7 @@ operation.
 | large | `grad_sum_eigh_jvp` | f64 | 4 | `256x256` | 30.068 ± 0.138 | 15.225 ± 0.042 | 6.117 ± 0.333 | 11.278 ± 0.404 |
 | large | `grad_sum_eigh_jvp` | f64 | 4 | `512x512` | 77.041 ± 0.387 | 45.155 ± 0.152 | 33.165 ± 0.170 | 52.541 ± 6.444 |
 | large | `grad_sum_eigh_vjp` | f64 | 4 | `1024x1024` | 263.089 ± 0.879 | 212.337 ± 1.185 | 139.981 ± 0.787 | 257.894 ± 8.933 |
-| large | `grad_sum_eigh_vjp` | f64 | 4 | `256x256` | 20.050 ± 0.049 | 15.260 ± 0.069 | 5.259 ± 0.056 | 10.561 ± 0.918 |
+| large | `grad_sum_eigh_vjp` | f64 | 4 | `256x256` | withdrawn | 15.260 ± 0.069 | 5.259 ± 0.056 | 10.561 ± 0.918 |
 | large | `grad_sum_eigh_vjp` | f64 | 4 | `512x512` | 52.730 ± 0.353 | 45.190 ± 0.396 | 25.870 ± 0.309 | 50.038 ± 3.555 |
 | large | `grad_sum_lu_jvp` | f64 | 4 | `1024x1024` | 236.071 ± 1.844 | 104.080 ± 0.440 | 237.293 ± 2.212 | 195.873 ± 20.014 |
 | large | `grad_sum_lu_jvp` | f64 | 4 | `256x256` | 6.506 ± 0.072 | 2.921 ± 0.037 | 5.634 ± 0.101 | 5.896 ± 1.358 |
@@ -285,7 +285,7 @@ operation.
 | large | `grad_sum_svd_s_jvp` | f64 | 4 | `256x256` | 55.795 ± 0.339 | 27.317 ± 0.251 | 16.671 ± 0.246 | 19.061 ± 0.568 |
 | large | `grad_sum_svd_s_jvp` | f64 | 4 | `512x512` | 140.747 ± 0.946 | 77.956 ± 0.178 | 89.656 ± 1.710 | 109.057 ± 3.049 |
 | large | `grad_sum_svd_s_vjp` | f64 | 4 | `1024x1024` | 557.170 ± 8.789 | 431.547 ± 3.515 | 353.103 ± 1.849 | 545.535 ± 18.525 |
-| large | `grad_sum_svd_s_vjp` | f64 | 4 | `256x256` | 36.898 ± 0.056 | 27.297 ± 0.079 | 15.406 ± 0.149 | 19.041 ± 0.279 |
+| large | `grad_sum_svd_s_vjp` | f64 | 4 | `256x256` | withdrawn | 27.297 ± 0.079 | 15.406 ± 0.149 | 19.041 ± 0.279 |
 | large | `grad_sum_svd_s_vjp` | f64 | 4 | `512x512` | 95.165 ± 0.453 | 77.926 ± 0.502 | 84.260 ± 2.054 | 110.073 ± 2.796 |
 | small | `grad_sum_eigh_jvp` | f64 | 4 | `16x16` | 0.355 ± 0.007 | 0.088 ± 0.000 | 0.159 ± 0.002 | 0.043 ± 0.001 |
 | small | `grad_sum_eigh_jvp` | f64 | 4 | `2x2` | 0.249 ± 0.007 | 0.034 ± 0.000 | 0.121 ± 0.002 | 0.012 ± 0.000 |
@@ -337,6 +337,14 @@ operation.
 | small | `grad_sum_svd_s_vjp` | f64 | 4 | `32x32` | 0.505 ± 0.003 | 0.313 ± 0.001 | 0.349 ± 0.013 | 0.205 ± 0.002 |
 | small | `grad_sum_svd_s_vjp` | f64 | 4 | `4x4` | 0.089 ± 0.002 | 0.029 ± 0.000 | 0.120 ± 0.003 | 0.018 ± 0.000 |
 | small | `grad_sum_svd_s_vjp` | f64 | 4 | `8x8` | 0.109 ± 0.001 | 0.044 ± 0.000 | 0.136 ± 0.003 | 0.022 ± 0.000 |
+
+### Withdrawn cells
+
+These cells were measured, but their number does not measure what the column says,
+so it is not printed (`benchmarks/withdrawn-cells.yaml`; the run record is unchanged).
+
+- `grad_sum_svd_s_vjp` 4T `256x256` `tenferro-eager` (tenferro-benchmark#517): timed a second forward pass after the VJP (harness defect from the tenferro-rs 0.12 migration, 03f0f80); re-measured single-pass at the same pin: 18.905 ms (between-start SD 0.103, W 0.210) vs 18.817 ± 0.075 at 9a850b06, a 0.47 % difference inside W, so the two revisions are not distinguishable here.
+- `grad_sum_eigh_vjp` 4T `256x256` `tenferro-eager` (tenferro-benchmark#517): timed a second forward pass after the VJP (harness defect from the tenferro-rs 0.12 migration, 03f0f80); re-measured single-pass at the same pin: 10.228 ms (between-start SD 0.060, W 0.078) vs 10.416 ± 0.032 at 9a850b06, 1.8 % faster, so the published 1.92x slowdown does not exist.
 
 ### Loss Definitions
 

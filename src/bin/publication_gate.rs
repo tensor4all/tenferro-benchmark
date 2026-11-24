@@ -1845,29 +1845,6 @@ fn measure_eager<I: Clone + Send + Sync, O>(
     })
 }
 
-// Eager AD samples cannot share one borrowed session the way the primal rows do:
-// `EagerRuntime::jvp`/`vjp` take the caller-held engine themselves (tenferro-rs
-// #2206), so one sample is one forward pass in a borrowed session plus one AD
-// call. That call also carries the eager side's AD preparation, which the public
-// API does not expose separately; the trace arm prepares outside the clock (see
-// `docs/cpu-suite-arms.md`).
-fn measure_eager_ad<I, O>(
-    config: &BenchConfig,
-    shape: &str,
-    setup: impl FnMut() -> Result<I, Error>,
-    mut execute: impl FnMut(
-        &Arc<EagerRuntime>,
-        &mut dyn ExecutionEngine,
-        &mut I,
-    ) -> tenferro_ad::error::Result<O>,
-) -> Result<Measurement, Error> {
-    let ctx = cpu_ctx();
-    let mut engine = cpu_engine();
-    measure(config, shape, setup, |input| {
-        Ok(execute(&ctx, &mut *engine, input)?)
-    })
-}
-
 fn record_raw(record: serde_json::Value) -> Result<(), Error> {
     if let Ok(path) = env::var("CPU_OPS_RAW_SAMPLES") {
         let mut file = std::fs::OpenOptions::new()
@@ -2130,78 +2107,51 @@ fn measure_eager_row<I: Clone + Send + Sync, O>(
     }
 }
 
-/// One eager AD row: `jvp` or `vjp` measured by `measure_eager_ad`.
-fn bench_eager_ad_row<I, O>(
+/// One eager AD row: `jvp` or `vjp`, forward and derivative in one pass.
+///
+/// Since tenferro-rs 0.12 the borrowed `EagerSession` itself carries `jvp` and
+/// `vjp`, so an AD row is timed like a backward row: one borrowed session is
+/// entered outside the clock and encloses every sample (`measure_eager`), the
+/// fixtures are restored per sample outside the clock, and one sample is one
+/// forward pass plus one AD call that returns `(output, derivative)` together.
+/// The output is never recomputed after the derivative (tenferro-benchmark
+/// #517: the 0.12 migration had timed a second forward in a second session).
+/// The AD call still carries the eager side's own AD preparation, which the
+/// public API does not expose separately; the trace arm prepares outside the
+/// clock (see `docs/cpu-suite-arms.md`).
+#[allow(clippy::too_many_arguments)]
+fn bench_eager_ad_row<I: Clone + Send + Sync, O>(
     config: &BenchConfig,
     suite: &'static str,
     op: &'static str,
     phase: &'static str,
     dtype: &'static str,
     shape: &str,
-    mut setup: impl FnMut() -> Result<I, Error>,
-    mut execute: impl FnMut(
-        &Arc<EagerRuntime>,
-        &mut dyn ExecutionEngine,
-        &mut I,
-    ) -> tenferro_ad::error::Result<O>,
+    setup: impl FnMut() -> tenferro_ad::error::Result<I> + Send,
+    execute: impl FnMut(&mut EagerSession<'_>, &mut I) -> tenferro_ad::error::Result<O> + Send,
 ) -> Row {
     if !benchmark_filter_matches(op, phase) {
         return filtered_row(suite, op, phase, dtype, shape);
     }
-
-    let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
-        let measured = measure_eager_ad(config, shape, &mut setup, &mut execute)?;
-        // Unlike a primal row, the forward pass is inside this sample, and so is
-        // the eager API's own AD preparation (tenferro-rs #2206 exposes no
-        // separate prepare step). The record says that instead of claiming the
-        // primal-only policy above.
-        summarize_measurement(
-            measured,
-            suite,
-            op,
-            phase,
-            shape,
-            "tenferro-eager",
-            "forward_and_derivative_inside_timing_with_eager_ad_prepare",
-        )
-    }));
-
-    match result {
-        Ok(Ok((median, iqr))) => Row {
-            suite,
-            op,
-            phase,
-            dtype,
-            shape: shape.to_string(),
-            backend: config.backend,
-            median_ms: Some(median),
-            iqr_ms: Some(iqr),
-            status: "ok".to_string(),
-        },
-        Ok(Err(err)) => Row {
-            suite,
-            op,
-            phase,
-            dtype,
-            shape: shape.to_string(),
-            backend: config.backend,
-            median_ms: None,
-            iqr_ms: None,
-            status: format!("error: {err}"),
-        },
-        Err(_) => Row {
-            suite,
-            op,
-            phase,
-            dtype,
-            shape: shape.to_string(),
-            backend: config.backend,
-            median_ms: None,
-            iqr_ms: None,
-            status: "panic".to_string(),
-        },
-    }
+    measure_eager_row(
+        config,
+        suite,
+        op,
+        phase,
+        dtype,
+        shape,
+        setup,
+        execute,
+        EAGER_AD_SESSION_POLICY,
+        MAX_BATCH_OPERATIONS,
+    )
 }
+
+/// The `eager_session_policy` an eager JVP/VJP row records: the session is
+/// entered outside timing, and the timed pass is one forward plus one AD call
+/// (including the eager AD preparation the public API does not separate).
+const EAGER_AD_SESSION_POLICY: &str =
+    "borrowed_session_outside_timing_one_forward_and_derivative_with_eager_ad_prepare";
 
 fn bench_trace_row(
     config: &BenchConfig,
@@ -2446,6 +2396,7 @@ fn scalar_one(trace: &TraceContext) -> TracedTensor {
 
 /// The eager fixtures of one AD case: the differentiated matrix, plus the fixed
 /// right-hand side that `solve` needs.
+#[derive(Clone)]
 struct EagerLinalgAdFixture {
     wrt: EagerTensor,
     rhs: Option<EagerTensor>,
@@ -2666,12 +2617,9 @@ fn push_linalg_jvp_vjp_eager_benches(
                 ),
             ))
         },
-        |ctx, engine, (fixture, tangent)| {
-            let derivative = ctx.with_eager_session(engine, |s| {
-                let output = loss.eager_forward(s, fixture)?;
-                s.jvp(&output, &fixture.wrt, tangent)
-            })?;
-            let output = ctx.with_eager_session(engine, |s| loss.eager_forward(s, fixture))?;
+        |s, (fixture, tangent)| {
+            let output = loss.eager_forward(s, fixture)?;
+            let derivative = s.jvp(&output, &fixture.wrt, tangent)?;
             Ok((output, derivative))
         },
     ));
@@ -2688,12 +2636,9 @@ fn push_linalg_jvp_vjp_eager_benches(
                 eager_from_tensor_in(tensor(&[], vec![1.0]), cpu_ctx()),
             ))
         },
-        |ctx, engine, (fixture, cotangent)| {
-            let derivative = ctx.with_eager_session(engine, |s| {
-                let output = loss.eager_forward(s, fixture)?;
-                s.vjp(&output, &fixture.wrt, cotangent)
-            })?;
-            let output = ctx.with_eager_session(engine, |s| loss.eager_forward(s, fixture))?;
+        |s, (fixture, cotangent)| {
+            let output = loss.eager_forward(s, fixture)?;
+            let derivative = s.vjp(&output, &fixture.wrt, cotangent)?;
             Ok((output, derivative))
         },
     ));

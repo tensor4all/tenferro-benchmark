@@ -49,7 +49,7 @@ if str(SCRIPT_DIR) not in sys.path:
 
 import generate_history  # noqa: E402
 import report_summary  # noqa: E402
-from result_status import case_outcomes  # noqa: E402
+from result_status import WITHDRAWN_STATUS, case_outcomes  # noqa: E402
 
 # Maintained reports from AGENTS.md "Expected latest report paths" plus the
 # CPU per-call latency suites and every GPU report that
@@ -575,6 +575,15 @@ def is_neutral_unsupported(row: dict[str, Any]) -> bool:
     return policy_skip and bool(row.get("reason"))
 
 
+def is_withdrawn(row: dict[str, Any]) -> bool:
+    """A cell measured and then withdrawn with a recorded reason (`benchmarks/withdrawn-cells.yaml`).
+
+    Not a failure: the run produced a number, and the number was withdrawn because it does
+    not measure what its column says. The badge names that, with the reason.
+    """
+    return row.get("status") == WITHDRAWN_STATUS and bool(row.get("reason"))
+
+
 def is_tenferro_anomaly(row: dict[str, Any]) -> bool:
     """True when a tenferro row is a genuine anomaly, not a policy skip."""
     if not is_tenferro(row):
@@ -587,7 +596,7 @@ def is_tenferro_anomaly(row: dict[str, Any]) -> bool:
         if row.get("verification") == "measure_only":
             return False
         return row.get("verified") is False
-    if is_neutral_unsupported(row):
+    if is_neutral_unsupported(row) or is_withdrawn(row):
         return False
     if status == "unsupported":
         return not bool(row.get("reason"))
@@ -624,7 +633,7 @@ def non_ok_rows(rows: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
 def non_ok_label(row: dict[str, Any]) -> str:
     """``fail`` for a failed measurement, the recorded status name otherwise."""
     status = row_status(row)
-    return status if status in ("unsupported", "skipped") else "fail"
+    return status if status in ("unsupported", "skipped", WITHDRAWN_STATUS) else "fail"
 
 
 def non_ok_explanation(row: dict[str, Any]) -> str:

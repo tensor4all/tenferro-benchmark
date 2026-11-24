@@ -12,11 +12,17 @@ FAILED_STATUSES = frozenset({
 })
 
 
+# A measured cell withdrawn after collection (``benchmarks/withdrawn-cells.yaml``,
+# ``scripts/withdrawn_cells.py``). It is neither a failure nor a skip: the page
+# names it with its reason, and it is not counted as a non-ok case outcome.
+WITHDRAWN_STATUS = 'withdrawn'
+
+
 def case_outcomes(rows):
     cases = {'failed': set(), 'skipped': set(), 'unsupported': set()}
     for row in rows:
         status = row['status']
-        if status == 'ok':
+        if status in ('ok', WITHDRAWN_STATUS):
             continue
         category = ('unsupported' if status.startswith('unsupported:') else
                     status if status in ('skipped', 'unsupported') else 'failed')

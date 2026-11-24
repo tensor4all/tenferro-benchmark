@@ -4,13 +4,13 @@
 from __future__ import annotations
 
 import argparse
-import csv
 import os
 import sys
 from collections import defaultdict
 from pathlib import Path
 
 import report_summary
+import withdrawn_cells
 from format_cpu_ops_results import BACKEND_LABELS, clean_markdown_eof, normalize_row, row_value
 
 # On this page the eager arm is a per-call API cost, not a prepared-program
@@ -65,13 +65,11 @@ def backend_order(present: set[str]) -> list[str]:
 
 def format_table(path: Path) -> str:
     by_key: dict[tuple[str, str, str, str, str], dict[str, str]] = defaultdict(dict)
-    with path.open(newline="") as f:
-        for row in csv.DictReader(f):
-            key, backend, value = normalize_row(row)
-            _, benchmark, _, _, _ = key
-            if not is_linalg_ad_benchmark(benchmark):
-                continue
-            by_key[key][backend] = value
+    rows = [row for row in withdrawn_cells.read_rows(path)
+            if is_linalg_ad_benchmark(normalize_row(row)[0][1])]
+    for row in rows:
+        key, backend, value = normalize_row(row)
+        by_key[key][backend] = value
 
     order = backend_order({backend for values in by_key.values() for backend in values})
     lines = [
@@ -114,6 +112,8 @@ def format_table(path: Path) -> str:
         ]
         lines.append("| " + " | ".join(row) + " |")
 
+    lines.extend(withdrawn_cells.page_note([(path, rows)]))
+
     covered = sorted({base_op(key[1]) for key in by_key})
     if covered:
         lines.extend(["", "## Loss Definitions", ""])
@@ -142,37 +142,37 @@ def build_summary(
         hardware["cpu"] = "unknown"
     rows = []
     threads_seen: set[int] = set()
-    with path.open(newline="") as f:
-        for row in csv.DictReader(f):
-            key, backend, _value = normalize_row(row)
-            if not backend or backend not in LINALG_AD_BACKEND_ORDER:
-                continue
-            _suite, benchmark, dtype, threads, shape = key
-            if not is_linalg_ad_benchmark(benchmark):
-                continue
-            status = row_value(row, "status") or "ok"
-            median_ms = row_value(row, "median_ms")
-            if not median_ms:
-                mean_us = row_value(row, "mean_us")
-                if mean_us:
-                    median_ms = str(float(mean_us) / 1000.0)
-            median = float(median_ms) if (median_ms and status == "ok" and float(median_ms) > 0) else None
-            if status == "ok" and median is None:
-                status = "missing"
-            iqr_ms = row_value(row, "iqr_ms")
-            if threads.isdigit():
-                threads_seen.add(int(threads))
-            rows.append(
-                report_summary.make_row(
-                    benchmark,
-                    backend,
-                    median,
-                    status=status,
-                    iqr=float(iqr_ms) if iqr_ms else None,
-                    group=f"dtype={dtype} / threads={threads} / shape={shape}",
-                    verified=status == "ok" and median is not None,
-                )
+    for row in withdrawn_cells.read_rows(path):
+        key, backend, _value = normalize_row(row)
+        if not backend or backend not in LINALG_AD_BACKEND_ORDER:
+            continue
+        _suite, benchmark, dtype, threads, shape = key
+        if not is_linalg_ad_benchmark(benchmark):
+            continue
+        status = row_value(row, "status") or "ok"
+        median_ms = row_value(row, "median_ms")
+        if not median_ms:
+            mean_us = row_value(row, "mean_us")
+            if mean_us:
+                median_ms = str(float(mean_us) / 1000.0)
+        median = float(median_ms) if (median_ms and status == "ok" and float(median_ms) > 0) else None
+        if status == "ok" and median is None:
+            status = "missing"
+        iqr_ms = row_value(row, "iqr_ms")
+        if threads.isdigit():
+            threads_seen.add(int(threads))
+        rows.append(
+            report_summary.make_row(
+                benchmark,
+                backend,
+                median,
+                status=status,
+                iqr=float(iqr_ms) if iqr_ms else None,
+                group=f"dtype={dtype} / threads={threads} / shape={shape}",
+                verified=status == "ok" and median is not None,
+                reason=row.get("reason") or None,
             )
+        )
     if threads_seen:
         hardware["threads"] = sorted(threads_seen)
     resolved_suite = suite_id or header["suite_id"]
