@@ -1,8 +1,8 @@
 {
-  "collected_at": "2026-11-12T09:42:52.771958+00:00",
+  "collected_at": "2026-11-24T05:30:27.543080+00:00",
   "files": {
-    "result/zen5-cpu/cpu/fft.md": "b6012fc8aa4793de98a92c5a1599a96e61d0e7ae24dff0d9213d4b31543e45e9",
-    "result/zen5-cpu/cpu/fft.summary.json": "f285a8c4ab4d177fb9505fbe4f679190a166cdbccd6822e166dec24803046e3b"
+    "result/zen5-cpu/cpu/fft.md": "1fa93c38a1d53c7c2daead1d667b4b5e62e5b890bcda04ae187ff6e280837012",
+    "result/zen5-cpu/cpu/fft.summary.json": "9a7a01df7b420cb6dd2dcf0d537cc1ff02eed695ed8680456e1666279f800a5a"
   },
   "hardware": {
     "cpu": "AMD Ryzen AI 9 HX 470 w/ Radeon 890M",
@@ -16,5 +16,5 @@
   "schema_version": 1,
   "suite_id": "cpu/fft",
   "target_profile": "zen5-cpu",
-  "tenferro_commit": "9a850b06155405acc99ecd0648829e9e6d3866ba"
+  "tenferro_commit": "ce9125d0cff4ee40841120759b5df45252c27f22"
 }
