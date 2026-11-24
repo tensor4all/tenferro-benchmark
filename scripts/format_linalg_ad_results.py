@@ -10,7 +10,7 @@ from collections import defaultdict
 from pathlib import Path
 
 import report_summary
-import withdrawn_cells
+import cell_corrections
 from format_cpu_ops_results import BACKEND_LABELS, clean_markdown_eof, normalize_row, row_value
 
 # On this page the eager arm is a per-call API cost, not a prepared-program
@@ -65,11 +65,11 @@ def backend_order(present: set[str]) -> list[str]:
 
 def format_table(path: Path) -> str:
     by_key: dict[tuple[str, str, str, str, str], dict[str, str]] = defaultdict(dict)
-    rows = [row for row in withdrawn_cells.read_rows(path)
+    rows = [row for row in cell_corrections.read_rows(path)
             if is_linalg_ad_benchmark(normalize_row(row)[0][1])]
     for row in rows:
         key, backend, value = normalize_row(row)
-        by_key[key][backend] = value
+        by_key[key][backend] = cell_corrections.mark(row, value)
 
     order = backend_order({backend for values in by_key.values() for backend in values})
     lines = [
@@ -112,7 +112,7 @@ def format_table(path: Path) -> str:
         ]
         lines.append("| " + " | ".join(row) + " |")
 
-    lines.extend(withdrawn_cells.page_note([(path, rows)]))
+    lines.extend(cell_corrections.page_note([(path, rows)]))
 
     covered = sorted({base_op(key[1]) for key in by_key})
     if covered:
@@ -142,7 +142,7 @@ def build_summary(
         hardware["cpu"] = "unknown"
     rows = []
     threads_seen: set[int] = set()
-    for row in withdrawn_cells.read_rows(path):
+    for row in cell_corrections.read_rows(path):
         key, backend, _value = normalize_row(row)
         if not backend or backend not in LINALG_AD_BACKEND_ORDER:
             continue
