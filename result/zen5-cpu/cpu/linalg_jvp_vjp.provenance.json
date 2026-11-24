@@ -1,8 +1,8 @@
 {
   "collected_at": "2026-11-24T04:52:02.812988+00:00",
   "files": {
-    "result/zen5-cpu/cpu/linalg_jvp_vjp.md": "9240eaa0aaad595dd5eea8776f7c505d710dd4955101680478f68b8bc52df97a",
-    "result/zen5-cpu/cpu/linalg_jvp_vjp.summary.json": "7824a630e9f4621cc280a26ea28e4c427b8038ae44839e198c8b3ab36c619b4c"
+    "result/zen5-cpu/cpu/linalg_jvp_vjp.md": "1dc2a4954e6e2df89b2540f57830d246edef5fac0b5c260239166e78170f2c54",
+    "result/zen5-cpu/cpu/linalg_jvp_vjp.summary.json": "39dfbc523977fe48f5373d7966a9fb3d7ed1676a561f5da436bfc6d57f59411f"
   },
   "hardware": {
     "cpu": "AMD Ryzen AI 9 HX 470 w/ Radeon 890M",

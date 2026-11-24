@@ -42,11 +42,19 @@ both arms of `cpu/linalg_jvp_vjp` come from the same CPU-ops CSV rows.
 Sharing the ids matters: `render_run.py` derives that page from the rows named `_jvp`/`_vjp`, so a
 renamed eager case would add no arm.
 
-Eager AD samples cannot share one borrowed session the way the primal rows do:
-`EagerRuntime::jvp`/`vjp` take the caller-held engine themselves (tenferro-rs #2206). One eager AD
-sample is therefore one forward pass in a borrowed session plus one `jvp`/`vjp` call, which is the
-eager counterpart of the trace arm's forward-and-derivative program run. Fixtures and tensor
+Since tenferro-rs 0.12 the borrowed `EagerSession` carries `jvp` and `vjp` itself, so an eager AD
+row is timed like a backward row (`measure_eager`): one borrowed session is entered outside the
+clock and encloses every sample, fixtures are restored per sample outside the clock, and one sample
+is **one** forward pass plus one `jvp`/`vjp` call that returns `(output, derivative)` together. This
+is the eager counterpart of the trace arm's forward-and-derivative program run. Fixtures and tensor
 wrapping stay outside the clock, as for every other suite.
+
+The first 0.12 harness (`03f0f80`, collected in the 2026-11-24 zen5-cpu runs) computed the
+derivative in one session and then recomputed the output in a second one, so its eager JVP/VJP
+cells timed two forward passes; the 256x256 4T `grad_sum_svd_s_vjp` and `grad_sum_eigh_vjp` cells
+read as a ~1.95x slowdown that a single-pass re-measurement does not reproduce (tenferro-benchmark
+#517). Those two cells are withdrawn through `benchmarks/withdrawn-cells.yaml`; the other eager
+JVP/VJP cells of those runs carry the same second forward and were not re-measured.
 
 The eager call also carries the AD preparation it performs itself (the eager VJP caches its prepared
 derivative, the eager JVP re-prepares per call), because the public eager API exposes no separate
@@ -56,7 +64,8 @@ eager number as what a program pays per `jvp`/`vjp` call, not as a prepared-prog
 `tenferro-rs eager per call, incl. AD prepare (ms)`, so the two columns are not read as the same
 measurement; `scripts/ci/tests/test_linalg_ad_backends.py` keeps that note and that heading.
 The raw sample record says it too: an eager AD row writes
-`eager_session_policy: forward_and_derivative_inside_timing_with_eager_ad_prepare`, where a primal
+`eager_session_policy: borrowed_session_outside_timing_one_forward_and_derivative_with_eager_ad_prepare`
+(`forward_and_derivative_inside_timing_with_eager_ad_prepare` before #517), where a primal
 row writes `borrowed_session_outside_timing_for_primal`. The row is therefore self-describing
 rather than setup-inclusive by accident (`src/bin/publication_gate.rs`).
 
