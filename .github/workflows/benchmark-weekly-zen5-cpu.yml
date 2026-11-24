@@ -1,0 +1,135 @@
+name: benchmark-weekly-zen5-cpu
+
+# The CPU page (https://tensor4all.org/tenferro-benchmark/cpu/) is rendered only
+# from the `maintained` profiles of benchmarks/profiles.yaml, which is zen5-cpu
+# alone, and only from the committed result/ tree. Until this workflow, nothing
+# collected zen5-cpu on a schedule, so the page aged silently while every
+# scheduled job stayed green (#515). This job collects the recorded zen5-cpu
+# suites at the pin, renders the pages with the repository generators, checks
+# them, and opens a results pull request. It never merges.
+#
+# Runner: the zen5-cpu profile is one physical machine (AMD Ryzen AI 9 HX 470,
+# "evo"). A repository self-hosted runner registered on that host with the
+# extra label `zen5-cpu` is the only runner that can take this job
+# (docs/zen5-cpu-runner.md). The job runs on schedule and on manual dispatch
+# only: no pull_request trigger ever reaches the self-hosted runner of this
+# public repository.
+#
+# A busy host is a failure, not a skip: the harness idle gate refuses a row
+# whose measured CPUs were > 5% busy, the job goes red, and the nightly monitor
+# sees it. The gate is never relaxed here (no BENCHMARK_ALLOW_BUSY_HOST).
+
+on:
+  schedule:
+    # Monday 02:00 JST (Sunday 17:00 UTC), when the workstation is quiet.
+    - cron: "0 17 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: benchmark-zen5-cpu
+  cancel-in-progress: false
+
+jobs:
+  zen5-cpu:
+    if: github.repository == 'tensor4all/tenferro-benchmark'
+    runs-on: [self-hosted, linux, x64, zen5-cpu]
+    timeout-minutes: 720
+    env:
+      BENCHMARK_TARGET_PROFILE: zen5-cpu
+      TENFERRO_CPU_FEATURES: native
+      PUBLICATION_GATE_PROFILE: full
+      RUSTC_WRAPPER: ""
+      # rows 1T on 0, 4T on 0-3, 8T on 4-11 (scripts/cpu_pinning.sh); builds and
+      # the runner itself live on the 1T/4T observer set.
+      BUILD_CPUS: 4-11,16-23
+    steps:
+      - name: Checkout the harness at main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: Refuse a host that is not the zen5-cpu measurement host
+        run: |
+          set -euo pipefail
+          grep -m1 'model name' /proc/cpuinfo | tee /dev/stderr | grep -q 'Ryzen AI 9 HX 470'
+          boost=$(cat /sys/devices/system/cpu/cpufreq/boost)
+          govs=$(sort -u /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor | tr '\n' ' ')
+          echo "boost=$boost governor=$govs uptime: $(uptime)"
+          # The operator sets these; the job only checks them.
+          test "$boost" = 0
+          test "$govs" = "performance "
+
+      - name: Check out tenferro-rs at the pin and build on the observer CPUs
+        run: |
+          set -euo pipefail
+          rev=$(grep -v '^#' pins/tenferro-rs.rev | grep -Em1 '^[0-9a-f]{40}')
+          echo "TENFERRO_REF=$rev" >> "$GITHUB_ENV"
+          taskset -c "$BUILD_CPUS" env TENFERRO_UPDATE=1 TENFERRO_REF="$rev" ./scripts/setup_extern_deps.sh
+          test "$(git -C extern/tenferro-rs rev-parse HEAD)" = "$rev"
+          test -z "$(git -C extern/tenferro-rs status --short)"
+          taskset -c "$BUILD_CPUS" cargo build --release --no-default-features --features native --bins
+          taskset -c "$BUILD_CPUS" bash -c 'uv sync --frozen || uv sync'
+
+      - name: Collect the recorded zen5-cpu suites (1, 4, 8 threads)
+        run: |
+          set -euo pipefail
+          # The runner processes are the observer: the helper moves them to each
+          # row's observer set before the row's idle check (handshake form, not
+          # BENCHMARK_OBSERVER_FOLLOW, whose ancestor move corrupts the second
+          # run.yaml write; see #468).
+          hs="$RUNNER_TEMP/observer-handshake"
+          mapfile -t pids < <(pgrep -f 'Runner\.(Listener|Worker)')
+          taskset -c "$BUILD_CPUS" scripts/observer_follow_host.sh "$hs" "${pids[@]}" &
+          follow=$!
+          trap 'kill $follow 2>/dev/null || true' EXIT
+          export BENCHMARK_OBSERVER_HANDSHAKE="$hs" SKIP_EXTERN_SETUP=1 TENFERRO_UPDATE=0
+          touch "$RUNNER_TEMP/collect.marker"
+          # permutation stays unverified (benchmarks/unverified-pages.txt) and
+          # public_api runs separately: its 1T row is refused by the idle gate
+          # sampling the suite itself (#468), so only 4T and 8T are published.
+          RUN_PUBLIC_API_SUITE=0 RUN_PERMUTATION_SUITE=0 taskset -c "$BUILD_CPUS" ./scripts/run_all.sh 1 4 8
+          taskset -c "$BUILD_CPUS" ./scripts/run_cpu_public_api.sh 4 8
+
+      - name: Render and check every page from the committed run records
+        run: |
+          set -euo pipefail
+          mapfile -t runs < <(find data/results/zen5-cpu/cpu -mindepth 2 -maxdepth 2 -type d \
+                                -newer "$RUNNER_TEMP/collect.marker" | sort)
+          printf 'run: %s\n' "${runs[@]}"
+          test "${#runs[@]}" -gt 0
+          uv run python scripts/regenerate_report_summaries.py --publish "${runs[@]}"
+          uv run python scripts/generate_readme_results.py
+          uv run python scripts/regenerate_report_summaries.py --check
+          uv run python scripts/generate_readme_results.py --check
+          git status --short | head -50
+
+      - name: Create result pull request token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.INGEST_APP_ID }}
+          private-key: ${{ secrets.INGEST_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-contents: write
+          permission-pull-requests: write
+
+      - name: Open the results pull request (never merged here)
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          set -euo pipefail
+          day=$(date -u +%Y%m%d)
+          branch="results/zen5-cpu-weekly-$day"
+          git switch -c "$branch"
+          git add data/results/zen5-cpu result/zen5-cpu README.md
+          git -c user.name='tensor4all-ai-bot' -c user.email='tensor4all-ai-bot@users.noreply.github.com' \
+            commit -m "results: weekly zen5-cpu CPU suites at tenferro-rs ${TENFERRO_REF:0:8}"
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:refs/heads/$branch"
+          gh pr create --repo "$GITHUB_REPOSITORY" --head "$branch" --base main \
+            --title "results: weekly zen5-cpu CPU suites at tenferro-rs ${TENFERRO_REF:0:8} ($day)" \
+            --body "Scheduled zen5-cpu collection (run ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}) at pins/tenferro-rs.rev \`${TENFERRO_REF}\`, harness \`${GITHUB_SHA}\`, feature set \`native\`, rows 1/4/8 (public_api 4/8). Pages were rendered with regenerate_report_summaries.py --publish and pass --check. Review the cells that moved before merging."
