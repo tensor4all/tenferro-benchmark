@@ -62,6 +62,11 @@ jobs:
           # The operator sets these; the job only checks them.
           test "$boost" = 0
           test "$govs" = "performance "
+          # A missing julia only drops the omeinsum column with a warning, and
+          # --check would then pass on the thinner page: require the toolchain.
+          for tool in cargo uv gh julia taskset; do
+            command -v "$tool" || { echo "missing $tool on the runner PATH" >&2; exit 1; }
+          done
 
       - name: Check out tenferro-rs at the pin and build on the observer CPUs
         run: |
@@ -94,18 +99,21 @@ jobs:
           RUN_PUBLIC_API_SUITE=0 RUN_PERMUTATION_SUITE=0 taskset -c "$BUILD_CPUS" ./scripts/run_all.sh 1 4 8
           taskset -c "$BUILD_CPUS" ./scripts/run_cpu_public_api.sh 4 8
 
-      - name: Render and check every page from the committed run records
+      - name: Render the pages per suite, stage the records, then check
         run: |
           set -euo pipefail
           mapfile -t runs < <(find data/results/zen5-cpu/cpu -mindepth 2 -maxdepth 2 -type d \
                                 -newer "$RUNNER_TEMP/collect.marker" | sort)
           printf 'run: %s\n' "${runs[@]}"
           test "${#runs[@]}" -gt 0
-          uv run python scripts/regenerate_report_summaries.py --publish "${runs[@]}"
+          # --publish takes the runs of one suite; the collection wrote several.
+          uv run python scripts/publish_suite_runs.py "${runs[@]}"
           uv run python scripts/generate_readme_results.py
+          # --check accepts only source runs that are in the git index.
+          git add data/results/zen5-cpu result/zen5-cpu README.md
           uv run python scripts/regenerate_report_summaries.py --check
           uv run python scripts/generate_readme_results.py --check
-          git status --short | head -50
+          git status --short
 
       - name: Create result pull request token
         id: app-token
@@ -126,10 +134,9 @@ jobs:
           day=$(date -u +%Y%m%d)
           branch="results/zen5-cpu-weekly-$day"
           git switch -c "$branch"
-          git add data/results/zen5-cpu result/zen5-cpu README.md
           git -c user.name='tensor4all-ai-bot' -c user.email='tensor4all-ai-bot@users.noreply.github.com' \
             commit -m "results: weekly zen5-cpu CPU suites at tenferro-rs ${TENFERRO_REF:0:8}"
           git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:refs/heads/$branch"
           gh pr create --repo "$GITHUB_REPOSITORY" --head "$branch" --base main \
             --title "results: weekly zen5-cpu CPU suites at tenferro-rs ${TENFERRO_REF:0:8} ($day)" \
-            --body "Scheduled zen5-cpu collection (run ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}) at pins/tenferro-rs.rev \`${TENFERRO_REF}\`, harness \`${GITHUB_SHA}\`, feature set \`native\`, rows 1/4/8 (public_api 4/8). Pages were rendered with regenerate_report_summaries.py --publish and pass --check. Review the cells that moved before merging."
+            --body "Scheduled zen5-cpu collection (run ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}) at pins/tenferro-rs.rev \`${TENFERRO_REF}\`, harness \`${GITHUB_SHA}\`, feature set \`native\`, rows 1/4/8 (public_api 4/8). Pages were rendered per suite with scripts/publish_suite_runs.py and pass regenerate_report_summaries.py --check. Review the cells that moved before merging."

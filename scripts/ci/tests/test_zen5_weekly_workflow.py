@@ -1,5 +1,7 @@
 """The CPU page refreshes only from zen5-cpu (#515): a scheduled job must collect it."""
 from pathlib import Path
+import sys
+import tempfile
 import unittest
 
 import yaml
@@ -49,13 +51,64 @@ class Zen5WeeklyWorkflowTest(unittest.TestCase):
         self.assertIn('pins/tenferro-rs.rev', self.run)
         self.assertIn('run_all.sh 1 4 8', self.run)
 
-    def test_pages_are_generated_and_checked_and_nothing_is_merged(self):
-        self.assertIn('regenerate_report_summaries.py --publish', self.run)
-        self.assertIn('regenerate_report_summaries.py --check', self.run)
-        self.assertIn('generate_readme_results.py --check', self.run)
+    def step(self, prefix):
+        return next(step['run'] for step in self.job['steps'] if step.get('name', '').startswith(prefix))
+
+    def test_publish_is_per_suite_and_check_sees_staged_runs(self):
+        render = self.step('Render the pages per suite')
+        # A direct --publish of every new run dir mixes suites and is refused.
+        self.assertNotIn('regenerate_report_summaries.py --publish', self.run)
+        publish = render.index('scripts/publish_suite_runs.py')
+        stage = render.index('git add data/results/zen5-cpu')
+        check = render.index('regenerate_report_summaries.py --check')
+        self.assertLess(publish, stage)
+        self.assertLess(stage, check)
         self.assertIn('gh pr create', self.run)
         self.assertNotIn('gh pr merge', self.run)
 
+    def test_the_runner_toolchain_is_required(self):
+        guard = self.step('Refuse a host')
+        for tool in ('cargo', 'uv', 'gh', 'julia'):
+            self.assertIn(tool, guard)
+
+
+class PublishBySuiteTest(unittest.TestCase):
+    """What the workflow's `--publish` call got wrong: one call per suite."""
+
+    def setUp(self):
+        sys.path.insert(0, str(ROOT / 'scripts'))
+        import publish_suite_runs
+        self.module = publish_suite_runs
+
+    def test_a_mixed_collection_is_published_one_suite_at_a_time(self):
+        runs = [ROOT / f'data/results/zen5-cpu/cpu/{suite}/{stamp}' for suite, stamp in (
+            ('einsum', '1'), ('fft', '2'), ('einsum', '3'), ('public_api', '4'), ('einsum', '5'))]
+        calls = []
+
+        def publish(selection):
+            calls.append(list(selection))
+            return []
+
+        self.module.publish_by_suite(runs, publish=publish, suite_of=lambda run: 'cpu/' + run.parent.name)
+        for selection in calls:
+            self.assertEqual(len({run.parent.name for run in selection}), 1, selection)
+        self.assertEqual([[run.name for run in selection] for selection in calls],
+                         [['1', '3', '5'], ['2'], ['4']])
+
+    def test_the_real_publish_refuses_what_the_grouping_avoids(self):
+        import regenerate_report_summaries as regen
+        einsum = sorted((ROOT / 'data/results/zen5-cpu/cpu/einsum').glob('*'))
+        fft = sorted((ROOT / 'data/results/zen5-cpu/cpu/fft').glob('*'))
+        if not einsum or not fft:
+            self.skipTest('no tracked zen5-cpu runs')
+        with tempfile.TemporaryDirectory() as work:
+            with self.assertRaisesRegex(regen.PublishError, 'select runs of one suite'):
+                regen.render_pages([einsum[-1], fft[-1]], Path(work), ROOT)
+
+    def test_a_run_selected_twice_is_an_error(self):
+        run = ROOT / 'data/results/zen5-cpu/cpu/fft/x'
+        with self.assertRaises(self.module.regen.PublishError):
+            self.module.group_by_suite([run, run], suite_of=lambda _: 'cpu/fft')
 
 if __name__ == '__main__':
     unittest.main()
