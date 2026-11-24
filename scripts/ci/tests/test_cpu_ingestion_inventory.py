@@ -141,10 +141,40 @@ class GenerateCPUInventoryTest(unittest.TestCase):
 
 
 ROOT = Path(__file__).resolve().parents[3]
+NIGHTLY_WORKFLOWS = ('benchmark-nightly-linux-cpu.yml', 'benchmark-nightly-mac-cpu.yml')
+SESSION_MATRIX_MANIFEST = ROOT/'benchmarks/cpu/manifests/session_matrix.yaml'
 
 
-def declared_session_matrix_identities(manifest_path: Path, plan: dict) -> list:
-    """The [case, group, backend] rows a quick cpu/session_matrix collection must produce.
+def nightly_selection() -> tuple[list[int], str]:
+    """The thread list and session_matrix coverage the CPU nightlies actually run.
+
+    Read from the nightly workflows, never from the ledger under test: threads
+    are the arguments of their `scripts/run_all.sh` call, and coverage is their
+    BENCH_COVERAGE if they set one, else the harness default (bench_selection).
+    """
+    import re
+    import bench_selection
+    selections = set()
+    for name in NIGHTLY_WORKFLOWS:
+        text = (ROOT/'.github/workflows'/name).read_text()
+        calls = re.findall(r'^\s*\./scripts/run_all\.sh((?:\s+\d+)+)\s*$', text, re.MULTILINE)
+        if len(calls) != 1:
+            raise AssertionError(f'{name}: expected one ./scripts/run_all.sh <threads> call, found {len(calls)}')
+        coverage = re.findall(r'BENCH_COVERAGE[=:]\s*["\']?(\w+)', text)
+        if len(set(coverage)) > 1:
+            raise AssertionError(f'{name}: conflicting BENCH_COVERAGE values {coverage}')
+        with patch.dict('os.environ', {}, clear=False) as env:
+            env.pop('BENCH_COVERAGE', None)
+            resolved = bench_selection.resolve_coverage(coverage[0] if coverage else None)
+        selections.add((tuple(int(t) for t in calls[0].split()), resolved))
+    if len(selections) != 1:
+        raise AssertionError(f'the CPU nightlies disagree on threads/coverage: {sorted(selections)}')
+    threads, coverage = selections.pop()
+    return sorted(threads), coverage
+
+
+def declared_session_matrix_identities(threads, coverage, manifest_path: Path = SESSION_MATRIX_MANIFEST) -> list:
+    """The [case, group, backend] rows a cpu/session_matrix collection must produce.
 
     Derived statically from the case manifest and instance file, with the same
     provider canonicalisation the ingestion adapter applies to collected rows.
@@ -152,19 +182,35 @@ def declared_session_matrix_identities(manifest_path: Path, plan: dict) -> list:
     import bench_selection
     manifest = bench_selection.load_manifest(manifest_path)
     cases = {case['id']: case for case in json.loads((ROOT/manifest['source']).read_text())}
-    threads = plan.get('suite_threads', {}).get('cpu/session_matrix', plan['threads'])
 
     def backend(provider):
         provider = 'blas' if provider in cpu_ingestion_adapter.BLAS_IMPLEMENTATIONS else provider
         return 'pytorch-cpu' if provider == 'pytorch' else 'tenferro-' + provider
 
     return sorted([case_id, f'threads={thread}', backend(provider)]
-                  for thread in threads for case_id in manifest['coverage'][plan['profile']]
+                  for thread in threads for case_id in manifest['coverage'][coverage]
                   for provider in cases[case_id]['providers'])
 
 
+def session_matrix_ledger_problems(plan: dict) -> list[str]:
+    """Every way `plan` disagrees with what the nightlies run and the cases declare."""
+    threads, coverage = nightly_selection()
+    problems = []
+    if plan.get('profile') != coverage:
+        problems.append(f"ledger profile {plan.get('profile')!r}, nightlies run coverage {coverage!r}")
+    ledger_threads = plan.get('suite_threads', {}).get('cpu/session_matrix', plan.get('threads'))
+    if ledger_threads != threads:
+        problems.append(f'ledger cpu/session_matrix threads {ledger_threads}, nightlies run {threads}')
+    rows = declared_session_matrix_identities(threads, coverage)
+    expected = {'row_count': len(rows), 'identities_sha256': identity_fingerprint(rows)}
+    if plan.get('suites', {}).get('cpu/session_matrix') != expected:
+        problems.append(f"ledger cpu/session_matrix {plan.get('suites', {}).get('cpu/session_matrix')}, "
+                        f'declared cases give {expected}')
+    return problems
+
+
 class CheckedInSessionMatrixLedgerTest(unittest.TestCase):
-    """A change to the session_matrix cases must regenerate the ledger in the same PR.
+    """A change to the session_matrix cases or nightly threads must regenerate the ledger in the same PR.
 
     Regression: #491 dropped the vendor-BLAS provider slots (114 -> 86 quick
     identities) without regenerating benchmarks/cpu/ingestion-selection.json, and
@@ -172,14 +218,55 @@ class CheckedInSessionMatrixLedgerTest(unittest.TestCase):
     ~2h40m, every night from 2026-11-17 to 2026-11-23.
     """
 
-    def test_ledger_matches_the_declared_quick_inventory(self):
-        plan = json.loads(cpu_ingestion_adapter.SELECTION_PATH.read_text())
-        rows = declared_session_matrix_identities(ROOT/'benchmarks/cpu/manifests/session_matrix.yaml', plan)
-        self.assertEqual(plan['suites']['cpu/session_matrix'],
-                         {'row_count': len(rows), 'identities_sha256': identity_fingerprint(rows)},
-                         'cpu/session_matrix cases changed: regenerate benchmarks/cpu/ingestion-selection.json '
-                         'with scripts/ci/generate_cpu_ingestion_selection.py from a collection')
+    def setUp(self):
+        self.plan = json.loads(cpu_ingestion_adapter.SELECTION_PATH.read_text())
 
+    def test_ledger_matches_the_nightly_selection_and_declared_cases(self):
+        self.assertEqual(session_matrix_ledger_problems(self.plan), [],
+                         'regenerate benchmarks/cpu/ingestion-selection.json with '
+                         'scripts/ci/generate_cpu_ingestion_selection.py from a nightly collection')
+
+    def test_selection_comes_from_the_nightly_workflows(self):
+        self.assertEqual(nightly_selection(), ([1, 4], 'quick'))
+
+    def test_wrong_ledger_threads_fail_even_when_the_rows_agree_with_them(self):
+        # Review of #514: deriving threads from the ledger made this pass.
+        # regenerate's updated_plan unions collected threads, so a 1/4/8T tree
+        # moves the ledger to three threads; the nightly runs 1 4 and rejects it.
+        rows = declared_session_matrix_identities([1, 4, 8], 'quick')
+        plan = dict(self.plan, threads=[1, 4, 8], suites=dict(
+            self.plan['suites'], **{'cpu/session_matrix': {'row_count': len(rows),
+                                                           'identities_sha256': identity_fingerprint(rows)}}))
+        problems = session_matrix_ledger_problems(plan)
+        self.assertEqual(len(rows), 129)
+        self.assertTrue(any('threads [1, 4, 8], nightlies run [1, 4]' in p for p in problems), problems)
+        self.assertTrue(any('declared cases give' in p for p in problems), problems)
+
+    def test_wrong_ledger_coverage_fails_even_when_the_rows_agree_with_it(self):
+        rows = declared_session_matrix_identities([1, 4], 'full')
+        plan = dict(self.plan, profile='full', suites=dict(
+            self.plan['suites'], **{'cpu/session_matrix': {'row_count': len(rows),
+                                                           'identities_sha256': identity_fingerprint(rows)}}))
+        problems = session_matrix_ledger_problems(plan)
+        self.assertTrue(any("profile 'full', nightlies run coverage 'quick'" in p for p in problems), problems)
+        self.assertTrue(any('declared cases give' in p for p in problems), problems)
+
+    def test_a_suite_threads_override_is_checked_too(self):
+        plan = dict(self.plan, suite_threads=dict(self.plan.get('suite_threads', {}),
+                                                  **{'cpu/session_matrix': [1]}))
+        self.assertTrue(any('threads [1], nightlies run [1, 4]' in p
+                            for p in session_matrix_ledger_problems(plan)))
+
+    def test_nightlies_that_disagree_on_threads_are_reported(self):
+        real = Path.read_text
+
+        def fake(path, *args, **kwargs):
+            text = real(path, *args, **kwargs)
+            return text.replace('./scripts/run_all.sh 1 4', './scripts/run_all.sh 1 4 8') \
+                if path.name == 'benchmark-nightly-mac-cpu.yml' else text
+        with patch.object(Path, 'read_text', fake):
+            with self.assertRaisesRegex(AssertionError, 'disagree on threads/coverage'):
+                nightly_selection()
 
 if __name__ == '__main__':
     unittest.main()
