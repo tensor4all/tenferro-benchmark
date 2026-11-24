@@ -1,11 +1,11 @@
 # CPU shared-session matrix results
 
-Raw data and provenance: `data/results/mac-cpu/cpu/session_matrix/20261123_181645`.
+Raw data and provenance: `data/results/mac-cpu/cpu/session_matrix/20261124_184309`.
 
 ### run_t1
 
 ```yaml
-timestamp: '2026-11-23T18:16:45Z'
+timestamp: '2026-11-24T18:43:10Z'
 tenferro_rs:
   path: extern/tenferro-rs
   commit: ce9125d0cff4ee40841120759b5df45252c27f22
@@ -15,7 +15,7 @@ tenferro_rs:
   resolved_path: /Users/runner/work/tenferro-benchmark/tenferro-benchmark/extern/tenferro-rs
 harness:
   path: /Users/runner/work/tenferro-benchmark/tenferro-benchmark
-  commit: d9f6406557a0d1066f37785ec85f9b9afdbb4781
+  commit: 9185e8ca26c3fc600458361d0f477495a717daf3
   dirty: false
 collection:
   command: 'BENCH_COMMAND_BUDGET_SECONDS=300 BENCHMARK_TARGET_PROFILE=mac-cpu /Users/runner/work/tenferro-benchmark/tenferro-benchmark/scripts/run_cpu_session.sh
@@ -33,7 +33,7 @@ collection:
 ### run_t4
 
 ```yaml
-timestamp: '2026-11-23T18:17:07Z'
+timestamp: '2026-11-24T18:43:43Z'
 tenferro_rs:
   path: extern/tenferro-rs
   commit: ce9125d0cff4ee40841120759b5df45252c27f22
@@ -43,7 +43,7 @@ tenferro_rs:
   resolved_path: /Users/runner/work/tenferro-benchmark/tenferro-benchmark/extern/tenferro-rs
 harness:
   path: /Users/runner/work/tenferro-benchmark/tenferro-benchmark
-  commit: d9f6406557a0d1066f37785ec85f9b9afdbb4781
+  commit: 9185e8ca26c3fc600458361d0f477495a717daf3
   dirty: false
 collection:
   command: 'BENCH_COMMAND_BUDGET_SECONDS=300 BENCHMARK_TARGET_PROFILE=mac-cpu /Users/runner/work/tenferro-benchmark/tenferro-benchmark/scripts/run_cpu_session.sh
@@ -61,14 +61,14 @@ collection:
 ## Case status
 
 - Manifest: `cpu/session_matrix` version 5, coverage `quick`, effort `standard`
-- Expected 86, selected 86, executed 86, unsupported 0, failed 0, skipped 0, missing 0, noisy 8.
+- Expected 86, selected 86, executed 86, unsupported 0, failed 0, skipped 0, missing 0, noisy 61.
 - Complete: **yes** — only executed cases count as covered; unsupported, skipped, failed, missing and unselected cases never do.
 
 | expected | selected | executed | unsupported | failed | skipped | missing | noisy |
 |---:|---:|---:|---:|---:|---:|---:|---:|
-| 86 | 86 | 86 | 0 | 0 | 0 | 0 | 8 |
+| 86 | 86 | 86 | 0 | 0 | 0 | 0 | 61 |
 
-- Noisy: `bdot_f64_b1024_m4n4k4_canonical_alloc_auto[faer]@t1`, `hadamard_f64_m64n64_dot_alloc[faer]@t1`, `stream_f64_fresh_len32_einsum_alloc[faer]@t1`, `stream_f64_strides_len32_einsum_alloc[faer]@t1`, `eager_stream_f64_fixed_len128_einsum3_alloc[faer]@t1`, `eager_stream_f64_mixed_len128_einsum3_alloc[faer]@t1`, `eager_stream_f64_fresh_len128_einsum3_alloc[faer]@t1`, `eager_stream_f64_strides_len128_einsum3_alloc[faer]@t1`
+- Noisy: `matmul_n2_count1024[faer]@t1`, `matmul_n4_count1024[faer]@t1`, `matmul_n4_count1024[pytorch]@t1`, `matmul_n8_count1024[pytorch]@t1`, `matmul_n32_count1024[faer]@t1`, `matmul_n32_count1024[pytorch]@t1`, `solve_n2_count1024[faer]@t1`, `solve_n2_count1024[pytorch]@t1`, `solve_n4_count1024[faer]@t1`, `solve_n4_count1024[pytorch]@t1`, `solve_n8_count1024[faer]@t1`, `solve_n8_count1024[pytorch]@t1`, `solve_n16_count1024[faer]@t1`, `solve_n32_count1024[faer]@t1`, `solve_n32_count1024[pytorch]@t1`, `bdot_f64_b1024_m4n4k4_direct_alloc_auto[faer]@t1`, `bdot_f64_b1024_m4n4k4_direct_into_auto[faer]@t1`, `bdot_f64_b64_m4n4k4_direct_into_auto[faer]@t1`, `bdot_f64_b16_m64n64k64_direct_alloc_auto[faer]@t1`, `bdot_f64_b1024_m4n4k4_canonical_alloc_auto[faer]@t1`, `stream_f64_fixed_len32_einsum_alloc[faer]@t1`, `stream_f64_fresh_len32_einsum_alloc[faer]@t1`, `stream_f64_strides_len32_einsum_alloc[faer]@t1`, `eager_stream_f64_fixed_len128_einsum3_alloc[faer]@t1`, `eager_stream_f64_mixed_len128_einsum3_alloc[faer]@t1`, `eager_stream_f64_fresh_len128_einsum3_alloc[faer]@t1`, `eager_stream_f64_strides_len128_einsum3_alloc[faer]@t1`, `matmul_n2_count1024[faer]@t4`, `matmul_n2_count1024[pytorch]@t4`, `matmul_n4_count1024[faer]@t4`, `matmul_n4_count1024[pytorch]@t4`, `matmul_n16_count1024[pytorch]@t4`, `solve_n2_count1024[pytorch]@t4`, `solve_n4_count1024[pytorch]@t4`, `solve_n8_count1024[pytorch]@t4`, `solve_n16_count1024[faer]@t4`, `solve_n16_count1024[pytorch]@t4`, `solve_n32_count1024[faer]@t4`, `solve_n32_count1024[pytorch]@t4`, `bdot_f64_b1024_m4n4k4_direct_alloc_auto[faer]@t4` (+21 more)
 
 ## Loop of independent small calls
 
@@ -80,46 +80,46 @@ This independent-call loop lane uses concrete Tensor routes. Borrowed eager-sess
 
 | Case ID | Operation | Matrix | Operations | Threads | Provider | Route | Execution mode | Median total ms | IQR total ms | Median ns/op | CoV | Check |
 |---|---|---|---:|---:|---|---|---|---:|---:|---:|---:|---|
-| matmul_n16_count1024 | matmul | n16 | 1024 | 1 | faer | shared-session | not applicable | 1.45 | 0.06 | 1416.02 | 4.9% | passed |
-| matmul_n16_count1024 | matmul | n16 | 1024 | 1 | pytorch | shared-session | not applicable | 1.02 | 0.01 | 996.09 | 1.6% | passed |
-| matmul_n16_count1024 | matmul | n16 | 1024 | 4 | faer | shared-session | not applicable | 1.82 | 0.02 | 1777.34 | 0.9% | passed |
-| matmul_n16_count1024 | matmul | n16 | 1024 | 4 | pytorch | shared-session | not applicable | 1.05 | 0.02 | 1025.39 | 2.3% | passed |
-| matmul_n2_count1024 | matmul | n2 | 1024 | 1 | faer | shared-session | not applicable | 0.82 | 0.01 | 800.78 | 8.2% | passed |
-| matmul_n2_count1024 | matmul | n2 | 1024 | 1 | pytorch | shared-session | not applicable | 0.76 | 0.04 | 742.19 | 4.2% | passed |
-| matmul_n2_count1024 | matmul | n2 | 1024 | 4 | faer | shared-session | not applicable | 1.31 | 0.01 | 1279.30 | 1.3% | passed |
-| matmul_n2_count1024 | matmul | n2 | 1024 | 4 | pytorch | shared-session | not applicable | 0.66 | 0.01 | 644.53 | 1.8% | passed |
-| matmul_n32_count1024 | matmul | n32 | 1024 | 1 | faer | shared-session | not applicable | 3.15 | 0.15 | 3076.17 | 2.7% | passed |
-| matmul_n32_count1024 | matmul | n32 | 1024 | 1 | pytorch | shared-session | not applicable | 1.68 | 0.04 | 1640.62 | 2.4% | passed |
-| matmul_n32_count1024 | matmul | n32 | 1024 | 4 | faer | shared-session | not applicable | 3.98 | 0.13 | 3886.72 | 2.3% | passed |
-| matmul_n32_count1024 | matmul | n32 | 1024 | 4 | pytorch | shared-session | not applicable | 1.58 | 0.05 | 1542.97 | 3.5% | passed |
-| matmul_n4_count1024 | matmul | n4 | 1024 | 1 | faer | shared-session | not applicable | 0.87 | 0.02 | 849.61 | 3.1% | passed |
-| matmul_n4_count1024 | matmul | n4 | 1024 | 1 | pytorch | shared-session | not applicable | 0.62 | 0.01 | 605.47 | 2.0% | passed |
-| matmul_n4_count1024 | matmul | n4 | 1024 | 4 | faer | shared-session | not applicable | 1.37 | 0.04 | 1337.89 | 2.5% | passed |
-| matmul_n4_count1024 | matmul | n4 | 1024 | 4 | pytorch | shared-session | not applicable | 0.69 | 0.03 | 673.83 | 3.6% | passed |
-| matmul_n8_count1024 | matmul | n8 | 1024 | 1 | faer | shared-session | not applicable | 0.88 | 0.01 | 859.38 | 1.8% | passed |
-| matmul_n8_count1024 | matmul | n8 | 1024 | 1 | pytorch | shared-session | not applicable | 0.84 | 0.01 | 820.31 | 1.7% | passed |
-| matmul_n8_count1024 | matmul | n8 | 1024 | 4 | faer | shared-session | not applicable | 1.37 | 0.04 | 1337.89 | 3.4% | passed |
-| matmul_n8_count1024 | matmul | n8 | 1024 | 4 | pytorch | shared-session | not applicable | 0.86 | 0.06 | 839.84 | 4.9% | passed |
-| solve_n16_count1024 | solve | n16 | 1024 | 1 | faer | shared-session | not applicable | 2.60 | 0.07 | 2539.06 | 2.9% | passed |
-| solve_n16_count1024 | solve | n16 | 1024 | 1 | pytorch | shared-session | not applicable | 9.46 | 0.37 | 9238.28 | 3.8% | passed |
-| solve_n16_count1024 | solve | n16 | 1024 | 4 | faer | shared-session | not applicable | 3.09 | 0.02 | 3017.58 | 1.5% | passed |
-| solve_n16_count1024 | solve | n16 | 1024 | 4 | pytorch | shared-session | not applicable | 10.78 | 0.38 | 10527.34 | 3.7% | passed |
-| solve_n2_count1024 | solve | n2 | 1024 | 1 | faer | shared-session | not applicable | 0.91 | 0.01 | 888.67 | 3.1% | passed |
-| solve_n2_count1024 | solve | n2 | 1024 | 1 | pytorch | shared-session | not applicable | 7.95 | 0.03 | 7763.67 | 1.3% | passed |
-| solve_n2_count1024 | solve | n2 | 1024 | 4 | faer | shared-session | not applicable | 1.45 | 0.03 | 1416.02 | 2.1% | passed |
-| solve_n2_count1024 | solve | n2 | 1024 | 4 | pytorch | shared-session | not applicable | 7.60 | 0.04 | 7421.88 | 1.4% | passed |
-| solve_n32_count1024 | solve | n32 | 1024 | 1 | faer | shared-session | not applicable | 9.17 | 0.97 | 8955.08 | 5.6% | passed |
-| solve_n32_count1024 | solve | n32 | 1024 | 1 | pytorch | shared-session | not applicable | 16.70 | 0.39 | 16308.59 | 1.5% | passed |
-| solve_n32_count1024 | solve | n32 | 1024 | 4 | faer | shared-session | not applicable | 9.82 | 0.18 | 9589.84 | 1.3% | passed |
-| solve_n32_count1024 | solve | n32 | 1024 | 4 | pytorch | shared-session | not applicable | 16.58 | 0.29 | 16191.41 | 1.6% | passed |
-| solve_n4_count1024 | solve | n4 | 1024 | 1 | faer | shared-session | not applicable | 0.99 | 0.01 | 966.80 | 3.9% | passed |
-| solve_n4_count1024 | solve | n4 | 1024 | 1 | pytorch | shared-session | not applicable | 8.63 | 0.14 | 8427.73 | 1.7% | passed |
-| solve_n4_count1024 | solve | n4 | 1024 | 4 | faer | shared-session | not applicable | 1.47 | 0.03 | 1435.55 | 3.2% | passed |
-| solve_n4_count1024 | solve | n4 | 1024 | 4 | pytorch | shared-session | not applicable | 8.06 | 0.11 | 7871.09 | 1.8% | passed |
-| solve_n8_count1024 | solve | n8 | 1024 | 1 | faer | shared-session | not applicable | 1.25 | 0.01 | 1220.70 | 0.7% | passed |
-| solve_n8_count1024 | solve | n8 | 1024 | 1 | pytorch | shared-session | not applicable | 8.50 | 0.42 | 8300.78 | 3.1% | passed |
-| solve_n8_count1024 | solve | n8 | 1024 | 4 | faer | shared-session | not applicable | 1.83 | 0.01 | 1787.11 | 0.7% | passed |
-| solve_n8_count1024 | solve | n8 | 1024 | 4 | pytorch | shared-session | not applicable | 7.85 | 0.03 | 7666.02 | 0.4% | passed |
+| matmul_n16_count1024 | matmul | n16 | 1024 | 1 | faer | shared-session | not applicable | 1.36 | 0.15 | 1328.12 | 7.6% | passed |
+| matmul_n16_count1024 | matmul | n16 | 1024 | 1 | pytorch | shared-session | not applicable | 1.16 | 0.15 | 1132.81 | 8.0% | passed |
+| matmul_n16_count1024 | matmul | n16 | 1024 | 4 | faer | shared-session | not applicable | 1.91 | 0.03 | 1865.23 | 1.3% | passed |
+| matmul_n16_count1024 | matmul | n16 | 1024 | 4 | pytorch | shared-session | not applicable | 1.14 | 0.13 | 1113.28 | 29.8% | passed |
+| matmul_n2_count1024 | matmul | n2 | 1024 | 1 | faer | shared-session | not applicable | 0.90 | 0.29 | 878.91 | 39.9% | passed |
+| matmul_n2_count1024 | matmul | n2 | 1024 | 1 | pytorch | shared-session | not applicable | 0.84 | 0.07 | 820.31 | 8.1% | passed |
+| matmul_n2_count1024 | matmul | n2 | 1024 | 4 | faer | shared-session | not applicable | 1.57 | 0.21 | 1533.20 | 17.8% | passed |
+| matmul_n2_count1024 | matmul | n2 | 1024 | 4 | pytorch | shared-session | not applicable | 0.64 | 0.16 | 625.00 | 14.0% | passed |
+| matmul_n32_count1024 | matmul | n32 | 1024 | 1 | faer | shared-session | not applicable | 4.60 | 1.96 | 4492.19 | 22.3% | passed |
+| matmul_n32_count1024 | matmul | n32 | 1024 | 1 | pytorch | shared-session | not applicable | 2.13 | 0.29 | 2080.08 | 34.3% | passed |
+| matmul_n32_count1024 | matmul | n32 | 1024 | 4 | faer | shared-session | not applicable | 4.35 | 0.13 | 4248.05 | 3.5% | passed |
+| matmul_n32_count1024 | matmul | n32 | 1024 | 4 | pytorch | shared-session | not applicable | 1.50 | 0.06 | 1464.84 | 6.2% | passed |
+| matmul_n4_count1024 | matmul | n4 | 1024 | 1 | faer | shared-session | not applicable | 0.83 | 0.07 | 810.55 | 11.7% | passed |
+| matmul_n4_count1024 | matmul | n4 | 1024 | 1 | pytorch | shared-session | not applicable | 0.72 | 0.09 | 703.12 | 31.9% | passed |
+| matmul_n4_count1024 | matmul | n4 | 1024 | 4 | faer | shared-session | not applicable | 2.23 | 1.51 | 2177.73 | 51.0% | passed |
+| matmul_n4_count1024 | matmul | n4 | 1024 | 4 | pytorch | shared-session | not applicable | 0.71 | 0.04 | 693.36 | 16.6% | passed |
+| matmul_n8_count1024 | matmul | n8 | 1024 | 1 | faer | shared-session | not applicable | 1.01 | 0.02 | 986.33 | 3.2% | passed |
+| matmul_n8_count1024 | matmul | n8 | 1024 | 1 | pytorch | shared-session | not applicable | 0.99 | 0.06 | 966.80 | 18.1% | passed |
+| matmul_n8_count1024 | matmul | n8 | 1024 | 4 | faer | shared-session | not applicable | 1.45 | 0.05 | 1416.02 | 6.3% | passed |
+| matmul_n8_count1024 | matmul | n8 | 1024 | 4 | pytorch | shared-session | not applicable | 0.75 | 0.06 | 732.42 | 5.9% | passed |
+| solve_n16_count1024 | solve | n16 | 1024 | 1 | faer | shared-session | not applicable | 4.97 | 1.55 | 4853.52 | 32.1% | passed |
+| solve_n16_count1024 | solve | n16 | 1024 | 1 | pytorch | shared-session | not applicable | 11.38 | 1.15 | 11113.28 | 7.2% | passed |
+| solve_n16_count1024 | solve | n16 | 1024 | 4 | faer | shared-session | not applicable | 3.38 | 0.54 | 3300.78 | 37.5% | passed |
+| solve_n16_count1024 | solve | n16 | 1024 | 4 | pytorch | shared-session | not applicable | 11.32 | 0.92 | 11054.69 | 10.1% | passed |
+| solve_n2_count1024 | solve | n2 | 1024 | 1 | faer | shared-session | not applicable | 1.01 | 0.30 | 986.33 | 40.3% | passed |
+| solve_n2_count1024 | solve | n2 | 1024 | 1 | pytorch | shared-session | not applicable | 8.55 | 0.46 | 8349.61 | 20.8% | passed |
+| solve_n2_count1024 | solve | n2 | 1024 | 4 | faer | shared-session | not applicable | 1.58 | 0.06 | 1542.97 | 3.3% | passed |
+| solve_n2_count1024 | solve | n2 | 1024 | 4 | pytorch | shared-session | not applicable | 9.25 | 0.77 | 9033.20 | 16.9% | passed |
+| solve_n32_count1024 | solve | n32 | 1024 | 1 | faer | shared-session | not applicable | 12.13 | 3.86 | 11845.70 | 23.5% | passed |
+| solve_n32_count1024 | solve | n32 | 1024 | 1 | pytorch | shared-session | not applicable | 20.86 | 3.70 | 20371.09 | 14.5% | passed |
+| solve_n32_count1024 | solve | n32 | 1024 | 4 | faer | shared-session | not applicable | 12.63 | 2.86 | 12333.98 | 29.2% | passed |
+| solve_n32_count1024 | solve | n32 | 1024 | 4 | pytorch | shared-session | not applicable | 23.44 | 1.73 | 22890.62 | 13.0% | passed |
+| solve_n4_count1024 | solve | n4 | 1024 | 1 | faer | shared-session | not applicable | 1.16 | 0.11 | 1132.81 | 25.1% | passed |
+| solve_n4_count1024 | solve | n4 | 1024 | 1 | pytorch | shared-session | not applicable | 8.77 | 4.32 | 8564.45 | 28.3% | passed |
+| solve_n4_count1024 | solve | n4 | 1024 | 4 | faer | shared-session | not applicable | 1.48 | 0.04 | 1445.31 | 2.9% | passed |
+| solve_n4_count1024 | solve | n4 | 1024 | 4 | pytorch | shared-session | not applicable | 9.22 | 0.99 | 9003.91 | 20.6% | passed |
+| solve_n8_count1024 | solve | n8 | 1024 | 1 | faer | shared-session | not applicable | 1.46 | 0.30 | 1425.78 | 24.4% | passed |
+| solve_n8_count1024 | solve | n8 | 1024 | 1 | pytorch | shared-session | not applicable | 10.05 | 1.43 | 9814.45 | 12.8% | passed |
+| solve_n8_count1024 | solve | n8 | 1024 | 4 | faer | shared-session | not applicable | 1.98 | 0.09 | 1933.59 | 6.6% | passed |
+| solve_n8_count1024 | solve | n8 | 1024 | 4 | pytorch | shared-session | not applicable | 9.04 | 1.04 | 8828.12 | 15.4% | passed |
 
 ## One-operation batched routes (tenferro-rs #1946 B2)
 
@@ -127,36 +127,36 @@ One public call per operation; many operations per wall-clock interval (calibrat
 
 | Case ID | Route (path / output / repr / layout) | Policy | Dtype | Batch×m×n×k | Threads | Workers | Ops/sample | Median ns/op | IQR ns/op | CoV | Status |
 |---|---|---|---|---|---:|---:|---:|---:|---:|---:|---|
-| bdot_f64_b1024_m4n4k4_canonical_alloc_auto | concrete / allocating / view / canonical-copy | auto | f64 | 1024×4×4×4 | 1 | 1 | 12 | 74222.17 | 5701.38 | 48.1% | passed (NOISY) |
-| bdot_f64_b1024_m4n4k4_canonical_alloc_auto | concrete / allocating / view / canonical-copy | auto | f64 | 1024×4×4×4 | 4 | 4 | 13 | 69637.77 | 716.35 | 1.2% | passed |
-| bdot_f64_b1024_m4n4k4_canonical_into_auto | concrete / reused / view / canonical-copy | auto | f64 | 1024×4×4×4 | 1 | 1 | 16 | 64145.81 | 5867.16 | 4.9% | passed |
-| bdot_f64_b1024_m4n4k4_canonical_into_auto | concrete / reused / view / canonical-copy | auto | f64 | 1024×4×4×4 | 4 | 4 | 15 | 61427.80 | 806.97 | 1.2% | passed |
-| bdot_f64_b1024_m4n4k4_direct_alloc_auto | concrete / allocating / owned / direct | auto | f64 | 1024×4×4×4 | 1 | 1 | 26 | 35610.58 | 548.88 | 4.4% | passed |
-| bdot_f64_b1024_m4n4k4_direct_alloc_auto | concrete / allocating / owned / direct | auto | f64 | 1024×4×4×4 | 4 | 4 | 24 | 38166.67 | 656.25 | 3.3% | passed |
-| bdot_f64_b1024_m4n4k4_direct_into_auto | concrete / reused / owned / direct | auto | f64 | 1024×4×4×4 | 1 | 1 | 37 | 25619.38 | 320.38 | 0.9% | passed |
-| bdot_f64_b1024_m4n4k4_direct_into_auto | concrete / reused / owned / direct | auto | f64 | 1024×4×4×4 | 4 | 4 | 33 | 28045.45 | 722.86 | 1.6% | passed |
-| bdot_f64_b16_m64n64k64_direct_alloc_auto | concrete / allocating / owned / direct | auto | f64 | 16×64×64×64 | 1 | 1 | 4 | 221302.25 | 3526.12 | 7.5% | passed |
-| bdot_f64_b16_m64n64k64_direct_alloc_auto | concrete / allocating / owned / direct | auto | f64 | 16×64×64×64 | 4 | 4 | 4 | 197364.50 | 21041.75 | 6.7% | passed |
-| bdot_f64_b16_m64n64k64_direct_into_auto | concrete / reused / owned / direct | auto | f64 | 16×64×64×64 | 1 | 1 | 4 | 231739.75 | 11406.25 | 7.5% | passed |
-| bdot_f64_b16_m64n64k64_direct_into_auto | concrete / reused / owned / direct | auto | f64 | 16×64×64×64 | 4 | 4 | 4 | 191708.25 | 12354.25 | 4.4% | passed |
-| bdot_f64_b64_m4n4k4_direct_alloc_auto | concrete / allocating / owned / direct | auto | f64 | 64×4×4×4 | 1 | 1 | 191 | 3015.71 | 17.02 | 0.8% | passed |
-| bdot_f64_b64_m4n4k4_direct_alloc_auto | concrete / allocating / owned / direct | auto | f64 | 64×4×4×4 | 4 | 4 | 146 | 3629.00 | 23.40 | 1.3% | passed |
-| bdot_f64_b64_m4n4k4_direct_into_auto | concrete / reused / owned / direct | auto | f64 | 64×4×4×4 | 1 | 1 | 266 | 2396.62 | 47.23 | 3.6% | passed |
-| bdot_f64_b64_m4n4k4_direct_into_auto | concrete / reused / owned / direct | auto | f64 | 64×4×4×4 | 4 | 4 | 186 | 2995.30 | 35.95 | 1.0% | passed |
-| bdot_f64_b64_m64n1k64_direct_alloc_auto | concrete / allocating / owned / direct | auto | f64 | 64×64×1×64 | 1 | 1 | 17 | 49024.53 | 2074.71 | 4.2% | passed |
-| bdot_f64_b64_m64n1k64_direct_alloc_auto | concrete / allocating / owned / direct | auto | f64 | 64×64×1×64 | 4 | 4 | 16 | 29325.50 | 147.12 | 3.3% | passed |
-| bdot_f64_b64_m64n1k64_direct_into_auto | concrete / reused / owned / direct | auto | f64 | 64×64×1×64 | 1 | 1 | 17 | 50977.94 | 4040.44 | 4.6% | passed |
-| bdot_f64_b64_m64n1k64_direct_into_auto | concrete / reused / owned / direct | auto | f64 | 64×64×1×64 | 4 | 4 | 17 | 29492.65 | 454.68 | 1.3% | passed |
-| beinsum_f64_b1024_m4n4k4_direct_alloc_auto | concrete-einsum / allocating / owned / direct | auto | f64 | 1024×4×4×4 | 1 | 1 | 23 | 37045.26 | 79.72 | 1.0% | passed |
-| beinsum_f64_b1024_m4n4k4_direct_alloc_auto | concrete-einsum / allocating / owned / direct | auto | f64 | 1024×4×4×4 | 4 | 4 | 22 | 40528.41 | 699.80 | 1.4% | passed |
-| beinsum_f64_b1024_m4n4k4_direct_into_auto | concrete-einsum / reused / owned / direct | auto | f64 | 1024×4×4×4 | 1 | 1 | 35 | 25965.49 | 330.94 | 1.1% | passed |
-| beinsum_f64_b1024_m4n4k4_direct_into_auto | concrete-einsum / reused / owned / direct | auto | f64 | 1024×4×4×4 | 4 | 4 | 30 | 28251.40 | 327.78 | 2.0% | passed |
-| chain3_f64_n4_einsum_alloc | concrete-einsum / allocating / owned / direct | auto | f64 | 1×4×4×4 | 1 | 1 | 11 | 19359.82 | 392.05 | 2.1% | passed |
-| chain3_f64_n4_einsum_alloc | concrete-einsum / allocating / owned / direct | auto | f64 | 1×4×4×4 | 4 | 4 | 25 | 20443.32 | 900.00 | 3.0% | passed |
-| hadamard_f64_m64n64_dot_alloc | concrete / allocating / owned / direct | auto | f64 | 1×64×64×1 | 1 | 1 | 68 | 1694.25 | 167.27 | 155.4% | passed (NOISY) |
-| hadamard_f64_m64n64_dot_alloc | concrete / allocating / owned / direct | auto | f64 | 1×64×64×1 | 4 | 4 | 166 | 2101.40 | 25.10 | 1.9% | passed |
-| hadamard_f64_m64n64_einsum_alloc | concrete-einsum / allocating / owned / direct | auto | f64 | 1×64×64×1 | 1 | 1 | 35 | 8866.66 | 1004.16 | 7.2% | passed |
-| hadamard_f64_m64n64_einsum_alloc | concrete-einsum / allocating / owned / direct | auto | f64 | 1×64×64×1 | 4 | 4 | 57 | 9010.23 | 264.61 | 2.1% | passed |
+| bdot_f64_b1024_m4n4k4_canonical_alloc_auto | concrete / allocating / view / canonical-copy | auto | f64 | 1024×4×4×4 | 1 | 1 | 10 | 89408.30 | 93998.00 | 42.5% | passed (NOISY) |
+| bdot_f64_b1024_m4n4k4_canonical_alloc_auto | concrete / allocating / view / canonical-copy | auto | f64 | 1024×4×4×4 | 4 | 4 | 4 | 148208.50 | 102484.25 | 37.5% | passed (NOISY) |
+| bdot_f64_b1024_m4n4k4_canonical_into_auto | concrete / reused / view / canonical-copy | auto | f64 | 1024×4×4×4 | 1 | 1 | 13 | 62355.77 | 2629.85 | 5.3% | passed |
+| bdot_f64_b1024_m4n4k4_canonical_into_auto | concrete / reused / view / canonical-copy | auto | f64 | 1024×4×4×4 | 4 | 4 | 13 | 83057.69 | 24823.73 | 20.2% | passed (NOISY) |
+| bdot_f64_b1024_m4n4k4_direct_alloc_auto | concrete / allocating / owned / direct | auto | f64 | 1024×4×4×4 | 1 | 1 | 15 | 41466.67 | 3941.63 | 38.7% | passed (NOISY) |
+| bdot_f64_b1024_m4n4k4_direct_alloc_auto | concrete / allocating / owned / direct | auto | f64 | 1024×4×4×4 | 4 | 4 | 18 | 45807.89 | 37468.72 | 43.1% | passed (NOISY) |
+| bdot_f64_b1024_m4n4k4_direct_into_auto | concrete / reused / owned / direct | auto | f64 | 1024×4×4×4 | 1 | 1 | 33 | 28477.27 | 5319.45 | 20.5% | passed (NOISY) |
+| bdot_f64_b1024_m4n4k4_direct_into_auto | concrete / reused / owned / direct | auto | f64 | 1024×4×4×4 | 4 | 4 | 30 | 35420.83 | 12206.25 | 38.2% | passed (NOISY) |
+| bdot_f64_b16_m64n64k64_direct_alloc_auto | concrete / allocating / owned / direct | auto | f64 | 16×64×64×64 | 1 | 1 | 3 | 242125.00 | 59784.83 | 25.7% | passed (NOISY) |
+| bdot_f64_b16_m64n64k64_direct_alloc_auto | concrete / allocating / owned / direct | auto | f64 | 16×64×64×64 | 4 | 4 | 1 | 355917.00 | 211499.50 | 217.7% | passed (NOISY) |
+| bdot_f64_b16_m64n64k64_direct_into_auto | concrete / reused / owned / direct | auto | f64 | 16×64×64×64 | 1 | 1 | 3 | 224458.33 | 24069.67 | 6.8% | passed |
+| bdot_f64_b16_m64n64k64_direct_into_auto | concrete / reused / owned / direct | auto | f64 | 16×64×64×64 | 4 | 4 | 1 | 458875.00 | 106645.50 | 27.2% | passed (NOISY) |
+| bdot_f64_b64_m4n4k4_direct_alloc_auto | concrete / allocating / owned / direct | auto | f64 | 64×4×4×4 | 1 | 1 | 82 | 2967.99 | 118.90 | 2.6% | passed |
+| bdot_f64_b64_m4n4k4_direct_alloc_auto | concrete / allocating / owned / direct | auto | f64 | 64×4×4×4 | 4 | 4 | 52 | 3978.37 | 299.29 | 22.5% | passed (NOISY) |
+| bdot_f64_b64_m4n4k4_direct_into_auto | concrete / reused / owned / direct | auto | f64 | 64×4×4×4 | 1 | 1 | 247 | 2494.43 | 30.79 | 28.9% | passed (NOISY) |
+| bdot_f64_b64_m4n4k4_direct_into_auto | concrete / reused / owned / direct | auto | f64 | 64×4×4×4 | 4 | 4 | 56 | 4000.73 | 1550.23 | 34.7% | passed (NOISY) |
+| bdot_f64_b64_m64n1k64_direct_alloc_auto | concrete / allocating / owned / direct | auto | f64 | 64×64×1×64 | 1 | 1 | 13 | 48067.31 | 1299.69 | 2.4% | passed |
+| bdot_f64_b64_m64n1k64_direct_alloc_auto | concrete / allocating / owned / direct | auto | f64 | 64×64×1×64 | 4 | 4 | 7 | 53815.43 | 17604.29 | 35.5% | passed (NOISY) |
+| bdot_f64_b64_m64n1k64_direct_into_auto | concrete / reused / owned / direct | auto | f64 | 64×64×1×64 | 1 | 1 | 19 | 47730.26 | 2234.61 | 4.3% | passed |
+| bdot_f64_b64_m64n1k64_direct_into_auto | concrete / reused / owned / direct | auto | f64 | 64×64×1×64 | 4 | 4 | 10 | 52383.30 | 18983.35 | 44.0% | passed (NOISY) |
+| beinsum_f64_b1024_m4n4k4_direct_alloc_auto | concrete-einsum / allocating / owned / direct | auto | f64 | 1024×4×4×4 | 1 | 1 | 17 | 37899.47 | 965.68 | 3.0% | passed |
+| beinsum_f64_b1024_m4n4k4_direct_alloc_auto | concrete-einsum / allocating / owned / direct | auto | f64 | 1024×4×4×4 | 4 | 4 | 15 | 68419.47 | 51604.20 | 37.7% | passed (NOISY) |
+| beinsum_f64_b1024_m4n4k4_direct_into_auto | concrete-einsum / reused / owned / direct | auto | f64 | 1024×4×4×4 | 1 | 1 | 32 | 26562.50 | 680.36 | 2.0% | passed |
+| beinsum_f64_b1024_m4n4k4_direct_into_auto | concrete-einsum / reused / owned / direct | auto | f64 | 1024×4×4×4 | 4 | 4 | 19 | 34333.37 | 4644.76 | 17.0% | passed (NOISY) |
+| chain3_f64_n4_einsum_alloc | concrete-einsum / allocating / owned / direct | auto | f64 | 1×4×4×4 | 1 | 1 | 12 | 19489.58 | 531.25 | 2.1% | passed |
+| chain3_f64_n4_einsum_alloc | concrete-einsum / allocating / owned / direct | auto | f64 | 1×4×4×4 | 4 | 4 | 5 | 24275.00 | 8312.60 | 30.9% | passed (NOISY) |
+| hadamard_f64_m64n64_dot_alloc | concrete / allocating / owned / direct | auto | f64 | 1×64×64×1 | 1 | 1 | 43 | 1585.28 | 42.15 | 8.3% | passed |
+| hadamard_f64_m64n64_dot_alloc | concrete / allocating / owned / direct | auto | f64 | 1×64×64×1 | 4 | 4 | 50 | 7441.66 | 1683.75 | 30.4% | passed (NOISY) |
+| hadamard_f64_m64n64_einsum_alloc | concrete-einsum / allocating / owned / direct | auto | f64 | 1×64×64×1 | 1 | 1 | 13 | 8326.92 | 350.92 | 6.2% | passed |
+| hadamard_f64_m64n64_einsum_alloc | concrete-einsum / allocating / owned / direct | auto | f64 | 1×64×64×1 | 4 | 4 | 30 | 15806.97 | 16184.72 | 46.9% | passed (NOISY) |
 
 ## Whole shape-sequence public-call diagnostics
 
@@ -164,22 +164,22 @@ One sample is the entire ordered sequence, with required planning/cache lookup i
 
 | Case | Provider | Threads | Calls/sequence | Median sequence ms | IQR ms | p90 ms | Maximum ms | CoV | Status |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---|
-| stream_f64_fixed_len32_einsum_alloc | faer | 1 | 32 | 0.07 | 0.01 | 0.080 | 0.082 | 6.6% | passed |
-| stream_f64_mixed_len32_einsum_alloc | faer | 1 | 32 | 0.07 | 0.01 | 0.078 | 0.083 | 6.4% | passed |
-| stream_f64_fresh_len32_einsum_alloc | faer | 1 | 32 | 0.17 | 0.01 | 0.188 | 0.314 | 21.1% | passed (NOISY; inconclusive) |
-| stream_f64_strides_len32_einsum_alloc | faer | 1 | 32 | 0.14 | 0.06 | 0.210 | 0.212 | 19.0% | passed (NOISY; inconclusive) |
-| eager_stream_f64_fixed_len128_einsum3_alloc | faer | 1 | 128 | 0.79 | 0.08 | 0.950 | 1.194 | 14.8% | passed (NOISY; inconclusive) |
-| eager_stream_f64_mixed_len128_einsum3_alloc | faer | 1 | 128 | 0.79 | 0.16 | 1.018 | 1.076 | 13.9% | passed (NOISY; inconclusive) |
-| eager_stream_f64_fresh_len128_einsum3_alloc | faer | 1 | 128 | 3.17 | 0.20 | 3.382 | 5.896 | 21.7% | passed (NOISY; inconclusive) |
-| eager_stream_f64_strides_len128_einsum3_alloc | faer | 1 | 128 | 1.12 | 0.07 | 1.329 | 2.413 | 27.1% | passed (NOISY; inconclusive) |
-| stream_f64_fixed_len32_einsum_alloc | faer | 4 | 32 | 0.09 | 0.00 | 0.088 | 0.097 | 2.7% | passed |
-| stream_f64_mixed_len32_einsum_alloc | faer | 4 | 32 | 0.09 | 0.00 | 0.087 | 0.098 | 3.2% | passed |
-| stream_f64_fresh_len32_einsum_alloc | faer | 4 | 32 | 0.20 | 0.01 | 0.210 | 0.222 | 4.5% | passed |
-| stream_f64_strides_len32_einsum_alloc | faer | 4 | 32 | 0.17 | 0.00 | 0.170 | 0.179 | 1.6% | passed |
-| eager_stream_f64_fixed_len128_einsum3_alloc | faer | 4 | 128 | 0.86 | 0.02 | 0.887 | 0.941 | 2.7% | passed |
-| eager_stream_f64_mixed_len128_einsum3_alloc | faer | 4 | 128 | 0.90 | 0.01 | 0.907 | 0.923 | 1.2% | passed |
-| eager_stream_f64_fresh_len128_einsum3_alloc | faer | 4 | 128 | 3.18 | 0.10 | 3.313 | 3.407 | 2.9% | passed |
-| eager_stream_f64_strides_len128_einsum3_alloc | faer | 4 | 128 | 1.24 | 0.04 | 1.408 | 1.462 | 6.4% | passed |
+| stream_f64_fixed_len32_einsum_alloc | faer | 1 | 32 | 0.07 | 0.02 | 0.106 | 0.162 | 30.6% | passed (NOISY; inconclusive) |
+| stream_f64_mixed_len32_einsum_alloc | faer | 1 | 32 | 0.07 | 0.00 | 0.073 | 0.074 | 2.1% | passed |
+| stream_f64_fresh_len32_einsum_alloc | faer | 1 | 32 | 0.77 | 0.60 | 1.581 | 2.335 | 63.0% | passed (NOISY; inconclusive) |
+| stream_f64_strides_len32_einsum_alloc | faer | 1 | 32 | 0.16 | 0.21 | 0.528 | 0.610 | 61.1% | passed (NOISY; inconclusive) |
+| eager_stream_f64_fixed_len128_einsum3_alloc | faer | 1 | 128 | 0.77 | 0.06 | 1.010 | 1.306 | 19.2% | passed (NOISY; inconclusive) |
+| eager_stream_f64_mixed_len128_einsum3_alloc | faer | 1 | 128 | 0.75 | 0.24 | 1.218 | 2.078 | 39.8% | passed (NOISY; inconclusive) |
+| eager_stream_f64_fresh_len128_einsum3_alloc | faer | 1 | 128 | 3.29 | 0.66 | 4.038 | 4.998 | 16.8% | passed (NOISY; inconclusive) |
+| eager_stream_f64_strides_len128_einsum3_alloc | faer | 1 | 128 | 1.11 | 0.04 | 1.489 | 1.763 | 18.1% | passed (NOISY; inconclusive) |
+| stream_f64_fixed_len32_einsum_alloc | faer | 4 | 32 | 0.31 | 0.23 | 0.412 | 0.425 | 50.7% | passed (NOISY; inconclusive) |
+| stream_f64_mixed_len32_einsum_alloc | faer | 4 | 32 | 0.31 | 0.01 | 0.328 | 0.339 | 3.8% | passed |
+| stream_f64_fresh_len32_einsum_alloc | faer | 4 | 32 | 0.31 | 0.14 | 0.704 | 1.209 | 60.0% | passed (NOISY; inconclusive) |
+| stream_f64_strides_len32_einsum_alloc | faer | 4 | 32 | 0.21 | 0.07 | 0.276 | 0.284 | 17.9% | passed (NOISY; inconclusive) |
+| eager_stream_f64_fixed_len128_einsum3_alloc | faer | 4 | 128 | 1.14 | 0.51 | 2.126 | 2.690 | 35.7% | passed (NOISY; inconclusive) |
+| eager_stream_f64_mixed_len128_einsum3_alloc | faer | 4 | 128 | 1.46 | 1.30 | 2.691 | 2.913 | 39.8% | passed (NOISY; inconclusive) |
+| eager_stream_f64_fresh_len128_einsum3_alloc | faer | 4 | 128 | 4.57 | 1.37 | 6.484 | 8.458 | 28.3% | passed (NOISY; inconclusive) |
+| eager_stream_f64_strides_len128_einsum3_alloc | faer | 4 | 128 | 1.83 | 0.66 | 3.656 | 4.088 | 39.7% | passed (NOISY; inconclusive) |
 
 ### Separate-process cache observations
 
@@ -199,25 +199,25 @@ Public EagerRuntime extension-store counters only. Provider GEMM-analysis/indexe
 Wall observations `wall_collection_t1.json`:
 ```json
 {
-  "latency_case_processes_seconds": 19.741331415999866,
-  "separate_cache_diagnostics_seconds": 0.234335000000101,
-  "collection_total_seconds": 19.97566658300002
+  "latency_case_processes_seconds": 28.925582542000484,
+  "separate_cache_diagnostics_seconds": 0.36831645799975377,
+  "collection_total_seconds": 29.2939005420003
 }
 ```
 
 Wall observations `wall_collection_t4.json`:
 ```json
 {
-  "latency_case_processes_seconds": 19.388021041999764,
-  "separate_cache_diagnostics_seconds": 0.22459775000015725,
-  "collection_total_seconds": 19.612618957999985
+  "latency_case_processes_seconds": 25.64960345899999,
+  "separate_cache_diagnostics_seconds": 0.5202376659999572,
+  "collection_total_seconds": 26.169842166999842
 }
 ```
 
 Wall observations `wall_command.json`:
 ```json
 {
-  "command_seconds_through_collection": 47.805238041,
+  "command_seconds_through_collection": 69.996837917,
   "scope": "command startup through collection; excludes report rendering and publication",
   "budget_seconds": 300.0,
   "budget_status": "within_budget"
@@ -227,8 +227,8 @@ Wall observations `wall_command.json`:
 Wall observations `wall_phases.json`:
 ```json
 {
-  "build_and_checkout_seconds": 2.7710155,
-  "validation_metadata_and_collection_seconds": 44.965780791,
-  "command_before_report_seconds": 47.736796291
+  "build_and_checkout_seconds": 5.33219825,
+  "validation_metadata_and_collection_seconds": 64.533096833,
+  "command_before_report_seconds": 69.865295083
 }
 ```
