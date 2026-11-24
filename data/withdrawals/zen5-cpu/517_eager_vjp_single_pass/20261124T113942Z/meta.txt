@@ -1,0 +1,17 @@
+affinity: pid 92041's current affinity list: 0-3  measured=0-3 observer=4-11,16-23
+boost=0 governor=performance
+ddea0975a8e34f9128b9be5e41670b99fab1896d72a2ee2a3a52991788b2b627  /home/shinaoka/work/517-ab/publication_gate.old
+9601bea0f8876e5ee2b15f9e9d75c15d13cec13a6f2c028697227120f2f8bd27  /home/shinaoka/work/517-ab/publication_gate.new
+11:40:14 start=1 arm=old idle_retries=1 uptime=2.60, 6.43, 4.15
+11:40:36 start=1 arm=new idle_retries=0 uptime=3.22, 6.27, 4.15
+11:40:48 start=2 arm=new idle_retries=0 uptime=2.95, 6.11, 4.13
+11:41:00 start=2 arm=old idle_retries=0 uptime=2.96, 5.96, 4.11
+11:41:22 start=3 arm=old idle_retries=0 uptime=3.32, 5.85, 4.11
+11:41:44 start=3 arm=new idle_retries=0 uptime=3.60, 5.76, 4.12
+11:41:55 start=4 arm=new idle_retries=0 uptime=3.37, 5.61, 4.09
+11:42:07 start=4 arm=old idle_retries=0 uptime=3.47, 5.55, 4.09
+11:42:29 start=5 arm=old idle_retries=0 uptime=3.69, 5.47, 4.09
+11:42:51 start=5 arm=new idle_retries=0 uptime=3.54, 5.30, 4.07
+11:43:03 start=6 arm=new idle_retries=0 uptime=3.37, 5.20, 4.06
+11:43:15 start=6 arm=old idle_retries=0 uptime=3.30, 5.13, 4.04
+done 11:43:36

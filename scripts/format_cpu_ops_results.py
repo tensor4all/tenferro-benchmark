@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import csv
 import os
 import re
 import sys
@@ -12,6 +11,8 @@ from collections import defaultdict
 from math import prod
 from pathlib import Path
 from typing import NamedTuple
+
+import withdrawn_cells
 
 import report_summary
 
@@ -371,31 +372,33 @@ def format_table(paths: list[Path]) -> str:
     small_sampling_policies = []
     legacy_unsupported_eager_backward = False
     measured_eager_backward = False
+    rows_by_path: list[tuple[Path, list[dict[str, str]]]] = []
     for path in paths:
-        with path.open(newline="") as f:
-            for row in csv.DictReader(f):
-                key, backend, value = normalize_row(row)
-                if backend:
-                    if key[0] == "small":
-                        small_sampling_policies.append(row.get("sampling_policy", ""))
-                    if row_value(row, "status").startswith(LEGACY_EAGER_BACKWARD_STATUS):
-                        legacy_unsupported_eager_backward = True
-                    elif (
-                        backend == "tenferro-eager"
-                        and key[1].endswith("_backward")
-                        and row_value(row, "status") == "ok"
-                    ):
-                        measured_eager_backward = True
-                    by_key[key][backend] = value
-                    median_ms = row_value(row, "median_ms")
-                    status = row_value(row, "status")
-                    if median_ms and status == "ok" and float(median_ms) > 0:
-                        timings[key][backend] = float(median_ms)
-                        match = re.search(r"operations_per_sample=(\d+)", row.get("notes", ""))
-                        if match and int(match[1]) > 1:
-                            count = int(match[1])
-                            total = re.search(r"median_batch_ms=([0-9.eE+-]+)", row.get("notes", ""))
-                            batch_timings[(key, backend)] = (count, float(total[1]) if total else float(median_ms) * count)
+        path_rows = withdrawn_cells.read_rows(path)
+        rows_by_path.append((path, path_rows))
+        for row in path_rows:
+            key, backend, value = normalize_row(row)
+            if backend:
+                if key[0] == "small":
+                    small_sampling_policies.append(row.get("sampling_policy", ""))
+                if row_value(row, "status").startswith(LEGACY_EAGER_BACKWARD_STATUS):
+                    legacy_unsupported_eager_backward = True
+                elif (
+                    backend == "tenferro-eager"
+                    and key[1].endswith("_backward")
+                    and row_value(row, "status") == "ok"
+                ):
+                    measured_eager_backward = True
+                by_key[key][backend] = value
+                median_ms = row_value(row, "median_ms")
+                status = row_value(row, "status")
+                if median_ms and status == "ok" and float(median_ms) > 0:
+                    timings[key][backend] = float(median_ms)
+                    match = re.search(r"operations_per_sample=(\d+)", row.get("notes", ""))
+                    if match and int(match[1]) > 1:
+                        count = int(match[1])
+                        total = re.search(r"median_batch_ms=([0-9.eE+-]+)", row.get("notes", ""))
+                        batch_timings[(key, backend)] = (count, float(total[1]) if total else float(median_ms) * count)
 
     lines = [
         "## CPU Benchmark Items",
@@ -437,6 +440,8 @@ def format_table(paths: list[Path]) -> str:
             *(values.get(backend, "-") for backend in BACKEND_ORDER),
         ]
         lines.append("| " + " | ".join(row) + " |")
+
+    lines.extend(withdrawn_cells.page_note(rows_by_path))
 
     if batch_timings:
         lines.extend(["", "## Short-operation batches", "",
@@ -512,36 +517,37 @@ def build_summary(
     rows = []
     threads_seen: set[int] = set()
     for path in paths:
-        with path.open(newline="") as f:
-            for row in csv.DictReader(f):
-                key, backend, _value = normalize_row(row)
-                if not backend:
-                    continue
-                suite, benchmark, dtype, threads, shape = key
-                status = row_value(row, "status") or "ok"
-                median_ms = row_value(row, "median_ms")
-                if not median_ms:
-                    mean_us = row_value(row, "mean_us")
-                    if mean_us:
-                        median_ms = str(float(mean_us) / 1000.0)
-                median = float(median_ms) if (median_ms and status == "ok") else None
-                if status == "ok" and (median is None or median <= 0):
-                    median = None
-                iqr_ms = row_value(row, "iqr_ms")
-                iqr = float(iqr_ms) if iqr_ms else None
-                if threads.isdigit():
-                    threads_seen.add(int(threads))
-                rows.append(
-                    report_summary.make_row(
-                        benchmark,
-                        backend,
-                        median,
-                        status=status,
-                        iqr=iqr,
-                        group=f"suite={suite} / dtype={dtype} / threads={threads} / shape={shape}",
-                        verified=status == "ok" and median is not None,
-                    )
+        path_rows = withdrawn_cells.read_rows(path)
+        for row in path_rows:
+            key, backend, _value = normalize_row(row)
+            if not backend:
+                continue
+            suite, benchmark, dtype, threads, shape = key
+            status = row_value(row, "status") or "ok"
+            median_ms = row_value(row, "median_ms")
+            if not median_ms:
+                mean_us = row_value(row, "mean_us")
+                if mean_us:
+                    median_ms = str(float(mean_us) / 1000.0)
+            median = float(median_ms) if (median_ms and status == "ok") else None
+            if status == "ok" and (median is None or median <= 0):
+                median = None
+            iqr_ms = row_value(row, "iqr_ms")
+            iqr = float(iqr_ms) if iqr_ms else None
+            if threads.isdigit():
+                threads_seen.add(int(threads))
+            rows.append(
+                report_summary.make_row(
+                    benchmark,
+                    backend,
+                    median,
+                    status=status,
+                    iqr=iqr,
+                    group=f"suite={suite} / dtype={dtype} / threads={threads} / shape={shape}",
+                    verified=status == "ok" and median is not None,
+                    reason=row.get("reason") or None,
                 )
+            )
     if threads_seen:
         hardware["threads"] = sorted(threads_seen)
     resolved_suite = suite_id or header["suite_id"]
