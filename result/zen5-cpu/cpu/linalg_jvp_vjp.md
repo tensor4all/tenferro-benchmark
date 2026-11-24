@@ -261,7 +261,7 @@ operation.
 | large | `grad_sum_eigh_jvp` | f64 | 4 | `256x256` | 30.068 ± 0.138 | 15.225 ± 0.042 | 6.117 ± 0.333 | 11.278 ± 0.404 |
 | large | `grad_sum_eigh_jvp` | f64 | 4 | `512x512` | 77.041 ± 0.387 | 45.155 ± 0.152 | 33.165 ± 0.170 | 52.541 ± 6.444 |
 | large | `grad_sum_eigh_vjp` | f64 | 4 | `1024x1024` | 263.089 ± 0.879 | 212.337 ± 1.185 | 139.981 ± 0.787 | 257.894 ± 8.933 |
-| large | `grad_sum_eigh_vjp` | f64 | 4 | `256x256` | withdrawn | 15.260 ± 0.069 | 5.259 ± 0.056 | 10.561 ± 0.918 |
+| large | `grad_sum_eigh_vjp` | f64 | 4 | `256x256` | 10.228 ± 0.085 (corrected) | 15.260 ± 0.069 | 5.259 ± 0.056 | 10.561 ± 0.918 |
 | large | `grad_sum_eigh_vjp` | f64 | 4 | `512x512` | 52.730 ± 0.353 | 45.190 ± 0.396 | 25.870 ± 0.309 | 50.038 ± 3.555 |
 | large | `grad_sum_lu_jvp` | f64 | 4 | `1024x1024` | 236.071 ± 1.844 | 104.080 ± 0.440 | 237.293 ± 2.212 | 195.873 ± 20.014 |
 | large | `grad_sum_lu_jvp` | f64 | 4 | `256x256` | 6.506 ± 0.072 | 2.921 ± 0.037 | 5.634 ± 0.101 | 5.896 ± 1.358 |
@@ -338,13 +338,13 @@ operation.
 | small | `grad_sum_svd_s_vjp` | f64 | 4 | `4x4` | 0.089 ± 0.002 | 0.029 ± 0.000 | 0.120 ± 0.003 | 0.018 ± 0.000 |
 | small | `grad_sum_svd_s_vjp` | f64 | 4 | `8x8` | 0.109 ± 0.001 | 0.044 ± 0.000 | 0.136 ± 0.003 | 0.022 ± 0.000 |
 
-### Withdrawn cells
+### Corrected and withdrawn cells
 
-These cells were measured, but their number does not measure what the column says,
-so it is not printed (`benchmarks/withdrawn-cells.yaml`; the run record is unchanged).
+These cells differ from their run record, which is unchanged (`benchmarks/cell-corrections.yaml`).
+A withdrawn cell prints no number. A corrected cell prints its re-measurement.
 
-- `grad_sum_svd_s_vjp` 4T `256x256` `tenferro-eager` (tenferro-benchmark#517): timed a second forward pass after the VJP (harness defect from the tenferro-rs 0.12 migration, 03f0f80); re-measured single-pass at the same pin: 18.905 ms (between-start SD 0.103, W 0.210) vs 18.817 ± 0.075 at 9a850b06, a 0.47 % difference inside W, so the two revisions are not distinguishable here.
-- `grad_sum_eigh_vjp` 4T `256x256` `tenferro-eager` (tenferro-benchmark#517): timed a second forward pass after the VJP (harness defect from the tenferro-rs 0.12 migration, 03f0f80); re-measured single-pass at the same pin: 10.228 ms (between-start SD 0.060, W 0.078) vs 10.416 ± 0.032 at 9a850b06, 1.8 % faster, so the published 1.92x slowdown does not exist.
+- withdrawn: `grad_sum_svd_s_vjp` 4T `256x256` `tenferro-eager` (tenferro-benchmark#517): the recorded 36.898 ms timed a second forward pass after the VJP (harness defect from the tenferro-rs 0.12 migration, 03f0f80). Single-pass at the same pin, 6 process starts: 18.905 ms (between-start SD 0.103, W 0.210) vs 18.817 ± 0.075 at 9a850b06, ratio 1.005; the 0.088 ms difference is inside the ± sum and W, so the two are not distinguishable.
+- corrected: `grad_sum_eigh_vjp` 4T `256x256` `tenferro-eager` (tenferro-benchmark#517): the recorded 20.050 ms timed a second forward pass after the VJP (harness defect from the tenferro-rs 0.12 migration, 03f0f80). Single-pass at the same pin, 6 process starts: 10.228 ms (between-start SD 0.060, W 0.078) vs 10.416 ± 0.032 at 9a850b06, ratio 0.982: no slowdown.
 
 ### Loss Definitions
 

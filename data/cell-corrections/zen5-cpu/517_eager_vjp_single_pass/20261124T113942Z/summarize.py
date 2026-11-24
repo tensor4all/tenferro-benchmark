@@ -4,7 +4,7 @@
 W is the median over process starts of the within-process sample SD, the same
 quantity campaign_toolkit's report_run prints as `W`. Run from the repository root:
 
-    python3 data/withdrawals/zen5-cpu/517_eager_vjp_single_pass/20261124T113942Z/summarize.py
+    python3 data/cell-corrections/zen5-cpu/517_eager_vjp_single_pass/20261124T113942Z/summarize.py
 """
 import collections
 import json

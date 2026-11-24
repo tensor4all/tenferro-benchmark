@@ -1261,10 +1261,11 @@
       "case": "grad_sum_eigh_vjp",
       "group": "dtype=f64 / threads=4 / shape=256x256",
       "backend": "tenferro-eager",
-      "median": null,
-      "status": "withdrawn",
-      "verified": false,
-      "reason": "timed a second forward pass after the VJP (harness defect from the tenferro-rs 0.12 migration, 03f0f80); re-measured single-pass at the same pin: 10.228 ms (between-start SD 0.060, W 0.078) vs 10.416 \u00b1 0.032 at 9a850b06, 1.8 % faster, so the published 1.92x slowdown does not exist"
+      "median": 10.228,
+      "iqr": 0.085,
+      "status": "ok",
+      "verified": true,
+      "reason": "the recorded 20.050 ms timed a second forward pass after the VJP (harness defect from the tenferro-rs 0.12 migration, 03f0f80). Single-pass at the same pin, 6 process starts: 10.228 ms (between-start SD 0.060, W 0.078) vs 10.416 \u00b1 0.032 at 9a850b06, ratio 0.982: no slowdown"
     },
     {
       "case": "grad_sum_eigh_vjp",
@@ -8176,7 +8177,7 @@
       "median": null,
       "status": "withdrawn",
       "verified": false,
-      "reason": "timed a second forward pass after the VJP (harness defect from the tenferro-rs 0.12 migration, 03f0f80); re-measured single-pass at the same pin: 18.905 ms (between-start SD 0.103, W 0.210) vs 18.817 \u00b1 0.075 at 9a850b06, a 0.47 % difference inside W, so the two revisions are not distinguishable here"
+      "reason": "the recorded 36.898 ms timed a second forward pass after the VJP (harness defect from the tenferro-rs 0.12 migration, 03f0f80). Single-pass at the same pin, 6 process starts: 18.905 ms (between-start SD 0.103, W 0.210) vs 18.817 \u00b1 0.075 at 9a850b06, ratio 1.005; the 0.088 ms difference is inside the \u00b1 sum and W, so the two are not distinguishable"
     },
     {
       "case": "grad_sum_svd_s_vjp",

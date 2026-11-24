@@ -12,7 +12,7 @@ from math import prod
 from pathlib import Path
 from typing import NamedTuple
 
-import withdrawn_cells
+import cell_corrections
 
 import report_summary
 
@@ -374,7 +374,7 @@ def format_table(paths: list[Path]) -> str:
     measured_eager_backward = False
     rows_by_path: list[tuple[Path, list[dict[str, str]]]] = []
     for path in paths:
-        path_rows = withdrawn_cells.read_rows(path)
+        path_rows = cell_corrections.read_rows(path)
         rows_by_path.append((path, path_rows))
         for row in path_rows:
             key, backend, value = normalize_row(row)
@@ -389,7 +389,7 @@ def format_table(paths: list[Path]) -> str:
                     and row_value(row, "status") == "ok"
                 ):
                     measured_eager_backward = True
-                by_key[key][backend] = value
+                by_key[key][backend] = cell_corrections.mark(row, value)
                 median_ms = row_value(row, "median_ms")
                 status = row_value(row, "status")
                 if median_ms and status == "ok" and float(median_ms) > 0:
@@ -441,7 +441,7 @@ def format_table(paths: list[Path]) -> str:
         ]
         lines.append("| " + " | ".join(row) + " |")
 
-    lines.extend(withdrawn_cells.page_note(rows_by_path))
+    lines.extend(cell_corrections.page_note(rows_by_path))
 
     if batch_timings:
         lines.extend(["", "## Short-operation batches", "",
@@ -517,7 +517,7 @@ def build_summary(
     rows = []
     threads_seen: set[int] = set()
     for path in paths:
-        path_rows = withdrawn_cells.read_rows(path)
+        path_rows = cell_corrections.read_rows(path)
         for row in path_rows:
             key, backend, _value = normalize_row(row)
             if not backend:

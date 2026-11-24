@@ -576,7 +576,7 @@ def is_neutral_unsupported(row: dict[str, Any]) -> bool:
 
 
 def is_withdrawn(row: dict[str, Any]) -> bool:
-    """A cell measured and then withdrawn with a recorded reason (`benchmarks/withdrawn-cells.yaml`).
+    """A cell measured and then withdrawn with a recorded reason (`benchmarks/cell-corrections.yaml`).
 
     Not a failure: the run produced a number, and the number was withdrawn because it does
     not measure what its column says. The badge names that, with the reason.

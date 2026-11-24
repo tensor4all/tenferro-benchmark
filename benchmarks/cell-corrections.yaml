@@ -1,0 +1,56 @@
+# Published cells corrected or withdrawn after collection.
+#
+# Use this when a run record is intact but one of its numbers does not measure
+# what its column says (a harness defect found after collection), and a
+# re-measurement of that cell, kept under `evidence`, decides what the page shows.
+# The run directory is never edited. The page generators
+# (`scripts/cell_corrections.py`, used by `format_cpu_ops_results.py` and
+# `format_linalg_ad_results.py`) read this file, so
+# `regenerate_report_summaries.py --check` re-derives the same bytes from the
+# same run plus this file.
+#
+# action:
+#   withdraw  the re-measurement cannot tell the cell apart from its comparison
+#             (|1 - ratio| inside the ± sum or W). The cell prints `withdrawn`
+#             and its reason, with no number.
+#   correct   the re-measurement resolves the cell. The cell prints the
+#             re-measured `median_ms` ± `iqr_ms`, marked `corrected`, and the
+#             reason gives the spread. `median_ms` is the median over process
+#             starts and `iqr_ms` the median within-process IQR, the page's
+#             own median ± IQR convention.
+#
+# Key: `run` is the run directory relative to `data/results/`; `benchmark`,
+# `dtype`, `threads`, `shape`, `backend` are the CSV row's values (backend after
+# normalization).
+cells:
+  - run: zen5-cpu/cpu/einsum/20261124_131021
+    benchmark: grad_sum_svd_s_vjp
+    dtype: f64
+    threads: 4
+    shape: 256x256
+    backend: tenferro-eager
+    action: withdraw
+    ref: "tenferro-benchmark#517"
+    evidence: data/cell-corrections/zen5-cpu/517_eager_vjp_single_pass/20261124T113942Z
+    reason: >-
+      the recorded 36.898 ms timed a second forward pass after the VJP (harness
+      defect from the tenferro-rs 0.12 migration, 03f0f80). Single-pass at the
+      same pin, 6 process starts: 18.905 ms (between-start SD 0.103, W 0.210)
+      vs 18.817 ± 0.075 at 9a850b06, ratio 1.005; the 0.088 ms difference is
+      inside the ± sum and W, so the two are not distinguishable
+  - run: zen5-cpu/cpu/einsum/20261124_131021
+    benchmark: grad_sum_eigh_vjp
+    dtype: f64
+    threads: 4
+    shape: 256x256
+    backend: tenferro-eager
+    action: correct
+    median_ms: 10.228
+    iqr_ms: 0.085
+    ref: "tenferro-benchmark#517"
+    evidence: data/cell-corrections/zen5-cpu/517_eager_vjp_single_pass/20261124T113942Z
+    reason: >-
+      the recorded 20.050 ms timed a second forward pass after the VJP (harness
+      defect from the tenferro-rs 0.12 migration, 03f0f80). Single-pass at the
+      same pin, 6 process starts: 10.228 ms (between-start SD 0.060, W 0.078)
+      vs 10.416 ± 0.032 at 9a850b06, ratio 0.982: no slowdown
