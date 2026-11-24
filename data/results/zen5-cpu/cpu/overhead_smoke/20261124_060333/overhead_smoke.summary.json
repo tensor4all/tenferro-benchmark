@@ -1,0 +1,211 @@
+{
+  "schema_version": 2,
+  "target_profile": "zen5-cpu",
+  "suite_id": "cpu/overhead_smoke",
+  "timestamp": "2026-11-24T06:03:33Z",
+  "tenferro_commit": "ce9125d0cff4ee40841120759b5df45252c27f22",
+  "hardware": {
+    "cpu": "AMD Ryzen AI 9 HX 470 w/ Radeon 890M",
+    "host": "shinaoka-EVO-X1Pro",
+    "threads": [
+      1
+    ]
+  },
+  "unit": "ns",
+  "rows": [
+    {
+      "case": "concatenate_axis1_f64_8x8x8",
+      "group": "threads=1 / scope=steady_state_host_api",
+      "backend": "tenferro-rs",
+      "median": 2868.119140625,
+      "iqr": 19.861328125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "steady_state_host_api",
+      "backend_thread_budget": 1,
+      "host_allocations_per_op": 0.0625,
+      "host_allocated_bytes_per_op": 102.125
+    },
+    {
+      "case": "einsum_prepared_f64_n2",
+      "group": "threads=1 / scope=steady_state_host_api",
+      "backend": "tenferro-rs",
+      "median": 2116.69921875,
+      "iqr": 11.6572265625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "steady_state_host_api",
+      "backend_thread_budget": 1,
+      "host_allocations_per_op": 2.0,
+      "host_allocated_bytes_per_op": 1408.0
+    },
+    {
+      "case": "einsum_prepared_f64_n4",
+      "group": "threads=1 / scope=steady_state_host_api",
+      "backend": "tenferro-rs",
+      "median": 2104.998046875,
+      "iqr": 4.76025390625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "steady_state_host_api",
+      "backend_thread_budget": 1,
+      "host_allocations_per_op": 2.0,
+      "host_allocated_bytes_per_op": 1408.0
+    },
+    {
+      "case": "permute_materialize_f64_r4_4x4x4x4",
+      "group": "threads=1 / scope=steady_state_host_api",
+      "backend": "tenferro-rs",
+      "median": 3250.9521484375,
+      "iqr": 7.6904296875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "steady_state_host_api",
+      "backend_thread_budget": 1,
+      "host_allocations_per_op": 0.0,
+      "host_allocated_bytes_per_op": 0.0
+    },
+    {
+      "case": "prepared_mul_add_f64_budget1_32x32x32_session_entry_diagnostic",
+      "group": "threads=1 / scope=public_path_latency_including_internal_session_entry",
+      "backend": "tenferro-rs",
+      "median": 32994.34375,
+      "iqr": 974.484375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "public_path_latency_including_internal_session_entry",
+      "backend_thread_budget": 1,
+      "host_allocations_per_op": 26.0,
+      "host_allocated_bytes_per_op": 11968.0
+    },
+    {
+      "case": "prepared_mul_add_f64_budget2_32x32x32_session_entry_diagnostic",
+      "group": "threads=1 / scope=public_path_latency_including_internal_session_entry",
+      "backend": "tenferro-rs",
+      "median": 44833.875,
+      "iqr": 237.1875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "public_path_latency_including_internal_session_entry",
+      "backend_thread_budget": 2,
+      "host_allocations_per_op": 26.0,
+      "host_allocated_bytes_per_op": 11968.0
+    },
+    {
+      "case": "reduce_axis_f64_8x8x8",
+      "group": "threads=1 / scope=steady_state_host_api",
+      "backend": "tenferro-rs",
+      "median": 3170.7841796875,
+      "iqr": 17.3857421875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "steady_state_host_api",
+      "backend_thread_budget": 1,
+      "host_allocations_per_op": 0.0,
+      "host_allocated_bytes_per_op": 0.0
+    },
+    {
+      "case": "typed_elemwise_f64_add_bcast_8x8x8",
+      "group": "threads=1 / scope=steady_state_host_api",
+      "backend": "tenferro-rs",
+      "median": 2397.017578125,
+      "iqr": 11.8623046875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "steady_state_host_api",
+      "backend_thread_budget": 1,
+      "host_allocations_per_op": 0.0,
+      "host_allocated_bytes_per_op": 0.0
+    },
+    {
+      "case": "typed_elemwise_f64_add_bcast_n16",
+      "group": "threads=1 / scope=steady_state_host_api",
+      "backend": "tenferro-rs",
+      "median": 2062.310546875,
+      "iqr": 208.39599609375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "steady_state_host_api",
+      "backend_thread_budget": 1,
+      "host_allocations_per_op": 0.0,
+      "host_allocated_bytes_per_op": 0.0
+    },
+    {
+      "case": "typed_elemwise_f64_add_permuted_view_8x8x8",
+      "group": "threads=1 / scope=steady_state_host_api",
+      "backend": "tenferro-rs",
+      "median": 2773.626953125,
+      "iqr": 34.58642578125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "steady_state_host_api",
+      "backend_thread_budget": 1,
+      "host_allocations_per_op": 0.0,
+      "host_allocated_bytes_per_op": 0.0
+    }
+  ],
+  "source_runs": [
+    {
+      "run": "data/results/zen5-cpu/cpu/overhead_smoke/20261124_060333",
+      "threads": [
+        1
+      ],
+      "host": {
+        "cpu": "AMD Ryzen AI 9 HX 470 w/ Radeon 890M",
+        "logical_cpus": 24,
+        "power": {
+          "cpufreq_boost": "0",
+          "amd_pstate_status": "active",
+          "governor": "performance",
+          "energy_performance_preference": "performance",
+          "scaling_max_freq_khz": "2000000",
+          "smt": {
+            "active": "1",
+            "control": "on"
+          }
+        },
+        "numa": {
+          "nodes": 1,
+          "cpulists": {
+            "0": "0-23"
+          }
+        },
+        "smt_siblings": [
+          "0,12",
+          "1,13",
+          "2,14",
+          "3,15",
+          "4,16",
+          "5,17",
+          "6,18",
+          "7,19",
+          "8,20",
+          "9,21",
+          "10,22",
+          "11,23"
+        ],
+        "l3_domains": [
+          "0-3,12-15",
+          "4-11,16-23"
+        ]
+      },
+      "toolchain": {
+        "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)\nbinary: rustc\ncommit-hash: b940084d7eb6a299eb4bfeb8e34901bc051e7ac4\ncommit-date: 2026-09-28\nhost: x86_64-unknown-linux-gnu\nrelease: 1.99.0\nLLVM version: 23.1.1\n",
+        "rustc_release": "1.99.0",
+        "rustflags": null,
+        "target_cpu": null
+      },
+      "power": "boost off, performance, epp performance, max 2000000 kHz, amd-pstate active, smt {'active': '1', 'control': 'on'}"
+    }
+  ],
+  "timing_policy": {
+    "version": 2,
+    "scope": "operation execution and completion synchronization",
+    "setup": "inputs, transfers, runtime/session/handles, plans and compilation outside timer",
+    "cleanup": "returned outputs retained until after timer stops",
+    "minimum_untimed_priming_runs": 1,
+    "short_operation_sampling": "many operations per interval; shared session where supported; see docs/short-operation-sessions.md",
+    "trace_execution": "prepare_compiled and caller-held session entry outside timing; run_prepared_in inside",
+    "setup_diagnostics": false
+  }
+}

@@ -1154,6 +1154,88 @@ def report_run_stamp(report: Path) -> str | None:
     return f"{year}-{month}-{day}"
 
 
+# ---------------------------------------------------------------------------
+# tenferro-rs revisions: which library revision each suite was measured at
+# ---------------------------------------------------------------------------
+#
+# Suites are collected separately, so one page can carry several revisions (a
+# suite the idle gate refused keeps its older collection).  A single
+# "tenferro:" value would claim the newest revision for every block, and a
+# regression flag computed against a collection at another revision mixes the
+# library change with the measurement.  Both are stated on the page (#515).
+
+
+def tenferro_revisions(documents: Iterable[dict[str, Any] | None]) -> list[tuple[str, list[str]]]:
+    """``[(commit, [suite_id, ...]), ...]``, newest collection first."""
+    floor = datetime.min.replace(tzinfo=timezone.utc)
+    dated = sorted(
+        (document for document in documents if document and document.get("tenferro_commit")),
+        key=lambda document: parse_timestamp(document.get("timestamp")) or floor,
+        reverse=True,
+    )
+    revisions: dict[str, list[str]] = {}
+    for document in dated:
+        revisions.setdefault(str(document["tenferro_commit"]), []).append(str(document.get("suite_id") or "?"))
+    return list(revisions.items())
+
+
+def revision_label(documents: Iterable[dict[str, Any] | None]) -> str | None:
+    """The ``tenferro:`` value of a header: one commit, or every commit with its suite count."""
+    revisions = tenferro_revisions(documents)
+    if not revisions:
+        return None
+    if len(revisions) == 1:
+        return f"<code>{esc(revisions[0][0][:12])}</code>"
+    return " · ".join(
+        f"<code>{esc(commit[:12])}</code> ({len(suites)} suite{'s' if len(suites) != 1 else ''})"
+        for commit, suites in revisions
+    )
+
+
+def mixed_revisions_notice(documents: Iterable[dict[str, Any] | None]) -> str:
+    """One notice when the page's suites were measured at more than one revision."""
+    revisions = tenferro_revisions(documents)
+    if len(revisions) < 2:
+        return ""
+    parts = "; ".join(
+        f"<code>{esc(commit[:12])}</code>: {esc(', '.join(sorted(suites)))}"
+        for commit, suites in revisions
+    )
+    return (
+        '<p class="notice"><strong>Mixed tenferro-rs revisions.</strong> The suites on this '
+        f"page were measured at different tenferro-rs revisions ({parts}). Blocks at different "
+        "revisions are not a like-for-like comparison: a difference between them can be the "
+        "library or the harness changing, not the workload.</p>"
+    )
+
+
+def revision_change_notice(
+    views: Iterable["SuiteView"],
+    previous_commits: dict[tuple[str, str], str | None] | None,
+) -> str:
+    """Name the suites whose previous collection (the regression baseline) is another revision."""
+    if not previous_commits:
+        return ""
+    changed: dict[tuple[str, str], list[str]] = {}
+    for view in views:
+        current = (view.document or {}).get("tenferro_commit")
+        previous = previous_commits.get((view.profile, view.suite_id))
+        if current and previous and str(previous) != str(current):
+            changed.setdefault((str(previous), str(current)), []).append(view.suite_id)
+    if not changed:
+        return ""
+    parts = "; ".join(
+        f"{esc(', '.join(sorted(suites)))}: <code>{esc(old[:12])}</code> &rarr; <code>{esc(new[:12])}</code>"
+        for (old, new), suites in changed.items()
+    )
+    return (
+        '<p class="notice"><strong>tenferro-rs revision changed since the previous collection.</strong> '
+        f"{parts}. A <code>regression</code> flag compares a suite with its previous collection on the "
+        "same hardware, so for these suites it measures the revision (and harness) change together: "
+        "the numbers are not comparable with the previous collection as a measurement of the same code.</p>"
+    )
+
+
 def previous_rows_for(
     profile: str,
     suite_id: str,
@@ -1162,6 +1244,21 @@ def previous_rows_for(
     git_repo: Path | None,
     git_result_dir: str,
 ) -> tuple[str | None, list[dict[str, Any]] | None]:
+    """The rows of :func:`previous_summary_for`."""
+    hardware, previous = previous_summary_for(
+        profile, suite_id, document, baseline_dir, git_repo, git_result_dir
+    )
+    return hardware, (previous.get("rows") if previous else None)
+
+
+def previous_summary_for(
+    profile: str,
+    suite_id: str,
+    document: dict[str, Any],
+    baseline_dir: Path | None,
+    git_repo: Path | None,
+    git_result_dir: str,
+) -> tuple[str | None, dict[str, Any] | None]:
     """Load the previous summary for regression comparison.
 
     With ``baseline_dir`` set (tests, local inspection) it reads the file from
@@ -1174,7 +1271,7 @@ def previous_rows_for(
         if candidate.exists():
             previous = json.loads(candidate.read_text(encoding="utf-8"))
             if hardware_name(previous) == hardware:
-                return hardware, previous.get("rows")
+                return hardware, previous
         return None, None
     if git_repo is None:
         return None, None
@@ -1200,7 +1297,7 @@ def previous_rows_for(
         if previous == document:
             continue
         if hardware_name(previous) == hardware:
-            return hardware, previous.get("rows")
+            return hardware, previous
     return hardware, None
 
 
@@ -1941,17 +2038,13 @@ def profile_header(profile: str, summaries: dict[tuple[str, str], dict[str, Any]
     hardware = None
     for document in documents:
         hardware = hardware or hardware_name(document)
-    commit = None
-    for document in documents:
-        if document.get("tenferro_commit"):
-            commit = document["tenferro_commit"]
-            break
+    revisions = revision_label(documents)
     pieces = [f"<strong>{esc(profile)}</strong>"]
     if hardware:
         pieces.append(f"hardware: {esc(hardware)}")
     pieces.extend(collection_head_spans(documents, collection_reference(documents)))
-    if commit:
-        pieces.append(f"tenferro: <code>{esc(commit[:12])}</code>")
+    if revisions:
+        pieces.append(f"tenferro: {revisions}")
     if not documents:
         pieces.append('<span class="muted">no machine-readable summary</span>')
     return '<div class="profile-head">' + "".join(f"<span>{piece}</span>" for piece in pieces) + "</div>"
@@ -2650,6 +2743,7 @@ def family_facts(views: list[SuiteView]) -> dict[str, Any]:
     reference = collection_reference(docs)
     commit = next((str(doc["tenferro_commit"]) for doc in docs if doc.get("tenferro_commit")), None)
     return {
+        "revisions": revision_label(docs),
         "profiles": ordered_profiles({view.profile for view in views}),
         "hardware": hardware,
         "dates": days,
@@ -2743,7 +2837,7 @@ def render_top(
                 )
             pieces.append(
                 f'<p class="facts">{line}'
-                + (f' · tenferro <code>{esc(facts["commit"][:12])}</code>' if facts["commit"] else "")
+                + (f' · tenferro {facts["revisions"]}' if facts["revisions"] else "")
                 + "</p>"
             )
         body.append(
@@ -2775,13 +2869,13 @@ def profile_header_from_views(
     """
     documents = [view.document for view in views if view.document]
     hardware = next((hardware_name(doc) for doc in documents if hardware_name(doc)), None)
-    commit = next((str(doc["tenferro_commit"]) for doc in documents if doc.get("tenferro_commit")), None)
+    revisions = revision_label(documents)
     pieces = [f"<strong>{esc(profile_label(profile))}</strong>", f"<span>{esc(profile)}</span>"]
     if hardware:
         pieces.append(f"<span>hardware: {esc(hardware)}</span>")
     pieces.extend(collection_head_spans(documents, reference or collection_reference(documents)))
-    if commit:
-        pieces.append(f"<span>tenferro: <code>{esc(commit[:12])}</code></span>")
+    if revisions:
+        pieces.append(f"<span>tenferro: {revisions}</span>")
     if not documents:
         pieces.append(f'<span class="muted">{esc(empty_note)}</span>')
     return '<div class="profile-head">' + "".join(pieces) + "</div>"
@@ -2878,6 +2972,7 @@ def render_family(
     trend: list[dict[str, str]] | None = None,
     trend_prefix: str = "",
     git_repo: Path | None = None,
+    previous_commits: dict[tuple[str, str], str | None] | None = None,
 ) -> str:
     label = FAMILY_LABEL[family]
     # What this page actually shows: the maintained suites with a case in this
@@ -2893,9 +2988,13 @@ def render_family(
         '<p><a href="../index.html">&larr; all results</a></p>',
         f"<h1>{esc(label)} {'latency results' if regime == LATENCY else 'benchmark results'}</h1>",
     ]
-    notice = mixed_dates_notice(page_documents, page_reference)
-    if notice:
-        body.append(notice)
+    for notice in (
+        mixed_dates_notice(page_documents, page_reference),
+        mixed_revisions_notice(page_documents),
+        revision_change_notice(page_views, previous_commits),
+    ):
+        if notice:
+            body.append(notice)
     if regime == LATENCY:
         body.append(
             '<p class="notice"><strong>Latency and per-call overhead.</strong> These cases are '
@@ -3302,12 +3401,14 @@ def generate(
     metadata = load_suite_metadata(benchmarks_dir)
     reference_map = load_perf_reference_map(instances_dir / GPU_PERF_ISSUES_INSTANCES.name)
     previous_by_key: dict[tuple[str, str], list[dict[str, Any]] | None] = {}
+    previous_commits: dict[tuple[str, str], str | None] = {}
     for profile, suite_id, _report in reports:
         if (profile, suite_id) in MAINTAINED:
-            _hardware, previous = previous_rows_for(
+            _hardware, previous = previous_summary_for(
                 profile, suite_id, summaries.get((profile, suite_id)) or {}, baseline_dir, git_repo, git_result_dir
             )
-            previous_by_key[(profile, suite_id)] = previous
+            previous_by_key[(profile, suite_id)] = previous.get("rows") if previous else None
+            previous_commits[(profile, suite_id)] = (previous or {}).get("tenferro_commit")
     views = build_suite_views(reports, summaries, metadata)
     campaigns = latest_campaigns(views)
     # The trend charts and their tables are rendered next to the site by
@@ -3344,7 +3445,7 @@ def generate(
         (family_dir / "index.html").write_text(
             render_family(
                 family, family_views, previous_by_key, reference_map, THROUGHPUT, trend,
-                "../", git_repo,
+                "../", git_repo, previous_commits,
             ),
             encoding="utf-8",
         )
@@ -3353,7 +3454,7 @@ def generate(
         (latency_dir / "index.html").write_text(
             render_family(
                 family, family_views, previous_by_key, reference_map, LATENCY, trend,
-                "../../", git_repo,
+                "../../", git_repo, previous_commits,
             ),
             encoding="utf-8",
         )

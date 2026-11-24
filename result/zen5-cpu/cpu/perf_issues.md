@@ -1,7 +1,7 @@
 # CPU Performance-Issue Workloads
 
 - Suite: `cpu/perf_issues`
-- Raw run: `data/results/zen5-cpu/cpu/perf_issues/20261112_155453`
+- Raw run: `data/results/zen5-cpu/cpu/perf_issues/20261124_054047`
 
 ## CPU Information
 
@@ -14,30 +14,28 @@
 - NUMA nodes: `1`
 - Transparent huge pages: `madvise (always [madvise] never)`
 - Transparent huge page defrag: `madvise (always defer defer+madvise [madvise] never)`
-- Python platform: `Linux-7.0.0-38-generic-x86_64-with-glibc2.39`
+- Python platform: `Linux-7.0.0-43-generic-x86_64-with-glibc2.39`
 - L3 domains (shared CPUs): `0-3,12-15; 4-11,16-23`
 - CPU boost: `disabled`
 - Container: `none`
 
 ## run_t1
 
-Full metadata: `data/results/zen5-cpu/cpu/perf_issues/20261112_155453/run_t1.yaml`
+Full metadata: `data/results/zen5-cpu/cpu/perf_issues/20261124_054047/run_t1.yaml`
 
 ```yaml
-timestamp: '2026-11-12T15:54:54Z'
+timestamp: '2026-11-24T05:40:47Z'
 tenferro_rs:
-  path: /home/shinaoka/projects/tensor4all/tenferro-benchmark/extern/tenferro-rs
-  commit: 9a850b06155405acc99ecd0648829e9e6d3866ba
+  path: /home/shinaoka/work/zen5-refresh-20261124/harness/extern/tenferro-rs
+  commit: ce9125d0cff4ee40841120759b5df45252c27f22
   dirty: false
   features:
   - native
-  resolved_path: /home/shinaoka/projects/tensor4all/tenferro-benchmark/extern/tenferro-rs
-blas:
-  implementation: none
+  resolved_path: /home/shinaoka/work/zen5-refresh-20261124/harness/extern/tenferro-rs
 environment:
   container: none
   hostname: shinaoka-EVO-X1Pro
-  os: Linux-7.0.0-38-generic-x86_64-with-glibc2.39
+  os: Linux-7.0.0-43-generic-x86_64-with-glibc2.39
   arch: x86_64
   cpu: x86_64
   affinity:
@@ -59,7 +57,7 @@ environment:
     OMP_DYNAMIC: 'FALSE'
     RAYON_NUM_THREADS: '1'
     BENCHMARK_TARGET_PROFILE: zen5-cpu
-    BENCHMARK_COMMIT: 918046a6065be464f13b727654679c3a00650c06
+    BENCHMARK_COMMIT: bb9869533cc2ad586b71cdb49a3e1f85439cd2b2
     OPENBLAS_ROOT: /usr
     MKLROOT: /opt/intel/oneapi/mkl/latest
     OPENBLAS_NUM_THREADS: '1'
@@ -83,23 +81,21 @@ environment:
 
 ## run_t4
 
-Full metadata: `data/results/zen5-cpu/cpu/perf_issues/20261112_155453/run_t4.yaml`
+Full metadata: `data/results/zen5-cpu/cpu/perf_issues/20261124_054047/run_t4.yaml`
 
 ```yaml
-timestamp: '2026-11-12T15:59:04Z'
+timestamp: '2026-11-24T05:49:21Z'
 tenferro_rs:
-  path: /home/shinaoka/projects/tensor4all/tenferro-benchmark/extern/tenferro-rs
-  commit: 9a850b06155405acc99ecd0648829e9e6d3866ba
+  path: /home/shinaoka/work/zen5-refresh-20261124/harness/extern/tenferro-rs
+  commit: ce9125d0cff4ee40841120759b5df45252c27f22
   dirty: false
   features:
   - native
-  resolved_path: /home/shinaoka/projects/tensor4all/tenferro-benchmark/extern/tenferro-rs
-blas:
-  implementation: none
+  resolved_path: /home/shinaoka/work/zen5-refresh-20261124/harness/extern/tenferro-rs
 environment:
   container: none
   hostname: shinaoka-EVO-X1Pro
-  os: Linux-7.0.0-38-generic-x86_64-with-glibc2.39
+  os: Linux-7.0.0-43-generic-x86_64-with-glibc2.39
   arch: x86_64
   cpu: x86_64
   affinity:
@@ -121,7 +117,7 @@ environment:
     OMP_DYNAMIC: 'FALSE'
     RAYON_NUM_THREADS: '4'
     BENCHMARK_TARGET_PROFILE: zen5-cpu
-    BENCHMARK_COMMIT: 918046a6065be464f13b727654679c3a00650c06
+    BENCHMARK_COMMIT: bb9869533cc2ad586b71cdb49a3e1f85439cd2b2
     OPENBLAS_ROOT: /usr
     MKLROOT: /opt/intel/oneapi/mkl/latest
     OPENBLAS_NUM_THREADS: '4'
@@ -145,23 +141,21 @@ environment:
 
 ## run_t8
 
-Full metadata: `data/results/zen5-cpu/cpu/perf_issues/20261112_155453/run_t8.yaml`
+Full metadata: `data/results/zen5-cpu/cpu/perf_issues/20261124_054047/run_t8.yaml`
 
 ```yaml
-timestamp: '2026-11-12T16:02:44Z'
+timestamp: '2026-11-24T05:56:27Z'
 tenferro_rs:
-  path: /home/shinaoka/projects/tensor4all/tenferro-benchmark/extern/tenferro-rs
-  commit: 9a850b06155405acc99ecd0648829e9e6d3866ba
+  path: /home/shinaoka/work/zen5-refresh-20261124/harness/extern/tenferro-rs
+  commit: ce9125d0cff4ee40841120759b5df45252c27f22
   dirty: false
   features:
   - native
-  resolved_path: /home/shinaoka/projects/tensor4all/tenferro-benchmark/extern/tenferro-rs
-blas:
-  implementation: none
+  resolved_path: /home/shinaoka/work/zen5-refresh-20261124/harness/extern/tenferro-rs
 environment:
   container: none
   hostname: shinaoka-EVO-X1Pro
-  os: Linux-7.0.0-38-generic-x86_64-with-glibc2.39
+  os: Linux-7.0.0-43-generic-x86_64-with-glibc2.39
   arch: x86_64
   cpu: x86_64
   affinity:
@@ -183,7 +177,7 @@ environment:
     OMP_DYNAMIC: 'FALSE'
     RAYON_NUM_THREADS: '8'
     BENCHMARK_TARGET_PROFILE: zen5-cpu
-    BENCHMARK_COMMIT: 918046a6065be464f13b727654679c3a00650c06
+    BENCHMARK_COMMIT: bb9869533cc2ad586b71cdb49a3e1f85439cd2b2
     OPENBLAS_ROOT: /usr
     MKLROOT: /opt/intel/oneapi/mkl/latest
     OPENBLAS_NUM_THREADS: '8'
@@ -208,17 +202,16 @@ environment:
 ## Case status
 
 - Manifest: `cpu/perf_issues` version 22, coverage `quick`, effort `standard`
-- Expected 957, selected 957, executed 675, unsupported 0, failed 282, skipped 0, missing 0, noisy 23.
-- Complete: **NO** — only executed cases count as covered; unsupported, skipped, failed, missing and unselected cases never do.
+- Expected 957, selected 957, executed 957, unsupported 0, failed 0, skipped 0, missing 0, noisy 56.
+- Complete: **yes** — only executed cases count as covered; unsupported, skipped, failed, missing and unselected cases never do.
 
 | expected | selected | executed | unsupported | failed | skipped | missing | noisy |
 |---:|---:|---:|---:|---:|---:|---:|---:|
-| 957 | 957 | 675 | 0 | 282 | 0 | 0 | 23 |
+| 957 | 957 | 957 | 0 | 0 | 0 | 0 | 56 |
 
-- Failed: `activation_erf_f32_eager-single-call_1024x64@t1`, `activation_erf_f32_pytorch_1024x64@t1`, `activation_sigmoid_f32_eager-single-call_1024x64@t1`, `activation_sigmoid_f32_pytorch_1024x64@t1`, `activation_silu_f32_eager-single-call_1024x64@t1`, `activation_silu_f32_pytorch_1024x64@t1`, `activation_softplus_f32_eager-single-call_1024x64@t1`, `activation_softplus_f32_pytorch_1024x64@t1`, `activation_gelu_tanh_f32_eager-single-call_1024x64@t1`, `activation_gelu_tanh_f32_pytorch_1024x64@t1`, `followup_structural_broadcast_in_dim_direct-shared@t1`, `followup_structural_broadcast_in_dim_pytorch@t1`, `followup_real_tanh_direct-shared@t1`, `followup_real_tanh_jax@t1`, `followup_real_log1p_direct-shared@t1`, `followup_real_log1p_pytorch@t1`, `followup_real_cos_direct-shared@t1`, `followup_real_cos_pytorch@t1`, `followup_real_sin_direct-shared@t1`, `followup_real_sin_pytorch@t1`, `followup_real_exp_direct-shared@t1`, `followup_real_exp_jax@t1`, `followup_real_expm1_direct-shared@t1`, `followup_real_expm1_jax@t1`, `followup_real_pow_direct-shared@t1`, `followup_real_pow_pytorch@t1`, `followup_complex_exp_direct-shared@t1`, `followup_complex_exp_julia-base@t1`, `followup_real_log_direct-shared@t1`, `followup_real_log_pytorch@t1`, `followup_real_reduce_max_axis1_direct-shared@t1`, `followup_real_reduce_max_axis1_julia-base@t1`, `followup_real_reduce_prod_axis1_direct-shared@t1`, `followup_real_reduce_prod_axis1_pytorch@t1`, `followup_real_reduce_sum_axis1_direct-shared@t1`, `followup_real_reduce_sum_axis1_pytorch@t1`, `followup_real_reduce_max_axis0_direct-shared@t1`, `followup_real_reduce_max_axis0_julia-base@t1`, `followup_real_reduce_min_axis1_direct-shared@t1`, `followup_real_reduce_min_axis1_julia-base@t1` (+242 more)
-- Noisy: `layer_norm_f32_eager-single-call_d1024_len8_b1@t1`, `metadata_transpose_view_f64_rank8_t1@t1`, `typed_elemwise_f64_add_held_len16_pytorch@t1`, `lu_batched_f64_factor_n16_b1024_host@t1`, `lu_batched_f64_solve_n16_b1024@t1`, `axpby_strided_source_f64_1024x1024_t1@t1`, `erased_construct_f64_col_n8@t1`, `decode_proj_f32_faer-direct_in1024_out1024_len8@t4`, `decode_proj_f32_faer-direct_in1024_out1024_len64@t4`, `conj_dot_f64_pytorch-vdot_len10000@t4`, `conj_dot_c64_pytorch-vdot_len100@t4`, `tanh_chain_f32_compiled-prepared_k10_1024x64@t4`, `metadata_transpose_view_f64_rank8_t4@t4`, `small_grad_qr_f64_trace-prepared_n16@t4`, `degenerate_dot_outer_f64_pytorch_n1024@t4`, `erased_construct_f64_col_n8@t4`, `conj_dot_f64_pytorch-vdot_len1000000@t8`, `conj_dot_c64_pytorch-vdot_len100@t8`, `small_solve_f64_pytorch-solve-triangular-batched_k16_b64@t8`, `layer_norm_f32_eager-single-call_d1024_len8_b8@t8`, `softmax_f32_eager-single-call_len512_b8@t8`, `softmax_f32_session-single-call_len512_b8@t8`, `erased_construct_f64_col_n8@t8`
+- Noisy: `decode_proj_contiguous_operand_f32_prepared_in1024_out1024_len8_t1@t1`, `conj_dot_c64_pytorch-vdot_len100@t1`, `small_solve_f64_pytorch-solve-triangular-batched_k16_b64@t1`, `softmax_f32_eager-composed_len64_b8@t1`, `metadata_transpose_view_f64_rank8_t1@t1`, `followup_index_scatter_direct-shared@t1`, `followup_perm_cyclic_15d_3_materialize@t1`, `followup_metadata_slice_view_julia-base@t1`, `followup_metadata_reshape_view_julia-base@t1`, `analytic_neg_f64_sweep_8MiB_t1@t1`, `lu_batched_f64_factor_n8_b1024@t1`, `lu_batched_f64_factor_n16_b1024_host@t1`, `lu_batched_f64_solve_n16_b1024@t1`, `erased_add_f64_pytorch_n1048576@t1`, `axpby_strided_source_f64_1024x1024_t1@t1`, `erased_construct_f64_col_n8@t1`, `two_operand_einsum_c64_2x2_string@t4`, `decode_proj_f32_faer-direct_in1024_out4096_len8@t4`, `decode_proj_f32_host-sgemm_in1024_out4096_len512@t4`, `conj_dot_c64_pytorch-vdot_len100@t4`, `small_solve_f64_pytorch-solve-batched_k16_b64@t4`, `activation_erf_f32_pytorch_1024x64@t4`, `activation_sigmoid_f32_pytorch_1024x64@t4`, `activation_silu_f32_pytorch_1024x64@t4`, `activation_softplus_f32_pytorch_1024x64@t4`, `activation_gelu_tanh_f32_pytorch_1024x64@t4`, `reduce_mean_f32_session-single-call_1024x64_axis0@t4`, `take_along_axis_rows_f64_session-single-call_n64_b256@t4`, `metadata_transpose_view_f64_rank8_t4@t4`, `followup_index_scatter_direct-shared@t4`, `followup_index_scatter_pytorch@t4`, `followup_perm_tn_light_415_24d_scattered_to_colmajor_strided-rs@t4`, `followup_metadata_transpose_view_julia-base@t4`, `followup_metadata_slice_view_julia-base@t4`, `followup_metadata_reshape_view_julia-base@t4`, `lu_batched_f64_solve_n16_b1024_pytorch@t4`, `small_grad_qr_f64_pytorch_n4@t4`, `small_grad_lu_f64_pytorch_n16@t4`, `degenerate_dot_outer_f64_pytorch_n1024@t4`, `erased_construct_f64_col_n8@t4` (+16 more)
 
-Numerical checks: **675/957 recorded rows passed** (case × thread count).
+Numerical checks: **957/957 recorded rows passed** (case × thread count).
 
 ## Steady-state operation rows
 
@@ -228,10 +221,10 @@ Each batch is one wall-clock interval over many operations; every output is reta
 
 | Case ID | Issues | Arm | Backend | Dtype | Workload | Threads | Ops/batch | Median ns/op | IQR ns | CoV | Status |
 |---|---|---|---|---|---|---:|---:|---:|---:|---:|---|
-| softmax_f64_pool_serial_1024x4096 | #2273 #2274 #2276 | serial | tenferro-rs | f64 | rows=1024, cols=4096, axis=0 | 1 | 1 | 17700946.0 | 23949.5 | 0.1% | ok |
-| softmax_f64_pool_pytorch_t1_1024x4096 | #2273 #2274 #2276 | pytorch | pytorch-cpu | f64 | rows=1024, cols=4096, axis=0 | 1 | 1 | 19929798.0 | 121130.0 | 0.4% | ok |
-| softmax_f64_pool_pool4_1024x4096 | #2273 #2274 #2276 | pool4 | tenferro-rs | f64 | rows=1024, cols=4096, axis=0 | 4 | 1 | 4489787.0 | 18044.0 | 0.5% | ok |
-| softmax_f64_pool_pytorch_t4_1024x4096 | #2273 #2274 #2276 | pytorch | pytorch-cpu | f64 | rows=1024, cols=4096, axis=0 | 4 | 1 | 5638458.0 | 188506.0 | 2.7% | ok |
+| softmax_f64_pool_serial_1024x4096 | #2273 #2274 #2276 | serial | tenferro-rs | f64 | rows=1024, cols=4096, axis=0 | 1 | 1 | 17648779.0 | 47949.5 | 0.2% | ok |
+| softmax_f64_pool_pytorch_t1_1024x4096 | #2273 #2274 #2276 | pytorch | pytorch-cpu | f64 | rows=1024, cols=4096, axis=0 | 1 | 1 | 20452544.0 | 126288.5 | 0.4% | ok |
+| softmax_f64_pool_pool4_1024x4096 | #2273 #2274 #2276 | pool4 | tenferro-rs | f64 | rows=1024, cols=4096, axis=0 | 4 | 1 | 4475498.0 | 22226.5 | 0.7% | ok |
+| softmax_f64_pool_pytorch_t4_1024x4096 | #2273 #2274 #2276 | pytorch | pytorch-cpu | f64 | rows=1024, cols=4096, axis=0 | 4 | 1 | 5981647.0 | 359022.0 | 10.4% | NOISY |
 
 ### Latency and per-call overhead
 
@@ -239,965 +232,967 @@ These rows measure dispatch/operation latency; they do not measure compute throu
 
 | Case ID | Issues | Arm | Backend | Dtype | Workload | Threads | Ops/batch | Median ns/op | IQR ns | CoV | Status |
 |---|---|---|---|---|---|---:|---:|---:|---:|---:|---|
-| two_operand_einsum_f64_2x2_string | #2325 #2324 | string | tenferro-rs | f64 | m=2, k=2, n=2, format=ij,jk->ik | 1 | 512 | 3854.3 | 9.9 | 0.6% | ok |
-| two_operand_einsum_f64_2x2_subscripts | #2325 #2324 | subscripts | tenferro-rs | f64 | m=2, k=2, n=2, format=ij,jk->ik | 1 | 1024 | 2613.5 | 12.5 | 0.8% | ok |
-| two_operand_einsum_f64_2x2_prepared | #2325 #2324 | prepared | tenferro-rs | f64 | m=2, k=2, n=2, format=ij,jk->ik | 1 | 1024 | 2107.8 | 7.8 | 1.0% | ok |
-| two_operand_einsum_f64_2x2_dot-general | #2325 #2324 | dot-general | tenferro-rs | f64 | m=2, k=2, n=2, format=ij,jk->ik | 1 | 1024 | 2031.3 | 7.8 | 0.9% | ok |
-| two_operand_einsum_f64_2x2_pytorch | #2325 #2324 | pytorch | pytorch-cpu | f64 | m=2, k=2, n=2, format=ij,jk->ik | 1 | 256 | 13880.8 | 162.8 | 0.7% | ok |
-| two_operand_einsum_f64_16x16_string | #2325 #2324 | string | tenferro-rs | f64 | m=16, k=16, n=16, format=ij,jk->ik | 1 | 512 | 4059.2 | 12.2 | 0.7% | ok |
-| two_operand_einsum_f64_16x16_subscripts | #2325 #2324 | subscripts | tenferro-rs | f64 | m=16, k=16, n=16, format=ij,jk->ik | 1 | 1024 | 2859.1 | 7.7 | 1.0% | ok |
-| two_operand_einsum_f64_16x16_prepared | #2325 #2324 | prepared | tenferro-rs | f64 | m=16, k=16, n=16, format=ij,jk->ik | 1 | 1024 | 2354.6 | 11.3 | 0.9% | ok |
-| two_operand_einsum_f64_16x16_dot-general | #2325 #2324 | dot-general | tenferro-rs | f64 | m=16, k=16, n=16, format=ij,jk->ik | 1 | 1024 | 2323.2 | 7.6 | 1.5% | ok |
-| two_operand_einsum_f64_16x16_pytorch | #2325 #2324 | pytorch | pytorch-cpu | f64 | m=16, k=16, n=16, format=ij,jk->ik | 1 | 128 | 15142.2 | 110.9 | 0.7% | ok |
-| two_operand_einsum_c64_2x2_string | #2325 #2324 | string | tenferro-rs | c64 | m=2, k=2, n=2, format=ij,jk->ik | 1 | 512 | 3845.6 | 6.3 | 0.6% | ok |
-| two_operand_einsum_c64_2x2_subscripts | #2325 #2324 | subscripts | tenferro-rs | c64 | m=2, k=2, n=2, format=ij,jk->ik | 1 | 1024 | 2587.1 | 6.4 | 0.8% | ok |
-| two_operand_einsum_c64_2x2_prepared | #2325 #2324 | prepared | tenferro-rs | c64 | m=2, k=2, n=2, format=ij,jk->ik | 1 | 1024 | 2072.4 | 3.3 | 1.0% | ok |
-| two_operand_einsum_c64_2x2_dot-general | #2325 #2324 | dot-general | tenferro-rs | c64 | m=2, k=2, n=2, format=ij,jk->ik | 1 | 1024 | 2047.9 | 4.4 | 1.1% | ok |
-| two_operand_einsum_c64_2x2_pytorch | #2325 #2324 | pytorch | pytorch-cpu | c64 | m=2, k=2, n=2, format=ij,jk->ik | 1 | 256 | 13849.7 | 72.4 | 0.7% | ok |
-| two_operand_einsum_c64_16x16_string | #2325 #2324 | string | tenferro-rs | c64 | m=16, k=16, n=16, format=ij,jk->ik | 1 | 512 | 4948.5 | 20.4 | 0.6% | ok |
-| two_operand_einsum_c64_16x16_subscripts | #2325 #2324 | subscripts | tenferro-rs | c64 | m=16, k=16, n=16, format=ij,jk->ik | 1 | 512 | 3711.4 | 25.6 | 0.9% | ok |
-| two_operand_einsum_c64_16x16_prepared | #2325 #2324 | prepared | tenferro-rs | c64 | m=16, k=16, n=16, format=ij,jk->ik | 1 | 1024 | 3213.8 | 13.8 | 0.9% | ok |
-| two_operand_einsum_c64_16x16_dot-general | #2325 #2324 | dot-general | tenferro-rs | c64 | m=16, k=16, n=16, format=ij,jk->ik | 1 | 1024 | 3175.8 | 7.8 | 0.8% | ok |
-| two_operand_einsum_c64_16x16_pytorch | #2325 #2324 | pytorch | pytorch-cpu | c64 | m=16, k=16, n=16, format=ij,jk->ik | 1 | 128 | 15869.2 | 67.3 | 0.4% | ok |
-| two_operand_einsum_f64_abc_cef_abef_string | #2325 #2324 | string | tenferro-rs | f64 | m=8, k=2, n=16, format=abc,cef->abef | 1 | 512 | 4544.6 | 18.9 | 0.7% | ok |
-| two_operand_einsum_f64_abc_cef_abef_subscripts | #2325 #2324 | subscripts | tenferro-rs | f64 | m=8, k=2, n=16, format=abc,cef->abef | 1 | 1024 | 2737.1 | 11.8 | 0.8% | ok |
-| two_operand_einsum_f64_abc_cef_abef_prepared | #2325 #2324 | prepared | tenferro-rs | f64 | m=8, k=2, n=16, format=abc,cef->abef | 1 | 1024 | 2201.0 | 9.2 | 1.0% | ok |
-| two_operand_einsum_f64_abc_cef_abef_dot-general | #2325 #2324 | dot-general | tenferro-rs | f64 | m=8, k=2, n=16, format=abc,cef->abef | 1 | 1024 | 2166.2 | 5.7 | 1.2% | ok |
-| two_operand_einsum_f64_abc_cef_abef_pytorch | #2325 #2324 | pytorch | pytorch-cpu | f64 | m=8, k=2, n=16, format=abc,cef->abef | 1 | 128 | 16979.7 | 218.3 | 0.8% | ok |
-| thin_c64_gemm_1x141_141x282_t1 | #2416 #1099 | dot-general | tenferro-rs | c64 | m=1, k=141, n=282 | 1 | 128 | 20718.7 | 77.1 | 0.3% | ok |
-| thin_c64_gemm_1x141_141x282_t1_faer-direct | #2416 #1099 | faer-direct | faer-direct | c64 | m=1, k=141, n=282 | 1 | 128 | 18161.2 | 47.4 | 0.2% | ok |
-| thin_c64_gemm_1x141_141x282_t1_pytorch | #2416 #1099 | pytorch | pytorch-cpu | c64 | m=1, k=141, n=282 | 1 | 64 | 49919.2 | 60.5 | 0.3% | ok |
-| thin_c64_gemm_2x141_141x282_t1 | #2416 #1099 | dot-general | tenferro-rs | c64 | m=2, k=141, n=282 | 1 | 64 | 50472.0 | 120.9 | 0.3% | ok |
-| thin_c64_gemm_2x141_141x282_t1_faer-direct | #2416 #1099 | faer-direct | faer-direct | c64 | m=2, k=141, n=282 | 1 | 64 | 50781.7 | 172.8 | 7.2% | ok |
-| thin_c64_gemm_2x141_141x282_t1_pytorch | #2416 #1099 | pytorch | pytorch-cpu | c64 | m=2, k=141, n=282 | 1 | 32 | 69955.9 | 178.5 | 0.3% | ok |
-| thin_c64_gemm_8x141_141x282_t1 | #2416 #1099 | dot-general | tenferro-rs | c64 | m=8, k=141, n=282 | 1 | 16 | 131139.1 | 436.5 | 0.2% | ok |
-| thin_c64_gemm_8x141_141x282_t1_faer-direct | #2416 #1099 | faer-direct | faer-direct | c64 | m=8, k=141, n=282 | 1 | 32 | 91400.8 | 140.4 | 0.2% | ok |
-| thin_c64_gemm_8x141_141x282_t1_pytorch | #2416 #1099 | pytorch | pytorch-cpu | c64 | m=8, k=141, n=282 | 1 | 32 | 125374.7 | 610.0 | 0.5% | ok |
-| decode_proj_f32_eager-shared_in1024_out1024_len8 | #1992 #2003 #1995 #2229 | eager-shared | tenferro-rs | f32 | in=1024, out=1024, len=8 | 1 | 4 | 587423.8 | 5487.6 | 0.7% | ok |
-| decode_proj_f32_faer-direct_in1024_out1024_len8 | #1992 #2003 #1995 #2229 | faer-direct | faer-direct | f32 | in=1024, out=1024, len=8 | 1 | 4 | 584550.8 | 3304.9 | 0.4% | ok |
-| decode_proj_f32_host-sgemm_in1024_out1024_len8 | #1992 #2003 #1995 #2229 | host-sgemm | matrixmultiply-sgemm | f32 | in=1024, out=1024, len=8 | 1 | 2 | 1468349.0 | 1570.5 | 0.2% | ok |
-| decode_proj_f32_pytorch_in1024_out1024_len8 | #1992 #2003 #1995 #2229 | pytorch | pytorch-cpu | f32 | in=1024, out=1024, len=8 | 1 | 4 | 558662.5 | 1852.2 | 0.7% | ok |
-| decode_proj_f32_eager-shared_in1024_out1024_len64 | #1992 #2003 #1995 #2229 | eager-shared | tenferro-rs | f32 | in=1024, out=1024, len=64 | 1 | 1 | 2176172.0 | 6822.5 | 0.4% | ok |
-| decode_proj_f32_faer-direct_in1024_out1024_len64 | #1992 #2003 #1995 #2229 | faer-direct | faer-direct | f32 | in=1024, out=1024, len=64 | 1 | 1 | 2169429.0 | 4478.5 | 0.3% | ok |
-| decode_proj_f32_host-sgemm_in1024_out1024_len64 | #1992 #2003 #1995 #2229 | host-sgemm | matrixmultiply-sgemm | f32 | in=1024, out=1024, len=64 | 1 | 1 | 3074765.0 | 12218.0 | 0.4% | ok |
-| decode_proj_f32_pytorch_in1024_out1024_len64 | #1992 #2003 #1995 #2229 | pytorch | pytorch-cpu | f32 | in=1024, out=1024, len=64 | 1 | 1 | 2753557.0 | 9932.5 | 1.4% | ok |
-| decode_proj_f32_eager-shared_in1024_out1024_len512 | #1992 #2003 #1995 #2229 | eager-shared | tenferro-rs | f32 | in=1024, out=1024, len=512 | 1 | 1 | 17256009.0 | 18479.5 | 0.1% | ok |
-| decode_proj_f32_faer-direct_in1024_out1024_len512 | #1992 #2003 #1995 #2229 | faer-direct | faer-direct | f32 | in=1024, out=1024, len=512 | 1 | 1 | 17271888.0 | 28568.5 | 1.3% | ok |
-| decode_proj_f32_host-sgemm_in1024_out1024_len512 | #1992 #2003 #1995 #2229 | host-sgemm | matrixmultiply-sgemm | f32 | in=1024, out=1024, len=512 | 1 | 1 | 18443630.0 | 24065.0 | 0.1% | ok |
-| decode_proj_f32_pytorch_in1024_out1024_len512 | #1992 #2003 #1995 #2229 | pytorch | pytorch-cpu | f32 | in=1024, out=1024, len=512 | 1 | 1 | 20123918.0 | 70441.0 | 0.2% | ok |
-| decode_proj_f32_eager-shared_in1024_out4096_len8 | #1992 #2003 #1995 #2229 | eager-shared | tenferro-rs | f32 | in=1024, out=4096, len=8 | 1 | 1 | 2331581.0 | 12193.0 | 0.6% | ok |
-| decode_proj_f32_faer-direct_in1024_out4096_len8 | #1992 #2003 #1995 #2229 | faer-direct | faer-direct | f32 | in=1024, out=4096, len=8 | 1 | 1 | 2332603.0 | 14597.5 | 0.5% | ok |
-| decode_proj_f32_host-sgemm_in1024_out4096_len8 | #1992 #2003 #1995 #2229 | host-sgemm | matrixmultiply-sgemm | f32 | in=1024, out=4096, len=8 | 1 | 1 | 5996605.0 | 18399.5 | 0.6% | ok |
-| decode_proj_f32_pytorch_in1024_out4096_len8 | #1992 #2003 #1995 #2229 | pytorch | pytorch-cpu | f32 | in=1024, out=4096, len=8 | 1 | 1 | 2470139.0 | 41026.5 | 2.8% | ok |
-| decode_proj_f32_eager-shared_in1024_out4096_len64 | #1992 #2003 #1995 #2229 | eager-shared | tenferro-rs | f32 | in=1024, out=4096, len=64 | 1 | 1 | 8716579.0 | 60206.5 | 0.7% | ok |
-| decode_proj_f32_faer-direct_in1024_out4096_len64 | #1992 #2003 #1995 #2229 | faer-direct | faer-direct | f32 | in=1024, out=4096, len=64 | 1 | 1 | 8691162.0 | 6887.5 | 0.1% | ok |
-| decode_proj_f32_host-sgemm_in1024_out4096_len64 | #1992 #2003 #1995 #2229 | host-sgemm | matrixmultiply-sgemm | f32 | in=1024, out=4096, len=64 | 1 | 1 | 12583319.0 | 32365.0 | 0.2% | ok |
-| decode_proj_f32_pytorch_in1024_out4096_len64 | #1992 #2003 #1995 #2229 | pytorch | pytorch-cpu | f32 | in=1024, out=4096, len=64 | 1 | 1 | 11253173.0 | 47288.0 | 0.4% | ok |
-| decode_proj_f32_eager-shared_in1024_out4096_len512 | #1992 #2003 #1995 #2229 | eager-shared | tenferro-rs | f32 | in=1024, out=4096, len=512 | 1 | 1 | 69833955.0 | 93925.5 | 0.3% | ok |
-| decode_proj_f32_faer-direct_in1024_out4096_len512 | #1992 #2003 #1995 #2229 | faer-direct | faer-direct | f32 | in=1024, out=4096, len=512 | 1 | 1 | 69659772.0 | 43155.0 | 0.3% | ok |
-| decode_proj_f32_host-sgemm_in1024_out4096_len512 | #1992 #2003 #1995 #2229 | host-sgemm | matrixmultiply-sgemm | f32 | in=1024, out=4096, len=512 | 1 | 1 | 74084340.0 | 97637.0 | 0.1% | ok |
-| decode_proj_f32_pytorch_in1024_out4096_len512 | #1992 #2003 #1995 #2229 | pytorch | pytorch-cpu | f32 | in=1024, out=4096, len=512 | 1 | 1 | 81537610.0 | 229512.5 | 0.5% | ok |
-| decode_proj_view_operand_f32_prepared_in1024_out1024_len8_t1 | #2216 | prepared-view | tenferro-rs | f32 | in=1024, out=1024, len=8 | 1 | 4 | 567065.8 | 4609.9 | 2.0% | ok |
-| decode_proj_contiguous_operand_f32_prepared_in1024_out1024_len8_t1 | #2216 | prepared-contiguous | tenferro-rs | f32 | in=1024, out=1024, len=8 | 1 | 4 | 575075.8 | 2739.1 | 0.6% | ok |
-| decode_proj_view_operand_f32_pytorch_in1024_out1024_len8_t1 | #2216 | pytorch | pytorch-cpu | f32 | in=1024, out=1024, len=8 | 1 | 4 | 514064.8 | 2574.8 | 0.9% | ok |
-| gemm_c64_mm256_t1 | #1900 | dot-general-shared | tenferro-rs | c64 | n=256 | 1 | 1 | 4437252.0 | 5871.0 | 0.2% | ok |
-| gemm_f64_mm256_t1 | #1900 | dot-general-shared | tenferro-rs | f64 | n=256 | 1 | 2 | 1074436.0 | 2181.5 | 0.2% | ok |
-| conj_dot_f64_dot-general-rank1_len100 | #1615 | dot-general-rank1 | tenferro-rs | f64 | len=100 | 1 | 1024 | 1864.3 | 6.1 | 1.0% | ok |
-| conj_dot_f64_portable-loop_len100 | #1615 | portable-loop | rust-loop | f64 | len=100 | 1 | 32768 | 89.6 | 0.1 | 0.4% | ok |
-| conj_dot_f64_pytorch-vdot_len100 | #1615 | pytorch-vdot | pytorch-cpu | f64 | len=100 | 1 | 2048 | 1677.7 | 2.5 | 5.1% | ok |
-| conj_dot_f64_dot-general-rank1_len10000 | #1615 | dot-general-rank1 | tenferro-rs | f64 | len=10000 | 1 | 512 | 4456.7 | 7.7 | 0.4% | ok |
-| conj_dot_f64_portable-loop_len10000 | #1615 | portable-loop | rust-loop | f64 | len=10000 | 1 | 256 | 15040.0 | 14.1 | 0.1% | ok |
-| conj_dot_f64_pytorch-vdot_len10000 | #1615 | pytorch-vdot | pytorch-cpu | f64 | len=10000 | 1 | 512 | 4246.7 | 11.2 | 0.4% | ok |
-| conj_dot_f64_dot-general-rank1_len1000000 | #1615 | dot-general-rank1 | tenferro-rs | f64 | len=1000000 | 1 | 8 | 370933.1 | 10683.0 | 3.4% | ok |
-| conj_dot_f64_portable-loop_len1000000 | #1615 | portable-loop | rust-loop | f64 | len=1000000 | 1 | 2 | 1547842.0 | 5467.2 | 0.5% | ok |
-| conj_dot_f64_pytorch-vdot_len1000000 | #1615 | pytorch-vdot | pytorch-cpu | f64 | len=1000000 | 1 | 8 | 308349.1 | 18344.2 | 4.2% | ok |
-| conj_dot_c64_dot-general-rank1_len100 | #1615 | dot-general-rank1 | tenferro-rs | c64 | len=100 | 1 | 1024 | 1943.1 | 4.0 | 1.5% | ok |
-| conj_dot_c64_portable-loop_len100 | #1615 | portable-loop | rust-loop | c64 | len=100 | 1 | 16384 | 143.9 | 0.3 | 0.6% | ok |
-| conj_dot_c64_pytorch-vdot_len100 | #1615 | pytorch-vdot | pytorch-cpu | c64 | len=100 | 1 | 2048 | 1564.2 | 4.0 | 0.7% | ok |
-| conj_dot_c64_dot-general-rank1_len10000 | #1615 | dot-general-rank1 | tenferro-rs | c64 | len=10000 | 1 | 128 | 15794.4 | 26.1 | 3.9% | ok |
-| conj_dot_c64_portable-loop_len10000 | #1615 | portable-loop | rust-loop | c64 | len=10000 | 1 | 256 | 15279.7 | 32.5 | 0.3% | ok |
-| conj_dot_c64_pytorch-vdot_len10000 | #1615 | pytorch-vdot | pytorch-cpu | c64 | len=10000 | 1 | 256 | 9548.2 | 69.2 | 0.9% | ok |
-| conj_dot_c64_dot-general-rank1_len1000000 | #1615 | dot-general-rank1 | tenferro-rs | c64 | len=1000000 | 1 | 2 | 1466370.5 | 5122.0 | 0.5% | ok |
-| conj_dot_c64_portable-loop_len1000000 | #1615 | portable-loop | rust-loop | c64 | len=1000000 | 1 | 2 | 1551799.5 | 6732.5 | 0.4% | ok |
-| conj_dot_c64_pytorch-vdot_len1000000 | #1615 | pytorch-vdot | pytorch-cpu | c64 | len=1000000 | 1 | 4 | 865621.8 | 7366.2 | 0.6% | ok |
-| small_solve_f64_solve-loop_k16_b64 | #2007 #1878 | solve-loop | tenferro-rs | f64 | k=16, batch=64 | 1 | 8 | 329457.2 | 497.8 | 0.3% | ok |
-| small_solve_f64_triangular-solve-loop_k16_b64 | #2007 #1878 | triangular-solve-loop | tenferro-rs | f64 | k=16, batch=64 | 1 | 16 | 173221.2 | 301.8 | 0.4% | ok |
-| small_solve_f64_solve-batched_k16_b64 | #2007 #1878 | solve-batched | tenferro-rs | f64 | k=16, batch=64 | 1 | 16 | 187063.3 | 754.2 | 0.3% | ok |
-| small_solve_f64_pytorch-solve-batched_k16_b64 | #2007 #1878 | pytorch-solve-batched | pytorch-cpu | f64 | k=16, batch=64 | 1 | 16 | 236119.6 | 325.9 | 0.1% | ok |
-| small_solve_f64_pytorch-solve-triangular-batched_k16_b64 | #2007 #1878 | pytorch-solve-triangular-batched | pytorch-cpu | f64 | k=16, batch=64 | 1 | 32 | 92531.7 | 101.4 | 0.1% | ok |
-| small_solve_f64_solve-loop_k64_b64 | #2007 #1878 | solve-loop | tenferro-rs | f64 | k=64, batch=64 | 1 | 1 | 3341953.0 | 7974.5 | 0.2% | ok |
-| small_solve_f64_triangular-solve-loop_k64_b64 | #2007 #1878 | triangular-solve-loop | tenferro-rs | f64 | k=64, batch=64 | 1 | 2 | 1687983.0 | 2702.2 | 0.3% | ok |
-| small_solve_f64_solve-batched_k64_b64 | #2007 #1878 | solve-batched | tenferro-rs | f64 | k=64, batch=64 | 1 | 1 | 3164222.0 | 6272.0 | 0.3% | ok |
-| small_solve_f64_pytorch-solve-batched_k64_b64 | #2007 #1878 | pytorch-solve-batched | pytorch-cpu | f64 | k=64, batch=64 | 1 | 1 | 6109856.0 | 18293.5 | 0.4% | ok |
-| small_solve_f64_pytorch-solve-triangular-batched_k64_b64 | #2007 #1878 | pytorch-solve-triangular-batched | pytorch-cpu | f64 | k=64, batch=64 | 1 | 2 | 1949620.5 | 3123.0 | 0.1% | ok |
-| tanh_chain_f32_compiled-prepared_k10_1024x64 | #1990 | compiled-prepared | tenferro-rs | f32 | rows=1024, cols=64, chain=10 | 1 | 2 | 1724896.5 | 6148.8 | 0.5% | ok |
-| tanh_chain_f32_eager-shared_k10_1024x64 | #1990 | eager-shared | tenferro-rs | f32 | rows=1024, cols=64, chain=10 | 1 | 2 | 1729340.0 | 7526.5 | 0.4% | ok |
-| tanh_chain_f32_compiled-prepared_k100_1024x64 | #1990 | compiled-prepared | tenferro-rs | f32 | rows=1024, cols=64, chain=100 | 1 | 1 | 17322765.0 | 96946.0 | 1.7% | ok |
-| tanh_chain_f32_eager-shared_k100_1024x64 | #1990 | eager-shared | tenferro-rs | f32 | rows=1024, cols=64, chain=100 | 1 | 1 | 17216838.0 | 41828.0 | 0.3% | ok |
-| tanh_chain_f32_compiled-prepared_k200_1024x64 | #1990 | compiled-prepared | tenferro-rs | f32 | rows=1024, cols=64, chain=200 | 1 | 1 | 34672369.0 | 86050.0 | 0.3% | ok |
-| tanh_chain_f32_eager-shared_k200_1024x64 | #1990 | eager-shared | tenferro-rs | f32 | rows=1024, cols=64, chain=200 | 1 | 1 | 34416443.0 | 40275.0 | 0.1% | ok |
-| layer_norm_f32_eager-composed_d1024_len8_b1 | #2006 | eager-composed | tenferro-rs | f32 | norm=layer_norm, d=1024, len=8, batch=1 | 1 | 32 | 66084.3 | 416.7 | 0.6% | ok |
-| layer_norm_f32_pytorch-fused_d1024_len8_b1 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=layer_norm, d=1024, len=8, batch=1 | 1 | 256 | 8041.6 | 20.0 | 0.3% | ok |
-| layer_norm_f32_eager-single-call_d1024_len8_b1 | #2006 | eager-single-call | tenferro-rs | f32 | norm=layer_norm, d=1024, len=8, batch=1 | 1 | 32 | 68126.2 | 510.9 | 14.1% | NOISY |
-| layer_norm_f32_eager-composed_d1024_len8_b8 | #2006 | eager-composed | tenferro-rs | f32 | norm=layer_norm, d=1024, len=8, batch=8 | 1 | 16 | 122185.6 | 1210.3 | 1.0% | ok |
-| layer_norm_f32_pytorch-fused_d1024_len8_b8 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=layer_norm, d=1024, len=8, batch=8 | 1 | 64 | 34006.3 | 98.5 | 0.4% | ok |
-| layer_norm_f32_eager-single-call_d1024_len8_b8 | #2006 | eager-single-call | tenferro-rs | f32 | norm=layer_norm, d=1024, len=8, batch=8 | 1 | 16 | 122019.1 | 1204.8 | 1.0% | ok |
-| layer_norm_f32_eager-composed_d1024_len64_b1 | #2006 | eager-composed | tenferro-rs | f32 | norm=layer_norm, d=1024, len=64, batch=1 | 1 | 16 | 121567.0 | 1286.8 | 0.8% | ok |
-| layer_norm_f32_pytorch-fused_d1024_len64_b1 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=layer_norm, d=1024, len=64, batch=1 | 1 | 64 | 34444.8 | 82.1 | 0.3% | ok |
-| layer_norm_f32_eager-single-call_d1024_len64_b1 | #2006 | eager-single-call | tenferro-rs | f32 | norm=layer_norm, d=1024, len=64, batch=1 | 1 | 16 | 117444.9 | 2467.1 | 1.3% | ok |
-| layer_norm_f32_eager-composed_d1024_len64_b8 | #2006 | eager-composed | tenferro-rs | f32 | norm=layer_norm, d=1024, len=64, batch=8 | 1 | 4 | 602499.2 | 9799.4 | 1.6% | ok |
-| layer_norm_f32_pytorch-fused_d1024_len64_b8 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=layer_norm, d=1024, len=64, batch=8 | 1 | 16 | 820397.6 | 7454.5 | 0.8% | ok |
-| layer_norm_f32_eager-single-call_d1024_len64_b8 | #2006 | eager-single-call | tenferro-rs | f32 | norm=layer_norm, d=1024, len=64, batch=8 | 1 | 4 | 597101.8 | 5036.9 | 1.0% | ok |
-| rms_norm_f32_eager-composed_d1024_len8_b1 | #2006 | eager-composed | tenferro-rs | f32 | norm=rms_norm, d=1024, len=8, batch=1 | 1 | 64 | 34179.8 | 124.8 | 0.3% | ok |
-| rms_norm_f32_pytorch-fused_d1024_len8_b1 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=rms_norm, d=1024, len=8, batch=1 | 1 | 128 | 18230.4 | 78.0 | 0.3% | ok |
-| rms_norm_f32_eager-single-call_d1024_len8_b1 | #2006 | eager-single-call | tenferro-rs | f32 | norm=rms_norm, d=1024, len=8, batch=1 | 1 | 64 | 40321.3 | 148.5 | 0.4% | ok |
-| rms_norm_f32_eager-composed_d1024_len8_b8 | #2006 | eager-composed | tenferro-rs | f32 | norm=rms_norm, d=1024, len=8, batch=8 | 1 | 32 | 59634.2 | 265.6 | 0.5% | ok |
-| rms_norm_f32_pytorch-fused_d1024_len8_b8 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=rms_norm, d=1024, len=8, batch=8 | 1 | 32 | 39285.0 | 243.0 | 0.8% | ok |
-| rms_norm_f32_eager-single-call_d1024_len8_b8 | #2006 | eager-single-call | tenferro-rs | f32 | norm=rms_norm, d=1024, len=8, batch=8 | 1 | 32 | 66563.0 | 742.0 | 0.7% | ok |
-| rms_norm_f32_eager-composed_d1024_len64_b1 | #2006 | eager-composed | tenferro-rs | f32 | norm=rms_norm, d=1024, len=64, batch=1 | 1 | 32 | 60474.2 | 2139.3 | 2.0% | ok |
-| rms_norm_f32_pytorch-fused_d1024_len64_b1 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=rms_norm, d=1024, len=64, batch=1 | 1 | 64 | 39549.1 | 431.4 | 1.4% | ok |
-| rms_norm_f32_eager-single-call_d1024_len64_b1 | #2006 | eager-single-call | tenferro-rs | f32 | norm=rms_norm, d=1024, len=64, batch=1 | 1 | 32 | 67150.3 | 1178.0 | 0.9% | ok |
-| rms_norm_f32_eager-composed_d1024_len64_b8 | #2006 | eager-composed | tenferro-rs | f32 | norm=rms_norm, d=1024, len=64, batch=8 | 1 | 4 | 300008.5 | 11178.2 | 3.1% | ok |
-| rms_norm_f32_pytorch-fused_d1024_len64_b8 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=rms_norm, d=1024, len=64, batch=8 | 1 | 8 | 1400723.1 | 5797.6 | 0.4% | ok |
-| rms_norm_f32_eager-single-call_d1024_len64_b8 | #2006 | eager-single-call | tenferro-rs | f32 | norm=rms_norm, d=1024, len=64, batch=8 | 1 | 4 | 311079.2 | 2767.6 | 0.9% | ok |
-| small_contraction_abcd-dbef-acef_f64_shared-session-default-pool_d4 | #1885 #1897 #1901 | shared-session-default-pool | tenferro-rs | f64 | extent=4 | 1 | 512 | 3905.4 | 21.6 | 0.4% | ok |
-| activation_erf_f32_eager-single-call_1024x64 | #1975 #2069 #2032 | eager-single-call | tenferro-rs | f32 | op=erf, rows=1024, cols=64 | 1 | — | — | — | — | FAILED |
-| activation_erf_f32_session-single-call_1024x64 | #1975 #2069 #2032 | session-single-call | tenferro-rs | f32 | op=erf, rows=1024, cols=64 | 1 | 8 | 290728.9 | 526.0 | 0.1% | ok |
-| activation_erf_f32_pytorch_1024x64 | #1975 #2069 #2032 | pytorch | pytorch-cpu | f32 | op=erf, rows=1024, cols=64 | 1 | — | — | — | — | FAILED |
-| activation_sigmoid_f32_eager-single-call_1024x64 | #1975 #2069 #2032 | eager-single-call | tenferro-rs | f32 | op=sigmoid, rows=1024, cols=64 | 1 | — | — | — | — | FAILED |
-| activation_sigmoid_f32_session-single-call_1024x64 | #1975 #2069 #2032 | session-single-call | tenferro-rs | f32 | op=sigmoid, rows=1024, cols=64 | 1 | 32 | 43933.4 | 320.4 | 0.7% | ok |
-| activation_sigmoid_f32_eager-composed_1024x64 | #1975 #2069 #2032 | eager-composed | tenferro-rs | f32 | op=sigmoid, rows=1024, cols=64 | 1 | 32 | 78674.3 | 261.6 | 0.6% | ok |
-| activation_sigmoid_f32_pytorch_1024x64 | #1975 #2069 #2032 | pytorch | pytorch-cpu | f32 | op=sigmoid, rows=1024, cols=64 | 1 | — | — | — | — | FAILED |
-| activation_silu_f32_eager-single-call_1024x64 | #1975 #2069 #2032 | eager-single-call | tenferro-rs | f32 | op=silu, rows=1024, cols=64 | 1 | — | — | — | — | FAILED |
-| activation_silu_f32_session-single-call_1024x64 | #1975 #2069 #2032 | session-single-call | tenferro-rs | f32 | op=silu, rows=1024, cols=64 | 1 | 32 | 46026.0 | 200.5 | 0.5% | ok |
-| activation_silu_f32_eager-composed_1024x64 | #1975 #2069 #2032 | eager-composed | tenferro-rs | f32 | op=silu, rows=1024, cols=64 | 1 | 16 | 98308.0 | 540.4 | 0.3% | ok |
-| activation_silu_f32_pytorch_1024x64 | #1975 #2069 #2032 | pytorch | pytorch-cpu | f32 | op=silu, rows=1024, cols=64 | 1 | — | — | — | — | FAILED |
-| activation_softplus_f32_eager-single-call_1024x64 | #1975 #2069 #2032 | eager-single-call | tenferro-rs | f32 | op=softplus, rows=1024, cols=64 | 1 | — | — | — | — | FAILED |
-| activation_softplus_f32_session-single-call_1024x64 | #1975 #2069 #2032 | session-single-call | tenferro-rs | f32 | op=softplus, rows=1024, cols=64 | 1 | 16 | 160058.6 | 263.3 | 0.3% | ok |
-| activation_softplus_f32_eager-composed_1024x64 | #1975 #2069 #2032 | eager-composed | tenferro-rs | f32 | op=softplus, rows=1024, cols=64 | 1 | 16 | 174556.9 | 658.8 | 1.9% | ok |
-| activation_softplus_f32_pytorch_1024x64 | #1975 #2069 #2032 | pytorch | pytorch-cpu | f32 | op=softplus, rows=1024, cols=64 | 1 | — | — | — | — | FAILED |
-| activation_gelu_f32_eager-single-call_1024x64 | #1975 #2030 #2069 #2228 | eager-single-call | tenferro-rs | f32 | op=gelu, rows=1024, cols=64 | 1 | 32 | 65224.2 | 277.8 | 0.3% | ok |
-| activation_gelu_f32_session-single-call_1024x64 | #1975 #2030 #2069 #2228 | session-single-call | tenferro-rs | f32 | op=gelu, rows=1024, cols=64 | 1 | 32 | 64573.0 | 143.8 | 0.3% | ok |
-| activation_gelu_f32_pytorch_1024x64 | #1975 #2030 #2069 #2228 | pytorch | pytorch-cpu | f32 | op=gelu, rows=1024, cols=64 | 1 | 32 | 55702.2 | 180.5 | 1.3% | ok |
-| activation_gelu_tanh_f32_eager-single-call_1024x64 | #1975 #2069 #2032 | eager-single-call | tenferro-rs | f32 | op=gelu_tanh, rows=1024, cols=64 | 1 | — | — | — | — | FAILED |
-| activation_gelu_tanh_f32_session-single-call_1024x64 | #1975 #2069 #2032 | session-single-call | tenferro-rs | f32 | op=gelu_tanh, rows=1024, cols=64 | 1 | 16 | 191309.4 | 430.2 | 0.2% | ok |
-| activation_gelu_tanh_f32_eager-composed_1024x64 | #1975 #2069 #2032 | eager-composed | tenferro-rs | f32 | op=gelu_tanh, rows=1024, cols=64 | 1 | 8 | 325710.2 | 1839.6 | 0.5% | ok |
-| activation_gelu_tanh_f32_pytorch_1024x64 | #1975 #2069 #2032 | pytorch | pytorch-cpu | f32 | op=gelu_tanh, rows=1024, cols=64 | 1 | — | — | — | — | FAILED |
-| softmax_f32_eager-single-call_len64_b8 | #1976 #2031 #2231 | eager-single-call | tenferro-rs | f32 | op=softmax, len=64, batch=8, axis=0 | 1 | 64 | 31373.4 | 336.2 | 1.4% | ok |
-| softmax_f32_session-single-call_len64_b8 | #1976 #2031 #2231 | session-single-call | tenferro-rs | f32 | op=softmax, len=64, batch=8, axis=0 | 1 | 64 | 30569.7 | 103.8 | 0.4% | ok |
-| softmax_f32_eager-composed_len64_b8 | #1976 #2031 #2231 | eager-composed | tenferro-rs | f32 | op=softmax, len=64, batch=8, axis=0 | 1 | 16 | 139923.7 | 733.2 | 0.4% | ok |
-| softmax_f32_pytorch_len64_b8 | #1976 #2031 #2231 | pytorch | pytorch-cpu | f32 | op=softmax, len=64, batch=8, axis=0 | 1 | 64 | 43315.3 | 49.7 | 0.6% | ok |
-| softmax_f32_eager-single-call_len512_b8 | #1976 #2231 | eager-single-call | tenferro-rs | f32 | op=softmax, len=512, batch=8, axis=0 | 1 | 2 | 1897894.0 | 17277.2 | 0.9% | ok |
-| softmax_f32_session-single-call_len512_b8 | #1976 #2231 | session-single-call | tenferro-rs | f32 | op=softmax, len=512, batch=8, axis=0 | 1 | 2 | 1887149.0 | 17830.8 | 1.6% | ok |
-| softmax_f32_eager-composed_len512_b8 | #1976 #2231 | eager-composed | tenferro-rs | f32 | op=softmax, len=512, batch=8, axis=0 | 1 | 1 | 3931271.0 | 11660.5 | 0.8% | ok |
-| softmax_f32_pytorch_len512_b8 | #1976 #2231 | pytorch | pytorch-cpu | f32 | op=softmax, len=512, batch=8, axis=0 | 1 | 1 | 2179358.0 | 17858.0 | 0.8% | ok |
-| log_softmax_f32_eager-single-call_len64_b8 | #1976 | eager-single-call | tenferro-rs | f32 | op=log_softmax, len=64, batch=8, axis=0 | 1 | 16 | 147283.0 | 11490.2 | 3.8% | ok |
-| log_softmax_f32_session-single-call_len64_b8 | #1976 | session-single-call | tenferro-rs | f32 | op=log_softmax, len=64, batch=8, axis=0 | 1 | 16 | 121994.7 | 670.0 | 0.4% | ok |
-| log_softmax_f32_eager-composed_len64_b8 | #1976 | eager-composed | tenferro-rs | f32 | op=log_softmax, len=64, batch=8, axis=0 | 1 | 16 | 125601.4 | 948.3 | 0.8% | ok |
-| log_softmax_f32_pytorch_len64_b8 | #1976 | pytorch | pytorch-cpu | f32 | op=log_softmax, len=64, batch=8, axis=0 | 1 | 64 | 36999.8 | 661.0 | 1.2% | ok |
-| log_softmax_f32_eager-single-call_len512_b8 | #1976 | eager-single-call | tenferro-rs | f32 | op=log_softmax, len=512, batch=8, axis=0 | 1 | 1 | 3654344.0 | 68302.5 | 1.9% | ok |
-| log_softmax_f32_session-single-call_len512_b8 | #1976 | session-single-call | tenferro-rs | f32 | op=log_softmax, len=512, batch=8, axis=0 | 1 | 1 | 3709598.0 | 44984.0 | 1.1% | ok |
-| log_softmax_f32_eager-composed_len512_b8 | #1976 | eager-composed | tenferro-rs | f32 | op=log_softmax, len=512, batch=8, axis=0 | 1 | 1 | 3882590.0 | 258501.0 | 3.4% | ok |
-| log_softmax_f32_pytorch_len512_b8 | #1976 | pytorch | pytorch-cpu | f32 | op=log_softmax, len=512, batch=8, axis=0 | 1 | 1 | 2067801.0 | 27766.0 | 1.0% | ok |
-| masked_softmax_f32_eager-single-call_len64_b8 | #1976 | eager-single-call | tenferro-rs | f32 | op=masked_softmax, len=64, batch=8, axis=0 | 1 | 8 | 250713.1 | 856.6 | 1.2% | ok |
-| masked_softmax_f32_session-single-call_len64_b8 | #1976 | session-single-call | tenferro-rs | f32 | op=masked_softmax, len=64, batch=8, axis=0 | 1 | 16 | 222308.4 | 2019.4 | 0.8% | ok |
-| masked_softmax_f32_eager-composed_len64_b8 | #1976 | eager-composed | tenferro-rs | f32 | op=masked_softmax, len=64, batch=8, axis=0 | 1 | 16 | 154388.7 | 1312.8 | 1.1% | ok |
-| masked_softmax_f32_pytorch_len64_b8 | #1976 | pytorch | pytorch-cpu | f32 | op=masked_softmax, len=64, batch=8, axis=0 | 1 | 32 | 90216.1 | 5607.3 | 3.0% | ok |
-| masked_softmax_f32_eager-single-call_len512_b8 | #1976 | eager-single-call | tenferro-rs | f32 | op=masked_softmax, len=512, batch=8, axis=0 | 1 | 1 | 9232542.0 | 89963.0 | 0.8% | ok |
-| masked_softmax_f32_session-single-call_len512_b8 | #1976 | session-single-call | tenferro-rs | f32 | op=masked_softmax, len=512, batch=8, axis=0 | 1 | 1 | 9321658.0 | 104935.0 | 1.0% | ok |
-| masked_softmax_f32_eager-composed_len512_b8 | #1976 | eager-composed | tenferro-rs | f32 | op=masked_softmax, len=512, batch=8, axis=0 | 1 | 1 | 4921304.0 | 44197.5 | 0.7% | ok |
-| masked_softmax_f32_pytorch_len512_b8 | #1976 | pytorch | pytorch-cpu | f32 | op=masked_softmax, len=512, batch=8, axis=0 | 1 | 1 | 5033112.0 | 56881.5 | 1.3% | ok |
-| softmax_f32_eager-single-call_len64_b8_t1 | #2233 #2235 | eager-single-call | tenferro-rs | f32 | op=softmax, len=64, batch=8, axis=0 | 1 | 64 | 31195.0 | 107.4 | 1.2% | ok |
-| softmax_f32_eager-composed_len64_b8_t1 | #2233 #2235 | eager-composed | tenferro-rs | f32 | op=softmax, len=64, batch=8, axis=0 | 1 | 16 | 139850.4 | 695.3 | 0.5% | ok |
-| softmax_f32_pytorch_len64_b8_t1 | #2233 #2235 | pytorch | pytorch-cpu | f32 | op=softmax, len=64, batch=8, axis=0 | 1 | 64 | 43611.8 | 70.8 | 0.1% | ok |
-| reduce_mean_f32_eager-single-call_1024x64_axis0 | #1976 | eager-single-call | tenferro-rs | f32 | rows=1024, cols=64, axis=0 | 1 | 128 | 15879.3 | 99.0 | 0.4% | ok |
-| reduce_mean_f32_session-single-call_1024x64_axis0 | #1976 | session-single-call | tenferro-rs | f32 | rows=1024, cols=64, axis=0 | 1 | 256 | 8542.9 | 14.0 | 0.2% | ok |
-| reduce_mean_f32_eager-composed_1024x64_axis0 | #1976 | eager-composed | tenferro-rs | f32 | rows=1024, cols=64, axis=0 | 1 | 128 | 16254.7 | 68.1 | 0.6% | ok |
-| reduce_mean_f32_pytorch_1024x64_axis0 | #1976 | pytorch | pytorch-cpu | f32 | rows=1024, cols=64, axis=0 | 1 | 256 | 8771.1 | 53.9 | 0.5% | ok |
-| take_along_axis_rows_f64_eager-single-call_n64_b256 | #2008 | eager-single-call | tenferro-rs | f64 | n=64, batch=256, axis=0 | 1 | 1 | 9123890.0 | 37770.5 | 0.3% | ok |
-| take_along_axis_rows_f64_session-single-call_n64_b256 | #2008 | session-single-call | tenferro-rs | f64 | n=64, batch=256, axis=0 | 1 | 1 | 8998126.0 | 66148.0 | 0.6% | ok |
-| take_along_axis_rows_f64_eager-gather-prebuilt_n64_b256 | #2008 | eager-gather-prebuilt | tenferro-rs | f64 | n=64, batch=256, axis=0 | 1 | 1 | 8846794.0 | 74072.5 | 1.2% | ok |
-| take_along_axis_rows_f64_pytorch_n64_b256 | #2008 | pytorch | pytorch-cpu | f64 | n=64, batch=256, axis=0 | 1 | 1 | 4594676.0 | 25021.5 | 0.5% | ok |
-| lstsq_f64_eager-shared_m768_n384_rhs16 | #2027 | eager-shared | tenferro-rs | f64 | operation=lstsq | 1 | 1 | 22307369.0 | 53905.5 | 1.1% | ok |
-| lstsq_f64_pytorch_m768_n384_rhs16 | #2027 | pytorch | pytorch-cpu | f64 | operation=lstsq | 1 | 1 | 12323679.0 | 19737.0 | 0.1% | ok |
-| triangular_f64_concrete-shared_n4096_rhs64 | #2028 | concrete-shared | tenferro-rs | f64 | operation=triangular | 1 | 1 | 40672618.0 | 69424.0 | 0.2% | ok |
-| triangular_f64_pytorch_n4096_rhs64 | #2028 | pytorch | pytorch-cpu | f64 | operation=triangular | 1 | 1 | 44399318.0 | 94962.5 | 0.8% | ok |
-| reshape_f64_concrete-shared_n33554432_to8192x4096 | #2029 | concrete-shared | tenferro-rs | f64 | operation=reshape | 1 | 1 | 87493375.0 | 1174788.0 | 0.8% | ok |
-| reshape_f64_pytorch_n33554432_to8192x4096 | #2029 | pytorch | pytorch-cpu | f64 | operation=reshape | 1 | 1 | 85532875.0 | 1907016.0 | 1.2% | ok |
-| metadata_transpose_view_f64_rank8_t1 | #2180 | metadata-clone | tenferro-rs | f64 | shape=[2, 2, 2, 2, 2, 2, 2, 2] | 1 | 8192 | 80.3 | 0.4 | 45.1% | NOISY |
-| metadata_transpose_view_f64_rank8_t1_julia-base | #2180 | julia-base | julia-base | f64 | shape=[2, 2, 2, 2, 2, 2, 2, 2] | 1 | 1048576 | 0.3 | 0.0 | 6.3% | ok |
-| followup_structural_broadcast_in_dim_direct-shared | #2021 | direct-shared | tenferro-rs | f64 | case_id=structural.broadcast_in_dim, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8192, 1], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_structural_broadcast_in_dim_pytorch | #2021 | pytorch | pytorch-cpu | f64 | case_id=structural.broadcast_in_dim, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8192, 1], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_real_tanh_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.tanh, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_real_tanh_jax | #2033 | jax | jax-cpu | f64 | case_id=real.tanh, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_real_log1p_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.log1p, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_real_log1p_pytorch | #2033 | pytorch | pytorch-cpu | f64 | case_id=real.log1p, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_real_cos_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.cos, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_real_cos_pytorch | #2033 | pytorch | pytorch-cpu | f64 | case_id=real.cos, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_real_sin_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.sin, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_real_sin_pytorch | #2033 | pytorch | pytorch-cpu | f64 | case_id=real.sin, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_real_exp_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.exp, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_real_exp_jax | #2033 | jax | jax-cpu | f64 | case_id=real.exp, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_real_expm1_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.expm1, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_real_expm1_jax | #2033 | jax | jax-cpu | f64 | case_id=real.expm1, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_real_pow_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.pow, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_real_pow_pytorch | #2033 | pytorch | pytorch-cpu | f64 | case_id=real.pow, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_complex_exp_direct-shared | #2033 | direct-shared | tenferro-rs | c64 | case_id=complex.exp, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [4194304], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_complex_exp_julia-base | #2033 | julia-base | julia-base | c64 | case_id=complex.exp, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [4194304], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_real_log_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.log, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_real_log_pytorch | #2033 | pytorch | pytorch-cpu | f64 | case_id=real.log, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_real_reduce_max_axis1_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_max_axis1, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_real_reduce_max_axis1_julia-base | #2034 | julia-base | julia-base | f64 | case_id=real.reduce_max_axis1, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_real_reduce_prod_axis1_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_prod_axis1, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_real_reduce_prod_axis1_pytorch | #2034 | pytorch | pytorch-cpu | f64 | case_id=real.reduce_prod_axis1, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_real_reduce_sum_axis1_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_sum_axis1, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_real_reduce_sum_axis1_pytorch | #2034 | pytorch | pytorch-cpu | f64 | case_id=real.reduce_sum_axis1, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_real_reduce_max_axis0_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_max_axis0, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_real_reduce_max_axis0_julia-base | #2034 | julia-base | julia-base | f64 | case_id=real.reduce_max_axis0, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_real_reduce_min_axis1_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_min_axis1, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [4096, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_real_reduce_min_axis1_julia-base | #2034 | julia-base | julia-base | f64 | case_id=real.reduce_min_axis1, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [4096, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_real_reduce_min_axis0_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_min_axis0, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_real_reduce_min_axis0_julia-base | #2034 | julia-base | julia-base | f64 | case_id=real.reduce_min_axis0, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_real_reduce_max_all_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_max_all, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [8192, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_real_reduce_max_all_julia-base | #2034 | julia-base | julia-base | f64 | case_id=real.reduce_max_all, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [8192, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_real_reduce_min_all_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_min_all, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [8192, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_real_reduce_min_all_julia-base | #2034 | julia-base | julia-base | f64 | case_id=real.reduce_min_all, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [8192, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_complex_norm_fro_direct-shared | #2035 | direct-shared | tenferro-rs | c64 | case_id=complex.norm_fro, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [2048, 1536], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_complex_norm_fro_jax | #2035 | jax | jax-cpu | c64 | case_id=complex.norm_fro, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [2048, 1536], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_index_gather_direct-shared | #2036 #1719 | direct-shared | tenferro-rs | f64 | case_id=index.gather, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [262144], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_index_gather_jax | #2036 #1719 | jax | jax-cpu | f64 | case_id=index.gather, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [262144], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_index_scatter_direct-shared | #2036 #1719 | direct-shared | tenferro-rs | f64 | case_id=index.scatter, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [262144], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_index_scatter_pytorch | #2036 #1719 | pytorch | pytorch-cpu | f64 | case_id=index.scatter, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [262144], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_index_dynamic_update_slice_direct-shared | #2036 #1719 | direct-shared | tenferro-rs | f64 | case_id=index.dynamic_update_slice, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [2097152], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_index_dynamic_update_slice_jax | #2036 #1719 | jax | jax-cpu | f64 | case_id=index.dynamic_update_slice, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [2097152], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_perm_reverse_15d_3_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.reverse_15d_3, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_perm_reverse_15d_3_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.reverse_15d_3, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_structural_transpose_direct-shared | #2037 #2228 | direct-shared | tenferro-rs | f64 | case_id=structural.transpose, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [4096, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_structural_transpose_pytorch | #2037 #2228 | pytorch | pytorch-cpu | f64 | case_id=structural.transpose, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [4096, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_perm_reverse_23d_2_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.reverse_23d_2, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_perm_reverse_23d_2_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.reverse_23d_2, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_perm_transpose_3d_256_201_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.transpose_3d_256_201, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [256, 256, 256], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_perm_transpose_3d_256_201_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.transpose_3d_256_201, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [256, 256, 256], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_perm_cyclic_15d_3_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.cyclic_15d_3, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_perm_cyclic_15d_3_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.cyclic_15d_3, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_perm_transpose_3d_256_102_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.transpose_3d_256_102, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [256, 256, 256], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_perm_transpose_3d_256_102_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.transpose_3d_256_102, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [256, 256, 256], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_perm_tn_light_415_24d_scattered_to_colmajor_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.tn_light_415_24d_scattered_to_colmajor, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_perm_tn_light_415_24d_scattered_to_colmajor_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.tn_light_415_24d_scattered_to_colmajor, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_perm_tn_light_415_24d_contiguous_same_perm_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.tn_light_415_24d_contiguous_same_perm, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_perm_tn_light_415_24d_contiguous_same_perm_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.tn_light_415_24d_contiguous_same_perm, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_perm_rotation_6d_32_32_32_32_16_16_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.rotation_6d_32_32_32_32_16_16, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [32, 32, 32, 32, 16, 16], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_perm_rotation_6d_32_32_32_32_16_16_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.rotation_6d_32_32_32_32_16_16, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [32, 32, 32, 32, 16, 16], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_structural_extract_diagonal_direct-shared | #2038 #2228 | direct-shared | tenferro-rs | f64 | case_id=structural.extract_diagonal, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [8388608, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_structural_extract_diagonal_jax | #2038 #2228 | jax | jax-cpu | f64 | case_id=structural.extract_diagonal, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [8388608, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_fft_irfft_direct-shared | #2039 #2230 #2228 | direct-shared | tenferro-rs | c32 | case_id=fft.irfft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [524289], 'dtype': 'c32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_fft_irfft_mkl-dfti | #2039 #2230 #2228 | mkl-dfti | mkl-dfti | c32 | case_id=fft.irfft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [524289], 'dtype': 'c32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_fft_rfft_direct-shared | #2039 #2230 #2228 | direct-shared | tenferro-rs | f32 | case_id=fft.rfft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [1048576], 'dtype': 'f32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_fft_rfft_mkl-dfti | #2039 #2230 #2228 | mkl-dfti | mkl-dfti | f32 | case_id=fft.rfft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [1048576], 'dtype': 'f32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_fft_fft_direct-shared | #2039 #2228 | direct-shared | tenferro-rs | c64 | case_id=fft.fft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [1048576], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_fft_fft_mkl-dfti | #2039 #2228 | mkl-dfti | mkl-dfti | c64 | case_id=fft.fft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [1048576], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_fft_ifft_direct-shared | #2039 #2228 | direct-shared | tenferro-rs | c32 | case_id=fft.ifft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [1048576], 'dtype': 'c32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_fft_ifft_mkl-dfti | #2039 #2228 | mkl-dfti | mkl-dfti | c32 | case_id=fft.ifft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [1048576], 'dtype': 'c32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | — | — | — | — | FAILED |
-| followup_metadata_transpose_view_metadata | #2040 #1719 | metadata | tenferro-rs | f64 | case_id=metadata.transpose_view, rust_path=metadata, reference_path=julia-base, fixture={'input_shape': [2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 1 | — | — | — | — | FAILED |
-| followup_metadata_transpose_view_julia-base | #2040 #1719 | julia-base | julia-base | f64 | case_id=metadata.transpose_view, rust_path=metadata, reference_path=julia-base, fixture={'input_shape': [2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 1 | — | — | — | — | FAILED |
-| followup_metadata_transpose_view_metadata-host-dyn | #2040 #1719 | metadata-host-dyn | tenferro-rs | f64 | case_id=metadata.transpose_view, rust_path=metadata-host-dyn, reference_path=julia-base, fixture={'input_shape': [2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 1 | — | — | — | — | FAILED |
-| followup_metadata_transpose_view_metadata-host-static | #2040 #1719 | metadata-host-static | tenferro-rs | f64 | case_id=metadata.transpose_view, rust_path=metadata-host-static, reference_path=julia-base, fixture={'input_shape': [2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 1 | — | — | — | — | FAILED |
-| followup_metadata_slice_view_metadata | #2040 #1719 | metadata | tenferro-rs | f64 | case_id=metadata.slice_view, rust_path=metadata, reference_path=julia-base, fixture={'input_shape': [4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 1 | — | — | — | — | FAILED |
-| followup_metadata_slice_view_julia-base | #2040 #1719 | julia-base | julia-base | f64 | case_id=metadata.slice_view, rust_path=metadata, reference_path=julia-base, fixture={'input_shape': [4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 1 | — | — | — | — | FAILED |
-| followup_metadata_slice_view_metadata-host-dyn | #2040 #1719 | metadata-host-dyn | tenferro-rs | f64 | case_id=metadata.slice_view, rust_path=metadata-host-dyn, reference_path=julia-base, fixture={'input_shape': [4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 1 | — | — | — | — | FAILED |
-| followup_metadata_slice_view_metadata-host-static | #2040 #1719 | metadata-host-static | tenferro-rs | f64 | case_id=metadata.slice_view, rust_path=metadata-host-static, reference_path=julia-base, fixture={'input_shape': [4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 1 | — | — | — | — | FAILED |
-| followup_metadata_reshape_view_metadata | #2040 #1719 | metadata | tenferro-rs | f64 | case_id=metadata.reshape_view, rust_path=metadata, reference_path=julia-base, fixture={'input_shape': [1024], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 1 | — | — | — | — | FAILED |
-| followup_metadata_reshape_view_julia-base | #2040 #1719 | julia-base | julia-base | f64 | case_id=metadata.reshape_view, rust_path=metadata, reference_path=julia-base, fixture={'input_shape': [1024], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 1 | — | — | — | — | FAILED |
-| followup_metadata_reshape_view_metadata-host-dyn | #2040 #1719 | metadata-host-dyn | tenferro-rs | f64 | case_id=metadata.reshape_view, rust_path=metadata-host-dyn, reference_path=julia-base, fixture={'input_shape': [1024], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 1 | — | — | — | — | FAILED |
-| followup_metadata_reshape_view_metadata-host-static | #2040 #1719 | metadata-host-static | tenferro-rs | f64 | case_id=metadata.reshape_view, rust_path=metadata-host-static, reference_path=julia-base, fixture={'input_shape': [1024], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 1 | — | — | — | — | FAILED |
-| typed_elemwise_f64_add_held_len16 | #2139 | tenferro | tenferro-rs | f64 | n=16, route=held | 1 | 2048 | 1427.1 | 6.1 | 1.4% | ok |
-| typed_elemwise_f64_add_held_len16_pytorch | #2139 | pytorch | pytorch-cpu | f64 | n=16, route=held | 1 | 2048 | 1838.2 | 15.3 | 244.7% | NOISY |
-| typed_elemwise_f64_add_into_held_len16 | #2139 | tenferro | tenferro-rs | f64 | n=16, route=into_held | 1 | 2048 | 1023.1 | 4.3 | 0.9% | ok |
-| typed_elemwise_f64_add_into_held_len16_pytorch | #2139 | pytorch | pytorch-cpu | f64 | n=16, route=into_held | 1 | 2048 | 1772.0 | 2.6 | 0.1% | ok |
-| typed_elemwise_f64_add_held_len256 | #2139 | tenferro | tenferro-rs | f64 | n=256, route=held | 1 | 1024 | 1610.9 | 14.1 | 1.9% | ok |
-| typed_elemwise_f64_add_held_len256_pytorch | #2139 | pytorch | pytorch-cpu | f64 | n=256, route=held | 1 | 1024 | 1932.7 | 9.4 | 0.7% | ok |
-| typed_elemwise_f64_add_into_held_len256 | #2139 | tenferro | tenferro-rs | f64 | n=256, route=into_held | 1 | 2048 | 1123.1 | 2.1 | 0.2% | ok |
-| typed_elemwise_f64_add_into_held_len256_pytorch | #2139 | pytorch | pytorch-cpu | f64 | n=256, route=into_held | 1 | 2048 | 1835.2 | 9.0 | 0.4% | ok |
-| typed_elemwise_f64_add_held_len4096 | #2139 | tenferro | tenferro-rs | f64 | n=4096, route=held | 1 | 256 | 2995.0 | 26.3 | 1.3% | ok |
-| typed_elemwise_f64_add_held_len4096_pytorch | #2139 | pytorch | pytorch-cpu | f64 | n=4096, route=held | 1 | 1024 | 3705.0 | 39.0 | 1.1% | ok |
-| typed_elemwise_f64_add_into_held_len4096 | #2139 | tenferro | tenferro-rs | f64 | n=4096, route=into_held | 1 | 1024 | 2162.5 | 14.0 | 0.5% | ok |
-| typed_elemwise_f64_add_into_held_len4096_pytorch | #2139 | pytorch | pytorch-cpu | f64 | n=4096, route=into_held | 1 | 1024 | 2752.6 | 6.6 | 0.2% | ok |
-| tiny_matmul_2x2_typed_held | #2139 | tenferro | tenferro-rs | f64 | n=2 | 1 | 1024 | 2143.6 | 17.5 | 1.0% | ok |
-| tiny_matmul_2x2_typed_held_pytorch | #2139 | pytorch | pytorch-cpu | f64 | n=2 | 1 | 1024 | 1956.1 | 5.5 | 0.3% | ok |
-| analytic_neg_f64_sweep_8MiB_t1 | #2139 | tenferro | tenferro-rs | f64 | n=1048576 | 1 | 2 | 342268.0 | 13512.5 | 8.5% | ok |
-| analytic_neg_f64_sweep_8MiB_t1_pytorch | #2139 | pytorch | pytorch-cpu | f64 | n=1048576 | 1 | 8 | 1686803.5 | 28229.5 | 1.6% | ok |
-| analytic_neg_f64_sweep_32MiB_t1 | #2139 | tenferro | tenferro-rs | f64 | n=4194304 | 1 | 2 | 1870489.5 | 25800.8 | 1.6% | ok |
-| analytic_neg_f64_sweep_32MiB_t1_pytorch | #2139 | pytorch | pytorch-cpu | f64 | n=4194304 | 1 | 1 | 10431081.0 | 46431.5 | 0.4% | ok |
-| gemm_bound_f64_t1_t8_scaling | #2141 | tenferro | tenferro-rs | f64 | n=1536 | 1 | 1 | 234960860.0 | 420614.0 | 0.3% | ok |
-| gemm_bound_f64_t1_t8_scaling_pytorch | #2141 | pytorch | pytorch-cpu | f64 | n=1536 | 1 | 1 | 238752147.0 | 396222.5 | 0.2% | ok |
-| lu_batched_f64_factor_n8_b1024 | #2142 | tenferro | tenferro-rs | f64 | n=8, batch=1024, op=factor | 1 | 4 | 613663.0 | 3236.0 | 0.8% | ok |
-| lu_batched_f64_factor_n8_b1024_host | #2142 | host | rust-loop | f64 | n=8, batch=1024, op=factor | 1 | 4 | 528715.0 | 3539.1 | 0.9% | ok |
-| lu_batched_f64_solve_n8_b1024 | #2142 | tenferro | tenferro-rs | f64 | n=8, batch=1024, op=solve | 1 | 8 | 248990.1 | 2065.0 | 1.2% | ok |
-| lu_batched_f64_solve_n8_b1024_pytorch | #2142 | pytorch | pytorch-cpu | f64 | n=8, batch=1024, op=solve | 1 | 16 | 229357.9 | 604.6 | 0.2% | ok |
-| lu_batched_f64_factor_n16_b1024 | #2142 | tenferro | tenferro-rs | f64 | n=16, batch=1024, op=factor | 1 | 2 | 1613530.5 | 4541.0 | 0.4% | ok |
-| lu_batched_f64_factor_n16_b1024_host | #2142 | host | rust-loop | f64 | n=16, batch=1024, op=factor | 1 | 2 | 2106950.0 | 2995.5 | 17.7% | NOISY |
-| lu_batched_f64_solve_n16_b1024 | #2142 | tenferro | tenferro-rs | f64 | n=16, batch=1024, op=solve | 1 | 2 | 1008869.5 | 5352.5 | 11.2% | NOISY |
-| lu_batched_f64_solve_n16_b1024_pytorch | #2142 | pytorch | pytorch-cpu | f64 | n=16, batch=1024, op=solve | 1 | 8 | 500134.2 | 1544.2 | 8.1% | ok |
-| axpby_accum_strided_dest_f64_block | #2143 | tenferro | tenferro-rs | f64 | n=64 | 1 | 256 | 8076.4 | 17.6 | 0.3% | ok |
-| axpby_accum_strided_dest_f64_block_host | #2143 | host | rust-loop | f64 | n=64 | 1 | 512 | 5767.6 | 144.0 | 1.8% | ok |
-| small_grad_qr_f64_trace-prepared_n4 | #2186 | trace-prepared | tenferro-rs | f64 | op=qr, n=4 | 1 | 64 | 46308.1 | 445.5 | 1.1% | ok |
-| small_grad_qr_f64_pytorch_n4 | #2186 | pytorch | pytorch-cpu | f64 | op=qr, n=4 | 1 | 32 | 73595.8 | 1830.9 | 2.0% | ok |
-| small_grad_qr_f64_trace-prepared_n16 | #2186 | trace-prepared | tenferro-rs | f64 | op=qr, n=16 | 1 | 32 | 66509.2 | 412.5 | 0.4% | ok |
-| small_grad_qr_f64_pytorch_n16 | #2186 | pytorch | pytorch-cpu | f64 | op=qr, n=16 | 1 | 32 | 84421.0 | 493.0 | 0.6% | ok |
-| small_grad_eigh_f64_trace-prepared_n4 | #2186 | trace-prepared | tenferro-rs | f64 | op=eigh, n=4 | 1 | 32 | 65025.5 | 225.8 | 0.5% | ok |
-| small_grad_eigh_f64_pytorch_n4 | #2186 | pytorch | pytorch-cpu | f64 | op=eigh, n=4 | 1 | 32 | 73366.7 | 423.1 | 0.5% | ok |
-| small_grad_eigh_f64_trace-prepared_n16 | #2186 | trace-prepared | tenferro-rs | f64 | op=eigh, n=16 | 1 | 32 | 120044.2 | 359.6 | 2.5% | ok |
-| small_grad_eigh_f64_pytorch_n16 | #2186 | pytorch | pytorch-cpu | f64 | op=eigh, n=16 | 1 | 32 | 100041.1 | 383.2 | 0.4% | ok |
-| small_grad_lu_f64_trace-prepared_n4 | #2186 | trace-prepared | tenferro-rs | f64 | op=lu, n=4 | 1 | 64 | 34389.2 | 172.6 | 0.5% | ok |
-| small_grad_lu_f64_pytorch_n4 | #2186 | pytorch | pytorch-cpu | f64 | op=lu, n=4 | 1 | 32 | 80227.0 | 976.2 | 0.7% | ok |
-| small_grad_lu_f64_trace-prepared_n16 | #2186 | trace-prepared | tenferro-rs | f64 | op=lu, n=16 | 1 | 64 | 42651.8 | 229.7 | 0.6% | ok |
-| small_grad_lu_f64_pytorch_n16 | #2186 | pytorch | pytorch-cpu | f64 | op=lu, n=16 | 1 | 32 | 89534.0 | 413.9 | 0.6% | ok |
-| small_grad_svd_f64_trace-prepared_n4 | #2186 | trace-prepared | tenferro-rs | f64 | op=svd, n=4 | 1 | 32 | 105664.3 | 322.8 | 0.2% | ok |
-| small_grad_svd_f64_pytorch_n4 | #2186 | pytorch | pytorch-cpu | f64 | op=svd, n=4 | 1 | 32 | 111992.7 | 931.9 | 0.6% | ok |
-| small_grad_svd_f64_trace-prepared_n16 | #2186 | trace-prepared | tenferro-rs | f64 | op=svd, n=16 | 1 | 16 | 205496.6 | 1256.1 | 0.4% | ok |
-| small_grad_svd_f64_pytorch_n16 | #2186 | pytorch | pytorch-cpu | f64 | op=svd, n=16 | 1 | 16 | 173406.2 | 1196.9 | 0.7% | ok |
-| small_grad_solve_f64_trace-prepared_n4 | #2186 | trace-prepared | tenferro-rs | f64 | op=solve, n=4 | 1 | 128 | 28567.4 | 34.5 | 0.1% | ok |
-| small_grad_solve_f64_pytorch_n4 | #2186 | pytorch | pytorch-cpu | f64 | op=solve, n=4 | 1 | 32 | 61341.2 | 258.8 | 0.3% | ok |
-| small_grad_solve_f64_trace-prepared_n16 | #2186 | trace-prepared | tenferro-rs | f64 | op=solve, n=16 | 1 | 64 | 36213.7 | 153.8 | 0.4% | ok |
-| small_grad_solve_f64_pytorch_n16 | #2186 | pytorch | pytorch-cpu | f64 | op=solve, n=16 | 1 | 32 | 71025.2 | 339.2 | 0.8% | ok |
-| fft_axis0_c64_fft-executor_n128 | #1765 | fft-executor | tenferro-rs | c64 | n=128 | 1 | 1 | 8740804.0 | 67841.5 | 0.5% | ok |
-| fft_axis0_c64_pytorch_n128 | #1765 | pytorch | pytorch-cpu | c64 | n=128 | 1 | 1 | 23449204.0 | 162147.0 | 0.5% | ok |
-| degenerate_dot_hadamard_f64_dot-general-shared_n1024 | #2111 | dot-general-shared | tenferro-rs | f64 | form=hadamard, n=1024 | 1 | 2 | 510721.0 | 7564.0 | 2.4% | ok |
-| degenerate_dot_hadamard_f64_pytorch_n1024 | #2111 | pytorch | pytorch-cpu | f64 | form=hadamard, n=1024 | 1 | 2 | 513236.0 | 38281.5 | 9.4% | ok |
-| degenerate_dot_outer_f64_dot-general-shared_n1024 | #2111 | dot-general-shared | tenferro-rs | f64 | form=outer, n=1024 | 1 | 2 | 362505.0 | 8427.8 | 3.6% | ok |
-| degenerate_dot_outer_f64_pytorch_n1024 | #2111 | pytorch | pytorch-cpu | f64 | form=outer, n=1024 | 1 | 8 | 1597255.5 | 26417.3 | 1.2% | ok |
-| degenerate_dot_rank0_f64_dot-general-shared_n1024 | #2111 | dot-general-shared | tenferro-rs | f64 | form=rank0, n=1024 | 1 | 2 | 769042.5 | 9880.8 | 1.4% | ok |
-| degenerate_dot_rank0_f64_pytorch_n1024 | #2111 | pytorch | pytorch-cpu | f64 | form=rank0, n=1024 | 1 | 4 | 349235.5 | 14174.0 | 7.1% | ok |
-| erased_add_f64_session-add_n256 | #1766 | session-add | tenferro-rs | f64 | n=256 | 1 | 2048 | 1185.5 | 23.0 | 5.0% | ok |
-| erased_add_f64_pytorch_n256 | #1766 | pytorch | pytorch-cpu | f64 | n=256 | 1 | 1024 | 1922.8 | 14.8 | 1.4% | ok |
-| erased_add_f64_session-add_n4096 | #1766 | session-add | tenferro-rs | f64 | n=4096 | 1 | 512 | 2839.5 | 81.7 | 3.5% | ok |
-| erased_add_f64_pytorch_n4096 | #1766 | pytorch | pytorch-cpu | f64 | n=4096 | 1 | 256 | 3323.3 | 40.1 | 1.4% | ok |
-| erased_add_f64_session-add_n1048576 | #1766 | session-add | tenferro-rs | f64 | n=1048576 | 1 | 2 | 511858.5 | 20418.0 | 4.0% | ok |
-| erased_add_f64_pytorch_n1048576 | #1766 | pytorch | pytorch-cpu | f64 | n=1048576 | 1 | 2 | 517298.5 | 19278.5 | 8.0% | ok |
-| axpby_strided_source_f64_1024x1024_t1 | #2220 #2214 | strided-source | tenferro-rs | f64 | n=1024 | 1 | 1 | 2347964.0 | 454787.5 | 12.1% | NOISY |
-| axpby_contiguous_source_f64_1024x1024_t1 | #2220 #2214 | contiguous-source | tenferro-rs | f64 | n=1024 | 1 | 4 | 584321.0 | 11958.6 | 1.6% | ok |
-| axpby_strided_source_f64_1024x1024_host_t1 | #2220 #2214 | host | rust-loop | f64 | n=1024 | 1 | 1 | 2261673.0 | 43230.0 | 1.3% | ok |
-| erased_construct_f64_col_n8 | #2177 | col-major | tenferro-rs | f64 | n=8, layout=col | 1 | 16384 | 129.6 | 1.0 | 13.6% | NOISY |
-| erased_construct_f64_row_n8 | #2177 | row-major | tenferro-rs | f64 | n=8, layout=row | 1 | 8192 | 249.9 | 3.4 | 7.5% | ok |
-| erased_construct_f64_col_n4096 | #2177 | col-major | tenferro-rs | f64 | n=4096, layout=col | 1 | 16384 | 214.8 | 4.6 | 1.4% | ok |
-| erased_construct_f64_row_n4096 | #2177 | row-major | tenferro-rs | f64 | n=4096, layout=row | 1 | 128 | 18023.3 | 1614.2 | 5.7% | ok |
-| erased_construct_f64_col_n65536 | #2177 | col-major | tenferro-rs | f64 | n=65536, layout=col | 1 | 1024 | 132.3 | 2.6 | 1.8% | ok |
-| erased_construct_f64_row_n65536 | #2177 | row-major | tenferro-rs | f64 | n=65536, layout=row | 1 | 8 | 309830.9 | 18624.0 | 4.8% | ok |
-| eager_small_leaf_f64_eager-held-session | #1704 | eager-held-session | tenferro-rs | f64 | op=leaf | 1 | 1024 | 3443.9 | 59.4 | 1.8% | ok |
-| eager_small_add_f64_eager-held-session | #1667 | eager-held-session | tenferro-rs | f64 | op=add | 1 | 1024 | 2552.3 | 4.3 | 0.2% | ok |
-| eager_small_add_f64_pytorch | #1667 | pytorch | pytorch-cpu | f64 | op=add | 1 | 2048 | 1812.1 | 4.1 | 0.7% | ok |
-| eager_small_gemm_f64_eager-held-session | #1904 | eager-held-session | tenferro-rs | f64 | op=gemm | 1 | 512 | 3955.4 | 15.2 | 0.5% | ok |
-| eager_small_gemm_f64_pytorch | #1904 | pytorch | pytorch-cpu | f64 | op=gemm | 1 | 1024 | 2035.9 | 2.6 | 0.4% | ok |
-| trace_metadata_trace-fold_f32_1024x64_k50 | #2226 #2238 | trace-fold | tenferro-rs | f32 | rows=1024, cols=64, steps=50 | 1 | 1 | 5928985.0 | 7253.5 | 0.1% | ok |
-| trace_metadata_trace-outputs_f32_1024x64_k50 | #2226 #2238 | trace-outputs | tenferro-rs | f32 | rows=1024, cols=64, steps=50 | 1 | 1 | 3035024.0 | 469490.0 | 7.5% | ok |
-| trace_metadata_eager_f32_1024x64_k50 | #2226 #2238 | eager | tenferro-rs | f32 | rows=1024, cols=64, steps=50 | 1 | 1 | 6494930.0 | 33823.0 | 1.3% | ok |
-| trace_metadata_pytorch_f32_1024x64_k50 | #2226 #2238 | pytorch | pytorch-cpu | f32 | rows=1024, cols=64, steps=50 | 1 | 1 | 3177660.0 | 45254.0 | 1.2% | ok |
-| trace_metadata_fixed_neg_f32_8 | #2226 #2238 | trace-fold | tenferro-rs | f32 | rows=8, cols=1, steps=0 | 1 | 1024 | 2838.4 | 17.5 | 0.7% | ok |
-| two_operand_einsum_f64_2x2_string | #2325 #2324 | string | tenferro-rs | f64 | m=2, k=2, n=2, format=ij,jk->ik | 4 | 512 | 4158.2 | 35.7 | 1.1% | ok |
-| two_operand_einsum_f64_2x2_subscripts | #2325 #2324 | subscripts | tenferro-rs | f64 | m=2, k=2, n=2, format=ij,jk->ik | 4 | 1024 | 2966.3 | 34.4 | 1.1% | ok |
-| two_operand_einsum_f64_2x2_prepared | #2325 #2324 | prepared | tenferro-rs | f64 | m=2, k=2, n=2, format=ij,jk->ik | 4 | 1024 | 2466.1 | 12.6 | 0.6% | ok |
-| two_operand_einsum_f64_2x2_dot-general | #2325 #2324 | dot-general | tenferro-rs | f64 | m=2, k=2, n=2, format=ij,jk->ik | 4 | 1024 | 2420.2 | 8.2 | 0.6% | ok |
-| two_operand_einsum_f64_2x2_pytorch | #2325 #2324 | pytorch | pytorch-cpu | f64 | m=2, k=2, n=2, format=ij,jk->ik | 4 | 256 | 13952.7 | 161.4 | 0.7% | ok |
-| two_operand_einsum_f64_16x16_string | #2325 #2324 | string | tenferro-rs | f64 | m=16, k=16, n=16, format=ij,jk->ik | 4 | 512 | 4337.4 | 20.1 | 0.7% | ok |
-| two_operand_einsum_f64_16x16_subscripts | #2325 #2324 | subscripts | tenferro-rs | f64 | m=16, k=16, n=16, format=ij,jk->ik | 4 | 1024 | 3174.8 | 22.3 | 0.9% | ok |
-| two_operand_einsum_f64_16x16_prepared | #2325 #2324 | prepared | tenferro-rs | f64 | m=16, k=16, n=16, format=ij,jk->ik | 4 | 1024 | 2703.0 | 11.9 | 3.3% | ok |
-| two_operand_einsum_f64_16x16_dot-general | #2325 #2324 | dot-general | tenferro-rs | f64 | m=16, k=16, n=16, format=ij,jk->ik | 4 | 1024 | 2611.5 | 15.1 | 1.3% | ok |
-| two_operand_einsum_f64_16x16_pytorch | #2325 #2324 | pytorch | pytorch-cpu | f64 | m=16, k=16, n=16, format=ij,jk->ik | 4 | 128 | 15405.1 | 198.6 | 1.0% | ok |
-| two_operand_einsum_c64_2x2_string | #2325 #2324 | string | tenferro-rs | c64 | m=2, k=2, n=2, format=ij,jk->ik | 4 | 512 | 4115.0 | 11.9 | 0.5% | ok |
-| two_operand_einsum_c64_2x2_subscripts | #2325 #2324 | subscripts | tenferro-rs | c64 | m=2, k=2, n=2, format=ij,jk->ik | 4 | 1024 | 2924.4 | 11.5 | 0.7% | ok |
-| two_operand_einsum_c64_2x2_prepared | #2325 #2324 | prepared | tenferro-rs | c64 | m=2, k=2, n=2, format=ij,jk->ik | 4 | 1024 | 2438.7 | 14.0 | 1.1% | ok |
-| two_operand_einsum_c64_2x2_dot-general | #2325 #2324 | dot-general | tenferro-rs | c64 | m=2, k=2, n=2, format=ij,jk->ik | 4 | 1024 | 2471.4 | 9.1 | 0.7% | ok |
-| two_operand_einsum_c64_2x2_pytorch | #2325 #2324 | pytorch | pytorch-cpu | c64 | m=2, k=2, n=2, format=ij,jk->ik | 4 | 256 | 13918.1 | 112.0 | 0.8% | ok |
-| two_operand_einsum_c64_16x16_string | #2325 #2324 | string | tenferro-rs | c64 | m=16, k=16, n=16, format=ij,jk->ik | 4 | 512 | 5369.0 | 15.4 | 0.6% | ok |
-| two_operand_einsum_c64_16x16_subscripts | #2325 #2324 | subscripts | tenferro-rs | c64 | m=16, k=16, n=16, format=ij,jk->ik | 4 | 512 | 4055.0 | 9.9 | 0.5% | ok |
-| two_operand_einsum_c64_16x16_prepared | #2325 #2324 | prepared | tenferro-rs | c64 | m=16, k=16, n=16, format=ij,jk->ik | 4 | 512 | 3587.3 | 7.1 | 0.6% | ok |
-| two_operand_einsum_c64_16x16_dot-general | #2325 #2324 | dot-general | tenferro-rs | c64 | m=16, k=16, n=16, format=ij,jk->ik | 4 | 512 | 3520.5 | 6.9 | 0.6% | ok |
-| two_operand_einsum_c64_16x16_pytorch | #2325 #2324 | pytorch | pytorch-cpu | c64 | m=16, k=16, n=16, format=ij,jk->ik | 4 | 128 | 16005.6 | 91.8 | 0.6% | ok |
-| two_operand_einsum_f64_abc_cef_abef_string | #2325 #2324 | string | tenferro-rs | f64 | m=8, k=2, n=16, format=abc,cef->abef | 4 | 512 | 4875.5 | 9.4 | 0.6% | ok |
-| two_operand_einsum_f64_abc_cef_abef_subscripts | #2325 #2324 | subscripts | tenferro-rs | f64 | m=8, k=2, n=16, format=abc,cef->abef | 4 | 1024 | 3144.1 | 19.2 | 0.9% | ok |
-| two_operand_einsum_f64_abc_cef_abef_prepared | #2325 #2324 | prepared | tenferro-rs | f64 | m=8, k=2, n=16, format=abc,cef->abef | 4 | 1024 | 2562.9 | 12.2 | 0.8% | ok |
-| two_operand_einsum_f64_abc_cef_abef_dot-general | #2325 #2324 | dot-general | tenferro-rs | f64 | m=8, k=2, n=16, format=abc,cef->abef | 4 | 1024 | 2520.6 | 6.0 | 0.8% | ok |
-| two_operand_einsum_f64_abc_cef_abef_pytorch | #2325 #2324 | pytorch | pytorch-cpu | f64 | m=8, k=2, n=16, format=abc,cef->abef | 4 | 128 | 17179.4 | 165.9 | 0.8% | ok |
-| decode_proj_f32_eager-shared_in1024_out1024_len8 | #1992 #2003 #1995 #2229 | eager-shared | tenferro-rs | f32 | in=1024, out=1024, len=8 | 4 | 16 | 157315.0 | 2001.2 | 0.9% | ok |
-| decode_proj_f32_faer-direct_in1024_out1024_len8 | #1992 #2003 #1995 #2229 | faer-direct | faer-direct | f32 | in=1024, out=1024, len=8 | 4 | 16 | 209793.9 | 3815.6 | 33.1% | NOISY |
-| decode_proj_f32_host-sgemm_in1024_out1024_len8 | #1992 #2003 #1995 #2229 | host-sgemm | matrixmultiply-sgemm | f32 | in=1024, out=1024, len=8 | 4 | 2 | 1208466.0 | 5204.8 | 0.5% | ok |
-| decode_proj_f32_pytorch_in1024_out1024_len8 | #1992 #2003 #1995 #2229 | pytorch | pytorch-cpu | f32 | in=1024, out=1024, len=8 | 4 | 16 | 187124.2 | 1557.0 | 0.6% | ok |
-| decode_proj_f32_eager-shared_in1024_out1024_len64 | #1992 #2003 #1995 #2229 | eager-shared | tenferro-rs | f32 | in=1024, out=1024, len=64 | 4 | 4 | 579657.5 | 1690.5 | 0.3% | ok |
-| decode_proj_f32_faer-direct_in1024_out1024_len64 | #1992 #2003 #1995 #2229 | faer-direct | faer-direct | f32 | in=1024, out=1024, len=64 | 4 | 4 | 732329.2 | 37092.8 | 12.9% | NOISY |
-| decode_proj_f32_host-sgemm_in1024_out1024_len64 | #1992 #2003 #1995 #2229 | host-sgemm | matrixmultiply-sgemm | f32 | in=1024, out=1024, len=64 | 4 | 1 | 2047074.0 | 11216.0 | 0.3% | ok |
-| decode_proj_f32_pytorch_in1024_out1024_len64 | #1992 #2003 #1995 #2229 | pytorch | pytorch-cpu | f32 | in=1024, out=1024, len=64 | 4 | 4 | 951522.5 | 3376.2 | 0.3% | ok |
-| decode_proj_f32_eager-shared_in1024_out1024_len512 | #1992 #2003 #1995 #2229 | eager-shared | tenferro-rs | f32 | in=1024, out=1024, len=512 | 4 | 1 | 4407992.0 | 9408.0 | 0.2% | ok |
-| decode_proj_f32_faer-direct_in1024_out1024_len512 | #1992 #2003 #1995 #2229 | faer-direct | faer-direct | f32 | in=1024, out=1024, len=512 | 4 | 1 | 4449860.0 | 18820.0 | 0.3% | ok |
-| decode_proj_f32_host-sgemm_in1024_out1024_len512 | #1992 #2003 #1995 #2229 | host-sgemm | matrixmultiply-sgemm | f32 | in=1024, out=1024, len=512 | 4 | 1 | 5446166.0 | 49583.0 | 0.6% | ok |
-| decode_proj_f32_pytorch_in1024_out1024_len512 | #1992 #2003 #1995 #2229 | pytorch | pytorch-cpu | f32 | in=1024, out=1024, len=512 | 4 | 1 | 7034144.0 | 18224.0 | 0.2% | ok |
-| decode_proj_f32_eager-shared_in1024_out4096_len8 | #1992 #2003 #1995 #2229 | eager-shared | tenferro-rs | f32 | in=1024, out=4096, len=8 | 4 | 4 | 620678.8 | 5580.5 | 8.5% | ok |
-| decode_proj_f32_faer-direct_in1024_out4096_len8 | #1992 #2003 #1995 #2229 | faer-direct | faer-direct | f32 | in=1024, out=4096, len=8 | 4 | 4 | 657740.2 | 12131.4 | 1.4% | ok |
-| decode_proj_f32_host-sgemm_in1024_out4096_len8 | #1992 #2003 #1995 #2229 | host-sgemm | matrixmultiply-sgemm | f32 | in=1024, out=4096, len=8 | 4 | 1 | 4967414.0 | 46977.0 | 1.0% | ok |
-| decode_proj_f32_pytorch_in1024_out4096_len8 | #1992 #2003 #1995 #2229 | pytorch | pytorch-cpu | f32 | in=1024, out=4096, len=8 | 4 | 4 | 892011.8 | 20997.8 | 1.7% | ok |
-| decode_proj_f32_eager-shared_in1024_out4096_len64 | #1992 #2003 #1995 #2229 | eager-shared | tenferro-rs | f32 | in=1024, out=4096, len=64 | 4 | 1 | 2230135.0 | 6682.0 | 0.4% | ok |
-| decode_proj_f32_faer-direct_in1024_out4096_len64 | #1992 #2003 #1995 #2229 | faer-direct | faer-direct | f32 | in=1024, out=4096, len=64 | 4 | 1 | 2341412.0 | 42859.5 | 1.4% | ok |
-| decode_proj_f32_host-sgemm_in1024_out4096_len64 | #1992 #2003 #1995 #2229 | host-sgemm | matrixmultiply-sgemm | f32 | in=1024, out=4096, len=64 | 4 | 1 | 8359263.0 | 20573.0 | 0.2% | ok |
-| decode_proj_f32_pytorch_in1024_out4096_len64 | #1992 #2003 #1995 #2229 | pytorch | pytorch-cpu | f32 | in=1024, out=4096, len=64 | 4 | 1 | 3849242.0 | 23259.0 | 0.6% | ok |
-| decode_proj_f32_eager-shared_in1024_out4096_len512 | #1992 #2003 #1995 #2229 | eager-shared | tenferro-rs | f32 | in=1024, out=4096, len=512 | 4 | 1 | 17634643.0 | 17326.5 | 0.1% | ok |
-| decode_proj_f32_faer-direct_in1024_out4096_len512 | #1992 #2003 #1995 #2229 | faer-direct | faer-direct | f32 | in=1024, out=4096, len=512 | 4 | 1 | 17639021.0 | 22962.5 | 0.1% | ok |
-| decode_proj_f32_host-sgemm_in1024_out4096_len512 | #1992 #2003 #1995 #2229 | host-sgemm | matrixmultiply-sgemm | f32 | in=1024, out=4096, len=512 | 4 | 1 | 22319731.0 | 283263.0 | 1.5% | ok |
-| decode_proj_f32_pytorch_in1024_out4096_len512 | #1992 #2003 #1995 #2229 | pytorch | pytorch-cpu | f32 | in=1024, out=4096, len=512 | 4 | 1 | 27510122.0 | 60503.5 | 1.2% | ok |
-| decode_proj_view_operand_f32_prepared_in1024_out1024_len8_t4 | #2216 | prepared-view | tenferro-rs | f32 | in=1024, out=1024, len=8 | 4 | 16 | 160339.9 | 177.5 | 0.1% | ok |
-| decode_proj_contiguous_operand_f32_prepared_in1024_out1024_len8_t4 | #2216 | prepared-contiguous | tenferro-rs | f32 | in=1024, out=1024, len=8 | 4 | 16 | 154024.4 | 467.7 | 0.3% | ok |
-| decode_proj_view_operand_f32_pytorch_in1024_out1024_len8_t4 | #2216 | pytorch | pytorch-cpu | f32 | in=1024, out=1024, len=8 | 4 | 16 | 185798.6 | 882.6 | 0.4% | ok |
-| gemm_c64_mm256_t1 | #1900 | dot-general-shared | tenferro-rs | c64 | n=256 | 4 | 1 | 4458756.0 | 5479.5 | 0.2% | ok |
-| gemm_f64_mm256_t1 | #1900 | dot-general-shared | tenferro-rs | f64 | n=256 | 4 | 2 | 1073786.0 | 1775.8 | 0.1% | ok |
-| conj_dot_f64_dot-general-rank1_len100 | #1615 | dot-general-rank1 | tenferro-rs | f64 | len=100 | 4 | 1024 | 2223.2 | 8.8 | 1.5% | ok |
-| conj_dot_f64_portable-loop_len100 | #1615 | portable-loop | rust-loop | f64 | len=100 | 4 | 32768 | 89.4 | 0.1 | 0.4% | ok |
-| conj_dot_f64_pytorch-vdot_len100 | #1615 | pytorch-vdot | pytorch-cpu | f64 | len=100 | 4 | 2048 | 1665.2 | 11.4 | 5.5% | ok |
-| conj_dot_f64_dot-general-rank1_len10000 | #1615 | dot-general-rank1 | tenferro-rs | f64 | len=10000 | 4 | 512 | 4816.9 | 16.9 | 0.9% | ok |
-| conj_dot_f64_portable-loop_len10000 | #1615 | portable-loop | rust-loop | f64 | len=10000 | 4 | 256 | 15014.2 | 21.8 | 0.3% | ok |
-| conj_dot_f64_pytorch-vdot_len10000 | #1615 | pytorch-vdot | pytorch-cpu | f64 | len=10000 | 4 | 1024 | 3326.1 | 46.9 | 10.8% | NOISY |
-| conj_dot_f64_dot-general-rank1_len1000000 | #1615 | dot-general-rank1 | tenferro-rs | f64 | len=1000000 | 4 | 32 | 94197.4 | 598.0 | 1.0% | ok |
-| conj_dot_f64_portable-loop_len1000000 | #1615 | portable-loop | rust-loop | f64 | len=1000000 | 4 | 2 | 1544091.5 | 1926.2 | 0.2% | ok |
-| conj_dot_f64_pytorch-vdot_len1000000 | #1615 | pytorch-vdot | pytorch-cpu | f64 | len=1000000 | 4 | 32 | 92725.2 | 1130.2 | 1.2% | ok |
-| conj_dot_c64_dot-general-rank1_len100 | #1615 | dot-general-rank1 | tenferro-rs | c64 | len=100 | 4 | 1024 | 2329.0 | 6.7 | 1.4% | ok |
-| conj_dot_c64_portable-loop_len100 | #1615 | portable-loop | rust-loop | c64 | len=100 | 4 | 16384 | 145.0 | 0.3 | 0.5% | ok |
-| conj_dot_c64_pytorch-vdot_len100 | #1615 | pytorch-vdot | pytorch-cpu | c64 | len=100 | 4 | 2048 | 1571.4 | 9.1 | 257.7% | NOISY |
-| conj_dot_c64_dot-general-rank1_len10000 | #1615 | dot-general-rank1 | tenferro-rs | c64 | len=10000 | 4 | 128 | 16243.2 | 19.1 | 0.1% | ok |
-| conj_dot_c64_portable-loop_len10000 | #1615 | portable-loop | rust-loop | c64 | len=10000 | 4 | 256 | 15320.0 | 21.8 | 0.1% | ok |
-| conj_dot_c64_pytorch-vdot_len10000 | #1615 | pytorch-vdot | pytorch-cpu | c64 | len=10000 | 4 | 512 | 4470.2 | 39.0 | 0.5% | ok |
-| conj_dot_c64_dot-general-rank1_len1000000 | #1615 | dot-general-rank1 | tenferro-rs | c64 | len=1000000 | 4 | 8 | 400304.5 | 15576.5 | 2.1% | ok |
-| conj_dot_c64_portable-loop_len1000000 | #1615 | portable-loop | rust-loop | c64 | len=1000000 | 4 | 2 | 1548004.0 | 5339.8 | 0.2% | ok |
-| conj_dot_c64_pytorch-vdot_len1000000 | #1615 | pytorch-vdot | pytorch-cpu | c64 | len=1000000 | 4 | 8 | 354187.4 | 8813.9 | 7.2% | ok |
-| small_solve_f64_solve-loop_k16_b64 | #2007 #1878 | solve-loop | tenferro-rs | f64 | k=16, batch=64 | 4 | 8 | 360209.9 | 1603.6 | 0.6% | ok |
-| small_solve_f64_triangular-solve-loop_k16_b64 | #2007 #1878 | triangular-solve-loop | tenferro-rs | f64 | k=16, batch=64 | 4 | 16 | 200848.6 | 433.0 | 0.4% | ok |
-| small_solve_f64_solve-batched_k16_b64 | #2007 #1878 | solve-batched | tenferro-rs | f64 | k=16, batch=64 | 4 | 32 | 53588.3 | 673.0 | 1.2% | ok |
-| small_solve_f64_pytorch-solve-batched_k16_b64 | #2007 #1878 | pytorch-solve-batched | pytorch-cpu | f64 | k=16, batch=64 | 4 | 16 | 182188.8 | 1227.0 | 0.4% | ok |
-| small_solve_f64_pytorch-solve-triangular-batched_k16_b64 | #2007 #1878 | pytorch-solve-triangular-batched | pytorch-cpu | f64 | k=16, batch=64 | 4 | 32 | 92646.7 | 150.4 | 0.2% | ok |
-| small_solve_f64_solve-loop_k64_b64 | #2007 #1878 | solve-loop | tenferro-rs | f64 | k=64, batch=64 | 4 | 1 | 3505250.0 | 7429.0 | 0.3% | ok |
-| small_solve_f64_triangular-solve-loop_k64_b64 | #2007 #1878 | triangular-solve-loop | tenferro-rs | f64 | k=64, batch=64 | 4 | 2 | 1675917.5 | 4455.8 | 0.4% | ok |
-| small_solve_f64_solve-batched_k64_b64 | #2007 #1878 | solve-batched | tenferro-rs | f64 | k=64, batch=64 | 4 | 2 | 855739.5 | 8693.8 | 1.2% | ok |
-| small_solve_f64_pytorch-solve-batched_k64_b64 | #2007 #1878 | pytorch-solve-batched | pytorch-cpu | f64 | k=64, batch=64 | 4 | 1 | 2271812.0 | 6902.5 | 0.6% | ok |
-| small_solve_f64_pytorch-solve-triangular-batched_k64_b64 | #2007 #1878 | pytorch-solve-triangular-batched | pytorch-cpu | f64 | k=64, batch=64 | 4 | 4 | 594337.2 | 2030.0 | 0.4% | ok |
-| tanh_chain_f32_compiled-prepared_k10_1024x64 | #1990 | compiled-prepared | tenferro-rs | f32 | rows=1024, cols=64, chain=10 | 4 | 1 | 442434.0 | 6186.5 | 94.2% | NOISY |
-| tanh_chain_f32_eager-shared_k10_1024x64 | #1990 | eager-shared | tenferro-rs | f32 | rows=1024, cols=64, chain=10 | 4 | 8 | 480664.2 | 1211.7 | 2.6% | ok |
-| tanh_chain_f32_compiled-prepared_k100_1024x64 | #1990 | compiled-prepared | tenferro-rs | f32 | rows=1024, cols=64, chain=100 | 4 | 1 | 4370823.0 | 23038.5 | 3.4% | ok |
-| tanh_chain_f32_eager-shared_k100_1024x64 | #1990 | eager-shared | tenferro-rs | f32 | rows=1024, cols=64, chain=100 | 4 | 1 | 4778833.0 | 9778.0 | 0.1% | ok |
-| tanh_chain_f32_compiled-prepared_k200_1024x64 | #1990 | compiled-prepared | tenferro-rs | f32 | rows=1024, cols=64, chain=200 | 4 | 1 | 8704136.0 | 31334.0 | 0.3% | ok |
-| tanh_chain_f32_eager-shared_k200_1024x64 | #1990 | eager-shared | tenferro-rs | f32 | rows=1024, cols=64, chain=200 | 4 | 1 | 9546005.0 | 18208.5 | 0.3% | ok |
-| layer_norm_f32_eager-composed_d1024_len8_b1 | #2006 | eager-composed | tenferro-rs | f32 | norm=layer_norm, d=1024, len=8, batch=1 | 4 | 32 | 68258.8 | 246.2 | 0.6% | ok |
-| layer_norm_f32_pytorch-fused_d1024_len8_b1 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=layer_norm, d=1024, len=8, batch=1 | 4 | 512 | 6622.1 | 66.6 | 1.3% | ok |
-| layer_norm_f32_eager-single-call_d1024_len8_b1 | #2006 | eager-single-call | tenferro-rs | f32 | norm=layer_norm, d=1024, len=8, batch=1 | 4 | 32 | 71651.3 | 563.6 | 0.6% | ok |
-| layer_norm_f32_eager-composed_d1024_len8_b8 | #2006 | eager-composed | tenferro-rs | f32 | norm=layer_norm, d=1024, len=8, batch=8 | 4 | 16 | 117683.0 | 2408.5 | 1.4% | ok |
-| layer_norm_f32_pytorch-fused_d1024_len8_b8 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=layer_norm, d=1024, len=8, batch=8 | 4 | 128 | 13608.1 | 344.3 | 4.7% | ok |
-| layer_norm_f32_eager-single-call_d1024_len8_b8 | #2006 | eager-single-call | tenferro-rs | f32 | norm=layer_norm, d=1024, len=8, batch=8 | 4 | 16 | 119641.6 | 1295.8 | 0.7% | ok |
-| layer_norm_f32_eager-composed_d1024_len64_b1 | #2006 | eager-composed | tenferro-rs | f32 | norm=layer_norm, d=1024, len=64, batch=1 | 4 | 16 | 116944.1 | 1802.8 | 1.0% | ok |
-| layer_norm_f32_pytorch-fused_d1024_len64_b1 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=layer_norm, d=1024, len=64, batch=1 | 4 | 256 | 30440.1 | 1119.6 | 2.4% | ok |
-| layer_norm_f32_eager-single-call_d1024_len64_b1 | #2006 | eager-single-call | tenferro-rs | f32 | norm=layer_norm, d=1024, len=64, batch=1 | 4 | 16 | 119911.6 | 839.7 | 0.6% | ok |
-| layer_norm_f32_eager-composed_d1024_len64_b8 | #2006 | eager-composed | tenferro-rs | f32 | norm=layer_norm, d=1024, len=64, batch=8 | 4 | 4 | 405836.2 | 4260.5 | 1.1% | ok |
-| layer_norm_f32_pytorch-fused_d1024_len64_b8 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=layer_norm, d=1024, len=64, batch=8 | 4 | 32 | 277929.7 | 5568.0 | 2.0% | ok |
-| layer_norm_f32_eager-single-call_d1024_len64_b8 | #2006 | eager-single-call | tenferro-rs | f32 | norm=layer_norm, d=1024, len=64, batch=8 | 4 | 4 | 380413.8 | 12621.1 | 2.6% | ok |
-| rms_norm_f32_eager-composed_d1024_len8_b1 | #2006 | eager-composed | tenferro-rs | f32 | norm=rms_norm, d=1024, len=8, batch=1 | 4 | 64 | 36004.0 | 95.0 | 0.5% | ok |
-| rms_norm_f32_pytorch-fused_d1024_len8_b1 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=rms_norm, d=1024, len=8, batch=1 | 4 | 128 | 18518.9 | 135.4 | 0.8% | ok |
-| rms_norm_f32_eager-single-call_d1024_len8_b1 | #2006 | eager-single-call | tenferro-rs | f32 | norm=rms_norm, d=1024, len=8, batch=1 | 4 | 64 | 42594.0 | 114.7 | 0.5% | ok |
-| rms_norm_f32_eager-composed_d1024_len8_b8 | #2006 | eager-composed | tenferro-rs | f32 | norm=rms_norm, d=1024, len=8, batch=8 | 4 | 32 | 57806.8 | 389.6 | 0.4% | ok |
-| rms_norm_f32_pytorch-fused_d1024_len8_b8 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=rms_norm, d=1024, len=8, batch=8 | 4 | 32 | 41006.1 | 405.3 | 0.9% | ok |
-| rms_norm_f32_eager-single-call_d1024_len8_b8 | #2006 | eager-single-call | tenferro-rs | f32 | norm=rms_norm, d=1024, len=8, batch=8 | 4 | 32 | 63815.2 | 256.7 | 0.3% | ok |
-| rms_norm_f32_eager-composed_d1024_len64_b1 | #2006 | eager-composed | tenferro-rs | f32 | norm=rms_norm, d=1024, len=64, batch=1 | 4 | 32 | 57549.7 | 343.5 | 1.6% | ok |
-| rms_norm_f32_pytorch-fused_d1024_len64_b1 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=rms_norm, d=1024, len=64, batch=1 | 4 | 64 | 41451.3 | 352.6 | 0.9% | ok |
-| rms_norm_f32_eager-single-call_d1024_len64_b1 | #2006 | eager-single-call | tenferro-rs | f32 | norm=rms_norm, d=1024, len=64, batch=1 | 4 | 2 | 63383.5 | 1154.5 | 1.9% | ok |
-| rms_norm_f32_eager-composed_d1024_len64_b8 | #2006 | eager-composed | tenferro-rs | f32 | norm=rms_norm, d=1024, len=64, batch=8 | 4 | 4 | 179694.8 | 2713.8 | 2.1% | ok |
-| rms_norm_f32_pytorch-fused_d1024_len64_b8 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=rms_norm, d=1024, len=64, batch=8 | 4 | 8 | 522106.4 | 14772.6 | 5.0% | ok |
-| rms_norm_f32_eager-single-call_d1024_len64_b8 | #2006 | eager-single-call | tenferro-rs | f32 | norm=rms_norm, d=1024, len=64, batch=8 | 4 | 8 | 212095.1 | 3677.4 | 1.1% | ok |
-| small_contraction_abcd-dbef-acef_f64_shared-session-default-pool_d4 | #1885 #1897 #1901 | shared-session-default-pool | tenferro-rs | f64 | extent=4 | 4 | 512 | 4211.9 | 28.3 | 1.0% | ok |
-| activation_erf_f32_eager-single-call_1024x64 | #1975 #2069 #2032 | eager-single-call | tenferro-rs | f32 | op=erf, rows=1024, cols=64 | 4 | — | — | — | — | FAILED |
-| activation_erf_f32_session-single-call_1024x64 | #1975 #2069 #2032 | session-single-call | tenferro-rs | f32 | op=erf, rows=1024, cols=64 | 4 | 32 | 76574.2 | 337.4 | 0.5% | ok |
-| activation_erf_f32_pytorch_1024x64 | #1975 #2069 #2032 | pytorch | pytorch-cpu | f32 | op=erf, rows=1024, cols=64 | 4 | — | — | — | — | FAILED |
-| activation_sigmoid_f32_eager-single-call_1024x64 | #1975 #2069 #2032 | eager-single-call | tenferro-rs | f32 | op=sigmoid, rows=1024, cols=64 | 4 | — | — | — | — | FAILED |
-| activation_sigmoid_f32_session-single-call_1024x64 | #1975 #2069 #2032 | session-single-call | tenferro-rs | f32 | op=sigmoid, rows=1024, cols=64 | 4 | 128 | 13001.6 | 142.6 | 1.8% | ok |
-| activation_sigmoid_f32_eager-composed_1024x64 | #1975 #2069 #2032 | eager-composed | tenferro-rs | f32 | op=sigmoid, rows=1024, cols=64 | 4 | 64 | 37393.4 | 485.5 | 1.2% | ok |
-| activation_sigmoid_f32_pytorch_1024x64 | #1975 #2069 #2032 | pytorch | pytorch-cpu | f32 | op=sigmoid, rows=1024, cols=64 | 4 | — | — | — | — | FAILED |
-| activation_silu_f32_eager-single-call_1024x64 | #1975 #2069 #2032 | eager-single-call | tenferro-rs | f32 | op=silu, rows=1024, cols=64 | 4 | — | — | — | — | FAILED |
-| activation_silu_f32_session-single-call_1024x64 | #1975 #2069 #2032 | session-single-call | tenferro-rs | f32 | op=silu, rows=1024, cols=64 | 4 | 128 | 13423.2 | 185.1 | 1.5% | ok |
-| activation_silu_f32_eager-composed_1024x64 | #1975 #2069 #2032 | eager-composed | tenferro-rs | f32 | op=silu, rows=1024, cols=64 | 4 | 64 | 45841.2 | 264.9 | 0.6% | ok |
-| activation_silu_f32_pytorch_1024x64 | #1975 #2069 #2032 | pytorch | pytorch-cpu | f32 | op=silu, rows=1024, cols=64 | 4 | — | — | — | — | FAILED |
-| activation_softplus_f32_eager-single-call_1024x64 | #1975 #2069 #2032 | eager-single-call | tenferro-rs | f32 | op=softplus, rows=1024, cols=64 | 4 | — | — | — | — | FAILED |
-| activation_softplus_f32_session-single-call_1024x64 | #1975 #2069 #2032 | session-single-call | tenferro-rs | f32 | op=softplus, rows=1024, cols=64 | 4 | 64 | 42237.8 | 1101.7 | 5.6% | ok |
-| activation_softplus_f32_eager-composed_1024x64 | #1975 #2069 #2032 | eager-composed | tenferro-rs | f32 | op=softplus, rows=1024, cols=64 | 4 | 32 | 68624.7 | 544.9 | 0.6% | ok |
-| activation_softplus_f32_pytorch_1024x64 | #1975 #2069 #2032 | pytorch | pytorch-cpu | f32 | op=softplus, rows=1024, cols=64 | 4 | — | — | — | — | FAILED |
-| activation_gelu_f32_eager-single-call_1024x64 | #1975 #2030 #2069 #2228 | eager-single-call | tenferro-rs | f32 | op=gelu, rows=1024, cols=64 | 4 | 64 | 18404.9 | 340.8 | 2.6% | ok |
-| activation_gelu_f32_session-single-call_1024x64 | #1975 #2030 #2069 #2228 | session-single-call | tenferro-rs | f32 | op=gelu, rows=1024, cols=64 | 4 | 64 | 17850.3 | 106.1 | 0.7% | ok |
-| activation_gelu_f32_pytorch_1024x64 | #1975 #2030 #2069 #2228 | pytorch | pytorch-cpu | f32 | op=gelu, rows=1024, cols=64 | 4 | 64 | 21805.8 | 162.6 | 0.8% | ok |
-| activation_gelu_tanh_f32_eager-single-call_1024x64 | #1975 #2069 #2032 | eager-single-call | tenferro-rs | f32 | op=gelu_tanh, rows=1024, cols=64 | 4 | — | — | — | — | FAILED |
-| activation_gelu_tanh_f32_session-single-call_1024x64 | #1975 #2069 #2032 | session-single-call | tenferro-rs | f32 | op=gelu_tanh, rows=1024, cols=64 | 4 | 64 | 49544.6 | 101.3 | 0.2% | ok |
-| activation_gelu_tanh_f32_eager-composed_1024x64 | #1975 #2069 #2032 | eager-composed | tenferro-rs | f32 | op=gelu_tanh, rows=1024, cols=64 | 4 | 16 | 138338.4 | 748.0 | 0.4% | ok |
-| activation_gelu_tanh_f32_pytorch_1024x64 | #1975 #2069 #2032 | pytorch | pytorch-cpu | f32 | op=gelu_tanh, rows=1024, cols=64 | 4 | — | — | — | — | FAILED |
-| softmax_f32_eager-single-call_len64_b8 | #1976 #2031 #2231 | eager-single-call | tenferro-rs | f32 | op=softmax, len=64, batch=8, axis=0 | 4 | 128 | 14407.9 | 219.9 | 1.3% | ok |
-| softmax_f32_session-single-call_len64_b8 | #1976 #2031 #2231 | session-single-call | tenferro-rs | f32 | op=softmax, len=64, batch=8, axis=0 | 4 | 128 | 14013.5 | 70.4 | 1.3% | ok |
-| softmax_f32_eager-composed_len64_b8 | #1976 #2031 #2231 | eager-composed | tenferro-rs | f32 | op=softmax, len=64, batch=8, axis=0 | 4 | 32 | 61706.8 | 351.4 | 1.1% | ok |
-| softmax_f32_pytorch_len64_b8 | #1976 #2031 #2231 | pytorch | pytorch-cpu | f32 | op=softmax, len=64, batch=8, axis=0 | 4 | 256 | 13315.5 | 103.6 | 0.9% | ok |
-| softmax_f32_eager-single-call_len512_b8 | #1976 #2231 | eager-single-call | tenferro-rs | f32 | op=softmax, len=512, batch=8, axis=0 | 4 | 2 | 501810.0 | 7629.2 | 1.5% | ok |
-| softmax_f32_session-single-call_len512_b8 | #1976 #2231 | session-single-call | tenferro-rs | f32 | op=softmax, len=512, batch=8, axis=0 | 4 | 4 | 492622.8 | 7309.9 | 1.1% | ok |
-| softmax_f32_eager-composed_len512_b8 | #1976 #2231 | eager-composed | tenferro-rs | f32 | op=softmax, len=512, batch=8, axis=0 | 4 | 2 | 1707856.5 | 10747.2 | 0.7% | ok |
-| softmax_f32_pytorch_len512_b8 | #1976 #2231 | pytorch | pytorch-cpu | f32 | op=softmax, len=512, batch=8, axis=0 | 4 | 4 | 1308878.5 | 50408.8 | 2.9% | ok |
-| log_softmax_f32_eager-single-call_len64_b8 | #1976 | eager-single-call | tenferro-rs | f32 | op=log_softmax, len=64, batch=8, axis=0 | 4 | 32 | 85506.8 | 327.6 | 0.3% | ok |
-| log_softmax_f32_session-single-call_len64_b8 | #1976 | session-single-call | tenferro-rs | f32 | op=log_softmax, len=64, batch=8, axis=0 | 4 | 32 | 61290.4 | 347.2 | 0.5% | ok |
-| log_softmax_f32_eager-composed_len64_b8 | #1976 | eager-composed | tenferro-rs | f32 | op=log_softmax, len=64, batch=8, axis=0 | 4 | 32 | 63708.4 | 663.4 | 1.2% | ok |
-| log_softmax_f32_pytorch_len64_b8 | #1976 | pytorch | pytorch-cpu | f32 | op=log_softmax, len=64, batch=8, axis=0 | 4 | 256 | 13440.4 | 134.2 | 0.8% | ok |
-| log_softmax_f32_eager-single-call_len512_b8 | #1976 | eager-single-call | tenferro-rs | f32 | op=log_softmax, len=512, batch=8, axis=0 | 4 | 2 | 1687484.0 | 33925.5 | 2.0% | ok |
-| log_softmax_f32_session-single-call_len512_b8 | #1976 | session-single-call | tenferro-rs | f32 | op=log_softmax, len=512, batch=8, axis=0 | 4 | 2 | 1775418.0 | 18699.5 | 0.8% | ok |
-| log_softmax_f32_eager-composed_len512_b8 | #1976 | eager-composed | tenferro-rs | f32 | op=log_softmax, len=512, batch=8, axis=0 | 4 | 2 | 1789499.0 | 22196.2 | 6.1% | ok |
-| log_softmax_f32_pytorch_len512_b8 | #1976 | pytorch | pytorch-cpu | f32 | op=log_softmax, len=512, batch=8, axis=0 | 4 | 4 | 1204391.2 | 59545.9 | 4.6% | ok |
-| masked_softmax_f32_eager-single-call_len64_b8 | #1976 | eager-single-call | tenferro-rs | f32 | op=masked_softmax, len=64, batch=8, axis=0 | 4 | 16 | 120254.7 | 778.3 | 0.4% | ok |
-| masked_softmax_f32_session-single-call_len64_b8 | #1976 | session-single-call | tenferro-rs | f32 | op=masked_softmax, len=64, batch=8, axis=0 | 4 | 32 | 96629.4 | 772.8 | 0.5% | ok |
-| masked_softmax_f32_eager-composed_len64_b8 | #1976 | eager-composed | tenferro-rs | f32 | op=masked_softmax, len=64, batch=8, axis=0 | 4 | 32 | 73601.8 | 1018.2 | 1.1% | ok |
-| masked_softmax_f32_pytorch_len64_b8 | #1976 | pytorch | pytorch-cpu | f32 | op=masked_softmax, len=64, batch=8, axis=0 | 4 | 32 | 66992.9 | 487.0 | 0.9% | ok |
-| masked_softmax_f32_eager-single-call_len512_b8 | #1976 | eager-single-call | tenferro-rs | f32 | op=masked_softmax, len=512, batch=8, axis=0 | 4 | 1 | 2860920.0 | 24270.0 | 1.0% | ok |
-| masked_softmax_f32_session-single-call_len512_b8 | #1976 | session-single-call | tenferro-rs | f32 | op=masked_softmax, len=512, batch=8, axis=0 | 4 | 1 | 2905924.0 | 36091.5 | 2.9% | ok |
-| masked_softmax_f32_eager-composed_len512_b8 | #1976 | eager-composed | tenferro-rs | f32 | op=masked_softmax, len=512, batch=8, axis=0 | 4 | 1 | 2376939.0 | 32601.5 | 0.9% | ok |
-| masked_softmax_f32_pytorch_len512_b8 | #1976 | pytorch | pytorch-cpu | f32 | op=masked_softmax, len=512, batch=8, axis=0 | 4 | 2 | 3000340.0 | 101424.0 | 5.7% | ok |
-| softmax_f32_eager-single-call_len64_b8_t4 | #2233 #2235 | eager-single-call | tenferro-rs | f32 | op=softmax, len=64, batch=8, axis=0 | 4 | 128 | 14503.4 | 88.3 | 1.1% | ok |
-| softmax_f32_eager-composed_len64_b8_t4 | #2233 #2235 | eager-composed | tenferro-rs | f32 | op=softmax, len=64, batch=8, axis=0 | 4 | 32 | 61890.0 | 510.2 | 0.7% | ok |
-| softmax_f32_pytorch_len64_b8_t4 | #2233 #2235 | pytorch | pytorch-cpu | f32 | op=softmax, len=64, batch=8, axis=0 | 4 | 256 | 13413.8 | 147.9 | 1.0% | ok |
-| reduce_mean_f32_eager-single-call_1024x64_axis0 | #1976 | eager-single-call | tenferro-rs | f32 | rows=1024, cols=64, axis=0 | 4 | 128 | 15290.5 | 26.9 | 0.2% | ok |
-| reduce_mean_f32_session-single-call_1024x64_axis0 | #1976 | session-single-call | tenferro-rs | f32 | rows=1024, cols=64, axis=0 | 4 | 256 | 7900.5 | 46.8 | 0.4% | ok |
-| reduce_mean_f32_eager-composed_1024x64_axis0 | #1976 | eager-composed | tenferro-rs | f32 | rows=1024, cols=64, axis=0 | 4 | 128 | 15230.5 | 49.7 | 0.4% | ok |
-| reduce_mean_f32_pytorch_1024x64_axis0 | #1976 | pytorch | pytorch-cpu | f32 | rows=1024, cols=64, axis=0 | 4 | 256 | 7954.1 | 66.3 | 0.6% | ok |
-| take_along_axis_rows_f64_eager-single-call_n64_b256 | #2008 | eager-single-call | tenferro-rs | f64 | n=64, batch=256, axis=0 | 4 | 1 | 3108291.0 | 177696.5 | 3.5% | ok |
-| take_along_axis_rows_f64_session-single-call_n64_b256 | #2008 | session-single-call | tenferro-rs | f64 | n=64, batch=256, axis=0 | 4 | 1 | 3032861.0 | 85699.5 | 2.3% | ok |
-| take_along_axis_rows_f64_eager-gather-prebuilt_n64_b256 | #2008 | eager-gather-prebuilt | tenferro-rs | f64 | n=64, batch=256, axis=0 | 4 | 1 | 2870097.0 | 71879.0 | 2.1% | ok |
-| take_along_axis_rows_f64_pytorch_n64_b256 | #2008 | pytorch | pytorch-cpu | f64 | n=64, batch=256, axis=0 | 4 | 2 | 1274189.0 | 9147.0 | 1.1% | ok |
-| lstsq_f64_eager-shared_m768_n384_rhs16 | #2027 | eager-shared | tenferro-rs | f64 | operation=lstsq | 4 | 1 | 7830289.0 | 63228.0 | 2.3% | ok |
-| lstsq_f64_pytorch_m768_n384_rhs16 | #2027 | pytorch | pytorch-cpu | f64 | operation=lstsq | 4 | 1 | 5177476.0 | 8997.5 | 0.1% | ok |
-| triangular_f64_concrete-shared_n4096_rhs64 | #2028 | concrete-shared | tenferro-rs | f64 | operation=triangular | 4 | 1 | 15667110.0 | 17973.5 | 0.1% | ok |
-| triangular_f64_pytorch_n4096_rhs64 | #2028 | pytorch | pytorch-cpu | f64 | operation=triangular | 4 | 1 | 16190084.0 | 167061.0 | 2.0% | ok |
-| reshape_f64_concrete-shared_n33554432_to8192x4096 | #2029 | concrete-shared | tenferro-rs | f64 | operation=reshape | 4 | 1 | 23708141.0 | 153086.0 | 2.3% | ok |
-| reshape_f64_pytorch_n33554432_to8192x4096 | #2029 | pytorch | pytorch-cpu | f64 | operation=reshape | 4 | 1 | 25717715.0 | 572506.5 | 9.5% | ok |
-| metadata_transpose_view_f64_rank8_t4 | #2180 | metadata-clone | tenferro-rs | f64 | shape=[2, 2, 2, 2, 2, 2, 2, 2] | 4 | 8192 | 80.3 | 0.7 | 44.4% | NOISY |
-| metadata_transpose_view_f64_rank8_t4_julia-base | #2180 | julia-base | julia-base | f64 | shape=[2, 2, 2, 2, 2, 2, 2, 2] | 4 | 1048576 | 0.3 | 0.0 | 7.4% | ok |
-| followup_structural_broadcast_in_dim_direct-shared | #2021 | direct-shared | tenferro-rs | f64 | case_id=structural.broadcast_in_dim, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8192, 1], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_structural_broadcast_in_dim_pytorch | #2021 | pytorch | pytorch-cpu | f64 | case_id=structural.broadcast_in_dim, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8192, 1], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_real_tanh_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.tanh, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_real_tanh_jax | #2033 | jax | jax-cpu | f64 | case_id=real.tanh, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_real_log1p_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.log1p, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_real_log1p_pytorch | #2033 | pytorch | pytorch-cpu | f64 | case_id=real.log1p, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_real_cos_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.cos, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_real_cos_pytorch | #2033 | pytorch | pytorch-cpu | f64 | case_id=real.cos, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_real_sin_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.sin, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_real_sin_pytorch | #2033 | pytorch | pytorch-cpu | f64 | case_id=real.sin, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_real_exp_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.exp, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_real_exp_jax | #2033 | jax | jax-cpu | f64 | case_id=real.exp, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_real_expm1_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.expm1, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_real_expm1_jax | #2033 | jax | jax-cpu | f64 | case_id=real.expm1, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_real_pow_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.pow, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_real_pow_pytorch | #2033 | pytorch | pytorch-cpu | f64 | case_id=real.pow, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_complex_exp_direct-shared | #2033 | direct-shared | tenferro-rs | c64 | case_id=complex.exp, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [4194304], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_complex_exp_julia-base | #2033 | julia-base | julia-base | c64 | case_id=complex.exp, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [4194304], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_real_log_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.log, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_real_log_pytorch | #2033 | pytorch | pytorch-cpu | f64 | case_id=real.log, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_real_reduce_max_axis1_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_max_axis1, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_real_reduce_max_axis1_julia-base | #2034 | julia-base | julia-base | f64 | case_id=real.reduce_max_axis1, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_real_reduce_prod_axis1_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_prod_axis1, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_real_reduce_prod_axis1_pytorch | #2034 | pytorch | pytorch-cpu | f64 | case_id=real.reduce_prod_axis1, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_real_reduce_sum_axis1_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_sum_axis1, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_real_reduce_sum_axis1_pytorch | #2034 | pytorch | pytorch-cpu | f64 | case_id=real.reduce_sum_axis1, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_real_reduce_max_axis0_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_max_axis0, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_real_reduce_max_axis0_julia-base | #2034 | julia-base | julia-base | f64 | case_id=real.reduce_max_axis0, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_real_reduce_min_axis1_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_min_axis1, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [4096, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_real_reduce_min_axis1_julia-base | #2034 | julia-base | julia-base | f64 | case_id=real.reduce_min_axis1, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [4096, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_real_reduce_min_axis0_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_min_axis0, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_real_reduce_min_axis0_julia-base | #2034 | julia-base | julia-base | f64 | case_id=real.reduce_min_axis0, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_real_reduce_max_all_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_max_all, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [8192, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_real_reduce_max_all_julia-base | #2034 | julia-base | julia-base | f64 | case_id=real.reduce_max_all, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [8192, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_real_reduce_min_all_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_min_all, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [8192, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_real_reduce_min_all_julia-base | #2034 | julia-base | julia-base | f64 | case_id=real.reduce_min_all, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [8192, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_complex_norm_fro_direct-shared | #2035 | direct-shared | tenferro-rs | c64 | case_id=complex.norm_fro, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [2048, 1536], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_complex_norm_fro_jax | #2035 | jax | jax-cpu | c64 | case_id=complex.norm_fro, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [2048, 1536], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_index_gather_direct-shared | #2036 #1719 | direct-shared | tenferro-rs | f64 | case_id=index.gather, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [262144], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_index_gather_jax | #2036 #1719 | jax | jax-cpu | f64 | case_id=index.gather, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [262144], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_index_scatter_direct-shared | #2036 #1719 | direct-shared | tenferro-rs | f64 | case_id=index.scatter, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [262144], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_index_scatter_pytorch | #2036 #1719 | pytorch | pytorch-cpu | f64 | case_id=index.scatter, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [262144], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_index_dynamic_update_slice_direct-shared | #2036 #1719 | direct-shared | tenferro-rs | f64 | case_id=index.dynamic_update_slice, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [2097152], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_index_dynamic_update_slice_jax | #2036 #1719 | jax | jax-cpu | f64 | case_id=index.dynamic_update_slice, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [2097152], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_perm_reverse_15d_3_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.reverse_15d_3, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_perm_reverse_15d_3_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.reverse_15d_3, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_structural_transpose_direct-shared | #2037 #2228 | direct-shared | tenferro-rs | f64 | case_id=structural.transpose, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [4096, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_structural_transpose_pytorch | #2037 #2228 | pytorch | pytorch-cpu | f64 | case_id=structural.transpose, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [4096, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_perm_reverse_23d_2_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.reverse_23d_2, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_perm_reverse_23d_2_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.reverse_23d_2, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_perm_transpose_3d_256_201_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.transpose_3d_256_201, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [256, 256, 256], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_perm_transpose_3d_256_201_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.transpose_3d_256_201, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [256, 256, 256], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_perm_cyclic_15d_3_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.cyclic_15d_3, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_perm_cyclic_15d_3_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.cyclic_15d_3, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_perm_transpose_3d_256_102_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.transpose_3d_256_102, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [256, 256, 256], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_perm_transpose_3d_256_102_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.transpose_3d_256_102, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [256, 256, 256], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_perm_tn_light_415_24d_scattered_to_colmajor_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.tn_light_415_24d_scattered_to_colmajor, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_perm_tn_light_415_24d_scattered_to_colmajor_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.tn_light_415_24d_scattered_to_colmajor, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_perm_tn_light_415_24d_contiguous_same_perm_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.tn_light_415_24d_contiguous_same_perm, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_perm_tn_light_415_24d_contiguous_same_perm_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.tn_light_415_24d_contiguous_same_perm, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_perm_rotation_6d_32_32_32_32_16_16_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.rotation_6d_32_32_32_32_16_16, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [32, 32, 32, 32, 16, 16], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_perm_rotation_6d_32_32_32_32_16_16_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.rotation_6d_32_32_32_32_16_16, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [32, 32, 32, 32, 16, 16], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_structural_extract_diagonal_direct-shared | #2038 #2228 | direct-shared | tenferro-rs | f64 | case_id=structural.extract_diagonal, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [8388608, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_structural_extract_diagonal_jax | #2038 #2228 | jax | jax-cpu | f64 | case_id=structural.extract_diagonal, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [8388608, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_fft_irfft_direct-shared | #2039 #2230 #2228 | direct-shared | tenferro-rs | c32 | case_id=fft.irfft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [524289], 'dtype': 'c32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_fft_irfft_mkl-dfti | #2039 #2230 #2228 | mkl-dfti | mkl-dfti | c32 | case_id=fft.irfft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [524289], 'dtype': 'c32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_fft_rfft_direct-shared | #2039 #2230 #2228 | direct-shared | tenferro-rs | f32 | case_id=fft.rfft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [1048576], 'dtype': 'f32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_fft_rfft_mkl-dfti | #2039 #2230 #2228 | mkl-dfti | mkl-dfti | f32 | case_id=fft.rfft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [1048576], 'dtype': 'f32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_fft_fft_direct-shared | #2039 #2228 | direct-shared | tenferro-rs | c64 | case_id=fft.fft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [1048576], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_fft_fft_mkl-dfti | #2039 #2228 | mkl-dfti | mkl-dfti | c64 | case_id=fft.fft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [1048576], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_fft_ifft_direct-shared | #2039 #2228 | direct-shared | tenferro-rs | c32 | case_id=fft.ifft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [1048576], 'dtype': 'c32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_fft_ifft_mkl-dfti | #2039 #2228 | mkl-dfti | mkl-dfti | c32 | case_id=fft.ifft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [1048576], 'dtype': 'c32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | — | — | — | — | FAILED |
-| followup_metadata_transpose_view_metadata | #2040 #1719 | metadata | tenferro-rs | f64 | case_id=metadata.transpose_view, rust_path=metadata, reference_path=julia-base, fixture={'input_shape': [2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 4 | — | — | — | — | FAILED |
-| followup_metadata_transpose_view_julia-base | #2040 #1719 | julia-base | julia-base | f64 | case_id=metadata.transpose_view, rust_path=metadata, reference_path=julia-base, fixture={'input_shape': [2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 4 | — | — | — | — | FAILED |
-| followup_metadata_transpose_view_metadata-host-dyn | #2040 #1719 | metadata-host-dyn | tenferro-rs | f64 | case_id=metadata.transpose_view, rust_path=metadata-host-dyn, reference_path=julia-base, fixture={'input_shape': [2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 4 | — | — | — | — | FAILED |
-| followup_metadata_transpose_view_metadata-host-static | #2040 #1719 | metadata-host-static | tenferro-rs | f64 | case_id=metadata.transpose_view, rust_path=metadata-host-static, reference_path=julia-base, fixture={'input_shape': [2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 4 | — | — | — | — | FAILED |
-| followup_metadata_slice_view_metadata | #2040 #1719 | metadata | tenferro-rs | f64 | case_id=metadata.slice_view, rust_path=metadata, reference_path=julia-base, fixture={'input_shape': [4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 4 | — | — | — | — | FAILED |
-| followup_metadata_slice_view_julia-base | #2040 #1719 | julia-base | julia-base | f64 | case_id=metadata.slice_view, rust_path=metadata, reference_path=julia-base, fixture={'input_shape': [4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 4 | — | — | — | — | FAILED |
-| followup_metadata_slice_view_metadata-host-dyn | #2040 #1719 | metadata-host-dyn | tenferro-rs | f64 | case_id=metadata.slice_view, rust_path=metadata-host-dyn, reference_path=julia-base, fixture={'input_shape': [4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 4 | — | — | — | — | FAILED |
-| followup_metadata_slice_view_metadata-host-static | #2040 #1719 | metadata-host-static | tenferro-rs | f64 | case_id=metadata.slice_view, rust_path=metadata-host-static, reference_path=julia-base, fixture={'input_shape': [4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 4 | — | — | — | — | FAILED |
-| followup_metadata_reshape_view_metadata | #2040 #1719 | metadata | tenferro-rs | f64 | case_id=metadata.reshape_view, rust_path=metadata, reference_path=julia-base, fixture={'input_shape': [1024], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 4 | — | — | — | — | FAILED |
-| followup_metadata_reshape_view_julia-base | #2040 #1719 | julia-base | julia-base | f64 | case_id=metadata.reshape_view, rust_path=metadata, reference_path=julia-base, fixture={'input_shape': [1024], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 4 | — | — | — | — | FAILED |
-| followup_metadata_reshape_view_metadata-host-dyn | #2040 #1719 | metadata-host-dyn | tenferro-rs | f64 | case_id=metadata.reshape_view, rust_path=metadata-host-dyn, reference_path=julia-base, fixture={'input_shape': [1024], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 4 | — | — | — | — | FAILED |
-| followup_metadata_reshape_view_metadata-host-static | #2040 #1719 | metadata-host-static | tenferro-rs | f64 | case_id=metadata.reshape_view, rust_path=metadata-host-static, reference_path=julia-base, fixture={'input_shape': [1024], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 4 | — | — | — | — | FAILED |
-| lu_batched_f64_factor_n8_b1024 | #2142 | tenferro | tenferro-rs | f64 | n=8, batch=1024, op=factor | 4 | 8 | 179929.0 | 2699.3 | 4.1% | ok |
-| lu_batched_f64_factor_n8_b1024_host | #2142 | host | rust-loop | f64 | n=8, batch=1024, op=factor | 4 | 4 | 533464.2 | 5961.1 | 0.7% | ok |
-| lu_batched_f64_solve_n8_b1024 | #2142 | tenferro | tenferro-rs | f64 | n=8, batch=1024, op=solve | 4 | 32 | 93641.1 | 394.7 | 0.9% | ok |
-| lu_batched_f64_solve_n8_b1024_pytorch | #2142 | pytorch | pytorch-cpu | f64 | n=8, batch=1024, op=solve | 4 | 16 | 229657.4 | 784.6 | 0.3% | ok |
-| lu_batched_f64_factor_n16_b1024 | #2142 | tenferro | tenferro-rs | f64 | n=16, batch=1024, op=factor | 4 | 4 | 474274.0 | 12714.9 | 2.2% | ok |
-| lu_batched_f64_factor_n16_b1024_host | #2142 | host | rust-loop | f64 | n=16, batch=1024, op=factor | 4 | 2 | 2107757.5 | 20142.5 | 0.8% | ok |
-| lu_batched_f64_solve_n16_b1024 | #2142 | tenferro | tenferro-rs | f64 | n=16, batch=1024, op=solve | 4 | 8 | 242941.5 | 1167.2 | 0.5% | ok |
-| lu_batched_f64_solve_n16_b1024_pytorch | #2142 | pytorch | pytorch-cpu | f64 | n=16, batch=1024, op=solve | 4 | 8 | 498803.4 | 1027.6 | 0.2% | ok |
-| small_grad_qr_f64_trace-prepared_n4 | #2186 | trace-prepared | tenferro-rs | f64 | op=qr, n=4 | 4 | 64 | 53756.9 | 144.1 | 0.4% | ok |
-| small_grad_qr_f64_pytorch_n4 | #2186 | pytorch | pytorch-cpu | f64 | op=qr, n=4 | 4 | 32 | 75350.8 | 254.7 | 0.5% | ok |
-| small_grad_qr_f64_trace-prepared_n16 | #2186 | trace-prepared | tenferro-rs | f64 | op=qr, n=16 | 4 | 32 | 74321.3 | 340.5 | 13.0% | NOISY |
-| small_grad_qr_f64_pytorch_n16 | #2186 | pytorch | pytorch-cpu | f64 | op=qr, n=16 | 4 | 32 | 88076.6 | 505.5 | 4.5% | ok |
-| small_grad_eigh_f64_trace-prepared_n4 | #2186 | trace-prepared | tenferro-rs | f64 | op=eigh, n=4 | 4 | 32 | 74133.5 | 1492.0 | 3.5% | ok |
-| small_grad_eigh_f64_pytorch_n4 | #2186 | pytorch | pytorch-cpu | f64 | op=eigh, n=4 | 4 | 32 | 74755.9 | 535.5 | 0.9% | ok |
-| small_grad_eigh_f64_trace-prepared_n16 | #2186 | trace-prepared | tenferro-rs | f64 | op=eigh, n=16 | 4 | 16 | 132610.2 | 1230.4 | 1.2% | ok |
-| small_grad_eigh_f64_pytorch_n16 | #2186 | pytorch | pytorch-cpu | f64 | op=eigh, n=16 | 4 | 32 | 101132.8 | 1038.5 | 0.8% | ok |
-| small_grad_lu_f64_trace-prepared_n4 | #2186 | trace-prepared | tenferro-rs | f64 | op=lu, n=4 | 4 | 64 | 40037.3 | 206.3 | 3.7% | ok |
-| small_grad_lu_f64_pytorch_n4 | #2186 | pytorch | pytorch-cpu | f64 | op=lu, n=4 | 4 | 32 | 86078.8 | 1412.2 | 1.5% | ok |
-| small_grad_lu_f64_trace-prepared_n16 | #2186 | trace-prepared | tenferro-rs | f64 | op=lu, n=16 | 4 | 64 | 47897.5 | 154.1 | 0.4% | ok |
-| small_grad_lu_f64_pytorch_n16 | #2186 | pytorch | pytorch-cpu | f64 | op=lu, n=16 | 4 | 32 | 94562.2 | 456.8 | 1.0% | ok |
-| small_grad_svd_f64_trace-prepared_n4 | #2186 | trace-prepared | tenferro-rs | f64 | op=svd, n=4 | 4 | 32 | 121067.8 | 531.3 | 0.5% | ok |
-| small_grad_svd_f64_pytorch_n4 | #2186 | pytorch | pytorch-cpu | f64 | op=svd, n=4 | 4 | 32 | 113508.1 | 756.1 | 0.8% | ok |
-| small_grad_svd_f64_trace-prepared_n16 | #2186 | trace-prepared | tenferro-rs | f64 | op=svd, n=16 | 4 | 16 | 224016.2 | 1067.3 | 0.6% | ok |
-| small_grad_svd_f64_pytorch_n16 | #2186 | pytorch | pytorch-cpu | f64 | op=svd, n=16 | 4 | 16 | 172723.1 | 526.0 | 0.5% | ok |
-| small_grad_solve_f64_trace-prepared_n4 | #2186 | trace-prepared | tenferro-rs | f64 | op=solve, n=4 | 4 | 64 | 33202.3 | 371.4 | 0.6% | ok |
-| small_grad_solve_f64_pytorch_n4 | #2186 | pytorch | pytorch-cpu | f64 | op=solve, n=4 | 4 | 32 | 62358.4 | 165.8 | 0.3% | ok |
-| small_grad_solve_f64_trace-prepared_n16 | #2186 | trace-prepared | tenferro-rs | f64 | op=solve, n=16 | 4 | 64 | 40825.5 | 177.4 | 0.3% | ok |
-| small_grad_solve_f64_pytorch_n16 | #2186 | pytorch | pytorch-cpu | f64 | op=solve, n=16 | 4 | 32 | 71755.0 | 234.3 | 0.4% | ok |
-| fft_axis0_c64_fft-executor_n128 | #1765 | fft-executor | tenferro-rs | c64 | n=128 | 4 | 1 | 4548847.0 | 105276.0 | 1.2% | ok |
-| fft_axis0_c64_pytorch_n128 | #1765 | pytorch | pytorch-cpu | c64 | n=128 | 4 | 1 | 6916910.0 | 286204.0 | 3.1% | ok |
-| degenerate_dot_hadamard_f64_dot-general-shared_n1024 | #2111 | dot-general-shared | tenferro-rs | f64 | form=hadamard, n=1024 | 4 | 4 | 328271.8 | 4040.0 | 1.7% | ok |
-| degenerate_dot_hadamard_f64_pytorch_n1024 | #2111 | pytorch | pytorch-cpu | f64 | form=hadamard, n=1024 | 4 | 4 | 325564.0 | 15485.0 | 4.5% | ok |
-| degenerate_dot_outer_f64_dot-general-shared_n1024 | #2111 | dot-general-shared | tenferro-rs | f64 | form=outer, n=1024 | 4 | 4 | 233966.2 | 7276.0 | 2.2% | ok |
-| degenerate_dot_outer_f64_pytorch_n1024 | #2111 | pytorch | pytorch-cpu | f64 | form=outer, n=1024 | 4 | 4 | 163742.5 | 9293.6 | 14.6% | NOISY |
-| degenerate_dot_rank0_f64_dot-general-shared_n1024 | #2111 | dot-general-shared | tenferro-rs | f64 | form=rank0, n=1024 | 4 | 1 | 9223027.0 | 175171.5 | 1.6% | ok |
-| degenerate_dot_rank0_f64_pytorch_n1024 | #2111 | pytorch | pytorch-cpu | f64 | form=rank0, n=1024 | 4 | 8 | 620972.2 | 39014.7 | 4.1% | ok |
-| erased_add_f64_session-add_n256 | #1766 | session-add | tenferro-rs | f64 | n=256 | 4 | 1024 | 1596.5 | 29.5 | 3.0% | ok |
-| erased_add_f64_pytorch_n256 | #1766 | pytorch | pytorch-cpu | f64 | n=256 | 4 | 1024 | 1929.0 | 5.5 | 0.5% | ok |
-| erased_add_f64_session-add_n4096 | #1766 | session-add | tenferro-rs | f64 | n=4096 | 4 | 256 | 3043.6 | 39.8 | 1.3% | ok |
-| erased_add_f64_pytorch_n4096 | #1766 | pytorch | pytorch-cpu | f64 | n=4096 | 4 | 1024 | 3726.9 | 36.1 | 6.0% | ok |
-| erased_add_f64_session-add_n1048576 | #1766 | session-add | tenferro-rs | f64 | n=1048576 | 4 | 4 | 329894.8 | 7423.9 | 2.7% | ok |
-| erased_add_f64_pytorch_n1048576 | #1766 | pytorch | pytorch-cpu | f64 | n=1048576 | 4 | 4 | 335565.2 | 7534.2 | 4.3% | ok |
-| axpby_strided_source_f64_1024x1024_t4 | #2220 #2214 | strided-source | tenferro-rs | f64 | n=1024 | 4 | 4 | 899543.8 | 55336.8 | 7.1% | ok |
-| axpby_contiguous_source_f64_1024x1024_t4 | #2220 #2214 | contiguous-source | tenferro-rs | f64 | n=1024 | 4 | 8 | 314633.9 | 7837.8 | 3.2% | ok |
-| axpby_strided_source_f64_1024x1024_host_t4 | #2220 #2214 | host | rust-loop | f64 | n=1024 | 4 | 1 | 2302911.0 | 53820.0 | 1.5% | ok |
-| erased_construct_f64_col_n8 | #2177 | col-major | tenferro-rs | f64 | n=8, layout=col | 4 | 16384 | 132.5 | 0.6 | 13.8% | NOISY |
-| erased_construct_f64_row_n8 | #2177 | row-major | tenferro-rs | f64 | n=8, layout=row | 4 | 8192 | 269.0 | 1.5 | 7.0% | ok |
-| erased_construct_f64_col_n4096 | #2177 | col-major | tenferro-rs | f64 | n=4096, layout=col | 4 | 16384 | 221.9 | 0.4 | 1.1% | ok |
-| erased_construct_f64_row_n4096 | #2177 | row-major | tenferro-rs | f64 | n=4096, layout=row | 4 | 128 | 19067.8 | 1302.0 | 4.0% | ok |
-| erased_construct_f64_col_n65536 | #2177 | col-major | tenferro-rs | f64 | n=65536, layout=col | 4 | 1024 | 157.0 | 1.9 | 1.6% | ok |
-| erased_construct_f64_row_n65536 | #2177 | row-major | tenferro-rs | f64 | n=65536, layout=row | 4 | 8 | 342909.0 | 61447.1 | 9.0% | ok |
-| eager_small_leaf_f64_eager-held-session | #1704 | eager-held-session | tenferro-rs | f64 | op=leaf | 4 | 1024 | 3405.5 | 64.8 | 2.0% | ok |
-| eager_small_add_f64_eager-held-session | #1667 | eager-held-session | tenferro-rs | f64 | op=add | 4 | 1024 | 2836.8 | 5.1 | 0.4% | ok |
-| eager_small_add_f64_pytorch | #1667 | pytorch | pytorch-cpu | f64 | op=add | 4 | 2048 | 1820.1 | 10.5 | 0.8% | ok |
-| eager_small_gemm_f64_eager-held-session | #1904 | eager-held-session | tenferro-rs | f64 | op=gemm | 4 | 512 | 4214.7 | 11.5 | 0.6% | ok |
-| eager_small_gemm_f64_pytorch | #1904 | pytorch | pytorch-cpu | f64 | op=gemm | 4 | 1024 | 2040.1 | 5.9 | 0.3% | ok |
-| trace_metadata_trace-fold_f32_1024x64_k50 | #2226 #2238 | trace-fold | tenferro-rs | f32 | rows=1024, cols=64, steps=50 | 4 | 2 | 1775043.0 | 5805.5 | 0.3% | ok |
-| trace_metadata_trace-outputs_f32_1024x64_k50 | #2226 #2238 | trace-outputs | tenferro-rs | f32 | rows=1024, cols=64, steps=50 | 4 | 2 | 1677486.5 | 23273.5 | 1.1% | ok |
-| trace_metadata_eager_f32_1024x64_k50 | #2226 #2238 | eager | tenferro-rs | f32 | rows=1024, cols=64, steps=50 | 4 | 1 | 2500129.0 | 7954.5 | 1.0% | ok |
-| trace_metadata_pytorch_f32_1024x64_k50 | #2226 #2238 | pytorch | pytorch-cpu | f32 | rows=1024, cols=64, steps=50 | 4 | 2 | 1207886.0 | 3161.2 | 0.2% | ok |
-| trace_metadata_fixed_neg_f32_8 | #2226 #2238 | trace-fold | tenferro-rs | f32 | rows=8, cols=1, steps=0 | 4 | 512 | 3055.3 | 31.4 | 0.7% | ok |
-| decode_proj_f32_eager-shared_in1024_out1024_len8 | #1992 #2003 #1995 #2229 | eager-shared | tenferro-rs | f32 | in=1024, out=1024, len=8 | 8 | 32 | 87360.6 | 585.0 | 0.6% | ok |
-| decode_proj_f32_faer-direct_in1024_out1024_len8 | #1992 #2003 #1995 #2229 | faer-direct | faer-direct | f32 | in=1024, out=1024, len=8 | 8 | 16 | 195886.2 | 3607.9 | 2.0% | ok |
-| decode_proj_f32_host-sgemm_in1024_out1024_len8 | #1992 #2003 #1995 #2229 | host-sgemm | matrixmultiply-sgemm | f32 | in=1024, out=1024, len=8 | 8 | 2 | 1206127.5 | 12025.0 | 1.9% | ok |
-| decode_proj_f32_pytorch_in1024_out1024_len8 | #1992 #2003 #1995 #2229 | pytorch | pytorch-cpu | f32 | in=1024, out=1024, len=8 | 8 | 32 | 98975.7 | 562.0 | 0.9% | ok |
-| decode_proj_f32_eager-shared_in1024_out1024_len64 | #1992 #2003 #1995 #2229 | eager-shared | tenferro-rs | f32 | in=1024, out=1024, len=64 | 8 | 8 | 315034.5 | 1189.7 | 0.4% | ok |
-| decode_proj_f32_faer-direct_in1024_out1024_len64 | #1992 #2003 #1995 #2229 | faer-direct | faer-direct | f32 | in=1024, out=1024, len=64 | 8 | 4 | 752595.0 | 14350.5 | 1.9% | ok |
-| decode_proj_f32_host-sgemm_in1024_out1024_len64 | #1992 #2003 #1995 #2229 | host-sgemm | matrixmultiply-sgemm | f32 | in=1024, out=1024, len=64 | 8 | 1 | 2056412.0 | 18790.5 | 0.5% | ok |
-| decode_proj_f32_pytorch_in1024_out1024_len64 | #1992 #2003 #1995 #2229 | pytorch | pytorch-cpu | f32 | in=1024, out=1024, len=64 | 8 | 8 | 384509.1 | 1527.2 | 0.4% | ok |
-| decode_proj_f32_eager-shared_in1024_out1024_len512 | #1992 #2003 #1995 #2229 | eager-shared | tenferro-rs | f32 | in=1024, out=1024, len=512 | 8 | 1 | 2385185.0 | 4077.5 | 0.2% | ok |
-| decode_proj_f32_faer-direct_in1024_out1024_len512 | #1992 #2003 #1995 #2229 | faer-direct | faer-direct | f32 | in=1024, out=1024, len=512 | 8 | 1 | 2634129.0 | 91084.5 | 2.2% | ok |
-| decode_proj_f32_host-sgemm_in1024_out1024_len512 | #1992 #2003 #1995 #2229 | host-sgemm | matrixmultiply-sgemm | f32 | in=1024, out=1024, len=512 | 8 | 1 | 5547728.0 | 44753.0 | 2.6% | ok |
-| decode_proj_f32_pytorch_in1024_out1024_len512 | #1992 #2003 #1995 #2229 | pytorch | pytorch-cpu | f32 | in=1024, out=1024, len=512 | 8 | 1 | 2649046.0 | 28272.0 | 1.3% | ok |
-| decode_proj_f32_eager-shared_in1024_out4096_len8 | #1992 #2003 #1995 #2229 | eager-shared | tenferro-rs | f32 | in=1024, out=4096, len=8 | 8 | 8 | 367815.5 | 3788.9 | 4.6% | ok |
-| decode_proj_f32_faer-direct_in1024_out4096_len8 | #1992 #2003 #1995 #2229 | faer-direct | faer-direct | f32 | in=1024, out=4096, len=8 | 8 | 8 | 475104.1 | 14631.0 | 4.1% | ok |
-| decode_proj_f32_host-sgemm_in1024_out4096_len8 | #1992 #2003 #1995 #2229 | host-sgemm | matrixmultiply-sgemm | f32 | in=1024, out=4096, len=8 | 8 | 1 | 5045513.0 | 99165.0 | 1.6% | ok |
-| decode_proj_f32_pytorch_in1024_out4096_len8 | #1992 #2003 #1995 #2229 | pytorch | pytorch-cpu | f32 | in=1024, out=4096, len=8 | 8 | 4 | 773519.0 | 10171.4 | 1.0% | ok |
-| decode_proj_f32_eager-shared_in1024_out4096_len64 | #1992 #2003 #1995 #2229 | eager-shared | tenferro-rs | f32 | in=1024, out=4096, len=64 | 8 | 2 | 1186766.5 | 4751.5 | 0.9% | ok |
-| decode_proj_f32_faer-direct_in1024_out4096_len64 | #1992 #2003 #1995 #2229 | faer-direct | faer-direct | f32 | in=1024, out=4096, len=64 | 8 | 2 | 1615511.0 | 34118.2 | 1.8% | ok |
-| decode_proj_f32_host-sgemm_in1024_out4096_len64 | #1992 #2003 #1995 #2229 | host-sgemm | matrixmultiply-sgemm | f32 | in=1024, out=4096, len=64 | 8 | 1 | 8499109.0 | 51075.0 | 0.4% | ok |
-| decode_proj_f32_pytorch_in1024_out4096_len64 | #1992 #2003 #1995 #2229 | pytorch | pytorch-cpu | f32 | in=1024, out=4096, len=64 | 8 | 2 | 2078252.5 | 69269.2 | 2.9% | ok |
-| decode_proj_f32_eager-shared_in1024_out4096_len512 | #1992 #2003 #1995 #2229 | eager-shared | tenferro-rs | f32 | in=1024, out=4096, len=512 | 8 | 1 | 8933389.0 | 13264.5 | 0.5% | ok |
-| decode_proj_f32_faer-direct_in1024_out4096_len512 | #1992 #2003 #1995 #2229 | faer-direct | faer-direct | f32 | in=1024, out=4096, len=512 | 8 | 1 | 9265247.0 | 34218.5 | 0.4% | ok |
-| decode_proj_f32_host-sgemm_in1024_out4096_len512 | #1992 #2003 #1995 #2229 | host-sgemm | matrixmultiply-sgemm | f32 | in=1024, out=4096, len=512 | 8 | 1 | 22700756.0 | 96253.5 | 0.4% | ok |
-| decode_proj_f32_pytorch_in1024_out4096_len512 | #1992 #2003 #1995 #2229 | pytorch | pytorch-cpu | f32 | in=1024, out=4096, len=512 | 8 | 1 | 12822215.0 | 157128.5 | 1.4% | ok |
-| gemm_c64_mm256_t1 | #1900 | dot-general-shared | tenferro-rs | c64 | n=256 | 8 | 1 | 4441988.0 | 29881.0 | 0.4% | ok |
-| gemm_f64_mm256_t1 | #1900 | dot-general-shared | tenferro-rs | f64 | n=256 | 8 | 2 | 1071016.0 | 2785.0 | 0.5% | ok |
-| conj_dot_f64_dot-general-rank1_len100 | #1615 | dot-general-rank1 | tenferro-rs | f64 | len=100 | 8 | 1024 | 2289.0 | 9.4 | 1.5% | ok |
-| conj_dot_f64_portable-loop_len100 | #1615 | portable-loop | rust-loop | f64 | len=100 | 8 | 32768 | 89.6 | 0.4 | 0.5% | ok |
-| conj_dot_f64_pytorch-vdot_len100 | #1615 | pytorch-vdot | pytorch-cpu | f64 | len=100 | 8 | 2048 | 1684.5 | 15.5 | 1.8% | ok |
-| conj_dot_f64_dot-general-rank1_len10000 | #1615 | dot-general-rank1 | tenferro-rs | f64 | len=10000 | 8 | 512 | 4910.7 | 19.9 | 0.7% | ok |
-| conj_dot_f64_portable-loop_len10000 | #1615 | portable-loop | rust-loop | f64 | len=10000 | 8 | 256 | 15003.5 | 40.7 | 0.2% | ok |
-| conj_dot_f64_pytorch-vdot_len10000 | #1615 | pytorch-vdot | pytorch-cpu | f64 | len=10000 | 8 | 1024 | 3368.9 | 33.1 | 0.7% | ok |
-| conj_dot_f64_dot-general-rank1_len1000000 | #1615 | dot-general-rank1 | tenferro-rs | f64 | len=1000000 | 8 | 32 | 66337.1 | 1174.4 | 4.9% | ok |
-| conj_dot_f64_portable-loop_len1000000 | #1615 | portable-loop | rust-loop | f64 | len=1000000 | 8 | 2 | 1514257.0 | 5022.0 | 0.5% | ok |
-| conj_dot_f64_pytorch-vdot_len1000000 | #1615 | pytorch-vdot | pytorch-cpu | f64 | len=1000000 | 8 | 32 | 65200.2 | 1198.6 | 11.6% | NOISY |
-| conj_dot_c64_dot-general-rank1_len100 | #1615 | dot-general-rank1 | tenferro-rs | c64 | len=100 | 8 | 1024 | 2327.4 | 14.2 | 1.8% | ok |
-| conj_dot_c64_portable-loop_len100 | #1615 | portable-loop | rust-loop | c64 | len=100 | 8 | 16384 | 144.6 | 0.7 | 0.7% | ok |
-| conj_dot_c64_pytorch-vdot_len100 | #1615 | pytorch-vdot | pytorch-cpu | c64 | len=100 | 8 | 2048 | 1587.1 | 8.9 | 236.9% | NOISY |
-| conj_dot_c64_dot-general-rank1_len10000 | #1615 | dot-general-rank1 | tenferro-rs | c64 | len=10000 | 8 | 128 | 16233.1 | 52.2 | 0.2% | ok |
-| conj_dot_c64_portable-loop_len10000 | #1615 | portable-loop | rust-loop | c64 | len=10000 | 8 | 256 | 15296.9 | 39.0 | 0.2% | ok |
-| conj_dot_c64_pytorch-vdot_len10000 | #1615 | pytorch-vdot | pytorch-cpu | c64 | len=10000 | 8 | 512 | 4019.4 | 9.3 | 0.3% | ok |
-| conj_dot_c64_dot-general-rank1_len1000000 | #1615 | dot-general-rank1 | tenferro-rs | c64 | len=1000000 | 8 | 4 | 516031.8 | 22115.0 | 4.2% | ok |
-| conj_dot_c64_portable-loop_len1000000 | #1615 | portable-loop | rust-loop | c64 | len=1000000 | 8 | 2 | 1544558.5 | 2449.8 | 0.3% | ok |
-| conj_dot_c64_pytorch-vdot_len1000000 | #1615 | pytorch-vdot | pytorch-cpu | c64 | len=1000000 | 8 | 4 | 506531.2 | 12721.2 | 2.5% | ok |
-| small_solve_f64_solve-loop_k16_b64 | #2007 #1878 | solve-loop | tenferro-rs | f64 | k=16, batch=64 | 8 | 8 | 368846.1 | 1949.4 | 0.8% | ok |
-| small_solve_f64_triangular-solve-loop_k16_b64 | #2007 #1878 | triangular-solve-loop | tenferro-rs | f64 | k=16, batch=64 | 8 | 16 | 206554.3 | 1151.8 | 0.4% | ok |
-| small_solve_f64_solve-batched_k16_b64 | #2007 #1878 | solve-batched | tenferro-rs | f64 | k=16, batch=64 | 8 | 64 | 31682.2 | 1254.2 | 7.5% | ok |
-| small_solve_f64_pytorch-solve-batched_k16_b64 | #2007 #1878 | pytorch-solve-batched | pytorch-cpu | f64 | k=16, batch=64 | 8 | 16 | 174975.5 | 948.9 | 0.6% | ok |
-| small_solve_f64_pytorch-solve-triangular-batched_k16_b64 | #2007 #1878 | pytorch-solve-triangular-batched | pytorch-cpu | f64 | k=16, batch=64 | 8 | 32 | 93841.4 | 202.9 | 10.4% | NOISY |
-| small_solve_f64_solve-loop_k64_b64 | #2007 #1878 | solve-loop | tenferro-rs | f64 | k=64, batch=64 | 8 | 1 | 3570815.0 | 14141.5 | 0.5% | ok |
-| small_solve_f64_triangular-solve-loop_k64_b64 | #2007 #1878 | triangular-solve-loop | tenferro-rs | f64 | k=64, batch=64 | 8 | 2 | 1717440.5 | 14168.8 | 0.6% | ok |
-| small_solve_f64_solve-batched_k64_b64 | #2007 #1878 | solve-batched | tenferro-rs | f64 | k=64, batch=64 | 8 | 4 | 474263.8 | 3109.5 | 0.5% | ok |
-| small_solve_f64_pytorch-solve-batched_k64_b64 | #2007 #1878 | pytorch-solve-batched | pytorch-cpu | f64 | k=64, batch=64 | 8 | 2 | 1606549.0 | 12498.2 | 0.5% | ok |
-| small_solve_f64_pytorch-solve-triangular-batched_k64_b64 | #2007 #1878 | pytorch-solve-triangular-batched | pytorch-cpu | f64 | k=64, batch=64 | 8 | 8 | 448587.2 | 13957.2 | 4.2% | ok |
-| tanh_chain_f32_compiled-prepared_k10_1024x64 | #1990 | compiled-prepared | tenferro-rs | f32 | rows=1024, cols=64, chain=10 | 8 | 4 | 226464.5 | 1311.1 | 0.4% | ok |
-| tanh_chain_f32_eager-shared_k10_1024x64 | #1990 | eager-shared | tenferro-rs | f32 | rows=1024, cols=64, chain=10 | 8 | 8 | 269638.8 | 1192.8 | 0.4% | ok |
-| tanh_chain_f32_compiled-prepared_k100_1024x64 | #1990 | compiled-prepared | tenferro-rs | f32 | rows=1024, cols=64, chain=100 | 8 | 1 | 2199419.0 | 11892.0 | 2.2% | ok |
-| tanh_chain_f32_eager-shared_k100_1024x64 | #1990 | eager-shared | tenferro-rs | f32 | rows=1024, cols=64, chain=100 | 8 | 1 | 2693370.0 | 8566.0 | 0.5% | ok |
-| tanh_chain_f32_compiled-prepared_k200_1024x64 | #1990 | compiled-prepared | tenferro-rs | f32 | rows=1024, cols=64, chain=200 | 8 | 1 | 4361899.0 | 22687.0 | 1.8% | ok |
-| tanh_chain_f32_eager-shared_k200_1024x64 | #1990 | eager-shared | tenferro-rs | f32 | rows=1024, cols=64, chain=200 | 8 | 1 | 5363796.0 | 22737.0 | 1.3% | ok |
-| layer_norm_f32_eager-composed_d1024_len8_b1 | #2006 | eager-composed | tenferro-rs | f32 | norm=layer_norm, d=1024, len=8, batch=1 | 8 | 32 | 68400.0 | 895.3 | 1.0% | ok |
-| layer_norm_f32_pytorch-fused_d1024_len8_b1 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=layer_norm, d=1024, len=8, batch=1 | 8 | 512 | 7015.7 | 161.2 | 1.5% | ok |
-| layer_norm_f32_eager-single-call_d1024_len8_b1 | #2006 | eager-single-call | tenferro-rs | f32 | norm=layer_norm, d=1024, len=8, batch=1 | 8 | 32 | 72311.0 | 518.3 | 0.7% | ok |
-| layer_norm_f32_eager-composed_d1024_len8_b8 | #2006 | eager-composed | tenferro-rs | f32 | norm=layer_norm, d=1024, len=8, batch=8 | 8 | 16 | 120462.6 | 1108.9 | 0.6% | ok |
-| layer_norm_f32_pytorch-fused_d1024_len8_b8 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=layer_norm, d=1024, len=8, batch=8 | 8 | 128 | 14906.5 | 1534.7 | 6.7% | ok |
-| layer_norm_f32_eager-single-call_d1024_len8_b8 | #2006 | eager-single-call | tenferro-rs | f32 | norm=layer_norm, d=1024, len=8, batch=8 | 8 | 4 | 120046.2 | 2497.4 | 59.4% | NOISY |
-| layer_norm_f32_eager-composed_d1024_len64_b1 | #2006 | eager-composed | tenferro-rs | f32 | norm=layer_norm, d=1024, len=64, batch=1 | 8 | 16 | 119442.6 | 1190.7 | 3.0% | ok |
-| layer_norm_f32_pytorch-fused_d1024_len64_b1 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=layer_norm, d=1024, len=64, batch=1 | 8 | 256 | 27271.7 | 945.9 | 2.7% | ok |
-| layer_norm_f32_eager-single-call_d1024_len64_b1 | #2006 | eager-single-call | tenferro-rs | f32 | norm=layer_norm, d=1024, len=64, batch=1 | 8 | 16 | 122421.2 | 1037.2 | 0.5% | ok |
-| layer_norm_f32_eager-composed_d1024_len64_b8 | #2006 | eager-composed | tenferro-rs | f32 | norm=layer_norm, d=1024, len=64, batch=8 | 8 | 4 | 516465.0 | 24690.8 | 2.6% | ok |
-| layer_norm_f32_pytorch-fused_d1024_len64_b8 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=layer_norm, d=1024, len=64, batch=8 | 8 | 32 | 157437.8 | 10876.4 | 4.6% | ok |
-| layer_norm_f32_eager-single-call_d1024_len64_b8 | #2006 | eager-single-call | tenferro-rs | f32 | norm=layer_norm, d=1024, len=64, batch=8 | 8 | 4 | 435489.0 | 12828.9 | 2.0% | ok |
-| rms_norm_f32_eager-composed_d1024_len8_b1 | #2006 | eager-composed | tenferro-rs | f32 | norm=rms_norm, d=1024, len=8, batch=1 | 8 | 64 | 36848.2 | 199.2 | 0.5% | ok |
-| rms_norm_f32_pytorch-fused_d1024_len8_b1 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=rms_norm, d=1024, len=8, batch=1 | 8 | 128 | 18316.1 | 152.2 | 1.3% | ok |
-| rms_norm_f32_eager-single-call_d1024_len8_b1 | #2006 | eager-single-call | tenferro-rs | f32 | norm=rms_norm, d=1024, len=8, batch=1 | 8 | 64 | 42205.7 | 232.7 | 0.6% | ok |
-| rms_norm_f32_eager-composed_d1024_len8_b8 | #2006 | eager-composed | tenferro-rs | f32 | norm=rms_norm, d=1024, len=8, batch=8 | 8 | 32 | 61609.8 | 1815.1 | 1.9% | ok |
-| rms_norm_f32_pytorch-fused_d1024_len8_b8 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=rms_norm, d=1024, len=8, batch=8 | 8 | 32 | 43039.0 | 503.1 | 1.0% | ok |
-| rms_norm_f32_eager-single-call_d1024_len8_b8 | #2006 | eager-single-call | tenferro-rs | f32 | norm=rms_norm, d=1024, len=8, batch=8 | 8 | 8 | 65813.9 | 1758.2 | 2.4% | ok |
-| rms_norm_f32_eager-composed_d1024_len64_b1 | #2006 | eager-composed | tenferro-rs | f32 | norm=rms_norm, d=1024, len=64, batch=1 | 8 | 32 | 61155.8 | 1732.3 | 1.6% | ok |
-| rms_norm_f32_pytorch-fused_d1024_len64_b1 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=rms_norm, d=1024, len=64, batch=1 | 8 | 64 | 43064.8 | 403.7 | 1.6% | ok |
-| rms_norm_f32_eager-single-call_d1024_len64_b1 | #2006 | eager-single-call | tenferro-rs | f32 | norm=rms_norm, d=1024, len=64, batch=1 | 8 | 8 | 64870.9 | 905.6 | 1.5% | ok |
-| rms_norm_f32_eager-composed_d1024_len64_b8 | #2006 | eager-composed | tenferro-rs | f32 | norm=rms_norm, d=1024, len=64, batch=8 | 8 | 4 | 230494.8 | 10688.6 | 3.1% | ok |
-| rms_norm_f32_pytorch-fused_d1024_len64_b8 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=rms_norm, d=1024, len=64, batch=8 | 8 | 8 | 173008.6 | 18141.9 | 6.0% | ok |
-| rms_norm_f32_eager-single-call_d1024_len64_b8 | #2006 | eager-single-call | tenferro-rs | f32 | norm=rms_norm, d=1024, len=64, batch=8 | 8 | 4 | 227158.2 | 10649.8 | 2.8% | ok |
-| small_contraction_abcd-dbef-acef_f64_shared-session-default-pool_d4 | #1885 #1897 #1901 | shared-session-default-pool | tenferro-rs | f64 | extent=4 | 8 | 512 | 4249.3 | 31.2 | 1.3% | ok |
-| activation_erf_f32_eager-single-call_1024x64 | #1975 #2069 #2032 | eager-single-call | tenferro-rs | f32 | op=erf, rows=1024, cols=64 | 8 | — | — | — | — | FAILED |
-| activation_erf_f32_session-single-call_1024x64 | #1975 #2069 #2032 | session-single-call | tenferro-rs | f32 | op=erf, rows=1024, cols=64 | 8 | 64 | 41253.1 | 291.3 | 0.6% | ok |
-| activation_erf_f32_pytorch_1024x64 | #1975 #2069 #2032 | pytorch | pytorch-cpu | f32 | op=erf, rows=1024, cols=64 | 8 | — | — | — | — | FAILED |
-| activation_sigmoid_f32_eager-single-call_1024x64 | #1975 #2069 #2032 | eager-single-call | tenferro-rs | f32 | op=sigmoid, rows=1024, cols=64 | 8 | — | — | — | — | FAILED |
-| activation_sigmoid_f32_session-single-call_1024x64 | #1975 #2069 #2032 | session-single-call | tenferro-rs | f32 | op=sigmoid, rows=1024, cols=64 | 8 | 128 | 9702.2 | 272.2 | 2.0% | ok |
-| activation_sigmoid_f32_eager-composed_1024x64 | #1975 #2069 #2032 | eager-composed | tenferro-rs | f32 | op=sigmoid, rows=1024, cols=64 | 8 | 64 | 34367.5 | 355.0 | 1.7% | ok |
-| activation_sigmoid_f32_pytorch_1024x64 | #1975 #2069 #2032 | pytorch | pytorch-cpu | f32 | op=sigmoid, rows=1024, cols=64 | 8 | — | — | — | — | FAILED |
-| activation_silu_f32_eager-single-call_1024x64 | #1975 #2069 #2032 | eager-single-call | tenferro-rs | f32 | op=silu, rows=1024, cols=64 | 8 | — | — | — | — | FAILED |
-| activation_silu_f32_session-single-call_1024x64 | #1975 #2069 #2032 | session-single-call | tenferro-rs | f32 | op=silu, rows=1024, cols=64 | 8 | 128 | 9857.8 | 336.0 | 4.1% | ok |
-| activation_silu_f32_eager-composed_1024x64 | #1975 #2069 #2032 | eager-composed | tenferro-rs | f32 | op=silu, rows=1024, cols=64 | 8 | 64 | 42293.5 | 183.9 | 1.0% | ok |
-| activation_silu_f32_pytorch_1024x64 | #1975 #2069 #2032 | pytorch | pytorch-cpu | f32 | op=silu, rows=1024, cols=64 | 8 | — | — | — | — | FAILED |
-| activation_softplus_f32_eager-single-call_1024x64 | #1975 #2069 #2032 | eager-single-call | tenferro-rs | f32 | op=softplus, rows=1024, cols=64 | 8 | — | — | — | — | FAILED |
-| activation_softplus_f32_session-single-call_1024x64 | #1975 #2069 #2032 | session-single-call | tenferro-rs | f32 | op=softplus, rows=1024, cols=64 | 8 | 64 | 22579.9 | 614.9 | 6.0% | ok |
-| activation_softplus_f32_eager-composed_1024x64 | #1975 #2069 #2032 | eager-composed | tenferro-rs | f32 | op=softplus, rows=1024, cols=64 | 8 | 32 | 55057.6 | 170.3 | 0.8% | ok |
-| activation_softplus_f32_pytorch_1024x64 | #1975 #2069 #2032 | pytorch | pytorch-cpu | f32 | op=softplus, rows=1024, cols=64 | 8 | — | — | — | — | FAILED |
-| activation_gelu_f32_eager-single-call_1024x64 | #1975 #2030 #2069 #2228 | eager-single-call | tenferro-rs | f32 | op=gelu, rows=1024, cols=64 | 8 | 128 | 11505.4 | 395.7 | 6.4% | ok |
-| activation_gelu_f32_session-single-call_1024x64 | #1975 #2030 #2069 #2228 | session-single-call | tenferro-rs | f32 | op=gelu, rows=1024, cols=64 | 8 | 128 | 10868.6 | 122.5 | 1.1% | ok |
-| activation_gelu_f32_pytorch_1024x64 | #1975 #2030 #2069 #2228 | pytorch | pytorch-cpu | f32 | op=gelu, rows=1024, cols=64 | 8 | 128 | 19077.3 | 1268.1 | 4.2% | ok |
-| activation_gelu_tanh_f32_eager-single-call_1024x64 | #1975 #2069 #2032 | eager-single-call | tenferro-rs | f32 | op=gelu_tanh, rows=1024, cols=64 | 8 | — | — | — | — | FAILED |
-| activation_gelu_tanh_f32_session-single-call_1024x64 | #1975 #2069 #2032 | session-single-call | tenferro-rs | f32 | op=gelu_tanh, rows=1024, cols=64 | 8 | 64 | 26354.3 | 258.8 | 1.0% | ok |
-| activation_gelu_tanh_f32_eager-composed_1024x64 | #1975 #2069 #2032 | eager-composed | tenferro-rs | f32 | op=gelu_tanh, rows=1024, cols=64 | 8 | 16 | 115239.1 | 966.8 | 0.6% | ok |
-| activation_gelu_tanh_f32_pytorch_1024x64 | #1975 #2069 #2032 | pytorch | pytorch-cpu | f32 | op=gelu_tanh, rows=1024, cols=64 | 8 | — | — | — | — | FAILED |
-| softmax_f32_eager-single-call_len64_b8 | #1976 #2031 #2231 | eager-single-call | tenferro-rs | f32 | op=softmax, len=64, batch=8, axis=0 | 8 | 128 | 14969.4 | 194.7 | 5.0% | ok |
-| softmax_f32_session-single-call_len64_b8 | #1976 #2031 #2231 | session-single-call | tenferro-rs | f32 | op=softmax, len=64, batch=8, axis=0 | 8 | 128 | 14256.1 | 98.3 | 0.7% | ok |
-| softmax_f32_eager-composed_len64_b8 | #1976 #2031 #2231 | eager-composed | tenferro-rs | f32 | op=softmax, len=64, batch=8, axis=0 | 8 | 32 | 63480.5 | 1217.8 | 2.8% | ok |
-| softmax_f32_pytorch_len64_b8 | #1976 #2031 #2231 | pytorch | pytorch-cpu | f32 | op=softmax, len=64, batch=8, axis=0 | 8 | 256 | 9295.4 | 233.4 | 1.6% | ok |
-| softmax_f32_eager-single-call_len512_b8 | #1976 #2231 | eager-single-call | tenferro-rs | f32 | op=softmax, len=512, batch=8, axis=0 | 8 | 4 | 335462.8 | 86879.5 | 14.5% | NOISY |
-| softmax_f32_session-single-call_len512_b8 | #1976 #2231 | session-single-call | tenferro-rs | f32 | op=softmax, len=512, batch=8, axis=0 | 8 | 4 | 311437.8 | 4056.5 | 17.1% | NOISY |
-| softmax_f32_eager-composed_len512_b8 | #1976 #2231 | eager-composed | tenferro-rs | f32 | op=softmax, len=512, batch=8, axis=0 | 8 | 2 | 1676870.0 | 33312.5 | 3.9% | ok |
-| softmax_f32_pytorch_len512_b8 | #1976 #2231 | pytorch | pytorch-cpu | f32 | op=softmax, len=512, batch=8, axis=0 | 8 | 4 | 357215.8 | 11694.4 | 3.0% | ok |
-| log_softmax_f32_eager-single-call_len64_b8 | #1976 | eager-single-call | tenferro-rs | f32 | op=log_softmax, len=64, batch=8, axis=0 | 8 | 32 | 86480.2 | 597.8 | 1.8% | ok |
-| log_softmax_f32_session-single-call_len64_b8 | #1976 | session-single-call | tenferro-rs | f32 | op=log_softmax, len=64, batch=8, axis=0 | 8 | 32 | 61688.1 | 558.2 | 3.9% | ok |
-| log_softmax_f32_eager-composed_len64_b8 | #1976 | eager-composed | tenferro-rs | f32 | op=log_softmax, len=64, batch=8, axis=0 | 8 | 32 | 63885.9 | 209.1 | 0.5% | ok |
-| log_softmax_f32_pytorch_len64_b8 | #1976 | pytorch | pytorch-cpu | f32 | op=log_softmax, len=64, batch=8, axis=0 | 8 | 256 | 11277.3 | 781.7 | 3.7% | ok |
-| log_softmax_f32_eager-single-call_len512_b8 | #1976 | eager-single-call | tenferro-rs | f32 | op=log_softmax, len=512, batch=8, axis=0 | 8 | 2 | 1538948.5 | 18779.8 | 1.3% | ok |
-| log_softmax_f32_session-single-call_len512_b8 | #1976 | session-single-call | tenferro-rs | f32 | op=log_softmax, len=512, batch=8, axis=0 | 8 | 2 | 1774577.0 | 18860.5 | 2.4% | ok |
-| log_softmax_f32_eager-composed_len512_b8 | #1976 | eager-composed | tenferro-rs | f32 | op=log_softmax, len=512, batch=8, axis=0 | 8 | 2 | 1759564.5 | 39045.2 | 2.6% | ok |
-| log_softmax_f32_pytorch_len512_b8 | #1976 | pytorch | pytorch-cpu | f32 | op=log_softmax, len=512, batch=8, axis=0 | 8 | 4 | 338601.0 | 18077.5 | 2.7% | ok |
-| masked_softmax_f32_eager-single-call_len64_b8 | #1976 | eager-single-call | tenferro-rs | f32 | op=masked_softmax, len=64, batch=8, axis=0 | 8 | 16 | 121960.4 | 1469.3 | 0.6% | ok |
-| masked_softmax_f32_session-single-call_len64_b8 | #1976 | session-single-call | tenferro-rs | f32 | op=masked_softmax, len=64, batch=8, axis=0 | 8 | 32 | 96715.6 | 356.0 | 2.9% | ok |
-| masked_softmax_f32_eager-composed_len64_b8 | #1976 | eager-composed | tenferro-rs | f32 | op=masked_softmax, len=64, batch=8, axis=0 | 8 | 32 | 74215.2 | 793.0 | 0.7% | ok |
-| masked_softmax_f32_pytorch_len64_b8 | #1976 | pytorch | pytorch-cpu | f32 | op=masked_softmax, len=64, batch=8, axis=0 | 8 | 32 | 63369.0 | 796.8 | 0.8% | ok |
-| masked_softmax_f32_eager-single-call_len512_b8 | #1976 | eager-single-call | tenferro-rs | f32 | op=masked_softmax, len=512, batch=8, axis=0 | 8 | 1 | 1863694.0 | 16916.0 | 2.3% | ok |
-| masked_softmax_f32_session-single-call_len512_b8 | #1976 | session-single-call | tenferro-rs | f32 | op=masked_softmax, len=512, batch=8, axis=0 | 8 | 2 | 1913952.0 | 20856.5 | 4.5% | ok |
-| masked_softmax_f32_eager-composed_len512_b8 | #1976 | eager-composed | tenferro-rs | f32 | op=masked_softmax, len=512, batch=8, axis=0 | 8 | 1 | 2247960.0 | 41001.0 | 3.5% | ok |
-| masked_softmax_f32_pytorch_len512_b8 | #1976 | pytorch | pytorch-cpu | f32 | op=masked_softmax, len=512, batch=8, axis=0 | 8 | 2 | 895289.0 | 101589.5 | 8.9% | ok |
-| reduce_mean_f32_eager-single-call_1024x64_axis0 | #1976 | eager-single-call | tenferro-rs | f32 | rows=1024, cols=64, axis=0 | 8 | 128 | 15424.2 | 134.7 | 0.5% | ok |
-| reduce_mean_f32_session-single-call_1024x64_axis0 | #1976 | session-single-call | tenferro-rs | f32 | rows=1024, cols=64, axis=0 | 8 | 256 | 7987.0 | 52.2 | 0.5% | ok |
-| reduce_mean_f32_eager-composed_1024x64_axis0 | #1976 | eager-composed | tenferro-rs | f32 | rows=1024, cols=64, axis=0 | 8 | 128 | 15622.8 | 91.7 | 0.5% | ok |
-| reduce_mean_f32_pytorch_1024x64_axis0 | #1976 | pytorch | pytorch-cpu | f32 | rows=1024, cols=64, axis=0 | 8 | 256 | 8667.1 | 43.0 | 0.4% | ok |
-| take_along_axis_rows_f64_eager-single-call_n64_b256 | #2008 | eager-single-call | tenferro-rs | f64 | n=64, batch=256, axis=0 | 8 | 2 | 1712236.0 | 37805.2 | 2.5% | ok |
-| take_along_axis_rows_f64_session-single-call_n64_b256 | #2008 | session-single-call | tenferro-rs | f64 | n=64, batch=256, axis=0 | 8 | 2 | 1582649.5 | 55578.5 | 2.4% | ok |
-| take_along_axis_rows_f64_eager-gather-prebuilt_n64_b256 | #2008 | eager-gather-prebuilt | tenferro-rs | f64 | n=64, batch=256, axis=0 | 8 | 2 | 1507750.0 | 64568.0 | 9.0% | ok |
-| take_along_axis_rows_f64_pytorch_n64_b256 | #2008 | pytorch | pytorch-cpu | f64 | n=64, batch=256, axis=0 | 8 | 2 | 982255.5 | 45988.2 | 3.8% | ok |
-| lstsq_f64_eager-shared_m768_n384_rhs16 | #2027 | eager-shared | tenferro-rs | f64 | operation=lstsq | 8 | 1 | 6111540.0 | 94711.5 | 3.0% | ok |
-| lstsq_f64_pytorch_m768_n384_rhs16 | #2027 | pytorch | pytorch-cpu | f64 | operation=lstsq | 8 | 1 | 3085130.0 | 13099.0 | 0.3% | ok |
-| triangular_f64_concrete-shared_n4096_rhs64 | #2028 | concrete-shared | tenferro-rs | f64 | operation=triangular | 8 | 1 | 11477470.0 | 232588.0 | 1.0% | ok |
-| triangular_f64_pytorch_n4096_rhs64 | #2028 | pytorch | pytorch-cpu | f64 | operation=triangular | 8 | 1 | 14291385.0 | 90794.0 | 1.0% | ok |
-| reshape_f64_concrete-shared_n33554432_to8192x4096 | #2029 | concrete-shared | tenferro-rs | f64 | operation=reshape | 8 | 1 | 16081331.0 | 391589.5 | 2.3% | ok |
-| reshape_f64_pytorch_n33554432_to8192x4096 | #2029 | pytorch | pytorch-cpu | f64 | operation=reshape | 8 | 1 | 18074845.0 | 605979.0 | 2.7% | ok |
-| followup_structural_broadcast_in_dim_direct-shared | #2021 | direct-shared | tenferro-rs | f64 | case_id=structural.broadcast_in_dim, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8192, 1], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_structural_broadcast_in_dim_pytorch | #2021 | pytorch | pytorch-cpu | f64 | case_id=structural.broadcast_in_dim, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8192, 1], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_real_tanh_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.tanh, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_real_tanh_jax | #2033 | jax | jax-cpu | f64 | case_id=real.tanh, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_real_log1p_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.log1p, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_real_log1p_pytorch | #2033 | pytorch | pytorch-cpu | f64 | case_id=real.log1p, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_real_cos_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.cos, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_real_cos_pytorch | #2033 | pytorch | pytorch-cpu | f64 | case_id=real.cos, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_real_sin_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.sin, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_real_sin_pytorch | #2033 | pytorch | pytorch-cpu | f64 | case_id=real.sin, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_real_exp_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.exp, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_real_exp_jax | #2033 | jax | jax-cpu | f64 | case_id=real.exp, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_real_expm1_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.expm1, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_real_expm1_jax | #2033 | jax | jax-cpu | f64 | case_id=real.expm1, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_real_pow_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.pow, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_real_pow_pytorch | #2033 | pytorch | pytorch-cpu | f64 | case_id=real.pow, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_complex_exp_direct-shared | #2033 | direct-shared | tenferro-rs | c64 | case_id=complex.exp, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [4194304], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_complex_exp_julia-base | #2033 | julia-base | julia-base | c64 | case_id=complex.exp, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [4194304], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_real_log_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.log, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_real_log_pytorch | #2033 | pytorch | pytorch-cpu | f64 | case_id=real.log, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_real_reduce_max_axis1_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_max_axis1, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_real_reduce_max_axis1_julia-base | #2034 | julia-base | julia-base | f64 | case_id=real.reduce_max_axis1, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_real_reduce_prod_axis1_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_prod_axis1, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_real_reduce_prod_axis1_pytorch | #2034 | pytorch | pytorch-cpu | f64 | case_id=real.reduce_prod_axis1, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_real_reduce_sum_axis1_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_sum_axis1, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_real_reduce_sum_axis1_pytorch | #2034 | pytorch | pytorch-cpu | f64 | case_id=real.reduce_sum_axis1, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_real_reduce_max_axis0_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_max_axis0, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_real_reduce_max_axis0_julia-base | #2034 | julia-base | julia-base | f64 | case_id=real.reduce_max_axis0, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_real_reduce_min_axis1_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_min_axis1, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [4096, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_real_reduce_min_axis1_julia-base | #2034 | julia-base | julia-base | f64 | case_id=real.reduce_min_axis1, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [4096, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_real_reduce_min_axis0_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_min_axis0, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_real_reduce_min_axis0_julia-base | #2034 | julia-base | julia-base | f64 | case_id=real.reduce_min_axis0, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_real_reduce_max_all_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_max_all, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [8192, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_real_reduce_max_all_julia-base | #2034 | julia-base | julia-base | f64 | case_id=real.reduce_max_all, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [8192, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_real_reduce_min_all_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_min_all, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [8192, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_real_reduce_min_all_julia-base | #2034 | julia-base | julia-base | f64 | case_id=real.reduce_min_all, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [8192, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_complex_norm_fro_direct-shared | #2035 | direct-shared | tenferro-rs | c64 | case_id=complex.norm_fro, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [2048, 1536], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_complex_norm_fro_jax | #2035 | jax | jax-cpu | c64 | case_id=complex.norm_fro, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [2048, 1536], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_index_gather_direct-shared | #2036 #1719 | direct-shared | tenferro-rs | f64 | case_id=index.gather, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [262144], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_index_gather_jax | #2036 #1719 | jax | jax-cpu | f64 | case_id=index.gather, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [262144], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_index_scatter_direct-shared | #2036 #1719 | direct-shared | tenferro-rs | f64 | case_id=index.scatter, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [262144], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_index_scatter_pytorch | #2036 #1719 | pytorch | pytorch-cpu | f64 | case_id=index.scatter, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [262144], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_index_dynamic_update_slice_direct-shared | #2036 #1719 | direct-shared | tenferro-rs | f64 | case_id=index.dynamic_update_slice, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [2097152], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_index_dynamic_update_slice_jax | #2036 #1719 | jax | jax-cpu | f64 | case_id=index.dynamic_update_slice, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [2097152], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_perm_reverse_15d_3_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.reverse_15d_3, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_perm_reverse_15d_3_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.reverse_15d_3, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_structural_transpose_direct-shared | #2037 #2228 | direct-shared | tenferro-rs | f64 | case_id=structural.transpose, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [4096, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_structural_transpose_pytorch | #2037 #2228 | pytorch | pytorch-cpu | f64 | case_id=structural.transpose, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [4096, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_perm_reverse_23d_2_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.reverse_23d_2, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_perm_reverse_23d_2_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.reverse_23d_2, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_perm_transpose_3d_256_201_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.transpose_3d_256_201, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [256, 256, 256], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_perm_transpose_3d_256_201_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.transpose_3d_256_201, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [256, 256, 256], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_perm_cyclic_15d_3_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.cyclic_15d_3, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_perm_cyclic_15d_3_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.cyclic_15d_3, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_perm_transpose_3d_256_102_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.transpose_3d_256_102, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [256, 256, 256], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_perm_transpose_3d_256_102_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.transpose_3d_256_102, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [256, 256, 256], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_perm_tn_light_415_24d_scattered_to_colmajor_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.tn_light_415_24d_scattered_to_colmajor, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_perm_tn_light_415_24d_scattered_to_colmajor_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.tn_light_415_24d_scattered_to_colmajor, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_perm_tn_light_415_24d_contiguous_same_perm_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.tn_light_415_24d_contiguous_same_perm, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_perm_tn_light_415_24d_contiguous_same_perm_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.tn_light_415_24d_contiguous_same_perm, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_perm_rotation_6d_32_32_32_32_16_16_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.rotation_6d_32_32_32_32_16_16, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [32, 32, 32, 32, 16, 16], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_perm_rotation_6d_32_32_32_32_16_16_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.rotation_6d_32_32_32_32_16_16, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [32, 32, 32, 32, 16, 16], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_structural_extract_diagonal_direct-shared | #2038 #2228 | direct-shared | tenferro-rs | f64 | case_id=structural.extract_diagonal, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [8388608, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_structural_extract_diagonal_jax | #2038 #2228 | jax | jax-cpu | f64 | case_id=structural.extract_diagonal, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [8388608, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_fft_irfft_direct-shared | #2039 #2230 #2228 | direct-shared | tenferro-rs | c32 | case_id=fft.irfft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [524289], 'dtype': 'c32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_fft_irfft_mkl-dfti | #2039 #2230 #2228 | mkl-dfti | mkl-dfti | c32 | case_id=fft.irfft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [524289], 'dtype': 'c32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_fft_rfft_direct-shared | #2039 #2230 #2228 | direct-shared | tenferro-rs | f32 | case_id=fft.rfft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [1048576], 'dtype': 'f32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_fft_rfft_mkl-dfti | #2039 #2230 #2228 | mkl-dfti | mkl-dfti | f32 | case_id=fft.rfft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [1048576], 'dtype': 'f32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_fft_fft_direct-shared | #2039 #2228 | direct-shared | tenferro-rs | c64 | case_id=fft.fft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [1048576], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_fft_fft_mkl-dfti | #2039 #2228 | mkl-dfti | mkl-dfti | c64 | case_id=fft.fft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [1048576], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_fft_ifft_direct-shared | #2039 #2228 | direct-shared | tenferro-rs | c32 | case_id=fft.ifft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [1048576], 'dtype': 'c32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_fft_ifft_mkl-dfti | #2039 #2228 | mkl-dfti | mkl-dfti | c32 | case_id=fft.ifft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [1048576], 'dtype': 'c32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | — | — | — | — | FAILED |
-| followup_metadata_transpose_view_metadata | #2040 #1719 | metadata | tenferro-rs | f64 | case_id=metadata.transpose_view, rust_path=metadata, reference_path=julia-base, fixture={'input_shape': [2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 8 | — | — | — | — | FAILED |
-| followup_metadata_transpose_view_julia-base | #2040 #1719 | julia-base | julia-base | f64 | case_id=metadata.transpose_view, rust_path=metadata, reference_path=julia-base, fixture={'input_shape': [2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 8 | — | — | — | — | FAILED |
-| followup_metadata_transpose_view_metadata-host-dyn | #2040 #1719 | metadata-host-dyn | tenferro-rs | f64 | case_id=metadata.transpose_view, rust_path=metadata-host-dyn, reference_path=julia-base, fixture={'input_shape': [2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 8 | — | — | — | — | FAILED |
-| followup_metadata_transpose_view_metadata-host-static | #2040 #1719 | metadata-host-static | tenferro-rs | f64 | case_id=metadata.transpose_view, rust_path=metadata-host-static, reference_path=julia-base, fixture={'input_shape': [2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 8 | — | — | — | — | FAILED |
-| followup_metadata_slice_view_metadata | #2040 #1719 | metadata | tenferro-rs | f64 | case_id=metadata.slice_view, rust_path=metadata, reference_path=julia-base, fixture={'input_shape': [4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 8 | — | — | — | — | FAILED |
-| followup_metadata_slice_view_julia-base | #2040 #1719 | julia-base | julia-base | f64 | case_id=metadata.slice_view, rust_path=metadata, reference_path=julia-base, fixture={'input_shape': [4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 8 | — | — | — | — | FAILED |
-| followup_metadata_slice_view_metadata-host-dyn | #2040 #1719 | metadata-host-dyn | tenferro-rs | f64 | case_id=metadata.slice_view, rust_path=metadata-host-dyn, reference_path=julia-base, fixture={'input_shape': [4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 8 | — | — | — | — | FAILED |
-| followup_metadata_slice_view_metadata-host-static | #2040 #1719 | metadata-host-static | tenferro-rs | f64 | case_id=metadata.slice_view, rust_path=metadata-host-static, reference_path=julia-base, fixture={'input_shape': [4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 8 | — | — | — | — | FAILED |
-| followup_metadata_reshape_view_metadata | #2040 #1719 | metadata | tenferro-rs | f64 | case_id=metadata.reshape_view, rust_path=metadata, reference_path=julia-base, fixture={'input_shape': [1024], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 8 | — | — | — | — | FAILED |
-| followup_metadata_reshape_view_julia-base | #2040 #1719 | julia-base | julia-base | f64 | case_id=metadata.reshape_view, rust_path=metadata, reference_path=julia-base, fixture={'input_shape': [1024], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 8 | — | — | — | — | FAILED |
-| followup_metadata_reshape_view_metadata-host-dyn | #2040 #1719 | metadata-host-dyn | tenferro-rs | f64 | case_id=metadata.reshape_view, rust_path=metadata-host-dyn, reference_path=julia-base, fixture={'input_shape': [1024], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 8 | — | — | — | — | FAILED |
-| followup_metadata_reshape_view_metadata-host-static | #2040 #1719 | metadata-host-static | tenferro-rs | f64 | case_id=metadata.reshape_view, rust_path=metadata-host-static, reference_path=julia-base, fixture={'input_shape': [1024], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 8 | — | — | — | — | FAILED |
-| gemm_bound_f64_t1_t8_scaling | #2141 | tenferro | tenferro-rs | f64 | n=1536 | 8 | 1 | 30016590.0 | 93218.0 | 0.2% | ok |
-| gemm_bound_f64_t1_t8_scaling_pytorch | #2141 | pytorch | pytorch-cpu | f64 | n=1536 | 8 | 1 | 36055076.0 | 162923.5 | 0.4% | ok |
-| small_grad_qr_f64_trace-prepared_n4 | #2186 | trace-prepared | tenferro-rs | f64 | op=qr, n=4 | 8 | 64 | 55467.9 | 873.3 | 0.8% | ok |
-| small_grad_qr_f64_pytorch_n4 | #2186 | pytorch | pytorch-cpu | f64 | op=qr, n=4 | 8 | 32 | 78108.4 | 447.1 | 2.5% | ok |
-| small_grad_qr_f64_trace-prepared_n16 | #2186 | trace-prepared | tenferro-rs | f64 | op=qr, n=16 | 8 | 32 | 75759.7 | 509.1 | 0.4% | ok |
-| small_grad_qr_f64_pytorch_n16 | #2186 | pytorch | pytorch-cpu | f64 | op=qr, n=16 | 8 | 32 | 89049.4 | 538.3 | 1.0% | ok |
-| small_grad_eigh_f64_trace-prepared_n4 | #2186 | trace-prepared | tenferro-rs | f64 | op=eigh, n=4 | 8 | 32 | 76549.6 | 802.4 | 0.6% | ok |
-| small_grad_eigh_f64_pytorch_n4 | #2186 | pytorch | pytorch-cpu | f64 | op=eigh, n=4 | 8 | 32 | 74927.8 | 776.3 | 1.0% | ok |
-| small_grad_eigh_f64_trace-prepared_n16 | #2186 | trace-prepared | tenferro-rs | f64 | op=eigh, n=16 | 8 | 16 | 132523.2 | 781.1 | 0.5% | ok |
-| small_grad_eigh_f64_pytorch_n16 | #2186 | pytorch | pytorch-cpu | f64 | op=eigh, n=16 | 8 | 32 | 100783.8 | 484.3 | 0.5% | ok |
-| small_grad_lu_f64_trace-prepared_n4 | #2186 | trace-prepared | tenferro-rs | f64 | op=lu, n=4 | 8 | 64 | 40106.2 | 145.7 | 0.3% | ok |
-| small_grad_lu_f64_pytorch_n4 | #2186 | pytorch | pytorch-cpu | f64 | op=lu, n=4 | 8 | 32 | 89496.5 | 824.0 | 1.3% | ok |
-| small_grad_lu_f64_trace-prepared_n16 | #2186 | trace-prepared | tenferro-rs | f64 | op=lu, n=16 | 8 | 64 | 49388.1 | 152.0 | 0.3% | ok |
-| small_grad_lu_f64_pytorch_n16 | #2186 | pytorch | pytorch-cpu | f64 | op=lu, n=16 | 8 | 32 | 97971.1 | 1919.8 | 1.3% | ok |
-| small_grad_svd_f64_trace-prepared_n4 | #2186 | trace-prepared | tenferro-rs | f64 | op=svd, n=4 | 8 | 32 | 122419.8 | 337.8 | 0.2% | ok |
-| small_grad_svd_f64_pytorch_n4 | #2186 | pytorch | pytorch-cpu | f64 | op=svd, n=4 | 8 | 32 | 112741.7 | 652.5 | 3.6% | ok |
-| small_grad_svd_f64_trace-prepared_n16 | #2186 | trace-prepared | tenferro-rs | f64 | op=svd, n=16 | 8 | 16 | 224642.4 | 860.6 | 0.3% | ok |
-| small_grad_svd_f64_pytorch_n16 | #2186 | pytorch | pytorch-cpu | f64 | op=svd, n=16 | 8 | 16 | 174459.5 | 2919.5 | 1.6% | ok |
-| small_grad_solve_f64_trace-prepared_n4 | #2186 | trace-prepared | tenferro-rs | f64 | op=solve, n=4 | 8 | 64 | 33818.5 | 187.0 | 0.3% | ok |
-| small_grad_solve_f64_pytorch_n4 | #2186 | pytorch | pytorch-cpu | f64 | op=solve, n=4 | 8 | 32 | 62143.3 | 449.9 | 0.6% | ok |
-| small_grad_solve_f64_trace-prepared_n16 | #2186 | trace-prepared | tenferro-rs | f64 | op=solve, n=16 | 8 | 64 | 41631.2 | 130.6 | 0.4% | ok |
-| small_grad_solve_f64_pytorch_n16 | #2186 | pytorch | pytorch-cpu | f64 | op=solve, n=16 | 8 | 32 | 71375.6 | 364.0 | 0.5% | ok |
-| fft_axis0_c64_fft-executor_n128 | #1765 | fft-executor | tenferro-rs | c64 | n=128 | 8 | 1 | 3219311.0 | 53986.0 | 1.4% | ok |
-| fft_axis0_c64_pytorch_n128 | #1765 | pytorch | pytorch-cpu | c64 | n=128 | 8 | 1 | 4151348.0 | 156872.0 | 3.5% | ok |
-| degenerate_dot_hadamard_f64_dot-general-shared_n1024 | #2111 | dot-general-shared | tenferro-rs | f64 | form=hadamard, n=1024 | 8 | 4 | 426422.5 | 5681.9 | 3.3% | ok |
-| degenerate_dot_hadamard_f64_pytorch_n1024 | #2111 | pytorch | pytorch-cpu | f64 | form=hadamard, n=1024 | 8 | 4 | 423474.2 | 11897.1 | 7.3% | ok |
-| degenerate_dot_outer_f64_dot-general-shared_n1024 | #2111 | dot-general-shared | tenferro-rs | f64 | form=outer, n=1024 | 8 | 2 | 194592.5 | 9911.0 | 3.0% | ok |
-| degenerate_dot_outer_f64_pytorch_n1024 | #2111 | pytorch | pytorch-cpu | f64 | form=outer, n=1024 | 8 | 8 | 443794.8 | 19876.4 | 4.4% | ok |
-| degenerate_dot_rank0_f64_dot-general-shared_n1024 | #2111 | dot-general-shared | tenferro-rs | f64 | form=rank0, n=1024 | 8 | 1 | 15770426.0 | 603870.0 | 2.8% | ok |
-| degenerate_dot_rank0_f64_pytorch_n1024 | #2111 | pytorch | pytorch-cpu | f64 | form=rank0, n=1024 | 8 | 4 | 311245.0 | 14483.2 | 3.8% | ok |
-| erased_add_f64_session-add_n256 | #1766 | session-add | tenferro-rs | f64 | n=256 | 8 | 256 | 1669.6 | 18.4 | 1.8% | ok |
-| erased_add_f64_pytorch_n256 | #1766 | pytorch | pytorch-cpu | f64 | n=256 | 8 | 1024 | 1914.4 | 7.3 | 3.8% | ok |
-| erased_add_f64_session-add_n4096 | #1766 | session-add | tenferro-rs | f64 | n=4096 | 8 | 256 | 3238.7 | 73.5 | 1.6% | ok |
-| erased_add_f64_pytorch_n4096 | #1766 | pytorch | pytorch-cpu | f64 | n=4096 | 8 | 1024 | 3757.2 | 53.9 | 1.3% | ok |
-| erased_add_f64_session-add_n1048576 | #1766 | session-add | tenferro-rs | f64 | n=1048576 | 8 | 4 | 438850.5 | 4785.1 | 1.9% | ok |
-| erased_add_f64_pytorch_n1048576 | #1766 | pytorch | pytorch-cpu | f64 | n=1048576 | 8 | 4 | 429943.8 | 9332.4 | 6.1% | ok |
-| erased_construct_f64_col_n8 | #2177 | col-major | tenferro-rs | f64 | n=8, layout=col | 8 | 16384 | 126.4 | 1.9 | 15.6% | NOISY |
-| erased_construct_f64_row_n8 | #2177 | row-major | tenferro-rs | f64 | n=8, layout=row | 8 | 8192 | 261.8 | 2.7 | 7.5% | ok |
-| erased_construct_f64_col_n4096 | #2177 | col-major | tenferro-rs | f64 | n=4096, layout=col | 8 | 16384 | 214.6 | 3.8 | 1.3% | ok |
-| erased_construct_f64_row_n4096 | #2177 | row-major | tenferro-rs | f64 | n=4096, layout=row | 8 | 128 | 18109.7 | 776.3 | 3.6% | ok |
-| erased_construct_f64_col_n65536 | #2177 | col-major | tenferro-rs | f64 | n=65536, layout=col | 8 | 1024 | 155.6 | 22.4 | 7.3% | ok |
-| erased_construct_f64_row_n65536 | #2177 | row-major | tenferro-rs | f64 | n=65536, layout=row | 8 | 8 | 299568.4 | 27831.9 | 5.4% | ok |
-| eager_small_leaf_f64_eager-held-session | #1704 | eager-held-session | tenferro-rs | f64 | op=leaf | 8 | 1024 | 3470.6 | 28.5 | 1.7% | ok |
-| eager_small_add_f64_eager-held-session | #1667 | eager-held-session | tenferro-rs | f64 | op=add | 8 | 1024 | 2924.5 | 13.6 | 0.3% | ok |
-| eager_small_add_f64_pytorch | #1667 | pytorch | pytorch-cpu | f64 | op=add | 8 | 2048 | 1821.5 | 8.4 | 0.3% | ok |
-| eager_small_gemm_f64_eager-held-session | #1904 | eager-held-session | tenferro-rs | f64 | op=gemm | 8 | 512 | 4303.4 | 29.9 | 0.6% | ok |
-| eager_small_gemm_f64_pytorch | #1904 | pytorch | pytorch-cpu | f64 | op=gemm | 8 | 1024 | 2031.2 | 6.6 | 0.3% | ok |
+| two_operand_einsum_f64_2x2_string | #2325 #2324 | string | tenferro-rs | f64 | m=2, k=2, n=2, format=ij,jk->ik | 1 | 512 | 3972.5 | 14.3 | 0.5% | ok |
+| two_operand_einsum_f64_2x2_subscripts | #2325 #2324 | subscripts | tenferro-rs | f64 | m=2, k=2, n=2, format=ij,jk->ik | 1 | 1024 | 2677.0 | 51.2 | 2.8% | ok |
+| two_operand_einsum_f64_2x2_prepared | #2325 #2324 | prepared | tenferro-rs | f64 | m=2, k=2, n=2, format=ij,jk->ik | 1 | 1024 | 2179.2 | 22.2 | 1.1% | ok |
+| two_operand_einsum_f64_2x2_dot-general | #2325 #2324 | dot-general | tenferro-rs | f64 | m=2, k=2, n=2, format=ij,jk->ik | 1 | 1024 | 2040.6 | 16.0 | 1.6% | ok |
+| two_operand_einsum_f64_2x2_pytorch | #2325 #2324 | pytorch | pytorch-cpu | f64 | m=2, k=2, n=2, format=ij,jk->ik | 1 | 256 | 13501.3 | 320.9 | 1.2% | ok |
+| two_operand_einsum_f64_16x16_string | #2325 #2324 | string | tenferro-rs | f64 | m=16, k=16, n=16, format=ij,jk->ik | 1 | 512 | 4103.7 | 20.8 | 0.7% | ok |
+| two_operand_einsum_f64_16x16_subscripts | #2325 #2324 | subscripts | tenferro-rs | f64 | m=16, k=16, n=16, format=ij,jk->ik | 1 | 1024 | 2909.8 | 27.5 | 1.2% | ok |
+| two_operand_einsum_f64_16x16_prepared | #2325 #2324 | prepared | tenferro-rs | f64 | m=16, k=16, n=16, format=ij,jk->ik | 1 | 1024 | 2511.6 | 52.9 | 1.4% | ok |
+| two_operand_einsum_f64_16x16_dot-general | #2325 #2324 | dot-general | tenferro-rs | f64 | m=16, k=16, n=16, format=ij,jk->ik | 1 | 1024 | 2271.0 | 14.1 | 2.0% | ok |
+| two_operand_einsum_f64_16x16_pytorch | #2325 #2324 | pytorch | pytorch-cpu | f64 | m=16, k=16, n=16, format=ij,jk->ik | 1 | 128 | 15207.1 | 161.7 | 1.9% | ok |
+| two_operand_einsum_c64_2x2_string | #2325 #2324 | string | tenferro-rs | c64 | m=2, k=2, n=2, format=ij,jk->ik | 1 | 512 | 3979.4 | 33.6 | 3.2% | ok |
+| two_operand_einsum_c64_2x2_subscripts | #2325 #2324 | subscripts | tenferro-rs | c64 | m=2, k=2, n=2, format=ij,jk->ik | 1 | 1024 | 2631.5 | 14.5 | 3.6% | ok |
+| two_operand_einsum_c64_2x2_prepared | #2325 #2324 | prepared | tenferro-rs | c64 | m=2, k=2, n=2, format=ij,jk->ik | 1 | 1024 | 2187.5 | 10.1 | 1.7% | ok |
+| two_operand_einsum_c64_2x2_dot-general | #2325 #2324 | dot-general | tenferro-rs | c64 | m=2, k=2, n=2, format=ij,jk->ik | 1 | 1024 | 2050.4 | 57.4 | 2.1% | ok |
+| two_operand_einsum_c64_2x2_pytorch | #2325 #2324 | pytorch | pytorch-cpu | c64 | m=2, k=2, n=2, format=ij,jk->ik | 1 | 256 | 13739.5 | 96.5 | 2.3% | ok |
+| two_operand_einsum_c64_16x16_string | #2325 #2324 | string | tenferro-rs | c64 | m=16, k=16, n=16, format=ij,jk->ik | 1 | 512 | 4966.0 | 75.0 | 1.1% | ok |
+| two_operand_einsum_c64_16x16_subscripts | #2325 #2324 | subscripts | tenferro-rs | c64 | m=16, k=16, n=16, format=ij,jk->ik | 1 | 512 | 3772.6 | 22.9 | 0.9% | ok |
+| two_operand_einsum_c64_16x16_prepared | #2325 #2324 | prepared | tenferro-rs | c64 | m=16, k=16, n=16, format=ij,jk->ik | 1 | 512 | 3395.3 | 27.8 | 1.0% | ok |
+| two_operand_einsum_c64_16x16_dot-general | #2325 #2324 | dot-general | tenferro-rs | c64 | m=16, k=16, n=16, format=ij,jk->ik | 1 | 1024 | 3121.4 | 26.9 | 1.3% | ok |
+| two_operand_einsum_c64_16x16_pytorch | #2325 #2324 | pytorch | pytorch-cpu | c64 | m=16, k=16, n=16, format=ij,jk->ik | 1 | 128 | 15895.3 | 201.0 | 1.1% | ok |
+| two_operand_einsum_f64_abc_cef_abef_string | #2325 #2324 | string | tenferro-rs | f64 | m=8, k=2, n=16, format=abc,cef->abef | 1 | 512 | 4509.6 | 38.2 | 1.8% | ok |
+| two_operand_einsum_f64_abc_cef_abef_subscripts | #2325 #2324 | subscripts | tenferro-rs | f64 | m=8, k=2, n=16, format=abc,cef->abef | 1 | 1024 | 2852.3 | 11.3 | 1.7% | ok |
+| two_operand_einsum_f64_abc_cef_abef_prepared | #2325 #2324 | prepared | tenferro-rs | f64 | m=8, k=2, n=16, format=abc,cef->abef | 1 | 1024 | 2267.0 | 8.6 | 2.3% | ok |
+| two_operand_einsum_f64_abc_cef_abef_dot-general | #2325 #2324 | dot-general | tenferro-rs | f64 | m=8, k=2, n=16, format=abc,cef->abef | 1 | 1024 | 2169.4 | 5.8 | 1.0% | ok |
+| two_operand_einsum_f64_abc_cef_abef_pytorch | #2325 #2324 | pytorch | pytorch-cpu | f64 | m=8, k=2, n=16, format=abc,cef->abef | 1 | 128 | 16788.6 | 53.2 | 1.1% | ok |
+| thin_c64_gemm_1x141_141x282_t1 | #2416 #1099 | dot-general | tenferro-rs | c64 | m=1, k=141, n=282 | 1 | 128 | 20526.9 | 114.9 | 0.8% | ok |
+| thin_c64_gemm_1x141_141x282_t1_faer-direct | #2416 #1099 | faer-direct | faer-direct | c64 | m=1, k=141, n=282 | 1 | 128 | 18134.2 | 105.7 | 2.0% | ok |
+| thin_c64_gemm_1x141_141x282_t1_pytorch | #2416 #1099 | pytorch | pytorch-cpu | c64 | m=1, k=141, n=282 | 1 | 64 | 49627.1 | 285.5 | 0.8% | ok |
+| thin_c64_gemm_2x141_141x282_t1 | #2416 #1099 | dot-general | tenferro-rs | c64 | m=2, k=141, n=282 | 1 | 64 | 50264.7 | 69.2 | 0.2% | ok |
+| thin_c64_gemm_2x141_141x282_t1_faer-direct | #2416 #1099 | faer-direct | faer-direct | c64 | m=2, k=141, n=282 | 1 | 64 | 50460.2 | 141.3 | 0.4% | ok |
+| thin_c64_gemm_2x141_141x282_t1_pytorch | #2416 #1099 | pytorch | pytorch-cpu | c64 | m=2, k=141, n=282 | 1 | 32 | 69548.4 | 270.5 | 0.4% | ok |
+| thin_c64_gemm_8x141_141x282_t1 | #2416 #1099 | dot-general | tenferro-rs | c64 | m=8, k=141, n=282 | 1 | 32 | 83154.8 | 280.7 | 0.3% | ok |
+| thin_c64_gemm_8x141_141x282_t1_faer-direct | #2416 #1099 | faer-direct | faer-direct | c64 | m=8, k=141, n=282 | 1 | 32 | 91190.8 | 178.3 | 0.1% | ok |
+| thin_c64_gemm_8x141_141x282_t1_pytorch | #2416 #1099 | pytorch | pytorch-cpu | c64 | m=8, k=141, n=282 | 1 | 32 | 123828.0 | 1351.1 | 0.7% | ok |
+| decode_proj_f32_eager-shared_in1024_out1024_len8 | #1992 #2003 #1995 #2229 | eager-shared | tenferro-rs | f32 | in=1024, out=1024, len=8 | 1 | 4 | 590079.2 | 3307.2 | 0.5% | ok |
+| decode_proj_f32_faer-direct_in1024_out1024_len8 | #1992 #2003 #1995 #2229 | faer-direct | faer-direct | f32 | in=1024, out=1024, len=8 | 1 | 4 | 577774.2 | 5254.6 | 0.8% | ok |
+| decode_proj_f32_host-sgemm_in1024_out1024_len8 | #1992 #2003 #1995 #2229 | host-sgemm | matrixmultiply-sgemm | f32 | in=1024, out=1024, len=8 | 1 | 2 | 1460967.5 | 14066.2 | 1.9% | ok |
+| decode_proj_f32_pytorch_in1024_out1024_len8 | #1992 #2003 #1995 #2229 | pytorch | pytorch-cpu | f32 | in=1024, out=1024, len=8 | 1 | 4 | 559094.8 | 1614.2 | 2.8% | ok |
+| decode_proj_f32_eager-shared_in1024_out1024_len64 | #1992 #2003 #1995 #2229 | eager-shared | tenferro-rs | f32 | in=1024, out=1024, len=64 | 1 | 1 | 2153236.0 | 10484.0 | 0.5% | ok |
+| decode_proj_f32_faer-direct_in1024_out1024_len64 | #1992 #2003 #1995 #2229 | faer-direct | faer-direct | f32 | in=1024, out=1024, len=64 | 1 | 1 | 2169626.0 | 4758.5 | 0.1% | ok |
+| decode_proj_f32_host-sgemm_in1024_out1024_len64 | #1992 #2003 #1995 #2229 | host-sgemm | matrixmultiply-sgemm | f32 | in=1024, out=1024, len=64 | 1 | 1 | 3095075.0 | 5610.0 | 0.3% | ok |
+| decode_proj_f32_pytorch_in1024_out1024_len64 | #1992 #2003 #1995 #2229 | pytorch | pytorch-cpu | f32 | in=1024, out=1024, len=64 | 1 | 1 | 2708381.0 | 16992.0 | 0.8% | ok |
+| decode_proj_f32_eager-shared_in1024_out1024_len512 | #1992 #2003 #1995 #2229 | eager-shared | tenferro-rs | f32 | in=1024, out=1024, len=512 | 1 | 1 | 17241343.0 | 26995.0 | 0.2% | ok |
+| decode_proj_f32_faer-direct_in1024_out1024_len512 | #1992 #2003 #1995 #2229 | faer-direct | faer-direct | f32 | in=1024, out=1024, len=512 | 1 | 1 | 17201419.0 | 20297.5 | 0.2% | ok |
+| decode_proj_f32_host-sgemm_in1024_out1024_len512 | #1992 #2003 #1995 #2229 | host-sgemm | matrixmultiply-sgemm | f32 | in=1024, out=1024, len=512 | 1 | 1 | 18405292.0 | 127145.0 | 0.9% | ok |
+| decode_proj_f32_pytorch_in1024_out1024_len512 | #1992 #2003 #1995 #2229 | pytorch | pytorch-cpu | f32 | in=1024, out=1024, len=512 | 1 | 1 | 20210545.0 | 92030.0 | 0.3% | ok |
+| decode_proj_f32_eager-shared_in1024_out4096_len8 | #1992 #2003 #1995 #2229 | eager-shared | tenferro-rs | f32 | in=1024, out=4096, len=8 | 1 | 1 | 2359307.0 | 27691.0 | 1.4% | ok |
+| decode_proj_f32_faer-direct_in1024_out4096_len8 | #1992 #2003 #1995 #2229 | faer-direct | faer-direct | f32 | in=1024, out=4096, len=8 | 1 | 1 | 2334220.0 | 48204.0 | 1.5% | ok |
+| decode_proj_f32_host-sgemm_in1024_out4096_len8 | #1992 #2003 #1995 #2229 | host-sgemm | matrixmultiply-sgemm | f32 | in=1024, out=4096, len=8 | 1 | 1 | 5935238.0 | 47763.0 | 0.7% | ok |
+| decode_proj_f32_pytorch_in1024_out4096_len8 | #1992 #2003 #1995 #2229 | pytorch | pytorch-cpu | f32 | in=1024, out=4096, len=8 | 1 | 1 | 2656655.0 | 39638.5 | 1.5% | ok |
+| decode_proj_f32_eager-shared_in1024_out4096_len64 | #1992 #2003 #1995 #2229 | eager-shared | tenferro-rs | f32 | in=1024, out=4096, len=64 | 1 | 1 | 8656192.0 | 58433.5 | 0.4% | ok |
+| decode_proj_f32_faer-direct_in1024_out4096_len64 | #1992 #2003 #1995 #2229 | faer-direct | faer-direct | f32 | in=1024, out=4096, len=64 | 1 | 1 | 8707247.0 | 59209.5 | 0.8% | ok |
+| decode_proj_f32_host-sgemm_in1024_out4096_len64 | #1992 #2003 #1995 #2229 | host-sgemm | matrixmultiply-sgemm | f32 | in=1024, out=4096, len=64 | 1 | 1 | 12471076.0 | 38030.0 | 0.8% | ok |
+| decode_proj_f32_pytorch_in1024_out4096_len64 | #1992 #2003 #1995 #2229 | pytorch | pytorch-cpu | f32 | in=1024, out=4096, len=64 | 1 | 1 | 11552560.0 | 87246.0 | 1.0% | ok |
+| decode_proj_f32_eager-shared_in1024_out4096_len512 | #1992 #2003 #1995 #2229 | eager-shared | tenferro-rs | f32 | in=1024, out=4096, len=512 | 1 | 1 | 69346147.0 | 183483.5 | 0.2% | ok |
+| decode_proj_f32_faer-direct_in1024_out4096_len512 | #1992 #2003 #1995 #2229 | faer-direct | faer-direct | f32 | in=1024, out=4096, len=512 | 1 | 1 | 69532342.0 | 279596.5 | 0.3% | ok |
+| decode_proj_f32_host-sgemm_in1024_out4096_len512 | #1992 #2003 #1995 #2229 | host-sgemm | matrixmultiply-sgemm | f32 | in=1024, out=4096, len=512 | 1 | 1 | 74011993.0 | 153093.0 | 0.4% | ok |
+| decode_proj_f32_pytorch_in1024_out4096_len512 | #1992 #2003 #1995 #2229 | pytorch | pytorch-cpu | f32 | in=1024, out=4096, len=512 | 1 | 1 | 81731998.0 | 303915.0 | 0.3% | ok |
+| decode_proj_view_operand_f32_prepared_in1024_out1024_len8_t1 | #2216 | prepared-view | tenferro-rs | f32 | in=1024, out=1024, len=8 | 1 | 4 | 565183.5 | 2593.5 | 2.2% | ok |
+| decode_proj_contiguous_operand_f32_prepared_in1024_out1024_len8_t1 | #2216 | prepared-contiguous | tenferro-rs | f32 | in=1024, out=1024, len=8 | 1 | 4 | 573040.5 | 3084.5 | 10.8% | NOISY |
+| decode_proj_view_operand_f32_pytorch_in1024_out1024_len8_t1 | #2216 | pytorch | pytorch-cpu | f32 | in=1024, out=1024, len=8 | 1 | 4 | 554831.8 | 2450.9 | 0.8% | ok |
+| gemm_c64_mm256_t1 | #1900 | dot-general-shared | tenferro-rs | c64 | n=256 | 1 | 1 | 4271026.0 | 9558.0 | 0.2% | ok |
+| gemm_f64_mm256_t1 | #1900 | dot-general-shared | tenferro-rs | f64 | n=256 | 1 | 2 | 1068828.5 | 1457.8 | 0.2% | ok |
+| conj_dot_f64_dot-general-rank1_len100 | #1615 | dot-general-rank1 | tenferro-rs | f64 | len=100 | 1 | 2048 | 1851.3 | 11.3 | 1.2% | ok |
+| conj_dot_f64_portable-loop_len100 | #1615 | portable-loop | rust-loop | f64 | len=100 | 1 | 32768 | 89.1 | 0.2 | 0.4% | ok |
+| conj_dot_f64_pytorch-vdot_len100 | #1615 | pytorch-vdot | pytorch-cpu | f64 | len=100 | 1 | 2048 | 1678.8 | 11.6 | 0.8% | ok |
+| conj_dot_f64_dot-general-rank1_len10000 | #1615 | dot-general-rank1 | tenferro-rs | f64 | len=10000 | 1 | 512 | 4468.5 | 9.6 | 0.3% | ok |
+| conj_dot_f64_portable-loop_len10000 | #1615 | portable-loop | rust-loop | f64 | len=10000 | 1 | 256 | 15003.2 | 54.9 | 0.3% | ok |
+| conj_dot_f64_pytorch-vdot_len10000 | #1615 | pytorch-vdot | pytorch-cpu | f64 | len=10000 | 1 | 512 | 4222.7 | 10.5 | 0.3% | ok |
+| conj_dot_f64_dot-general-rank1_len1000000 | #1615 | dot-general-rank1 | tenferro-rs | f64 | len=1000000 | 1 | 8 | 372037.0 | 24035.8 | 6.9% | ok |
+| conj_dot_f64_portable-loop_len1000000 | #1615 | portable-loop | rust-loop | f64 | len=1000000 | 1 | 2 | 1534228.0 | 2001.0 | 0.4% | ok |
+| conj_dot_f64_pytorch-vdot_len1000000 | #1615 | pytorch-vdot | pytorch-cpu | f64 | len=1000000 | 1 | 8 | 381210.1 | 34085.4 | 8.7% | ok |
+| conj_dot_c64_dot-general-rank1_len100 | #1615 | dot-general-rank1 | tenferro-rs | c64 | len=100 | 1 | 1024 | 1971.2 | 5.0 | 2.2% | ok |
+| conj_dot_c64_portable-loop_len100 | #1615 | portable-loop | rust-loop | c64 | len=100 | 1 | 16384 | 143.7 | 0.4 | 0.6% | ok |
+| conj_dot_c64_pytorch-vdot_len100 | #1615 | pytorch-vdot | pytorch-cpu | c64 | len=100 | 1 | 2048 | 1564.0 | 42.5 | 256.4% | NOISY |
+| conj_dot_c64_dot-general-rank1_len10000 | #1615 | dot-general-rank1 | tenferro-rs | c64 | len=10000 | 1 | 128 | 15861.2 | 38.4 | 1.0% | ok |
+| conj_dot_c64_portable-loop_len10000 | #1615 | portable-loop | rust-loop | c64 | len=10000 | 1 | 256 | 15264.6 | 33.3 | 0.6% | ok |
+| conj_dot_c64_pytorch-vdot_len10000 | #1615 | pytorch-vdot | pytorch-cpu | c64 | len=10000 | 1 | 256 | 9540.0 | 31.9 | 1.1% | ok |
+| conj_dot_c64_dot-general-rank1_len1000000 | #1615 | dot-general-rank1 | tenferro-rs | c64 | len=1000000 | 1 | 2 | 1459259.5 | 5953.2 | 0.6% | ok |
+| conj_dot_c64_portable-loop_len1000000 | #1615 | portable-loop | rust-loop | c64 | len=1000000 | 1 | 2 | 1548278.5 | 13011.5 | 0.5% | ok |
+| conj_dot_c64_pytorch-vdot_len1000000 | #1615 | pytorch-vdot | pytorch-cpu | c64 | len=1000000 | 1 | 4 | 865523.0 | 5180.8 | 0.5% | ok |
+| small_solve_f64_solve-loop_k16_b64 | #2007 #1878 | solve-loop | tenferro-rs | f64 | k=16, batch=64 | 1 | 8 | 328670.6 | 924.2 | 0.6% | ok |
+| small_solve_f64_triangular-solve-loop_k16_b64 | #2007 #1878 | triangular-solve-loop | tenferro-rs | f64 | k=16, batch=64 | 1 | 16 | 178229.7 | 1269.2 | 0.6% | ok |
+| small_solve_f64_solve-batched_k16_b64 | #2007 #1878 | solve-batched | tenferro-rs | f64 | k=16, batch=64 | 1 | 16 | 191069.1 | 571.4 | 0.5% | ok |
+| small_solve_f64_pytorch-solve-batched_k16_b64 | #2007 #1878 | pytorch-solve-batched | pytorch-cpu | f64 | k=16, batch=64 | 1 | 16 | 237655.0 | 651.6 | 0.4% | ok |
+| small_solve_f64_pytorch-solve-triangular-batched_k16_b64 | #2007 #1878 | pytorch-solve-triangular-batched | pytorch-cpu | f64 | k=16, batch=64 | 1 | 32 | 93608.5 | 792.4 | 10.2% | NOISY |
+| small_solve_f64_solve-loop_k64_b64 | #2007 #1878 | solve-loop | tenferro-rs | f64 | k=64, batch=64 | 1 | 1 | 3318017.0 | 9753.5 | 0.5% | ok |
+| small_solve_f64_triangular-solve-loop_k64_b64 | #2007 #1878 | triangular-solve-loop | tenferro-rs | f64 | k=64, batch=64 | 1 | 2 | 1698786.5 | 18875.0 | 0.7% | ok |
+| small_solve_f64_solve-batched_k64_b64 | #2007 #1878 | solve-batched | tenferro-rs | f64 | k=64, batch=64 | 1 | 1 | 3161808.0 | 16721.0 | 1.2% | ok |
+| small_solve_f64_pytorch-solve-batched_k64_b64 | #2007 #1878 | pytorch-solve-batched | pytorch-cpu | f64 | k=64, batch=64 | 1 | 1 | 6122024.0 | 67930.0 | 0.8% | ok |
+| small_solve_f64_pytorch-solve-triangular-batched_k64_b64 | #2007 #1878 | pytorch-solve-triangular-batched | pytorch-cpu | f64 | k=64, batch=64 | 1 | 2 | 1942872.5 | 1622.8 | 0.1% | ok |
+| tanh_chain_f32_compiled-prepared_k10_1024x64 | #1990 | compiled-prepared | tenferro-rs | f32 | rows=1024, cols=64, chain=10 | 1 | 2 | 1717401.0 | 13197.0 | 0.6% | ok |
+| tanh_chain_f32_eager-shared_k10_1024x64 | #1990 | eager-shared | tenferro-rs | f32 | rows=1024, cols=64, chain=10 | 1 | 2 | 1724323.5 | 7233.2 | 0.5% | ok |
+| tanh_chain_f32_compiled-prepared_k100_1024x64 | #1990 | compiled-prepared | tenferro-rs | f32 | rows=1024, cols=64, chain=100 | 1 | 1 | 17059128.0 | 52276.5 | 0.3% | ok |
+| tanh_chain_f32_eager-shared_k100_1024x64 | #1990 | eager-shared | tenferro-rs | f32 | rows=1024, cols=64, chain=100 | 1 | 1 | 17247535.0 | 117922.5 | 1.4% | ok |
+| tanh_chain_f32_compiled-prepared_k200_1024x64 | #1990 | compiled-prepared | tenferro-rs | f32 | rows=1024, cols=64, chain=200 | 1 | 1 | 34331870.0 | 175093.5 | 0.9% | ok |
+| tanh_chain_f32_eager-shared_k200_1024x64 | #1990 | eager-shared | tenferro-rs | f32 | rows=1024, cols=64, chain=200 | 1 | 1 | 34357508.0 | 75699.5 | 0.3% | ok |
+| layer_norm_f32_eager-composed_d1024_len8_b1 | #2006 | eager-composed | tenferro-rs | f32 | norm=layer_norm, d=1024, len=8, batch=1 | 1 | 32 | 64157.5 | 583.4 | 0.9% | ok |
+| layer_norm_f32_pytorch-fused_d1024_len8_b1 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=layer_norm, d=1024, len=8, batch=1 | 1 | 256 | 8029.9 | 64.2 | 0.8% | ok |
+| layer_norm_f32_eager-single-call_d1024_len8_b1 | #2006 | eager-single-call | tenferro-rs | f32 | norm=layer_norm, d=1024, len=8, batch=1 | 1 | 32 | 67134.9 | 329.2 | 0.4% | ok |
+| layer_norm_f32_eager-composed_d1024_len8_b8 | #2006 | eager-composed | tenferro-rs | f32 | norm=layer_norm, d=1024, len=8, batch=8 | 1 | 16 | 121863.8 | 827.1 | 0.7% | ok |
+| layer_norm_f32_pytorch-fused_d1024_len8_b8 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=layer_norm, d=1024, len=8, batch=8 | 1 | 64 | 33756.1 | 126.1 | 0.8% | ok |
+| layer_norm_f32_eager-single-call_d1024_len8_b8 | #2006 | eager-single-call | tenferro-rs | f32 | norm=layer_norm, d=1024, len=8, batch=8 | 1 | 16 | 118872.6 | 982.4 | 1.0% | ok |
+| layer_norm_f32_eager-composed_d1024_len64_b1 | #2006 | eager-composed | tenferro-rs | f32 | norm=layer_norm, d=1024, len=64, batch=1 | 1 | 16 | 120109.2 | 1172.8 | 0.7% | ok |
+| layer_norm_f32_pytorch-fused_d1024_len64_b1 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=layer_norm, d=1024, len=64, batch=1 | 1 | 64 | 33822.8 | 310.8 | 1.6% | ok |
+| layer_norm_f32_eager-single-call_d1024_len64_b1 | #2006 | eager-single-call | tenferro-rs | f32 | norm=layer_norm, d=1024, len=64, batch=1 | 1 | 16 | 117515.8 | 852.2 | 0.7% | ok |
+| layer_norm_f32_eager-composed_d1024_len64_b8 | #2006 | eager-composed | tenferro-rs | f32 | norm=layer_norm, d=1024, len=64, batch=8 | 1 | 4 | 634083.5 | 18405.2 | 2.1% | ok |
+| layer_norm_f32_pytorch-fused_d1024_len64_b8 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=layer_norm, d=1024, len=64, batch=8 | 1 | 16 | 829099.6 | 8160.3 | 1.6% | ok |
+| layer_norm_f32_eager-single-call_d1024_len64_b8 | #2006 | eager-single-call | tenferro-rs | f32 | norm=layer_norm, d=1024, len=64, batch=8 | 1 | 4 | 579948.2 | 13754.1 | 1.4% | ok |
+| rms_norm_f32_eager-composed_d1024_len8_b1 | #2006 | eager-composed | tenferro-rs | f32 | norm=rms_norm, d=1024, len=8, batch=1 | 1 | 64 | 32971.2 | 164.7 | 0.3% | ok |
+| rms_norm_f32_pytorch-fused_d1024_len8_b1 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=rms_norm, d=1024, len=8, batch=1 | 1 | 128 | 18052.7 | 87.1 | 0.7% | ok |
+| rms_norm_f32_eager-single-call_d1024_len8_b1 | #2006 | eager-single-call | tenferro-rs | f32 | norm=rms_norm, d=1024, len=8, batch=1 | 1 | 64 | 39609.2 | 309.7 | 1.4% | ok |
+| rms_norm_f32_eager-composed_d1024_len8_b8 | #2006 | eager-composed | tenferro-rs | f32 | norm=rms_norm, d=1024, len=8, batch=8 | 1 | 32 | 60588.4 | 354.2 | 0.4% | ok |
+| rms_norm_f32_pytorch-fused_d1024_len8_b8 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=rms_norm, d=1024, len=8, batch=8 | 1 | 32 | 40585.9 | 210.8 | 0.6% | ok |
+| rms_norm_f32_eager-single-call_d1024_len8_b8 | #2006 | eager-single-call | tenferro-rs | f32 | norm=rms_norm, d=1024, len=8, batch=8 | 1 | 32 | 66017.2 | 2344.9 | 2.7% | ok |
+| rms_norm_f32_eager-composed_d1024_len64_b1 | #2006 | eager-composed | tenferro-rs | f32 | norm=rms_norm, d=1024, len=64, batch=1 | 1 | 32 | 61028.6 | 2056.5 | 2.0% | ok |
+| rms_norm_f32_pytorch-fused_d1024_len64_b1 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=rms_norm, d=1024, len=64, batch=1 | 1 | 64 | 40954.5 | 355.1 | 0.8% | ok |
+| rms_norm_f32_eager-single-call_d1024_len64_b1 | #2006 | eager-single-call | tenferro-rs | f32 | norm=rms_norm, d=1024, len=64, batch=1 | 1 | 32 | 63817.8 | 1377.8 | 2.1% | ok |
+| rms_norm_f32_eager-composed_d1024_len64_b8 | #2006 | eager-composed | tenferro-rs | f32 | norm=rms_norm, d=1024, len=64, batch=8 | 1 | 4 | 312762.5 | 9051.6 | 2.2% | ok |
+| rms_norm_f32_pytorch-fused_d1024_len64_b8 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=rms_norm, d=1024, len=64, batch=8 | 1 | 8 | 1426994.8 | 13742.2 | 0.8% | ok |
+| rms_norm_f32_eager-single-call_d1024_len64_b8 | #2006 | eager-single-call | tenferro-rs | f32 | norm=rms_norm, d=1024, len=64, batch=8 | 1 | 4 | 294513.8 | 4485.8 | 1.4% | ok |
+| small_contraction_abcd-dbef-acef_f64_shared-session-default-pool_d4 | #1885 #1897 #1901 | shared-session-default-pool | tenferro-rs | f64 | extent=4 | 1 | 512 | 3788.6 | 33.8 | 2.1% | ok |
+| activation_erf_f32_eager-single-call_1024x64 | #1975 #2069 #2032 | eager-single-call | tenferro-rs | f32 | op=erf, rows=1024, cols=64 | 1 | 8 | 289383.1 | 798.4 | 0.9% | ok |
+| activation_erf_f32_session-single-call_1024x64 | #1975 #2069 #2032 | session-single-call | tenferro-rs | f32 | op=erf, rows=1024, cols=64 | 1 | 8 | 288400.1 | 1087.0 | 0.3% | ok |
+| activation_erf_f32_pytorch_1024x64 | #1975 #2069 #2032 | pytorch | pytorch-cpu | f32 | op=erf, rows=1024, cols=64 | 1 | 16 | 167077.9 | 1086.0 | 0.5% | ok |
+| activation_sigmoid_f32_eager-single-call_1024x64 | #1975 #2069 #2032 | eager-single-call | tenferro-rs | f32 | op=sigmoid, rows=1024, cols=64 | 1 | 32 | 45126.2 | 479.6 | 0.7% | ok |
+| activation_sigmoid_f32_session-single-call_1024x64 | #1975 #2069 #2032 | session-single-call | tenferro-rs | f32 | op=sigmoid, rows=1024, cols=64 | 1 | 32 | 43761.8 | 448.3 | 0.7% | ok |
+| activation_sigmoid_f32_eager-composed_1024x64 | #1975 #2069 #2032 | eager-composed | tenferro-rs | f32 | op=sigmoid, rows=1024, cols=64 | 1 | 32 | 80777.0 | 1286.0 | 1.0% | ok |
+| activation_sigmoid_f32_pytorch_1024x64 | #1975 #2069 #2032 | pytorch | pytorch-cpu | f32 | op=sigmoid, rows=1024, cols=64 | 1 | 32 | 92037.1 | 2673.0 | 3.2% | ok |
+| activation_silu_f32_eager-single-call_1024x64 | #1975 #2069 #2032 | eager-single-call | tenferro-rs | f32 | op=silu, rows=1024, cols=64 | 1 | 32 | 47461.1 | 314.3 | 1.0% | ok |
+| activation_silu_f32_session-single-call_1024x64 | #1975 #2069 #2032 | session-single-call | tenferro-rs | f32 | op=silu, rows=1024, cols=64 | 1 | 32 | 46181.8 | 186.0 | 3.0% | ok |
+| activation_silu_f32_eager-composed_1024x64 | #1975 #2069 #2032 | eager-composed | tenferro-rs | f32 | op=silu, rows=1024, cols=64 | 1 | 16 | 92335.5 | 531.3 | 0.6% | ok |
+| activation_silu_f32_pytorch_1024x64 | #1975 #2069 #2032 | pytorch | pytorch-cpu | f32 | op=silu, rows=1024, cols=64 | 1 | 32 | 97225.5 | 1374.4 | 2.1% | ok |
+| activation_softplus_f32_eager-single-call_1024x64 | #1975 #2069 #2032 | eager-single-call | tenferro-rs | f32 | op=softplus, rows=1024, cols=64 | 1 | 16 | 160550.2 | 575.1 | 0.7% | ok |
+| activation_softplus_f32_session-single-call_1024x64 | #1975 #2069 #2032 | session-single-call | tenferro-rs | f32 | op=softplus, rows=1024, cols=64 | 1 | 16 | 159575.2 | 1087.7 | 0.7% | ok |
+| activation_softplus_f32_eager-composed_1024x64 | #1975 #2069 #2032 | eager-composed | tenferro-rs | f32 | op=softplus, rows=1024, cols=64 | 1 | 16 | 173842.2 | 1455.8 | 1.2% | ok |
+| activation_softplus_f32_pytorch_1024x64 | #1975 #2069 #2032 | pytorch | pytorch-cpu | f32 | op=softplus, rows=1024, cols=64 | 1 | 16 | 201564.7 | 2002.2 | 0.7% | ok |
+| activation_gelu_f32_eager-single-call_1024x64 | #1975 #2030 #2069 #2228 | eager-single-call | tenferro-rs | f32 | op=gelu, rows=1024, cols=64 | 1 | 32 | 64948.1 | 162.7 | 0.4% | ok |
+| activation_gelu_f32_session-single-call_1024x64 | #1975 #2030 #2069 #2228 | session-single-call | tenferro-rs | f32 | op=gelu, rows=1024, cols=64 | 1 | 32 | 64208.6 | 520.5 | 0.7% | ok |
+| activation_gelu_f32_pytorch_1024x64 | #1975 #2030 #2069 #2228 | pytorch | pytorch-cpu | f32 | op=gelu, rows=1024, cols=64 | 1 | 32 | 55109.9 | 376.8 | 0.7% | ok |
+| activation_gelu_tanh_f32_eager-single-call_1024x64 | #1975 #2069 #2032 | eager-single-call | tenferro-rs | f32 | op=gelu_tanh, rows=1024, cols=64 | 1 | 16 | 192594.4 | 661.5 | 0.8% | ok |
+| activation_gelu_tanh_f32_session-single-call_1024x64 | #1975 #2069 #2032 | session-single-call | tenferro-rs | f32 | op=gelu_tanh, rows=1024, cols=64 | 1 | 16 | 190542.4 | 325.8 | 0.2% | ok |
+| activation_gelu_tanh_f32_eager-composed_1024x64 | #1975 #2069 #2032 | eager-composed | tenferro-rs | f32 | op=gelu_tanh, rows=1024, cols=64 | 1 | 8 | 323234.4 | 2472.8 | 0.8% | ok |
+| activation_gelu_tanh_f32_pytorch_1024x64 | #1975 #2069 #2032 | pytorch | pytorch-cpu | f32 | op=gelu_tanh, rows=1024, cols=64 | 1 | 16 | 242776.4 | 2718.5 | 1.1% | ok |
+| softmax_f32_eager-single-call_len64_b8 | #1976 #2031 #2231 | eager-single-call | tenferro-rs | f32 | op=softmax, len=64, batch=8, axis=0 | 1 | 64 | 30915.1 | 468.9 | 1.1% | ok |
+| softmax_f32_session-single-call_len64_b8 | #1976 #2031 #2231 | session-single-call | tenferro-rs | f32 | op=softmax, len=64, batch=8, axis=0 | 1 | 64 | 30534.8 | 92.8 | 0.8% | ok |
+| softmax_f32_eager-composed_len64_b8 | #1976 #2031 #2231 | eager-composed | tenferro-rs | f32 | op=softmax, len=64, batch=8, axis=0 | 1 | 16 | 140189.5 | 671.9 | 13.8% | NOISY |
+| softmax_f32_pytorch_len64_b8 | #1976 #2031 #2231 | pytorch | pytorch-cpu | f32 | op=softmax, len=64, batch=8, axis=0 | 1 | 64 | 42669.6 | 172.5 | 0.3% | ok |
+| softmax_f32_eager-single-call_len512_b8 | #1976 #2231 | eager-single-call | tenferro-rs | f32 | op=softmax, len=512, batch=8, axis=0 | 1 | 2 | 1883833.5 | 14022.8 | 1.1% | ok |
+| softmax_f32_session-single-call_len512_b8 | #1976 #2231 | session-single-call | tenferro-rs | f32 | op=softmax, len=512, batch=8, axis=0 | 1 | 2 | 1895184.5 | 58255.0 | 2.1% | ok |
+| softmax_f32_eager-composed_len512_b8 | #1976 #2231 | eager-composed | tenferro-rs | f32 | op=softmax, len=512, batch=8, axis=0 | 1 | 1 | 3986081.0 | 109387.5 | 2.1% | ok |
+| softmax_f32_pytorch_len512_b8 | #1976 #2231 | pytorch | pytorch-cpu | f32 | op=softmax, len=512, batch=8, axis=0 | 1 | 1 | 2256346.0 | 71322.0 | 1.8% | ok |
+| log_softmax_f32_eager-single-call_len64_b8 | #1976 | eager-single-call | tenferro-rs | f32 | op=log_softmax, len=64, batch=8, axis=0 | 1 | 16 | 145482.4 | 931.4 | 0.4% | ok |
+| log_softmax_f32_session-single-call_len64_b8 | #1976 | session-single-call | tenferro-rs | f32 | op=log_softmax, len=64, batch=8, axis=0 | 1 | 16 | 122879.4 | 1077.0 | 3.0% | ok |
+| log_softmax_f32_eager-composed_len64_b8 | #1976 | eager-composed | tenferro-rs | f32 | op=log_softmax, len=64, batch=8, axis=0 | 1 | 16 | 124838.6 | 566.1 | 0.5% | ok |
+| log_softmax_f32_pytorch_len64_b8 | #1976 | pytorch | pytorch-cpu | f32 | op=log_softmax, len=64, batch=8, axis=0 | 1 | 64 | 36870.4 | 136.8 | 1.2% | ok |
+| log_softmax_f32_eager-single-call_len512_b8 | #1976 | eager-single-call | tenferro-rs | f32 | op=log_softmax, len=512, batch=8, axis=0 | 1 | 1 | 3657914.0 | 95927.0 | 1.4% | ok |
+| log_softmax_f32_session-single-call_len512_b8 | #1976 | session-single-call | tenferro-rs | f32 | op=log_softmax, len=512, batch=8, axis=0 | 1 | 1 | 3682469.0 | 26810.0 | 1.8% | ok |
+| log_softmax_f32_eager-composed_len512_b8 | #1976 | eager-composed | tenferro-rs | f32 | op=log_softmax, len=512, batch=8, axis=0 | 1 | 1 | 3656211.0 | 45239.5 | 1.2% | ok |
+| log_softmax_f32_pytorch_len512_b8 | #1976 | pytorch | pytorch-cpu | f32 | op=log_softmax, len=512, batch=8, axis=0 | 1 | 1 | 2067698.0 | 45688.5 | 1.4% | ok |
+| masked_softmax_f32_eager-single-call_len64_b8 | #1976 | eager-single-call | tenferro-rs | f32 | op=masked_softmax, len=64, batch=8, axis=0 | 1 | 8 | 251092.4 | 1264.9 | 0.6% | ok |
+| masked_softmax_f32_session-single-call_len64_b8 | #1976 | session-single-call | tenferro-rs | f32 | op=masked_softmax, len=64, batch=8, axis=0 | 1 | 16 | 224321.1 | 1978.3 | 1.1% | ok |
+| masked_softmax_f32_eager-composed_len64_b8 | #1976 | eager-composed | tenferro-rs | f32 | op=masked_softmax, len=64, batch=8, axis=0 | 1 | 16 | 153709.4 | 1799.2 | 4.0% | ok |
+| masked_softmax_f32_pytorch_len64_b8 | #1976 | pytorch | pytorch-cpu | f32 | op=masked_softmax, len=64, batch=8, axis=0 | 1 | 32 | 91200.9 | 5520.3 | 3.4% | ok |
+| masked_softmax_f32_eager-single-call_len512_b8 | #1976 | eager-single-call | tenferro-rs | f32 | op=masked_softmax, len=512, batch=8, axis=0 | 1 | 1 | 9213243.0 | 102845.0 | 0.9% | ok |
+| masked_softmax_f32_session-single-call_len512_b8 | #1976 | session-single-call | tenferro-rs | f32 | op=masked_softmax, len=512, batch=8, axis=0 | 1 | 1 | 9202292.0 | 37263.5 | 0.5% | ok |
+| masked_softmax_f32_eager-composed_len512_b8 | #1976 | eager-composed | tenferro-rs | f32 | op=masked_softmax, len=512, batch=8, axis=0 | 1 | 1 | 4935363.0 | 30160.0 | 0.7% | ok |
+| masked_softmax_f32_pytorch_len512_b8 | #1976 | pytorch | pytorch-cpu | f32 | op=masked_softmax, len=512, batch=8, axis=0 | 1 | 1 | 4955351.0 | 231167.5 | 3.7% | ok |
+| softmax_f32_eager-single-call_len64_b8_t1 | #2233 #2235 | eager-single-call | tenferro-rs | f32 | op=softmax, len=64, batch=8, axis=0 | 1 | 64 | 31035.9 | 231.8 | 1.3% | ok |
+| softmax_f32_eager-composed_len64_b8_t1 | #2233 #2235 | eager-composed | tenferro-rs | f32 | op=softmax, len=64, batch=8, axis=0 | 1 | 16 | 140181.4 | 995.5 | 0.7% | ok |
+| softmax_f32_pytorch_len64_b8_t1 | #2233 #2235 | pytorch | pytorch-cpu | f32 | op=softmax, len=64, batch=8, axis=0 | 1 | 64 | 43349.4 | 80.6 | 0.6% | ok |
+| reduce_mean_f32_eager-single-call_1024x64_axis0 | #1976 | eager-single-call | tenferro-rs | f32 | rows=1024, cols=64, axis=0 | 1 | 128 | 15653.8 | 81.4 | 0.4% | ok |
+| reduce_mean_f32_session-single-call_1024x64_axis0 | #1976 | session-single-call | tenferro-rs | f32 | rows=1024, cols=64, axis=0 | 1 | 256 | 8638.1 | 32.1 | 0.3% | ok |
+| reduce_mean_f32_eager-composed_1024x64_axis0 | #1976 | eager-composed | tenferro-rs | f32 | rows=1024, cols=64, axis=0 | 1 | 128 | 15850.8 | 78.4 | 0.3% | ok |
+| reduce_mean_f32_pytorch_1024x64_axis0 | #1976 | pytorch | pytorch-cpu | f32 | rows=1024, cols=64, axis=0 | 1 | 256 | 8720.6 | 37.5 | 0.5% | ok |
+| take_along_axis_rows_f64_eager-single-call_n64_b256 | #2008 | eager-single-call | tenferro-rs | f64 | n=64, batch=256, axis=0 | 1 | 1 | 9357279.0 | 287712.0 | 3.3% | ok |
+| take_along_axis_rows_f64_session-single-call_n64_b256 | #2008 | session-single-call | tenferro-rs | f64 | n=64, batch=256, axis=0 | 1 | 1 | 9018724.0 | 156799.5 | 1.0% | ok |
+| take_along_axis_rows_f64_eager-gather-prebuilt_n64_b256 | #2008 | eager-gather-prebuilt | tenferro-rs | f64 | n=64, batch=256, axis=0 | 1 | 1 | 8877262.0 | 76436.0 | 1.3% | ok |
+| take_along_axis_rows_f64_pytorch_n64_b256 | #2008 | pytorch | pytorch-cpu | f64 | n=64, batch=256, axis=0 | 1 | 1 | 4545704.0 | 94961.0 | 1.2% | ok |
+| lstsq_f64_eager-shared_m768_n384_rhs16 | #2027 | eager-shared | tenferro-rs | f64 | operation=lstsq | 1 | 1 | 22115538.0 | 93472.5 | 0.3% | ok |
+| lstsq_f64_pytorch_m768_n384_rhs16 | #2027 | pytorch | pytorch-cpu | f64 | operation=lstsq | 1 | 1 | 12333775.0 | 45424.0 | 0.3% | ok |
+| triangular_f64_concrete-shared_n4096_rhs64 | #2028 | concrete-shared | tenferro-rs | f64 | operation=triangular | 1 | 1 | 40553124.0 | 119070.0 | 0.3% | ok |
+| triangular_f64_pytorch_n4096_rhs64 | #2028 | pytorch | pytorch-cpu | f64 | operation=triangular | 1 | 1 | 43868537.0 | 165069.5 | 0.8% | ok |
+| reshape_f64_concrete-shared_n33554432_to8192x4096 | #2029 | concrete-shared | tenferro-rs | f64 | operation=reshape | 1 | 1 | 86967383.0 | 755118.5 | 0.6% | ok |
+| reshape_f64_pytorch_n33554432_to8192x4096 | #2029 | pytorch | pytorch-cpu | f64 | operation=reshape | 1 | 1 | 86265718.0 | 551523.5 | 0.6% | ok |
+| metadata_transpose_view_f64_rank8_t1 | #2180 | metadata-clone | tenferro-rs | f64 | shape=[2, 2, 2, 2, 2, 2, 2, 2] | 1 | 8192 | 81.3 | 1.3 | 47.7% | NOISY |
+| metadata_transpose_view_f64_rank8_t1_julia-base | #2180 | julia-base | julia-base | f64 | shape=[2, 2, 2, 2, 2, 2, 2, 2] | 1 | 1048576 | 0.3 | 0.0 | 6.9% | ok |
+| followup_structural_broadcast_in_dim_direct-shared | #2021 | direct-shared | tenferro-rs | f64 | case_id=structural.broadcast_in_dim, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8192, 1], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 82020031.0 | 908587.5 | 0.8% | ok |
+| followup_structural_broadcast_in_dim_pytorch | #2021 | pytorch | pytorch-cpu | f64 | case_id=structural.broadcast_in_dim, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8192, 1], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 82291915.0 | 1574236.5 | 1.2% | ok |
+| followup_real_tanh_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.tanh, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 48454099.0 | 339086.0 | 0.6% | ok |
+| followup_real_tanh_jax | #2033 | jax | jax-cpu | f64 | case_id=real.tanh, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 32024129.0 | 211430.5 | 0.4% | ok |
+| followup_real_log1p_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.log1p, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 12014878.0 | 73981.5 | 0.4% | ok |
+| followup_real_log1p_pytorch | #2033 | pytorch | pytorch-cpu | f64 | case_id=real.log1p, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 24625076.0 | 574917.0 | 1.7% | ok |
+| followup_real_cos_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.cos, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 24420979.0 | 53198.5 | 0.3% | ok |
+| followup_real_cos_pytorch | #2033 | pytorch | pytorch-cpu | f64 | case_id=real.cos, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 64502340.0 | 775126.0 | 0.9% | ok |
+| followup_real_sin_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.sin, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 19235774.0 | 167408.5 | 0.5% | ok |
+| followup_real_sin_pytorch | #2033 | pytorch | pytorch-cpu | f64 | case_id=real.sin, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 63953779.0 | 473048.5 | 0.5% | ok |
+| followup_real_exp_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.exp, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 13986039.0 | 83033.5 | 0.5% | ok |
+| followup_real_exp_jax | #2033 | jax | jax-cpu | f64 | case_id=real.exp, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 32693328.0 | 344766.5 | 1.4% | ok |
+| followup_real_expm1_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.expm1, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 19597283.0 | 37830.5 | 0.3% | ok |
+| followup_real_expm1_jax | #2033 | jax | jax-cpu | f64 | case_id=real.expm1, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 23969157.0 | 387450.5 | 1.5% | ok |
+| followup_real_pow_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.pow, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 74124306.0 | 636134.0 | 0.6% | ok |
+| followup_real_pow_pytorch | #2033 | pytorch | pytorch-cpu | f64 | case_id=real.pow, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 51085247.0 | 266061.5 | 0.6% | ok |
+| followup_complex_exp_direct-shared | #2033 | direct-shared | tenferro-rs | c64 | case_id=complex.exp, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [4194304], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 105428874.0 | 449751.5 | 0.3% | ok |
+| followup_complex_exp_julia-base | #2033 | julia-base | julia-base | c64 | case_id=complex.exp, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [4194304], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 79094040.0 | 1001300.0 | 3.1% | ok |
+| followup_real_log_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.log, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 24784025.0 | 222962.0 | 1.0% | ok |
+| followup_real_log_pytorch | #2033 | pytorch | pytorch-cpu | f64 | case_id=real.log, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 51223097.0 | 581023.0 | 0.7% | ok |
+| followup_real_reduce_max_axis1_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_max_axis1, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 2 | 979233.5 | 37927.8 | 4.5% | ok |
+| followup_real_reduce_max_axis1_julia-base | #2034 | julia-base | julia-base | f64 | case_id=real.reduce_max_axis1, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 2 | 1019247.5 | 51886.0 | 6.0% | ok |
+| followup_real_reduce_prod_axis1_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_prod_axis1, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 2 | 855369.5 | 27766.0 | 3.7% | ok |
+| followup_real_reduce_prod_axis1_pytorch | #2034 | pytorch | pytorch-cpu | f64 | case_id=real.reduce_prod_axis1, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 4 | 704491.0 | 9254.9 | 1.2% | ok |
+| followup_real_reduce_sum_axis1_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_sum_axis1, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 2 | 970472.5 | 26341.0 | 3.4% | ok |
+| followup_real_reduce_sum_axis1_pytorch | #2034 | pytorch | pytorch-cpu | f64 | case_id=real.reduce_sum_axis1, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 4 | 650922.2 | 14021.0 | 2.4% | ok |
+| followup_real_reduce_max_axis0_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_max_axis0, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 2935021.0 | 14677.5 | 0.7% | ok |
+| followup_real_reduce_max_axis0_julia-base | #2034 | julia-base | julia-base | f64 | case_id=real.reduce_max_axis0, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 2 | 1710144.0 | 44169.2 | 3.2% | ok |
+| followup_real_reduce_min_axis1_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_min_axis1, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [4096, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 6206735.0 | 27982.0 | 1.0% | ok |
+| followup_real_reduce_min_axis1_julia-base | #2034 | julia-base | julia-base | f64 | case_id=real.reduce_min_axis1, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [4096, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 5522801.0 | 141321.5 | 2.6% | ok |
+| followup_real_reduce_min_axis0_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_min_axis0, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 2692093.0 | 7603.5 | 0.5% | ok |
+| followup_real_reduce_min_axis0_julia-base | #2034 | julia-base | julia-base | f64 | case_id=real.reduce_min_axis0, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 1842684.0 | 111711.0 | 7.0% | ok |
+| followup_real_reduce_max_all_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_max_all, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [8192, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 23021215.0 | 29935.5 | 0.1% | ok |
+| followup_real_reduce_max_all_julia-base | #2034 | julia-base | julia-base | f64 | case_id=real.reduce_max_all, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [8192, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 16094981.0 | 126945.0 | 0.7% | ok |
+| followup_real_reduce_min_all_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_min_all, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [8192, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 20952925.0 | 228021.0 | 0.8% | ok |
+| followup_real_reduce_min_all_julia-base | #2034 | julia-base | julia-base | f64 | case_id=real.reduce_min_all, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [8192, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 16651720.0 | 118859.0 | 1.2% | ok |
+| followup_complex_norm_fro_direct-shared | #2035 | direct-shared | tenferro-rs | c64 | case_id=complex.norm_fro, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [2048, 1536], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 2 | 1517062.5 | 14990.5 | 0.8% | ok |
+| followup_complex_norm_fro_jax | #2035 | jax | jax-cpu | c64 | case_id=complex.norm_fro, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [2048, 1536], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 6559066.0 | 41431.5 | 1.1% | ok |
+| followup_index_gather_direct-shared | #2036 #1719 | direct-shared | tenferro-rs | f64 | case_id=index.gather, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [262144], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 4 | 405168.5 | 3697.0 | 2.3% | ok |
+| followup_index_gather_jax | #2036 #1719 | jax | jax-cpu | f64 | case_id=index.gather, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [262144], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 4 | 396793.0 | 4897.9 | 1.0% | ok |
+| followup_index_scatter_direct-shared | #2036 #1719 | direct-shared | tenferro-rs | f64 | case_id=index.scatter, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [262144], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 2 | 1043968.5 | 71709.8 | 13.1% | NOISY |
+| followup_index_scatter_pytorch | #2036 #1719 | pytorch | pytorch-cpu | f64 | case_id=index.scatter, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [262144], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 4 | 1003578.8 | 14905.0 | 4.1% | ok |
+| followup_index_dynamic_update_slice_direct-shared | #2036 #1719 | direct-shared | tenferro-rs | f64 | case_id=index.dynamic_update_slice, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [2097152], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 2 | 1339284.0 | 41324.0 | 3.8% | ok |
+| followup_index_dynamic_update_slice_jax | #2036 #1719 | jax | jax-cpu | f64 | case_id=index.dynamic_update_slice, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [2097152], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 2 | 5682557.5 | 129273.8 | 3.0% | ok |
+| followup_perm_reverse_15d_3_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.reverse_15d_3, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 75077864.0 | 1438858.0 | 1.5% | ok |
+| followup_perm_reverse_15d_3_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.reverse_15d_3, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 70966920.0 | 3856353.5 | 9.9% | ok |
+| followup_structural_transpose_direct-shared | #2037 #2228 | direct-shared | tenferro-rs | f64 | case_id=structural.transpose, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [4096, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 74586959.0 | 978557.5 | 1.4% | ok |
+| followup_structural_transpose_pytorch | #2037 #2228 | pytorch | pytorch-cpu | f64 | case_id=structural.transpose, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [4096, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 60776954.0 | 959583.5 | 2.3% | ok |
+| followup_perm_reverse_23d_2_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.reverse_23d_2, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 25739139.0 | 107641.0 | 0.3% | ok |
+| followup_perm_reverse_23d_2_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.reverse_23d_2, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 45652458.0 | 346627.0 | 0.6% | ok |
+| followup_perm_transpose_3d_256_201_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.transpose_3d_256_201, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [256, 256, 256], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 73618475.0 | 862606.5 | 0.8% | ok |
+| followup_perm_transpose_3d_256_201_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.transpose_3d_256_201, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [256, 256, 256], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 71784230.0 | 538261.0 | 0.5% | ok |
+| followup_perm_cyclic_15d_3_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.cyclic_15d_3, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 45583236.0 | 13940244.5 | 17.2% | NOISY |
+| followup_perm_cyclic_15d_3_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.cyclic_15d_3, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 44168771.0 | 1099327.0 | 1.6% | ok |
+| followup_perm_transpose_3d_256_102_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.transpose_3d_256_102, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [256, 256, 256], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 58360686.0 | 340687.5 | 1.1% | ok |
+| followup_perm_transpose_3d_256_102_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.transpose_3d_256_102, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [256, 256, 256], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 55988505.0 | 1035521.5 | 1.4% | ok |
+| followup_perm_tn_light_415_24d_scattered_to_colmajor_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.tn_light_415_24d_scattered_to_colmajor, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 52103096.0 | 838915.5 | 1.3% | ok |
+| followup_perm_tn_light_415_24d_scattered_to_colmajor_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.tn_light_415_24d_scattered_to_colmajor, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 50104846.0 | 768524.5 | 1.3% | ok |
+| followup_perm_tn_light_415_24d_contiguous_same_perm_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.tn_light_415_24d_contiguous_same_perm, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 50292769.0 | 511406.0 | 1.2% | ok |
+| followup_perm_tn_light_415_24d_contiguous_same_perm_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.tn_light_415_24d_contiguous_same_perm, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 51466827.0 | 1267598.0 | 4.3% | ok |
+| followup_perm_rotation_6d_32_32_32_32_16_16_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.rotation_6d_32_32_32_32_16_16, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [32, 32, 32, 32, 16, 16], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 911375614.0 | 9658935.5 | 1.2% | ok |
+| followup_perm_rotation_6d_32_32_32_32_16_16_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.rotation_6d_32_32_32_32_16_16, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [32, 32, 32, 32, 16, 16], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 901805049.0 | 5623405.0 | 0.6% | ok |
+| followup_structural_extract_diagonal_direct-shared | #2038 #2228 | direct-shared | tenferro-rs | f64 | case_id=structural.extract_diagonal, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [8388608, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 45053242.0 | 213445.5 | 0.5% | ok |
+| followup_structural_extract_diagonal_jax | #2038 #2228 | jax | jax-cpu | f64 | case_id=structural.extract_diagonal, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [8388608, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 46489153.0 | 773103.0 | 1.2% | ok |
+| followup_fft_irfft_direct-shared | #2039 #2230 #2228 | direct-shared | tenferro-rs | c32 | case_id=fft.irfft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [524289], 'dtype': 'c32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 4963818.0 | 65013.5 | 0.7% | ok |
+| followup_fft_irfft_mkl-dfti | #2039 #2230 #2228 | mkl-dfti | mkl-dfti | c32 | case_id=fft.irfft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [524289], 'dtype': 'c32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 3092927.0 | 6918.5 | 0.2% | ok |
+| followup_fft_rfft_direct-shared | #2039 #2230 #2228 | direct-shared | tenferro-rs | f32 | case_id=fft.rfft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [1048576], 'dtype': 'f32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 4259560.0 | 41088.0 | 0.7% | ok |
+| followup_fft_rfft_mkl-dfti | #2039 #2230 #2228 | mkl-dfti | mkl-dfti | f32 | case_id=fft.rfft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [1048576], 'dtype': 'f32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 3012874.0 | 29215.5 | 1.1% | ok |
+| followup_fft_fft_direct-shared | #2039 #2228 | direct-shared | tenferro-rs | c64 | case_id=fft.fft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [1048576], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 12991347.0 | 78485.0 | 0.6% | ok |
+| followup_fft_fft_mkl-dfti | #2039 #2228 | mkl-dfti | mkl-dfti | c64 | case_id=fft.fft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [1048576], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 14541684.0 | 63249.0 | 0.5% | ok |
+| followup_fft_ifft_direct-shared | #2039 #2228 | direct-shared | tenferro-rs | c32 | case_id=fft.ifft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [1048576], 'dtype': 'c32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 8182905.0 | 94956.0 | 3.2% | ok |
+| followup_fft_ifft_mkl-dfti | #2039 #2228 | mkl-dfti | mkl-dfti | c32 | case_id=fft.ifft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [1048576], 'dtype': 'c32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 1 | 1 | 6659305.0 | 81845.5 | 0.9% | ok |
+| followup_metadata_transpose_view_metadata | #2040 #1719 | metadata | tenferro-rs | f64 | case_id=metadata.transpose_view, rust_path=metadata, reference_path=julia-base, fixture={'input_shape': [2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 1 | 8192 | 259.3 | 2.4 | 1.2% | ok |
+| followup_metadata_transpose_view_julia-base | #2040 #1719 | julia-base | julia-base | f64 | case_id=metadata.transpose_view, rust_path=metadata, reference_path=julia-base, fixture={'input_shape': [2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 1 | 1864135 | 0.7 | 0.0 | 6.8% | ok |
+| followup_metadata_transpose_view_metadata-host-dyn | #2040 #1719 | metadata-host-dyn | tenferro-rs | f64 | case_id=metadata.transpose_view, rust_path=metadata-host-dyn, reference_path=julia-base, fixture={'input_shape': [2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 1 | 8192 | 336.6 | 2.5 | 0.7% | ok |
+| followup_metadata_transpose_view_metadata-host-static | #2040 #1719 | metadata-host-static | tenferro-rs | f64 | case_id=metadata.transpose_view, rust_path=metadata-host-static, reference_path=julia-base, fixture={'input_shape': [2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 1 | 8192 | 268.0 | 3.2 | 1.5% | ok |
+| followup_metadata_slice_view_metadata | #2040 #1719 | metadata | tenferro-rs | f64 | case_id=metadata.slice_view, rust_path=metadata, reference_path=julia-base, fixture={'input_shape': [4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 1 | 8192 | 400.2 | 6.2 | 4.7% | ok |
+| followup_metadata_slice_view_julia-base | #2040 #1719 | julia-base | julia-base | f64 | case_id=metadata.slice_view, rust_path=metadata, reference_path=julia-base, fixture={'input_shape': [4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 1 | 16256 | 3.7 | 1.3 | 26.6% | NOISY |
+| followup_metadata_slice_view_metadata-host-dyn | #2040 #1719 | metadata-host-dyn | tenferro-rs | f64 | case_id=metadata.slice_view, rust_path=metadata-host-dyn, reference_path=julia-base, fixture={'input_shape': [4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 1 | 4096 | 488.6 | 7.9 | 1.6% | ok |
+| followup_metadata_slice_view_metadata-host-static | #2040 #1719 | metadata-host-static | tenferro-rs | f64 | case_id=metadata.slice_view, rust_path=metadata-host-static, reference_path=julia-base, fixture={'input_shape': [4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 1 | 8192 | 344.0 | 32.2 | 5.0% | ok |
+| followup_metadata_reshape_view_metadata | #2040 #1719 | metadata | tenferro-rs | f64 | case_id=metadata.reshape_view, rust_path=metadata, reference_path=julia-base, fixture={'input_shape': [1024], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 1 | 8192 | 467.6 | 5.3 | 0.7% | ok |
+| followup_metadata_reshape_view_julia-base | #2040 #1719 | julia-base | julia-base | f64 | case_id=metadata.reshape_view, rust_path=metadata, reference_path=julia-base, fixture={'input_shape': [1024], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 1 | 63550 | 11.4 | 2.3 | 13.9% | NOISY |
+| followup_metadata_reshape_view_metadata-host-dyn | #2040 #1719 | metadata-host-dyn | tenferro-rs | f64 | case_id=metadata.reshape_view, rust_path=metadata-host-dyn, reference_path=julia-base, fixture={'input_shape': [1024], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 1 | 4096 | 456.7 | 3.2 | 1.0% | ok |
+| followup_metadata_reshape_view_metadata-host-static | #2040 #1719 | metadata-host-static | tenferro-rs | f64 | case_id=metadata.reshape_view, rust_path=metadata-host-static, reference_path=julia-base, fixture={'input_shape': [1024], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 1 | 8192 | 437.8 | 11.8 | 2.2% | ok |
+| typed_elemwise_f64_add_held_len16 | #2139 | tenferro | tenferro-rs | f64 | n=16, route=held | 1 | 2048 | 1424.2 | 4.6 | 2.3% | ok |
+| typed_elemwise_f64_add_held_len16_pytorch | #2139 | pytorch | pytorch-cpu | f64 | n=16, route=held | 1 | 2048 | 1825.6 | 3.0 | 2.0% | ok |
+| typed_elemwise_f64_add_into_held_len16 | #2139 | tenferro | tenferro-rs | f64 | n=16, route=into_held | 1 | 2048 | 1022.0 | 3.3 | 0.4% | ok |
+| typed_elemwise_f64_add_into_held_len16_pytorch | #2139 | pytorch | pytorch-cpu | f64 | n=16, route=into_held | 1 | 2048 | 1732.0 | 2.7 | 1.4% | ok |
+| typed_elemwise_f64_add_held_len256 | #2139 | tenferro | tenferro-rs | f64 | n=256, route=held | 1 | 2048 | 1494.1 | 5.4 | 1.3% | ok |
+| typed_elemwise_f64_add_held_len256_pytorch | #2139 | pytorch | pytorch-cpu | f64 | n=256, route=held | 1 | 1024 | 1903.9 | 4.9 | 0.4% | ok |
+| typed_elemwise_f64_add_into_held_len256 | #2139 | tenferro | tenferro-rs | f64 | n=256, route=into_held | 1 | 2048 | 1077.3 | 7.4 | 1.7% | ok |
+| typed_elemwise_f64_add_into_held_len256_pytorch | #2139 | pytorch | pytorch-cpu | f64 | n=256, route=into_held | 1 | 2048 | 1799.5 | 9.0 | 0.5% | ok |
+| typed_elemwise_f64_add_held_len4096 | #2139 | tenferro | tenferro-rs | f64 | n=4096, route=held | 1 | 512 | 3080.7 | 44.3 | 2.2% | ok |
+| typed_elemwise_f64_add_held_len4096_pytorch | #2139 | pytorch | pytorch-cpu | f64 | n=4096, route=held | 1 | 1024 | 3665.3 | 71.6 | 1.3% | ok |
+| typed_elemwise_f64_add_into_held_len4096 | #2139 | tenferro | tenferro-rs | f64 | n=4096, route=into_held | 1 | 1024 | 2167.7 | 14.4 | 0.8% | ok |
+| typed_elemwise_f64_add_into_held_len4096_pytorch | #2139 | pytorch | pytorch-cpu | f64 | n=4096, route=into_held | 1 | 1024 | 2766.6 | 15.7 | 0.4% | ok |
+| tiny_matmul_2x2_typed_held | #2139 | tenferro | tenferro-rs | f64 | n=2 | 1 | 1024 | 2158.0 | 28.9 | 1.0% | ok |
+| tiny_matmul_2x2_typed_held_pytorch | #2139 | pytorch | pytorch-cpu | f64 | n=2 | 1 | 1024 | 1948.8 | 4.1 | 0.2% | ok |
+| analytic_neg_f64_sweep_8MiB_t1 | #2139 | tenferro | tenferro-rs | f64 | n=1048576 | 1 | 2 | 335880.5 | 23033.2 | 11.0% | NOISY |
+| analytic_neg_f64_sweep_8MiB_t1_pytorch | #2139 | pytorch | pytorch-cpu | f64 | n=1048576 | 1 | 8 | 1673552.8 | 6086.0 | 1.2% | ok |
+| analytic_neg_f64_sweep_32MiB_t1 | #2139 | tenferro | tenferro-rs | f64 | n=4194304 | 1 | 2 | 1879374.5 | 19619.5 | 1.4% | ok |
+| analytic_neg_f64_sweep_32MiB_t1_pytorch | #2139 | pytorch | pytorch-cpu | f64 | n=4194304 | 1 | 1 | 10402634.0 | 46542.5 | 1.2% | ok |
+| gemm_bound_f64_t1_t8_scaling | #2141 | tenferro | tenferro-rs | f64 | n=1536 | 1 | 1 | 234587672.0 | 343363.5 | 0.2% | ok |
+| gemm_bound_f64_t1_t8_scaling_pytorch | #2141 | pytorch | pytorch-cpu | f64 | n=1536 | 1 | 1 | 238077816.0 | 1051458.0 | 0.4% | ok |
+| lu_batched_f64_factor_n8_b1024 | #2142 | tenferro | tenferro-rs | f64 | n=8, batch=1024, op=factor | 1 | 2 | 756976.0 | 287288.0 | 19.4% | NOISY |
+| lu_batched_f64_factor_n8_b1024_host | #2142 | host | rust-loop | f64 | n=8, batch=1024, op=factor | 1 | 4 | 527144.0 | 2797.9 | 0.5% | ok |
+| lu_batched_f64_solve_n8_b1024 | #2142 | tenferro | tenferro-rs | f64 | n=8, batch=1024, op=solve | 1 | 8 | 247375.2 | 1082.1 | 0.5% | ok |
+| lu_batched_f64_solve_n8_b1024_pytorch | #2142 | pytorch | pytorch-cpu | f64 | n=8, batch=1024, op=solve | 1 | 16 | 230153.9 | 1782.8 | 1.5% | ok |
+| lu_batched_f64_factor_n16_b1024 | #2142 | tenferro | tenferro-rs | f64 | n=16, batch=1024, op=factor | 1 | 2 | 1627106.5 | 6705.0 | 0.8% | ok |
+| lu_batched_f64_factor_n16_b1024_host | #2142 | host | rust-loop | f64 | n=16, batch=1024, op=factor | 1 | 2 | 2122578.0 | 312916.5 | 20.6% | NOISY |
+| lu_batched_f64_solve_n16_b1024 | #2142 | tenferro | tenferro-rs | f64 | n=16, batch=1024, op=solve | 1 | 4 | 711054.2 | 4087.5 | 10.3% | NOISY |
+| lu_batched_f64_solve_n16_b1024_pytorch | #2142 | pytorch | pytorch-cpu | f64 | n=16, batch=1024, op=solve | 1 | 8 | 498764.2 | 2280.6 | 1.0% | ok |
+| axpby_accum_strided_dest_f64_block | #2143 | tenferro | tenferro-rs | f64 | n=64 | 1 | 256 | 8170.8 | 222.0 | 3.0% | ok |
+| axpby_accum_strided_dest_f64_block_host | #2143 | host | rust-loop | f64 | n=64 | 1 | 512 | 5752.3 | 55.8 | 2.3% | ok |
+| small_grad_qr_f64_trace-prepared_n4 | #2186 | trace-prepared | tenferro-rs | f64 | op=qr, n=4 | 1 | 64 | 45903.0 | 239.0 | 0.8% | ok |
+| small_grad_qr_f64_pytorch_n4 | #2186 | pytorch | pytorch-cpu | f64 | op=qr, n=4 | 1 | 32 | 71610.1 | 544.8 | 1.1% | ok |
+| small_grad_qr_f64_trace-prepared_n16 | #2186 | trace-prepared | tenferro-rs | f64 | op=qr, n=16 | 1 | 32 | 66486.3 | 577.3 | 0.5% | ok |
+| small_grad_qr_f64_pytorch_n16 | #2186 | pytorch | pytorch-cpu | f64 | op=qr, n=16 | 1 | 32 | 83374.5 | 406.4 | 0.6% | ok |
+| small_grad_eigh_f64_trace-prepared_n4 | #2186 | trace-prepared | tenferro-rs | f64 | op=eigh, n=4 | 1 | 32 | 63722.3 | 687.5 | 6.0% | ok |
+| small_grad_eigh_f64_pytorch_n4 | #2186 | pytorch | pytorch-cpu | f64 | op=eigh, n=4 | 1 | 32 | 72565.0 | 571.8 | 1.1% | ok |
+| small_grad_eigh_f64_trace-prepared_n16 | #2186 | trace-prepared | tenferro-rs | f64 | op=eigh, n=16 | 1 | 16 | 120598.0 | 1017.5 | 0.7% | ok |
+| small_grad_eigh_f64_pytorch_n16 | #2186 | pytorch | pytorch-cpu | f64 | op=eigh, n=16 | 1 | 32 | 100014.1 | 573.4 | 1.7% | ok |
+| small_grad_lu_f64_trace-prepared_n4 | #2186 | trace-prepared | tenferro-rs | f64 | op=lu, n=4 | 1 | 64 | 33840.2 | 177.4 | 0.9% | ok |
+| small_grad_lu_f64_pytorch_n4 | #2186 | pytorch | pytorch-cpu | f64 | op=lu, n=4 | 1 | 32 | 79800.6 | 1592.2 | 3.1% | ok |
+| small_grad_lu_f64_trace-prepared_n16 | #2186 | trace-prepared | tenferro-rs | f64 | op=lu, n=16 | 1 | 64 | 43053.9 | 974.3 | 1.8% | ok |
+| small_grad_lu_f64_pytorch_n16 | #2186 | pytorch | pytorch-cpu | f64 | op=lu, n=16 | 1 | 32 | 89267.8 | 1379.2 | 1.9% | ok |
+| small_grad_svd_f64_trace-prepared_n4 | #2186 | trace-prepared | tenferro-rs | f64 | op=svd, n=4 | 1 | 32 | 101389.2 | 733.4 | 0.6% | ok |
+| small_grad_svd_f64_pytorch_n4 | #2186 | pytorch | pytorch-cpu | f64 | op=svd, n=4 | 1 | 32 | 111389.6 | 1359.0 | 1.2% | ok |
+| small_grad_svd_f64_trace-prepared_n16 | #2186 | trace-prepared | tenferro-rs | f64 | op=svd, n=16 | 1 | 16 | 203142.8 | 1404.2 | 1.9% | ok |
+| small_grad_svd_f64_pytorch_n16 | #2186 | pytorch | pytorch-cpu | f64 | op=svd, n=16 | 1 | 16 | 172109.8 | 1073.6 | 0.6% | ok |
+| small_grad_solve_f64_trace-prepared_n4 | #2186 | trace-prepared | tenferro-rs | f64 | op=solve, n=4 | 1 | 128 | 28169.7 | 82.6 | 0.5% | ok |
+| small_grad_solve_f64_pytorch_n4 | #2186 | pytorch | pytorch-cpu | f64 | op=solve, n=4 | 1 | 64 | 60825.0 | 239.9 | 1.6% | ok |
+| small_grad_solve_f64_trace-prepared_n16 | #2186 | trace-prepared | tenferro-rs | f64 | op=solve, n=16 | 1 | 64 | 35523.9 | 275.8 | 0.8% | ok |
+| small_grad_solve_f64_pytorch_n16 | #2186 | pytorch | pytorch-cpu | f64 | op=solve, n=16 | 1 | 32 | 70925.0 | 537.6 | 0.8% | ok |
+| fft_axis0_c64_fft-executor_n128 | #1765 | fft-executor | tenferro-rs | c64 | n=128 | 1 | 1 | 8727289.0 | 82550.5 | 2.7% | ok |
+| fft_axis0_c64_pytorch_n128 | #1765 | pytorch | pytorch-cpu | c64 | n=128 | 1 | 1 | 23293192.0 | 89363.5 | 0.5% | ok |
+| degenerate_dot_hadamard_f64_dot-general-shared_n1024 | #2111 | dot-general-shared | tenferro-rs | f64 | form=hadamard, n=1024 | 1 | 2 | 510024.0 | 21177.8 | 3.2% | ok |
+| degenerate_dot_hadamard_f64_pytorch_n1024 | #2111 | pytorch | pytorch-cpu | f64 | form=hadamard, n=1024 | 1 | 2 | 504393.5 | 19769.8 | 8.5% | ok |
+| degenerate_dot_outer_f64_dot-general-shared_n1024 | #2111 | dot-general-shared | tenferro-rs | f64 | form=outer, n=1024 | 1 | 2 | 334322.0 | 14963.2 | 6.6% | ok |
+| degenerate_dot_outer_f64_pytorch_n1024 | #2111 | pytorch | pytorch-cpu | f64 | form=outer, n=1024 | 1 | 8 | 1617024.1 | 22037.9 | 2.0% | ok |
+| degenerate_dot_rank0_f64_dot-general-shared_n1024 | #2111 | dot-general-shared | tenferro-rs | f64 | form=rank0, n=1024 | 1 | 2 | 790028.5 | 33308.0 | 2.6% | ok |
+| degenerate_dot_rank0_f64_pytorch_n1024 | #2111 | pytorch | pytorch-cpu | f64 | form=rank0, n=1024 | 1 | 4 | 353065.0 | 20732.9 | 5.8% | ok |
+| erased_add_f64_session-add_n256 | #1766 | session-add | tenferro-rs | f64 | n=256 | 1 | 2048 | 1235.1 | 15.4 | 3.5% | ok |
+| erased_add_f64_pytorch_n256 | #1766 | pytorch | pytorch-cpu | f64 | n=256 | 1 | 1024 | 1922.7 | 24.1 | 1.6% | ok |
+| erased_add_f64_session-add_n4096 | #1766 | session-add | tenferro-rs | f64 | n=4096 | 1 | 512 | 2845.2 | 48.6 | 3.3% | ok |
+| erased_add_f64_pytorch_n4096 | #1766 | pytorch | pytorch-cpu | f64 | n=4096 | 1 | 256 | 3297.6 | 28.7 | 2.9% | ok |
+| erased_add_f64_session-add_n1048576 | #1766 | session-add | tenferro-rs | f64 | n=1048576 | 1 | 2 | 506647.5 | 10332.0 | 2.8% | ok |
+| erased_add_f64_pytorch_n1048576 | #1766 | pytorch | pytorch-cpu | f64 | n=1048576 | 1 | 2 | 515023.5 | 45205.8 | 10.5% | NOISY |
+| axpby_strided_source_f64_1024x1024_t1 | #2220 #2214 | strided-source | tenferro-rs | f64 | n=1024 | 1 | 1 | 2373978.0 | 496533.0 | 15.7% | NOISY |
+| axpby_contiguous_source_f64_1024x1024_t1 | #2220 #2214 | contiguous-source | tenferro-rs | f64 | n=1024 | 1 | 4 | 580855.5 | 4077.8 | 0.7% | ok |
+| axpby_strided_source_f64_1024x1024_host_t1 | #2220 #2214 | host | rust-loop | f64 | n=1024 | 1 | 1 | 2274669.0 | 73664.0 | 1.8% | ok |
+| erased_construct_f64_col_n8 | #2177 | col-major | tenferro-rs | f64 | n=8, layout=col | 1 | 16384 | 134.1 | 0.7 | 13.8% | NOISY |
+| erased_construct_f64_row_n8 | #2177 | row-major | tenferro-rs | f64 | n=8, layout=row | 1 | 8192 | 239.7 | 1.7 | 8.1% | ok |
+| erased_construct_f64_col_n4096 | #2177 | col-major | tenferro-rs | f64 | n=4096, layout=col | 1 | 16384 | 224.9 | 17.4 | 4.0% | ok |
+| erased_construct_f64_row_n4096 | #2177 | row-major | tenferro-rs | f64 | n=4096, layout=row | 1 | 128 | 18221.7 | 801.8 | 3.3% | ok |
+| erased_construct_f64_col_n65536 | #2177 | col-major | tenferro-rs | f64 | n=65536, layout=col | 1 | 1024 | 132.4 | 1.8 | 1.8% | ok |
+| erased_construct_f64_row_n65536 | #2177 | row-major | tenferro-rs | f64 | n=65536, layout=row | 1 | 8 | 304948.8 | 7923.1 | 4.3% | ok |
+| eager_small_leaf_f64_eager-held-session | #1704 | eager-held-session | tenferro-rs | f64 | op=leaf | 1 | 1024 | 3432.9 | 98.7 | 2.0% | ok |
+| eager_small_add_f64_eager-held-session | #1667 | eager-held-session | tenferro-rs | f64 | op=add | 1 | 1024 | 2458.4 | 12.3 | 1.2% | ok |
+| eager_small_add_f64_pytorch | #1667 | pytorch | pytorch-cpu | f64 | op=add | 1 | 2048 | 1831.6 | 20.2 | 0.9% | ok |
+| eager_small_gemm_f64_eager-held-session | #1904 | eager-held-session | tenferro-rs | f64 | op=gemm | 1 | 512 | 3827.6 | 26.2 | 0.5% | ok |
+| eager_small_gemm_f64_pytorch | #1904 | pytorch | pytorch-cpu | f64 | op=gemm | 1 | 1024 | 2011.7 | 13.8 | 0.6% | ok |
+| trace_metadata_trace-fold_f32_1024x64_k50 | #2226 #2238 | trace-fold | tenferro-rs | f32 | rows=1024, cols=64, steps=50 | 1 | 1 | 5926639.0 | 26245.0 | 0.3% | ok |
+| trace_metadata_trace-outputs_f32_1024x64_k50 | #2226 #2238 | trace-outputs | tenferro-rs | f32 | rows=1024, cols=64, steps=50 | 1 | 1 | 3512909.0 | 432978.5 | 6.5% | ok |
+| trace_metadata_eager_f32_1024x64_k50 | #2226 #2238 | eager | tenferro-rs | f32 | rows=1024, cols=64, steps=50 | 1 | 1 | 6456480.0 | 76820.0 | 1.1% | ok |
+| trace_metadata_pytorch_f32_1024x64_k50 | #2226 #2238 | pytorch | pytorch-cpu | f32 | rows=1024, cols=64, steps=50 | 1 | 1 | 3234312.0 | 56937.5 | 1.6% | ok |
+| trace_metadata_fixed_neg_f32_8 | #2226 #2238 | trace-fold | tenferro-rs | f32 | rows=8, cols=1, steps=0 | 1 | 1024 | 2860.2 | 27.3 | 1.9% | ok |
+| two_operand_einsum_f64_2x2_string | #2325 #2324 | string | tenferro-rs | f64 | m=2, k=2, n=2, format=ij,jk->ik | 4 | 512 | 4338.4 | 8.4 | 0.4% | ok |
+| two_operand_einsum_f64_2x2_subscripts | #2325 #2324 | subscripts | tenferro-rs | f64 | m=2, k=2, n=2, format=ij,jk->ik | 4 | 1024 | 3031.4 | 38.4 | 1.1% | ok |
+| two_operand_einsum_f64_2x2_prepared | #2325 #2324 | prepared | tenferro-rs | f64 | m=2, k=2, n=2, format=ij,jk->ik | 4 | 1024 | 2595.6 | 5.6 | 0.8% | ok |
+| two_operand_einsum_f64_2x2_dot-general | #2325 #2324 | dot-general | tenferro-rs | f64 | m=2, k=2, n=2, format=ij,jk->ik | 4 | 1024 | 2366.0 | 24.8 | 1.0% | ok |
+| two_operand_einsum_f64_2x2_pytorch | #2325 #2324 | pytorch | pytorch-cpu | f64 | m=2, k=2, n=2, format=ij,jk->ik | 4 | 256 | 13689.8 | 218.8 | 2.8% | ok |
+| two_operand_einsum_f64_16x16_string | #2325 #2324 | string | tenferro-rs | f64 | m=16, k=16, n=16, format=ij,jk->ik | 4 | 512 | 4477.3 | 77.9 | 2.9% | ok |
+| two_operand_einsum_f64_16x16_subscripts | #2325 #2324 | subscripts | tenferro-rs | f64 | m=16, k=16, n=16, format=ij,jk->ik | 4 | 1024 | 3285.1 | 31.8 | 0.9% | ok |
+| two_operand_einsum_f64_16x16_prepared | #2325 #2324 | prepared | tenferro-rs | f64 | m=16, k=16, n=16, format=ij,jk->ik | 4 | 1024 | 2900.9 | 23.0 | 1.0% | ok |
+| two_operand_einsum_f64_16x16_dot-general | #2325 #2324 | dot-general | tenferro-rs | f64 | m=16, k=16, n=16, format=ij,jk->ik | 4 | 1024 | 2622.9 | 17.5 | 2.0% | ok |
+| two_operand_einsum_f64_16x16_pytorch | #2325 #2324 | pytorch | pytorch-cpu | f64 | m=16, k=16, n=16, format=ij,jk->ik | 4 | 128 | 15108.5 | 148.5 | 1.6% | ok |
+| two_operand_einsum_c64_2x2_string | #2325 #2324 | string | tenferro-rs | c64 | m=2, k=2, n=2, format=ij,jk->ik | 4 | 512 | 4305.4 | 16.3 | 10.2% | NOISY |
+| two_operand_einsum_c64_2x2_subscripts | #2325 #2324 | subscripts | tenferro-rs | c64 | m=2, k=2, n=2, format=ij,jk->ik | 4 | 1024 | 3029.1 | 21.7 | 1.4% | ok |
+| two_operand_einsum_c64_2x2_prepared | #2325 #2324 | prepared | tenferro-rs | c64 | m=2, k=2, n=2, format=ij,jk->ik | 4 | 1024 | 2586.7 | 7.4 | 1.0% | ok |
+| two_operand_einsum_c64_2x2_dot-general | #2325 #2324 | dot-general | tenferro-rs | c64 | m=2, k=2, n=2, format=ij,jk->ik | 4 | 1024 | 2422.4 | 8.4 | 0.6% | ok |
+| two_operand_einsum_c64_2x2_pytorch | #2325 #2324 | pytorch | pytorch-cpu | c64 | m=2, k=2, n=2, format=ij,jk->ik | 4 | 256 | 13556.3 | 113.7 | 0.7% | ok |
+| two_operand_einsum_c64_16x16_string | #2325 #2324 | string | tenferro-rs | c64 | m=16, k=16, n=16, format=ij,jk->ik | 4 | 512 | 5289.6 | 22.0 | 0.6% | ok |
+| two_operand_einsum_c64_16x16_subscripts | #2325 #2324 | subscripts | tenferro-rs | c64 | m=16, k=16, n=16, format=ij,jk->ik | 4 | 512 | 4136.8 | 5.9 | 0.6% | ok |
+| two_operand_einsum_c64_16x16_prepared | #2325 #2324 | prepared | tenferro-rs | c64 | m=16, k=16, n=16, format=ij,jk->ik | 4 | 512 | 3761.3 | 70.5 | 5.8% | ok |
+| two_operand_einsum_c64_16x16_dot-general | #2325 #2324 | dot-general | tenferro-rs | c64 | m=16, k=16, n=16, format=ij,jk->ik | 4 | 512 | 3517.3 | 8.1 | 0.6% | ok |
+| two_operand_einsum_c64_16x16_pytorch | #2325 #2324 | pytorch | pytorch-cpu | c64 | m=16, k=16, n=16, format=ij,jk->ik | 4 | 128 | 15724.1 | 79.1 | 0.5% | ok |
+| two_operand_einsum_f64_abc_cef_abef_string | #2325 #2324 | string | tenferro-rs | f64 | m=8, k=2, n=16, format=abc,cef->abef | 4 | 512 | 4887.5 | 26.0 | 0.6% | ok |
+| two_operand_einsum_f64_abc_cef_abef_subscripts | #2325 #2324 | subscripts | tenferro-rs | f64 | m=8, k=2, n=16, format=abc,cef->abef | 4 | 1024 | 3182.1 | 24.7 | 0.9% | ok |
+| two_operand_einsum_f64_abc_cef_abef_prepared | #2325 #2324 | prepared | tenferro-rs | f64 | m=8, k=2, n=16, format=abc,cef->abef | 4 | 1024 | 2688.3 | 18.3 | 1.6% | ok |
+| two_operand_einsum_f64_abc_cef_abef_dot-general | #2325 #2324 | dot-general | tenferro-rs | f64 | m=8, k=2, n=16, format=abc,cef->abef | 4 | 1024 | 2514.4 | 14.9 | 1.1% | ok |
+| two_operand_einsum_f64_abc_cef_abef_pytorch | #2325 #2324 | pytorch | pytorch-cpu | f64 | m=8, k=2, n=16, format=abc,cef->abef | 4 | 128 | 16741.7 | 98.2 | 0.7% | ok |
+| decode_proj_f32_eager-shared_in1024_out1024_len8 | #1992 #2003 #1995 #2229 | eager-shared | tenferro-rs | f32 | in=1024, out=1024, len=8 | 4 | 16 | 158039.8 | 1756.2 | 0.7% | ok |
+| decode_proj_f32_faer-direct_in1024_out1024_len8 | #1992 #2003 #1995 #2229 | faer-direct | faer-direct | f32 | in=1024, out=1024, len=8 | 4 | 16 | 201112.4 | 3560.4 | 1.3% | ok |
+| decode_proj_f32_host-sgemm_in1024_out1024_len8 | #1992 #2003 #1995 #2229 | host-sgemm | matrixmultiply-sgemm | f32 | in=1024, out=1024, len=8 | 4 | 2 | 1196400.0 | 23148.8 | 2.3% | ok |
+| decode_proj_f32_pytorch_in1024_out1024_len8 | #1992 #2003 #1995 #2229 | pytorch | pytorch-cpu | f32 | in=1024, out=1024, len=8 | 4 | 16 | 188241.2 | 2317.8 | 1.4% | ok |
+| decode_proj_f32_eager-shared_in1024_out1024_len64 | #1992 #2003 #1995 #2229 | eager-shared | tenferro-rs | f32 | in=1024, out=1024, len=64 | 4 | 4 | 573180.2 | 880.4 | 0.4% | ok |
+| decode_proj_f32_faer-direct_in1024_out1024_len64 | #1992 #2003 #1995 #2229 | faer-direct | faer-direct | f32 | in=1024, out=1024, len=64 | 4 | 4 | 726772.8 | 9920.1 | 2.3% | ok |
+| decode_proj_f32_host-sgemm_in1024_out1024_len64 | #1992 #2003 #1995 #2229 | host-sgemm | matrixmultiply-sgemm | f32 | in=1024, out=1024, len=64 | 4 | 1 | 2006360.0 | 3030.0 | 0.4% | ok |
+| decode_proj_f32_pytorch_in1024_out1024_len64 | #1992 #2003 #1995 #2229 | pytorch | pytorch-cpu | f32 | in=1024, out=1024, len=64 | 4 | 4 | 943667.2 | 4884.1 | 0.4% | ok |
+| decode_proj_f32_eager-shared_in1024_out1024_len512 | #1992 #2003 #1995 #2229 | eager-shared | tenferro-rs | f32 | in=1024, out=1024, len=512 | 4 | 1 | 4390223.0 | 7258.5 | 0.1% | ok |
+| decode_proj_f32_faer-direct_in1024_out1024_len512 | #1992 #2003 #1995 #2229 | faer-direct | faer-direct | f32 | in=1024, out=1024, len=512 | 4 | 1 | 4438694.0 | 17964.5 | 1.3% | ok |
+| decode_proj_f32_host-sgemm_in1024_out1024_len512 | #1992 #2003 #1995 #2229 | host-sgemm | matrixmultiply-sgemm | f32 | in=1024, out=1024, len=512 | 4 | 1 | 5443973.0 | 45221.0 | 1.3% | ok |
+| decode_proj_f32_pytorch_in1024_out1024_len512 | #1992 #2003 #1995 #2229 | pytorch | pytorch-cpu | f32 | in=1024, out=1024, len=512 | 4 | 1 | 6965647.0 | 23780.0 | 0.3% | ok |
+| decode_proj_f32_eager-shared_in1024_out4096_len8 | #1992 #2003 #1995 #2229 | eager-shared | tenferro-rs | f32 | in=1024, out=4096, len=8 | 4 | 4 | 623224.5 | 4425.9 | 0.4% | ok |
+| decode_proj_f32_faer-direct_in1024_out4096_len8 | #1992 #2003 #1995 #2229 | faer-direct | faer-direct | f32 | in=1024, out=4096, len=8 | 4 | 4 | 1594709.5 | 1576610.2 | 62.9% | NOISY |
+| decode_proj_f32_host-sgemm_in1024_out4096_len8 | #1992 #2003 #1995 #2229 | host-sgemm | matrixmultiply-sgemm | f32 | in=1024, out=4096, len=8 | 4 | 1 | 4990295.0 | 58495.0 | 1.0% | ok |
+| decode_proj_f32_pytorch_in1024_out4096_len8 | #1992 #2003 #1995 #2229 | pytorch | pytorch-cpu | f32 | in=1024, out=4096, len=8 | 4 | 4 | 897084.2 | 11972.6 | 0.9% | ok |
+| decode_proj_f32_eager-shared_in1024_out4096_len64 | #1992 #2003 #1995 #2229 | eager-shared | tenferro-rs | f32 | in=1024, out=4096, len=64 | 4 | 1 | 2217258.0 | 4784.0 | 0.4% | ok |
+| decode_proj_f32_faer-direct_in1024_out4096_len64 | #1992 #2003 #1995 #2229 | faer-direct | faer-direct | f32 | in=1024, out=4096, len=64 | 4 | 1 | 2381818.0 | 27502.0 | 3.1% | ok |
+| decode_proj_f32_host-sgemm_in1024_out4096_len64 | #1992 #2003 #1995 #2229 | host-sgemm | matrixmultiply-sgemm | f32 | in=1024, out=4096, len=64 | 4 | 1 | 8326867.0 | 61917.0 | 1.2% | ok |
+| decode_proj_f32_pytorch_in1024_out4096_len64 | #1992 #2003 #1995 #2229 | pytorch | pytorch-cpu | f32 | in=1024, out=4096, len=64 | 4 | 1 | 3833410.0 | 33814.0 | 0.7% | ok |
+| decode_proj_f32_eager-shared_in1024_out4096_len512 | #1992 #2003 #1995 #2229 | eager-shared | tenferro-rs | f32 | in=1024, out=4096, len=512 | 4 | 1 | 17591504.0 | 34009.0 | 0.2% | ok |
+| decode_proj_f32_faer-direct_in1024_out4096_len512 | #1992 #2003 #1995 #2229 | faer-direct | faer-direct | f32 | in=1024, out=4096, len=512 | 4 | 1 | 17634354.0 | 34324.5 | 0.2% | ok |
+| decode_proj_f32_host-sgemm_in1024_out4096_len512 | #1992 #2003 #1995 #2229 | host-sgemm | matrixmultiply-sgemm | f32 | in=1024, out=4096, len=512 | 4 | 1 | 22404944.0 | 213378.5 | 15.6% | NOISY |
+| decode_proj_f32_pytorch_in1024_out4096_len512 | #1992 #2003 #1995 #2229 | pytorch | pytorch-cpu | f32 | in=1024, out=4096, len=512 | 4 | 1 | 27606654.0 | 174635.0 | 0.4% | ok |
+| decode_proj_view_operand_f32_prepared_in1024_out1024_len8_t4 | #2216 | prepared-view | tenferro-rs | f32 | in=1024, out=1024, len=8 | 4 | 16 | 171090.0 | 762.4 | 0.3% | ok |
+| decode_proj_contiguous_operand_f32_prepared_in1024_out1024_len8_t4 | #2216 | prepared-contiguous | tenferro-rs | f32 | in=1024, out=1024, len=8 | 4 | 16 | 153010.2 | 597.1 | 0.3% | ok |
+| decode_proj_view_operand_f32_pytorch_in1024_out1024_len8_t4 | #2216 | pytorch | pytorch-cpu | f32 | in=1024, out=1024, len=8 | 4 | 16 | 184414.5 | 671.9 | 0.4% | ok |
+| gemm_c64_mm256_t1 | #1900 | dot-general-shared | tenferro-rs | c64 | n=256 | 4 | 1 | 4275784.0 | 21215.5 | 0.7% | ok |
+| gemm_f64_mm256_t1 | #1900 | dot-general-shared | tenferro-rs | f64 | n=256 | 4 | 2 | 1069099.0 | 2725.0 | 0.3% | ok |
+| conj_dot_f64_dot-general-rank1_len100 | #1615 | dot-general-rank1 | tenferro-rs | f64 | len=100 | 4 | 1024 | 2204.9 | 63.5 | 2.4% | ok |
+| conj_dot_f64_portable-loop_len100 | #1615 | portable-loop | rust-loop | f64 | len=100 | 4 | 32768 | 89.7 | 0.9 | 0.6% | ok |
+| conj_dot_f64_pytorch-vdot_len100 | #1615 | pytorch-vdot | pytorch-cpu | f64 | len=100 | 4 | 2048 | 1664.2 | 18.0 | 0.7% | ok |
+| conj_dot_f64_dot-general-rank1_len10000 | #1615 | dot-general-rank1 | tenferro-rs | f64 | len=10000 | 4 | 512 | 4809.2 | 20.7 | 1.2% | ok |
+| conj_dot_f64_portable-loop_len10000 | #1615 | portable-loop | rust-loop | f64 | len=10000 | 4 | 256 | 14974.0 | 38.0 | 0.4% | ok |
+| conj_dot_f64_pytorch-vdot_len10000 | #1615 | pytorch-vdot | pytorch-cpu | f64 | len=10000 | 4 | 1024 | 3282.1 | 31.7 | 1.0% | ok |
+| conj_dot_f64_dot-general-rank1_len1000000 | #1615 | dot-general-rank1 | tenferro-rs | f64 | len=1000000 | 4 | 32 | 93283.1 | 1350.8 | 1.0% | ok |
+| conj_dot_f64_portable-loop_len1000000 | #1615 | portable-loop | rust-loop | f64 | len=1000000 | 4 | 2 | 1511780.0 | 30880.8 | 1.0% | ok |
+| conj_dot_f64_pytorch-vdot_len1000000 | #1615 | pytorch-vdot | pytorch-cpu | f64 | len=1000000 | 4 | 32 | 94083.9 | 1906.3 | 2.7% | ok |
+| conj_dot_c64_dot-general-rank1_len100 | #1615 | dot-general-rank1 | tenferro-rs | c64 | len=100 | 4 | 1024 | 2364.0 | 23.6 | 2.3% | ok |
+| conj_dot_c64_portable-loop_len100 | #1615 | portable-loop | rust-loop | c64 | len=100 | 4 | 16384 | 144.0 | 0.9 | 0.8% | ok |
+| conj_dot_c64_pytorch-vdot_len100 | #1615 | pytorch-vdot | pytorch-cpu | c64 | len=100 | 4 | 2048 | 1557.8 | 23.0 | 261.7% | NOISY |
+| conj_dot_c64_dot-general-rank1_len10000 | #1615 | dot-general-rank1 | tenferro-rs | c64 | len=10000 | 4 | 128 | 16175.9 | 43.0 | 0.5% | ok |
+| conj_dot_c64_portable-loop_len10000 | #1615 | portable-loop | rust-loop | c64 | len=10000 | 4 | 256 | 15232.5 | 28.0 | 0.3% | ok |
+| conj_dot_c64_pytorch-vdot_len10000 | #1615 | pytorch-vdot | pytorch-cpu | c64 | len=10000 | 4 | 512 | 4402.3 | 45.5 | 0.9% | ok |
+| conj_dot_c64_dot-general-rank1_len1000000 | #1615 | dot-general-rank1 | tenferro-rs | c64 | len=1000000 | 4 | 4 | 386407.2 | 16124.1 | 6.7% | ok |
+| conj_dot_c64_portable-loop_len1000000 | #1615 | portable-loop | rust-loop | c64 | len=1000000 | 4 | 2 | 1546114.5 | 12937.2 | 1.2% | ok |
+| conj_dot_c64_pytorch-vdot_len1000000 | #1615 | pytorch-vdot | pytorch-cpu | c64 | len=1000000 | 4 | 8 | 354250.1 | 8450.4 | 2.3% | ok |
+| small_solve_f64_solve-loop_k16_b64 | #2007 #1878 | solve-loop | tenferro-rs | f64 | k=16, batch=64 | 4 | 8 | 360270.2 | 2722.0 | 0.8% | ok |
+| small_solve_f64_triangular-solve-loop_k16_b64 | #2007 #1878 | triangular-solve-loop | tenferro-rs | f64 | k=16, batch=64 | 4 | 16 | 201511.2 | 660.0 | 0.6% | ok |
+| small_solve_f64_solve-batched_k16_b64 | #2007 #1878 | solve-batched | tenferro-rs | f64 | k=16, batch=64 | 4 | 32 | 87129.2 | 666.9 | 0.6% | ok |
+| small_solve_f64_pytorch-solve-batched_k16_b64 | #2007 #1878 | pytorch-solve-batched | pytorch-cpu | f64 | k=16, batch=64 | 4 | 16 | 196615.1 | 25514.8 | 12.3% | NOISY |
+| small_solve_f64_pytorch-solve-triangular-batched_k16_b64 | #2007 #1878 | pytorch-solve-triangular-batched | pytorch-cpu | f64 | k=16, batch=64 | 4 | 32 | 93727.6 | 146.7 | 0.9% | ok |
+| small_solve_f64_solve-loop_k64_b64 | #2007 #1878 | solve-loop | tenferro-rs | f64 | k=64, batch=64 | 4 | 1 | 3486673.0 | 35040.5 | 0.7% | ok |
+| small_solve_f64_triangular-solve-loop_k64_b64 | #2007 #1878 | triangular-solve-loop | tenferro-rs | f64 | k=64, batch=64 | 4 | 2 | 1676931.5 | 7962.8 | 0.6% | ok |
+| small_solve_f64_solve-batched_k64_b64 | #2007 #1878 | solve-batched | tenferro-rs | f64 | k=64, batch=64 | 4 | 2 | 853902.5 | 3626.8 | 6.7% | ok |
+| small_solve_f64_pytorch-solve-batched_k64_b64 | #2007 #1878 | pytorch-solve-batched | pytorch-cpu | f64 | k=64, batch=64 | 4 | 1 | 2317906.0 | 18063.5 | 0.5% | ok |
+| small_solve_f64_pytorch-solve-triangular-batched_k64_b64 | #2007 #1878 | pytorch-solve-triangular-batched | pytorch-cpu | f64 | k=64, batch=64 | 4 | 4 | 595311.8 | 4640.0 | 1.6% | ok |
+| tanh_chain_f32_compiled-prepared_k10_1024x64 | #1990 | compiled-prepared | tenferro-rs | f32 | rows=1024, cols=64, chain=10 | 4 | 8 | 441029.0 | 3259.2 | 0.7% | ok |
+| tanh_chain_f32_eager-shared_k10_1024x64 | #1990 | eager-shared | tenferro-rs | f32 | rows=1024, cols=64, chain=10 | 4 | 8 | 476745.1 | 5824.1 | 8.5% | ok |
+| tanh_chain_f32_compiled-prepared_k100_1024x64 | #1990 | compiled-prepared | tenferro-rs | f32 | rows=1024, cols=64, chain=100 | 4 | 1 | 4335446.0 | 98912.0 | 4.1% | ok |
+| tanh_chain_f32_eager-shared_k100_1024x64 | #1990 | eager-shared | tenferro-rs | f32 | rows=1024, cols=64, chain=100 | 4 | 1 | 4775958.0 | 56726.5 | 3.0% | ok |
+| tanh_chain_f32_compiled-prepared_k200_1024x64 | #1990 | compiled-prepared | tenferro-rs | f32 | rows=1024, cols=64, chain=200 | 4 | 1 | 8614555.0 | 53091.0 | 0.6% | ok |
+| tanh_chain_f32_eager-shared_k200_1024x64 | #1990 | eager-shared | tenferro-rs | f32 | rows=1024, cols=64, chain=200 | 4 | 1 | 9523702.0 | 40682.0 | 0.9% | ok |
+| layer_norm_f32_eager-composed_d1024_len8_b1 | #2006 | eager-composed | tenferro-rs | f32 | norm=layer_norm, d=1024, len=8, batch=1 | 4 | 32 | 67430.8 | 657.2 | 3.5% | ok |
+| layer_norm_f32_pytorch-fused_d1024_len8_b1 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=layer_norm, d=1024, len=8, batch=1 | 4 | 512 | 6440.4 | 130.0 | 3.8% | ok |
+| layer_norm_f32_eager-single-call_d1024_len8_b1 | #2006 | eager-single-call | tenferro-rs | f32 | norm=layer_norm, d=1024, len=8, batch=1 | 4 | 16 | 70437.3 | 780.8 | 0.9% | ok |
+| layer_norm_f32_eager-composed_d1024_len8_b8 | #2006 | eager-composed | tenferro-rs | f32 | norm=layer_norm, d=1024, len=8, batch=8 | 4 | 16 | 117573.2 | 1459.0 | 1.4% | ok |
+| layer_norm_f32_pytorch-fused_d1024_len8_b8 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=layer_norm, d=1024, len=8, batch=8 | 4 | 128 | 13538.6 | 977.7 | 5.5% | ok |
+| layer_norm_f32_eager-single-call_d1024_len8_b8 | #2006 | eager-single-call | tenferro-rs | f32 | norm=layer_norm, d=1024, len=8, batch=8 | 4 | 4 | 121331.5 | 4682.8 | 2.7% | ok |
+| layer_norm_f32_eager-composed_d1024_len64_b1 | #2006 | eager-composed | tenferro-rs | f32 | norm=layer_norm, d=1024, len=64, batch=1 | 4 | 16 | 117850.0 | 741.4 | 0.8% | ok |
+| layer_norm_f32_pytorch-fused_d1024_len64_b1 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=layer_norm, d=1024, len=64, batch=1 | 4 | 256 | 30720.5 | 2380.6 | 6.1% | ok |
+| layer_norm_f32_eager-single-call_d1024_len64_b1 | #2006 | eager-single-call | tenferro-rs | f32 | norm=layer_norm, d=1024, len=64, batch=1 | 4 | 16 | 118492.4 | 464.1 | 0.8% | ok |
+| layer_norm_f32_eager-composed_d1024_len64_b8 | #2006 | eager-composed | tenferro-rs | f32 | norm=layer_norm, d=1024, len=64, batch=8 | 4 | 4 | 414617.8 | 7712.0 | 2.0% | ok |
+| layer_norm_f32_pytorch-fused_d1024_len64_b8 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=layer_norm, d=1024, len=64, batch=8 | 4 | 32 | 284214.7 | 4838.0 | 1.8% | ok |
+| layer_norm_f32_eager-single-call_d1024_len64_b8 | #2006 | eager-single-call | tenferro-rs | f32 | norm=layer_norm, d=1024, len=64, batch=8 | 4 | 4 | 382074.0 | 8390.8 | 1.5% | ok |
+| rms_norm_f32_eager-composed_d1024_len8_b1 | #2006 | eager-composed | tenferro-rs | f32 | norm=rms_norm, d=1024, len=8, batch=1 | 4 | 64 | 35657.9 | 306.4 | 0.5% | ok |
+| rms_norm_f32_pytorch-fused_d1024_len8_b1 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=rms_norm, d=1024, len=8, batch=1 | 4 | 128 | 17957.6 | 131.7 | 0.9% | ok |
+| rms_norm_f32_eager-single-call_d1024_len8_b1 | #2006 | eager-single-call | tenferro-rs | f32 | norm=rms_norm, d=1024, len=8, batch=1 | 4 | 64 | 41042.0 | 220.1 | 0.6% | ok |
+| rms_norm_f32_eager-composed_d1024_len8_b8 | #2006 | eager-composed | tenferro-rs | f32 | norm=rms_norm, d=1024, len=8, batch=8 | 4 | 32 | 58623.8 | 2292.0 | 3.1% | ok |
+| rms_norm_f32_pytorch-fused_d1024_len8_b8 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=rms_norm, d=1024, len=8, batch=8 | 4 | 64 | 39777.5 | 541.5 | 1.6% | ok |
+| rms_norm_f32_eager-single-call_d1024_len8_b8 | #2006 | eager-single-call | tenferro-rs | f32 | norm=rms_norm, d=1024, len=8, batch=8 | 4 | 32 | 63938.2 | 822.8 | 0.9% | ok |
+| rms_norm_f32_eager-composed_d1024_len64_b1 | #2006 | eager-composed | tenferro-rs | f32 | norm=rms_norm, d=1024, len=64, batch=1 | 4 | 32 | 56700.2 | 2165.5 | 5.3% | ok |
+| rms_norm_f32_pytorch-fused_d1024_len64_b1 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=rms_norm, d=1024, len=64, batch=1 | 4 | 64 | 39891.2 | 534.4 | 9.0% | ok |
+| rms_norm_f32_eager-single-call_d1024_len64_b1 | #2006 | eager-single-call | tenferro-rs | f32 | norm=rms_norm, d=1024, len=64, batch=1 | 4 | 32 | 63282.6 | 798.4 | 2.0% | ok |
+| rms_norm_f32_eager-composed_d1024_len64_b8 | #2006 | eager-composed | tenferro-rs | f32 | norm=rms_norm, d=1024, len=64, batch=8 | 4 | 4 | 182810.0 | 3748.4 | 1.8% | ok |
+| rms_norm_f32_pytorch-fused_d1024_len64_b8 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=rms_norm, d=1024, len=64, batch=8 | 4 | 8 | 538722.1 | 65366.5 | 7.0% | ok |
+| rms_norm_f32_eager-single-call_d1024_len64_b8 | #2006 | eager-single-call | tenferro-rs | f32 | norm=rms_norm, d=1024, len=64, batch=8 | 4 | 4 | 187451.5 | 3424.1 | 1.8% | ok |
+| small_contraction_abcd-dbef-acef_f64_shared-session-default-pool_d4 | #1885 #1897 #1901 | shared-session-default-pool | tenferro-rs | f64 | extent=4 | 4 | 512 | 4070.7 | 43.9 | 1.9% | ok |
+| activation_erf_f32_eager-single-call_1024x64 | #1975 #2069 #2032 | eager-single-call | tenferro-rs | f32 | op=erf, rows=1024, cols=64 | 4 | 32 | 77358.5 | 583.0 | 2.6% | ok |
+| activation_erf_f32_session-single-call_1024x64 | #1975 #2069 #2032 | session-single-call | tenferro-rs | f32 | op=erf, rows=1024, cols=64 | 4 | 32 | 76292.2 | 612.1 | 1.2% | ok |
+| activation_erf_f32_pytorch_1024x64 | #1975 #2069 #2032 | pytorch | pytorch-cpu | f32 | op=erf, rows=1024, cols=64 | 4 | 1 | 37310.0 | 3276.0 | 254.8% | NOISY |
+| activation_sigmoid_f32_eager-single-call_1024x64 | #1975 #2069 #2032 | eager-single-call | tenferro-rs | f32 | op=sigmoid, rows=1024, cols=64 | 4 | 128 | 13546.7 | 244.6 | 4.5% | ok |
+| activation_sigmoid_f32_session-single-call_1024x64 | #1975 #2069 #2032 | session-single-call | tenferro-rs | f32 | op=sigmoid, rows=1024, cols=64 | 4 | 128 | 13001.2 | 277.2 | 7.2% | ok |
+| activation_sigmoid_f32_eager-composed_1024x64 | #1975 #2069 #2032 | eager-composed | tenferro-rs | f32 | op=sigmoid, rows=1024, cols=64 | 4 | 64 | 37681.6 | 756.7 | 1.8% | ok |
+| activation_sigmoid_f32_pytorch_1024x64 | #1975 #2069 #2032 | pytorch | pytorch-cpu | f32 | op=sigmoid, rows=1024, cols=64 | 4 | 1 | 25337.0 | 536.0 | 322.7% | NOISY |
+| activation_silu_f32_eager-single-call_1024x64 | #1975 #2069 #2032 | eager-single-call | tenferro-rs | f32 | op=silu, rows=1024, cols=64 | 4 | 128 | 13839.4 | 226.7 | 1.4% | ok |
+| activation_silu_f32_session-single-call_1024x64 | #1975 #2069 #2032 | session-single-call | tenferro-rs | f32 | op=silu, rows=1024, cols=64 | 4 | 128 | 13435.8 | 303.4 | 3.3% | ok |
+| activation_silu_f32_eager-composed_1024x64 | #1975 #2069 #2032 | eager-composed | tenferro-rs | f32 | op=silu, rows=1024, cols=64 | 4 | 64 | 45854.3 | 326.0 | 2.4% | ok |
+| activation_silu_f32_pytorch_1024x64 | #1975 #2069 #2032 | pytorch | pytorch-cpu | f32 | op=silu, rows=1024, cols=64 | 4 | 1 | 27031.0 | 2776.0 | 205.5% | NOISY |
+| activation_softplus_f32_eager-single-call_1024x64 | #1975 #2069 #2032 | eager-single-call | tenferro-rs | f32 | op=softplus, rows=1024, cols=64 | 4 | 64 | 42405.2 | 648.3 | 1.1% | ok |
+| activation_softplus_f32_session-single-call_1024x64 | #1975 #2069 #2032 | session-single-call | tenferro-rs | f32 | op=softplus, rows=1024, cols=64 | 4 | 64 | 41647.8 | 328.7 | 0.9% | ok |
+| activation_softplus_f32_eager-composed_1024x64 | #1975 #2069 #2032 | eager-composed | tenferro-rs | f32 | op=softplus, rows=1024, cols=64 | 4 | 32 | 68952.0 | 548.1 | 0.8% | ok |
+| activation_softplus_f32_pytorch_1024x64 | #1975 #2069 #2032 | pytorch | pytorch-cpu | f32 | op=softplus, rows=1024, cols=64 | 4 | 1 | 88998.0 | 5976.5 | 192.4% | NOISY |
+| activation_gelu_f32_eager-single-call_1024x64 | #1975 #2030 #2069 #2228 | eager-single-call | tenferro-rs | f32 | op=gelu, rows=1024, cols=64 | 4 | 64 | 18292.8 | 31.9 | 0.8% | ok |
+| activation_gelu_f32_session-single-call_1024x64 | #1975 #2030 #2069 #2228 | session-single-call | tenferro-rs | f32 | op=gelu, rows=1024, cols=64 | 4 | 64 | 22496.2 | 168.4 | 0.4% | ok |
+| activation_gelu_f32_pytorch_1024x64 | #1975 #2030 #2069 #2228 | pytorch | pytorch-cpu | f32 | op=gelu, rows=1024, cols=64 | 4 | 64 | 22227.2 | 521.8 | 1.5% | ok |
+| activation_gelu_tanh_f32_eager-single-call_1024x64 | #1975 #2069 #2032 | eager-single-call | tenferro-rs | f32 | op=gelu_tanh, rows=1024, cols=64 | 4 | 32 | 49945.2 | 293.7 | 0.6% | ok |
+| activation_gelu_tanh_f32_session-single-call_1024x64 | #1975 #2069 #2032 | session-single-call | tenferro-rs | f32 | op=gelu_tanh, rows=1024, cols=64 | 4 | 32 | 49423.2 | 250.2 | 2.0% | ok |
+| activation_gelu_tanh_f32_eager-composed_1024x64 | #1975 #2069 #2032 | eager-composed | tenferro-rs | f32 | op=gelu_tanh, rows=1024, cols=64 | 4 | 16 | 137670.4 | 1737.0 | 3.3% | ok |
+| activation_gelu_tanh_f32_pytorch_1024x64 | #1975 #2069 #2032 | pytorch | pytorch-cpu | f32 | op=gelu_tanh, rows=1024, cols=64 | 4 | 1 | 55915.0 | 751.5 | 198.0% | NOISY |
+| softmax_f32_eager-single-call_len64_b8 | #1976 #2031 #2231 | eager-single-call | tenferro-rs | f32 | op=softmax, len=64, batch=8, axis=0 | 4 | 128 | 13986.5 | 91.1 | 0.9% | ok |
+| softmax_f32_session-single-call_len64_b8 | #1976 #2031 #2231 | session-single-call | tenferro-rs | f32 | op=softmax, len=64, batch=8, axis=0 | 4 | 128 | 13909.6 | 207.6 | 1.4% | ok |
+| softmax_f32_eager-composed_len64_b8 | #1976 #2031 #2231 | eager-composed | tenferro-rs | f32 | op=softmax, len=64, batch=8, axis=0 | 4 | 32 | 61974.1 | 848.0 | 1.3% | ok |
+| softmax_f32_pytorch_len64_b8 | #1976 #2031 #2231 | pytorch | pytorch-cpu | f32 | op=softmax, len=64, batch=8, axis=0 | 4 | 256 | 13456.8 | 217.0 | 3.2% | ok |
+| softmax_f32_eager-single-call_len512_b8 | #1976 #2231 | eager-single-call | tenferro-rs | f32 | op=softmax, len=512, batch=8, axis=0 | 4 | 4 | 669470.5 | 20256.9 | 7.9% | ok |
+| softmax_f32_session-single-call_len512_b8 | #1976 #2231 | session-single-call | tenferro-rs | f32 | op=softmax, len=512, batch=8, axis=0 | 4 | 4 | 490923.8 | 13886.2 | 3.4% | ok |
+| softmax_f32_eager-composed_len512_b8 | #1976 #2231 | eager-composed | tenferro-rs | f32 | op=softmax, len=512, batch=8, axis=0 | 4 | 2 | 1751299.0 | 23562.0 | 0.8% | ok |
+| softmax_f32_pytorch_len512_b8 | #1976 #2231 | pytorch | pytorch-cpu | f32 | op=softmax, len=512, batch=8, axis=0 | 4 | 4 | 1303661.8 | 71472.6 | 4.8% | ok |
+| log_softmax_f32_eager-single-call_len64_b8 | #1976 | eager-single-call | tenferro-rs | f32 | op=log_softmax, len=64, batch=8, axis=0 | 4 | 32 | 85813.1 | 717.6 | 1.3% | ok |
+| log_softmax_f32_session-single-call_len64_b8 | #1976 | session-single-call | tenferro-rs | f32 | op=log_softmax, len=64, batch=8, axis=0 | 4 | 32 | 61045.5 | 352.4 | 0.4% | ok |
+| log_softmax_f32_eager-composed_len64_b8 | #1976 | eager-composed | tenferro-rs | f32 | op=log_softmax, len=64, batch=8, axis=0 | 4 | 32 | 63237.4 | 492.0 | 0.9% | ok |
+| log_softmax_f32_pytorch_len64_b8 | #1976 | pytorch | pytorch-cpu | f32 | op=log_softmax, len=64, batch=8, axis=0 | 4 | 256 | 13850.3 | 1095.7 | 6.9% | ok |
+| log_softmax_f32_eager-single-call_len512_b8 | #1976 | eager-single-call | tenferro-rs | f32 | op=log_softmax, len=512, batch=8, axis=0 | 4 | 2 | 1712079.5 | 60243.8 | 2.7% | ok |
+| log_softmax_f32_session-single-call_len512_b8 | #1976 | session-single-call | tenferro-rs | f32 | op=log_softmax, len=512, batch=8, axis=0 | 4 | 2 | 1771737.0 | 18940.8 | 1.9% | ok |
+| log_softmax_f32_eager-composed_len512_b8 | #1976 | eager-composed | tenferro-rs | f32 | op=log_softmax, len=512, batch=8, axis=0 | 4 | 2 | 1765124.5 | 33215.2 | 1.3% | ok |
+| log_softmax_f32_pytorch_len512_b8 | #1976 | pytorch | pytorch-cpu | f32 | op=log_softmax, len=512, batch=8, axis=0 | 4 | 4 | 1205198.8 | 49601.1 | 4.3% | ok |
+| masked_softmax_f32_eager-single-call_len64_b8 | #1976 | eager-single-call | tenferro-rs | f32 | op=masked_softmax, len=64, batch=8, axis=0 | 4 | 16 | 121521.7 | 2652.5 | 4.0% | ok |
+| masked_softmax_f32_session-single-call_len64_b8 | #1976 | session-single-call | tenferro-rs | f32 | op=masked_softmax, len=64, batch=8, axis=0 | 4 | 32 | 95487.9 | 704.0 | 0.9% | ok |
+| masked_softmax_f32_eager-composed_len64_b8 | #1976 | eager-composed | tenferro-rs | f32 | op=masked_softmax, len=64, batch=8, axis=0 | 4 | 32 | 73268.5 | 1361.2 | 1.3% | ok |
+| masked_softmax_f32_pytorch_len64_b8 | #1976 | pytorch | pytorch-cpu | f32 | op=masked_softmax, len=64, batch=8, axis=0 | 4 | 32 | 66579.3 | 1370.4 | 1.1% | ok |
+| masked_softmax_f32_eager-single-call_len512_b8 | #1976 | eager-single-call | tenferro-rs | f32 | op=masked_softmax, len=512, batch=8, axis=0 | 4 | 1 | 2879181.0 | 16165.5 | 0.6% | ok |
+| masked_softmax_f32_session-single-call_len512_b8 | #1976 | session-single-call | tenferro-rs | f32 | op=masked_softmax, len=512, batch=8, axis=0 | 4 | 1 | 2860707.0 | 45441.5 | 1.9% | ok |
+| masked_softmax_f32_eager-composed_len512_b8 | #1976 | eager-composed | tenferro-rs | f32 | op=masked_softmax, len=512, batch=8, axis=0 | 4 | 1 | 2386632.0 | 31740.0 | 1.8% | ok |
+| masked_softmax_f32_pytorch_len512_b8 | #1976 | pytorch | pytorch-cpu | f32 | op=masked_softmax, len=512, batch=8, axis=0 | 4 | 2 | 2869558.0 | 53015.0 | 1.4% | ok |
+| softmax_f32_eager-single-call_len64_b8_t4 | #2233 #2235 | eager-single-call | tenferro-rs | f32 | op=softmax, len=64, batch=8, axis=0 | 4 | 128 | 13981.4 | 180.6 | 1.9% | ok |
+| softmax_f32_eager-composed_len64_b8_t4 | #2233 #2235 | eager-composed | tenferro-rs | f32 | op=softmax, len=64, batch=8, axis=0 | 4 | 32 | 61428.7 | 902.2 | 1.3% | ok |
+| softmax_f32_pytorch_len64_b8_t4 | #2233 #2235 | pytorch | pytorch-cpu | f32 | op=softmax, len=64, batch=8, axis=0 | 4 | 256 | 13288.2 | 160.6 | 2.8% | ok |
+| reduce_mean_f32_eager-single-call_1024x64_axis0 | #1976 | eager-single-call | tenferro-rs | f32 | rows=1024, cols=64, axis=0 | 4 | 256 | 15211.1 | 43.8 | 0.3% | ok |
+| reduce_mean_f32_session-single-call_1024x64_axis0 | #1976 | session-single-call | tenferro-rs | f32 | rows=1024, cols=64, axis=0 | 4 | 256 | 7927.5 | 57.5 | 14.6% | NOISY |
+| reduce_mean_f32_eager-composed_1024x64_axis0 | #1976 | eager-composed | tenferro-rs | f32 | rows=1024, cols=64, axis=0 | 4 | 256 | 15038.6 | 81.3 | 0.7% | ok |
+| reduce_mean_f32_pytorch_1024x64_axis0 | #1976 | pytorch | pytorch-cpu | f32 | rows=1024, cols=64, axis=0 | 4 | 256 | 7798.1 | 84.6 | 2.1% | ok |
+| take_along_axis_rows_f64_eager-single-call_n64_b256 | #2008 | eager-single-call | tenferro-rs | f64 | n=64, batch=256, axis=0 | 4 | 1 | 3172455.0 | 148359.5 | 3.6% | ok |
+| take_along_axis_rows_f64_session-single-call_n64_b256 | #2008 | session-single-call | tenferro-rs | f64 | n=64, batch=256, axis=0 | 4 | 1 | 2993567.0 | 280950.5 | 22.6% | NOISY |
+| take_along_axis_rows_f64_eager-gather-prebuilt_n64_b256 | #2008 | eager-gather-prebuilt | tenferro-rs | f64 | n=64, batch=256, axis=0 | 4 | 1 | 2878029.0 | 102985.5 | 6.2% | ok |
+| take_along_axis_rows_f64_pytorch_n64_b256 | #2008 | pytorch | pytorch-cpu | f64 | n=64, batch=256, axis=0 | 4 | 2 | 1507092.5 | 238813.0 | 8.9% | ok |
+| lstsq_f64_eager-shared_m768_n384_rhs16 | #2027 | eager-shared | tenferro-rs | f64 | operation=lstsq | 4 | 1 | 7835550.0 | 57563.5 | 0.5% | ok |
+| lstsq_f64_pytorch_m768_n384_rhs16 | #2027 | pytorch | pytorch-cpu | f64 | operation=lstsq | 4 | 1 | 5177696.0 | 30211.5 | 0.6% | ok |
+| triangular_f64_concrete-shared_n4096_rhs64 | #2028 | concrete-shared | tenferro-rs | f64 | operation=triangular | 4 | 1 | 15639059.0 | 45299.0 | 0.4% | ok |
+| triangular_f64_pytorch_n4096_rhs64 | #2028 | pytorch | pytorch-cpu | f64 | operation=triangular | 4 | 1 | 17181919.0 | 200513.5 | 2.0% | ok |
+| reshape_f64_concrete-shared_n33554432_to8192x4096 | #2029 | concrete-shared | tenferro-rs | f64 | operation=reshape | 4 | 1 | 25644400.0 | 429118.5 | 1.2% | ok |
+| reshape_f64_pytorch_n33554432_to8192x4096 | #2029 | pytorch | pytorch-cpu | f64 | operation=reshape | 4 | 1 | 26874198.0 | 292652.0 | 3.4% | ok |
+| metadata_transpose_view_f64_rank8_t4 | #2180 | metadata-clone | tenferro-rs | f64 | shape=[2, 2, 2, 2, 2, 2, 2, 2] | 4 | 8192 | 80.3 | 0.6 | 45.1% | NOISY |
+| metadata_transpose_view_f64_rank8_t4_julia-base | #2180 | julia-base | julia-base | f64 | shape=[2, 2, 2, 2, 2, 2, 2, 2] | 4 | 1048576 | 0.3 | 0.0 | 7.0% | ok |
+| followup_structural_broadcast_in_dim_direct-shared | #2021 | direct-shared | tenferro-rs | f64 | case_id=structural.broadcast_in_dim, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8192, 1], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 28993484.0 | 222385.0 | 1.5% | ok |
+| followup_structural_broadcast_in_dim_pytorch | #2021 | pytorch | pytorch-cpu | f64 | case_id=structural.broadcast_in_dim, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8192, 1], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 23794653.0 | 448986.0 | 7.1% | ok |
+| followup_real_tanh_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.tanh, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 12159114.0 | 141832.0 | 9.2% | ok |
+| followup_real_tanh_jax | #2033 | jax | jax-cpu | f64 | case_id=real.tanh, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 17800638.0 | 466008.0 | 1.7% | ok |
+| followup_real_log1p_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.log1p, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 3234959.0 | 667939.5 | 9.6% | ok |
+| followup_real_log1p_pytorch | #2033 | pytorch | pytorch-cpu | f64 | case_id=real.log1p, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 7020394.0 | 209625.0 | 4.0% | ok |
+| followup_real_cos_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.cos, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 7171848.0 | 543590.0 | 6.0% | ok |
+| followup_real_cos_pytorch | #2033 | pytorch | pytorch-cpu | f64 | case_id=real.cos, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 16846549.0 | 351617.5 | 1.5% | ok |
+| followup_real_sin_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.sin, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 4814703.0 | 24276.0 | 1.0% | ok |
+| followup_real_sin_pytorch | #2033 | pytorch | pytorch-cpu | f64 | case_id=real.sin, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 16619226.0 | 248909.5 | 1.2% | ok |
+| followup_real_exp_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.exp, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 3534550.0 | 50405.0 | 1.0% | ok |
+| followup_real_exp_jax | #2033 | jax | jax-cpu | f64 | case_id=real.exp, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 17781622.0 | 375497.5 | 1.6% | ok |
+| followup_real_expm1_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.expm1, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 4919628.0 | 47363.5 | 0.7% | ok |
+| followup_real_expm1_jax | #2033 | jax | jax-cpu | f64 | case_id=real.expm1, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 12634192.0 | 559504.5 | 2.4% | ok |
+| followup_real_pow_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.pow, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 18740945.0 | 248288.0 | 1.7% | ok |
+| followup_real_pow_pytorch | #2033 | pytorch | pytorch-cpu | f64 | case_id=real.pow, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 14162537.0 | 384674.5 | 1.5% | ok |
+| followup_complex_exp_direct-shared | #2033 | direct-shared | tenferro-rs | c64 | case_id=complex.exp, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [4194304], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 26374704.0 | 261248.0 | 0.8% | ok |
+| followup_complex_exp_julia-base | #2033 | julia-base | julia-base | c64 | case_id=complex.exp, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [4194304], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 78968714.0 | 639248.0 | 0.6% | ok |
+| followup_real_log_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.log, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 6223787.0 | 42910.5 | 1.0% | ok |
+| followup_real_log_pytorch | #2033 | pytorch | pytorch-cpu | f64 | case_id=real.log, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 14167650.0 | 381552.5 | 1.8% | ok |
+| followup_real_reduce_max_axis1_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_max_axis1, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 4 | 557446.8 | 8377.0 | 3.6% | ok |
+| followup_real_reduce_max_axis1_julia-base | #2034 | julia-base | julia-base | f64 | case_id=real.reduce_max_axis1, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 2 | 1037542.5 | 66472.2 | 7.1% | ok |
+| followup_real_reduce_prod_axis1_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_prod_axis1, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 4 | 514090.0 | 5775.9 | 0.9% | ok |
+| followup_real_reduce_prod_axis1_pytorch | #2034 | pytorch | pytorch-cpu | f64 | case_id=real.reduce_prod_axis1, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 8 | 402178.0 | 9611.9 | 2.2% | ok |
+| followup_real_reduce_sum_axis1_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_sum_axis1, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 4 | 526813.8 | 6552.2 | 1.6% | ok |
+| followup_real_reduce_sum_axis1_pytorch | #2034 | pytorch | pytorch-cpu | f64 | case_id=real.reduce_sum_axis1, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 8 | 417226.2 | 5124.8 | 1.4% | ok |
+| followup_real_reduce_max_axis0_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_max_axis0, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 4 | 749039.2 | 10436.0 | 0.9% | ok |
+| followup_real_reduce_max_axis0_julia-base | #2034 | julia-base | julia-base | f64 | case_id=real.reduce_max_axis0, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 2 | 1698609.5 | 27529.5 | 1.3% | ok |
+| followup_real_reduce_min_axis1_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_min_axis1, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [4096, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 2994872.0 | 27477.0 | 0.8% | ok |
+| followup_real_reduce_min_axis1_julia-base | #2034 | julia-base | julia-base | f64 | case_id=real.reduce_min_axis1, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [4096, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 5505583.0 | 97507.5 | 2.2% | ok |
+| followup_real_reduce_min_axis0_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_min_axis0, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 4 | 700291.5 | 10443.2 | 0.9% | ok |
+| followup_real_reduce_min_axis0_julia-base | #2034 | julia-base | julia-base | f64 | case_id=real.reduce_min_axis0, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 1776509.0 | 60504.0 | 8.5% | ok |
+| followup_real_reduce_max_all_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_max_all, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [8192, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 5810330.0 | 179156.5 | 4.3% | ok |
+| followup_real_reduce_max_all_julia-base | #2034 | julia-base | julia-base | f64 | case_id=real.reduce_max_all, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [8192, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 16048299.0 | 197390.5 | 0.9% | ok |
+| followup_real_reduce_min_all_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_min_all, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [8192, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 5395328.0 | 85852.5 | 1.1% | ok |
+| followup_real_reduce_min_all_julia-base | #2034 | julia-base | julia-base | f64 | case_id=real.reduce_min_all, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [8192, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 16739709.0 | 270643.5 | 0.9% | ok |
+| followup_complex_norm_fro_direct-shared | #2035 | direct-shared | tenferro-rs | c64 | case_id=complex.norm_fro, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [2048, 1536], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 4 | 750715.2 | 7956.0 | 0.8% | ok |
+| followup_complex_norm_fro_jax | #2035 | jax | jax-cpu | c64 | case_id=complex.norm_fro, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [2048, 1536], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 3948578.0 | 44930.0 | 2.4% | ok |
+| followup_index_gather_direct-shared | #2036 #1719 | direct-shared | tenferro-rs | f64 | case_id=index.gather, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [262144], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 8 | 180144.8 | 2316.8 | 1.1% | ok |
+| followup_index_gather_jax | #2036 #1719 | jax | jax-cpu | f64 | case_id=index.gather, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [262144], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 8 | 432883.1 | 20748.9 | 3.7% | ok |
+| followup_index_scatter_direct-shared | #2036 #1719 | direct-shared | tenferro-rs | f64 | case_id=index.scatter, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [262144], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 2 | 993306.0 | 256273.8 | 20.4% | NOISY |
+| followup_index_scatter_pytorch | #2036 #1719 | pytorch | pytorch-cpu | f64 | case_id=index.scatter, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [262144], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 2058948.0 | 5588516.5 | 89.9% | NOISY |
+| followup_index_dynamic_update_slice_direct-shared | #2036 #1719 | direct-shared | tenferro-rs | f64 | case_id=index.dynamic_update_slice, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [2097152], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 2 | 925573.5 | 18684.8 | 7.6% | ok |
+| followup_index_dynamic_update_slice_jax | #2036 #1719 | jax | jax-cpu | f64 | case_id=index.dynamic_update_slice, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [2097152], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 2 | 2682042.5 | 195376.8 | 7.2% | ok |
+| followup_perm_reverse_15d_3_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.reverse_15d_3, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 41319512.0 | 771374.5 | 1.3% | ok |
+| followup_perm_reverse_15d_3_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.reverse_15d_3, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 40491283.0 | 385645.0 | 1.4% | ok |
+| followup_structural_transpose_direct-shared | #2037 #2228 | direct-shared | tenferro-rs | f64 | case_id=structural.transpose, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [4096, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 22268586.0 | 237676.0 | 1.6% | ok |
+| followup_structural_transpose_pytorch | #2037 #2228 | pytorch | pytorch-cpu | f64 | case_id=structural.transpose, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [4096, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 58690875.0 | 1598122.0 | 1.8% | ok |
+| followup_perm_reverse_23d_2_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.reverse_23d_2, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 13567270.0 | 175499.0 | 1.7% | ok |
+| followup_perm_reverse_23d_2_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.reverse_23d_2, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 33661241.0 | 587092.0 | 0.9% | ok |
+| followup_perm_transpose_3d_256_201_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.transpose_3d_256_201, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [256, 256, 256], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 19963395.0 | 216962.5 | 0.7% | ok |
+| followup_perm_transpose_3d_256_201_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.transpose_3d_256_201, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [256, 256, 256], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 19934951.0 | 269411.0 | 1.1% | ok |
+| followup_perm_cyclic_15d_3_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.cyclic_15d_3, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 13826444.0 | 710358.5 | 3.9% | ok |
+| followup_perm_cyclic_15d_3_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.cyclic_15d_3, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 13470424.0 | 227537.0 | 1.7% | ok |
+| followup_perm_transpose_3d_256_102_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.transpose_3d_256_102, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [256, 256, 256], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 16764537.0 | 709962.5 | 2.3% | ok |
+| followup_perm_transpose_3d_256_102_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.transpose_3d_256_102, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [256, 256, 256], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 16430598.0 | 388664.5 | 2.5% | ok |
+| followup_perm_tn_light_415_24d_scattered_to_colmajor_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.tn_light_415_24d_scattered_to_colmajor, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 15087497.0 | 262923.5 | 3.2% | ok |
+| followup_perm_tn_light_415_24d_scattered_to_colmajor_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.tn_light_415_24d_scattered_to_colmajor, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 15408218.0 | 2325124.0 | 16.8% | NOISY |
+| followup_perm_tn_light_415_24d_contiguous_same_perm_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.tn_light_415_24d_contiguous_same_perm, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 15084840.0 | 659733.0 | 8.7% | ok |
+| followup_perm_tn_light_415_24d_contiguous_same_perm_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.tn_light_415_24d_contiguous_same_perm, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 15164378.0 | 238352.0 | 1.6% | ok |
+| followup_perm_rotation_6d_32_32_32_32_16_16_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.rotation_6d_32_32_32_32_16_16, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [32, 32, 32, 32, 16, 16], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 275499027.0 | 3374942.0 | 0.9% | ok |
+| followup_perm_rotation_6d_32_32_32_32_16_16_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.rotation_6d_32_32_32_32_16_16, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [32, 32, 32, 32, 16, 16], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 277977756.0 | 10455328.0 | 3.1% | ok |
+| followup_structural_extract_diagonal_direct-shared | #2038 #2228 | direct-shared | tenferro-rs | f64 | case_id=structural.extract_diagonal, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [8388608, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 25315343.0 | 191574.0 | 1.0% | ok |
+| followup_structural_extract_diagonal_jax | #2038 #2228 | jax | jax-cpu | f64 | case_id=structural.extract_diagonal, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [8388608, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 26620216.0 | 282394.5 | 2.1% | ok |
+| followup_fft_irfft_direct-shared | #2039 #2230 #2228 | direct-shared | tenferro-rs | c32 | case_id=fft.irfft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [524289], 'dtype': 'c32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 4912339.0 | 35701.5 | 0.6% | ok |
+| followup_fft_irfft_mkl-dfti | #2039 #2230 #2228 | mkl-dfti | mkl-dfti | c32 | case_id=fft.irfft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [524289], 'dtype': 'c32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 3092266.0 | 12524.0 | 0.7% | ok |
+| followup_fft_rfft_direct-shared | #2039 #2230 #2228 | direct-shared | tenferro-rs | f32 | case_id=fft.rfft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [1048576], 'dtype': 'f32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 4350896.0 | 83096.0 | 1.2% | ok |
+| followup_fft_rfft_mkl-dfti | #2039 #2230 #2228 | mkl-dfti | mkl-dfti | f32 | case_id=fft.rfft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [1048576], 'dtype': 'f32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 3042744.0 | 53931.0 | 1.3% | ok |
+| followup_fft_fft_direct-shared | #2039 #2228 | direct-shared | tenferro-rs | c64 | case_id=fft.fft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [1048576], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 12984488.0 | 86166.5 | 0.7% | ok |
+| followup_fft_fft_mkl-dfti | #2039 #2228 | mkl-dfti | mkl-dfti | c64 | case_id=fft.fft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [1048576], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 13800916.0 | 103158.0 | 0.6% | ok |
+| followup_fft_ifft_direct-shared | #2039 #2228 | direct-shared | tenferro-rs | c32 | case_id=fft.ifft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [1048576], 'dtype': 'c32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 8174731.0 | 190622.5 | 1.5% | ok |
+| followup_fft_ifft_mkl-dfti | #2039 #2228 | mkl-dfti | mkl-dfti | c32 | case_id=fft.ifft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [1048576], 'dtype': 'c32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 4 | 1 | 3340881.0 | 118361.5 | 2.8% | ok |
+| followup_metadata_transpose_view_metadata | #2040 #1719 | metadata | tenferro-rs | f64 | case_id=metadata.transpose_view, rust_path=metadata, reference_path=julia-base, fixture={'input_shape': [2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 4 | 8192 | 272.7 | 3.7 | 1.2% | ok |
+| followup_metadata_transpose_view_julia-base | #2040 #1719 | julia-base | julia-base | f64 | case_id=metadata.transpose_view, rust_path=metadata, reference_path=julia-base, fixture={'input_shape': [2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 4 | 1864135 | 0.7 | 0.3 | 19.6% | NOISY |
+| followup_metadata_transpose_view_metadata-host-dyn | #2040 #1719 | metadata-host-dyn | tenferro-rs | f64 | case_id=metadata.transpose_view, rust_path=metadata-host-dyn, reference_path=julia-base, fixture={'input_shape': [2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 4 | 8192 | 340.0 | 5.6 | 1.0% | ok |
+| followup_metadata_transpose_view_metadata-host-static | #2040 #1719 | metadata-host-static | tenferro-rs | f64 | case_id=metadata.transpose_view, rust_path=metadata-host-static, reference_path=julia-base, fixture={'input_shape': [2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 4 | 8192 | 266.7 | 1.9 | 0.6% | ok |
+| followup_metadata_slice_view_metadata | #2040 #1719 | metadata | tenferro-rs | f64 | case_id=metadata.slice_view, rust_path=metadata, reference_path=julia-base, fixture={'input_shape': [4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 4 | 8192 | 383.7 | 38.9 | 5.8% | ok |
+| followup_metadata_slice_view_julia-base | #2040 #1719 | julia-base | julia-base | f64 | case_id=metadata.slice_view, rust_path=metadata, reference_path=julia-base, fixture={'input_shape': [4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 4 | 16256 | 5.0 | 1.1 | 18.8% | NOISY |
+| followup_metadata_slice_view_metadata-host-dyn | #2040 #1719 | metadata-host-dyn | tenferro-rs | f64 | case_id=metadata.slice_view, rust_path=metadata-host-dyn, reference_path=julia-base, fixture={'input_shape': [4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 4 | 8192 | 491.5 | 38.9 | 4.7% | ok |
+| followup_metadata_slice_view_metadata-host-static | #2040 #1719 | metadata-host-static | tenferro-rs | f64 | case_id=metadata.slice_view, rust_path=metadata-host-static, reference_path=julia-base, fixture={'input_shape': [4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 4 | 8192 | 367.5 | 34.4 | 5.4% | ok |
+| followup_metadata_reshape_view_metadata | #2040 #1719 | metadata | tenferro-rs | f64 | case_id=metadata.reshape_view, rust_path=metadata, reference_path=julia-base, fixture={'input_shape': [1024], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 4 | 8192 | 453.7 | 8.1 | 1.5% | ok |
+| followup_metadata_reshape_view_julia-base | #2040 #1719 | julia-base | julia-base | f64 | case_id=metadata.reshape_view, rust_path=metadata, reference_path=julia-base, fixture={'input_shape': [1024], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 4 | 63550 | 12.1 | 1.5 | 15.1% | NOISY |
+| followup_metadata_reshape_view_metadata-host-dyn | #2040 #1719 | metadata-host-dyn | tenferro-rs | f64 | case_id=metadata.reshape_view, rust_path=metadata-host-dyn, reference_path=julia-base, fixture={'input_shape': [1024], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 4 | 8192 | 499.8 | 9.0 | 1.4% | ok |
+| followup_metadata_reshape_view_metadata-host-static | #2040 #1719 | metadata-host-static | tenferro-rs | f64 | case_id=metadata.reshape_view, rust_path=metadata-host-static, reference_path=julia-base, fixture={'input_shape': [1024], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 4 | 8192 | 445.4 | 2.7 | 0.7% | ok |
+| lu_batched_f64_factor_n8_b1024 | #2142 | tenferro | tenferro-rs | f64 | n=8, batch=1024, op=factor | 4 | 8 | 177900.6 | 1311.2 | 0.7% | ok |
+| lu_batched_f64_factor_n8_b1024_host | #2142 | host | rust-loop | f64 | n=8, batch=1024, op=factor | 4 | 4 | 526853.8 | 1780.8 | 0.3% | ok |
+| lu_batched_f64_solve_n8_b1024 | #2142 | tenferro | tenferro-rs | f64 | n=8, batch=1024, op=solve | 4 | 16 | 92913.9 | 1258.3 | 2.6% | ok |
+| lu_batched_f64_solve_n8_b1024_pytorch | #2142 | pytorch | pytorch-cpu | f64 | n=8, batch=1024, op=solve | 4 | 16 | 229773.9 | 448.0 | 1.2% | ok |
+| lu_batched_f64_factor_n16_b1024 | #2142 | tenferro | tenferro-rs | f64 | n=16, batch=1024, op=factor | 4 | 4 | 659171.5 | 17802.0 | 2.3% | ok |
+| lu_batched_f64_factor_n16_b1024_host | #2142 | host | rust-loop | f64 | n=16, batch=1024, op=factor | 4 | 2 | 2130764.5 | 83401.5 | 7.3% | ok |
+| lu_batched_f64_solve_n16_b1024 | #2142 | tenferro | tenferro-rs | f64 | n=16, batch=1024, op=solve | 4 | 8 | 341692.2 | 3746.4 | 1.3% | ok |
+| lu_batched_f64_solve_n16_b1024_pytorch | #2142 | pytorch | pytorch-cpu | f64 | n=16, batch=1024, op=solve | 4 | 4 | 499718.0 | 7377.5 | 15.3% | NOISY |
+| small_grad_qr_f64_trace-prepared_n4 | #2186 | trace-prepared | tenferro-rs | f64 | op=qr, n=4 | 4 | 64 | 54140.6 | 395.9 | 0.6% | ok |
+| small_grad_qr_f64_pytorch_n4 | #2186 | pytorch | pytorch-cpu | f64 | op=qr, n=4 | 4 | 32 | 76477.9 | 4978.2 | 12.6% | NOISY |
+| small_grad_qr_f64_trace-prepared_n16 | #2186 | trace-prepared | tenferro-rs | f64 | op=qr, n=16 | 4 | 32 | 75304.1 | 637.8 | 2.1% | ok |
+| small_grad_qr_f64_pytorch_n16 | #2186 | pytorch | pytorch-cpu | f64 | op=qr, n=16 | 4 | 32 | 88057.7 | 690.5 | 6.2% | ok |
+| small_grad_eigh_f64_trace-prepared_n4 | #2186 | trace-prepared | tenferro-rs | f64 | op=eigh, n=4 | 4 | 32 | 75540.5 | 252.2 | 4.5% | ok |
+| small_grad_eigh_f64_pytorch_n4 | #2186 | pytorch | pytorch-cpu | f64 | op=eigh, n=4 | 4 | 32 | 74620.7 | 2839.4 | 3.0% | ok |
+| small_grad_eigh_f64_trace-prepared_n16 | #2186 | trace-prepared | tenferro-rs | f64 | op=eigh, n=16 | 4 | 16 | 134798.6 | 1241.1 | 0.9% | ok |
+| small_grad_eigh_f64_pytorch_n16 | #2186 | pytorch | pytorch-cpu | f64 | op=eigh, n=16 | 4 | 32 | 102315.3 | 2668.3 | 5.5% | ok |
+| small_grad_lu_f64_trace-prepared_n4 | #2186 | trace-prepared | tenferro-rs | f64 | op=lu, n=4 | 4 | 64 | 39711.8 | 257.5 | 1.4% | ok |
+| small_grad_lu_f64_pytorch_n4 | #2186 | pytorch | pytorch-cpu | f64 | op=lu, n=4 | 4 | 32 | 84634.7 | 1035.2 | 2.9% | ok |
+| small_grad_lu_f64_trace-prepared_n16 | #2186 | trace-prepared | tenferro-rs | f64 | op=lu, n=16 | 4 | 64 | 49326.4 | 415.9 | 1.0% | ok |
+| small_grad_lu_f64_pytorch_n16 | #2186 | pytorch | pytorch-cpu | f64 | op=lu, n=16 | 4 | 16 | 96313.4 | 188181.7 | 56.2% | NOISY |
+| small_grad_svd_f64_trace-prepared_n4 | #2186 | trace-prepared | tenferro-rs | f64 | op=svd, n=4 | 4 | 32 | 119424.2 | 890.2 | 1.1% | ok |
+| small_grad_svd_f64_pytorch_n4 | #2186 | pytorch | pytorch-cpu | f64 | op=svd, n=4 | 4 | 32 | 111205.1 | 2030.2 | 1.6% | ok |
+| small_grad_svd_f64_trace-prepared_n16 | #2186 | trace-prepared | tenferro-rs | f64 | op=svd, n=16 | 4 | 16 | 221757.1 | 1734.8 | 1.0% | ok |
+| small_grad_svd_f64_pytorch_n16 | #2186 | pytorch | pytorch-cpu | f64 | op=svd, n=16 | 4 | 16 | 174811.0 | 7258.0 | 9.4% | ok |
+| small_grad_solve_f64_trace-prepared_n4 | #2186 | trace-prepared | tenferro-rs | f64 | op=solve, n=4 | 4 | 64 | 32631.1 | 120.2 | 0.5% | ok |
+| small_grad_solve_f64_pytorch_n4 | #2186 | pytorch | pytorch-cpu | f64 | op=solve, n=4 | 4 | 64 | 60975.9 | 597.4 | 0.7% | ok |
+| small_grad_solve_f64_trace-prepared_n16 | #2186 | trace-prepared | tenferro-rs | f64 | op=solve, n=16 | 4 | 64 | 40497.7 | 100.9 | 0.6% | ok |
+| small_grad_solve_f64_pytorch_n16 | #2186 | pytorch | pytorch-cpu | f64 | op=solve, n=16 | 4 | 32 | 71255.9 | 643.9 | 0.7% | ok |
+| fft_axis0_c64_fft-executor_n128 | #1765 | fft-executor | tenferro-rs | c64 | n=128 | 4 | 1 | 4710679.0 | 340617.0 | 9.7% | ok |
+| fft_axis0_c64_pytorch_n128 | #1765 | pytorch | pytorch-cpu | c64 | n=128 | 4 | 1 | 6990998.0 | 257853.0 | 3.4% | ok |
+| degenerate_dot_hadamard_f64_dot-general-shared_n1024 | #2111 | dot-general-shared | tenferro-rs | f64 | form=hadamard, n=1024 | 4 | 4 | 339200.0 | 18732.8 | 4.7% | ok |
+| degenerate_dot_hadamard_f64_pytorch_n1024 | #2111 | pytorch | pytorch-cpu | f64 | form=hadamard, n=1024 | 4 | 4 | 329865.0 | 20624.9 | 5.4% | ok |
+| degenerate_dot_outer_f64_dot-general-shared_n1024 | #2111 | dot-general-shared | tenferro-rs | f64 | form=outer, n=1024 | 4 | 2 | 179310.5 | 5903.2 | 2.3% | ok |
+| degenerate_dot_outer_f64_pytorch_n1024 | #2111 | pytorch | pytorch-cpu | f64 | form=outer, n=1024 | 4 | 4 | 182283.8 | 14061.1 | 13.4% | NOISY |
+| degenerate_dot_rank0_f64_dot-general-shared_n1024 | #2111 | dot-general-shared | tenferro-rs | f64 | form=rank0, n=1024 | 4 | 1 | 9931453.0 | 248931.0 | 1.8% | ok |
+| degenerate_dot_rank0_f64_pytorch_n1024 | #2111 | pytorch | pytorch-cpu | f64 | form=rank0, n=1024 | 4 | 8 | 627462.2 | 66776.9 | 6.9% | ok |
+| erased_add_f64_session-add_n256 | #1766 | session-add | tenferro-rs | f64 | n=256 | 4 | 1024 | 1554.9 | 49.2 | 3.4% | ok |
+| erased_add_f64_pytorch_n256 | #1766 | pytorch | pytorch-cpu | f64 | n=256 | 4 | 1024 | 1910.4 | 4.0 | 0.4% | ok |
+| erased_add_f64_session-add_n4096 | #1766 | session-add | tenferro-rs | f64 | n=4096 | 4 | 256 | 3101.1 | 69.2 | 1.7% | ok |
+| erased_add_f64_pytorch_n4096 | #1766 | pytorch | pytorch-cpu | f64 | n=4096 | 4 | 1024 | 3734.8 | 49.8 | 1.4% | ok |
+| erased_add_f64_session-add_n1048576 | #1766 | session-add | tenferro-rs | f64 | n=1048576 | 4 | 4 | 330614.0 | 4503.5 | 1.3% | ok |
+| erased_add_f64_pytorch_n1048576 | #1766 | pytorch | pytorch-cpu | f64 | n=1048576 | 4 | 4 | 330233.2 | 5595.5 | 6.0% | ok |
+| axpby_strided_source_f64_1024x1024_t4 | #2220 #2214 | strided-source | tenferro-rs | f64 | n=1024 | 4 | 2 | 829914.0 | 83776.8 | 7.3% | ok |
+| axpby_contiguous_source_f64_1024x1024_t4 | #2220 #2214 | contiguous-source | tenferro-rs | f64 | n=1024 | 4 | 8 | 311156.2 | 13500.9 | 3.8% | ok |
+| axpby_strided_source_f64_1024x1024_host_t4 | #2220 #2214 | host | rust-loop | f64 | n=1024 | 4 | 1 | 2234714.0 | 63313.5 | 2.6% | ok |
+| erased_construct_f64_col_n8 | #2177 | col-major | tenferro-rs | f64 | n=8, layout=col | 4 | 16384 | 126.8 | 0.9 | 13.9% | NOISY |
+| erased_construct_f64_row_n8 | #2177 | row-major | tenferro-rs | f64 | n=8, layout=row | 4 | 8192 | 245.9 | 2.1 | 7.7% | ok |
+| erased_construct_f64_col_n4096 | #2177 | col-major | tenferro-rs | f64 | n=4096, layout=col | 4 | 16384 | 252.6 | 13.6 | 3.2% | ok |
+| erased_construct_f64_row_n4096 | #2177 | row-major | tenferro-rs | f64 | n=4096, layout=row | 4 | 128 | 17331.4 | 439.9 | 2.3% | ok |
+| erased_construct_f64_col_n65536 | #2177 | col-major | tenferro-rs | f64 | n=65536, layout=col | 4 | 1024 | 141.2 | 4.0 | 1.6% | ok |
+| erased_construct_f64_row_n65536 | #2177 | row-major | tenferro-rs | f64 | n=65536, layout=row | 4 | 8 | 287881.4 | 11388.8 | 4.1% | ok |
+| eager_small_leaf_f64_eager-held-session | #1704 | eager-held-session | tenferro-rs | f64 | op=leaf | 4 | 1024 | 3491.0 | 59.7 | 1.8% | ok |
+| eager_small_add_f64_eager-held-session | #1667 | eager-held-session | tenferro-rs | f64 | op=add | 4 | 1024 | 2806.0 | 34.9 | 1.9% | ok |
+| eager_small_add_f64_pytorch | #1667 | pytorch | pytorch-cpu | f64 | op=add | 4 | 2048 | 1852.9 | 13.3 | 0.6% | ok |
+| eager_small_gemm_f64_eager-held-session | #1904 | eager-held-session | tenferro-rs | f64 | op=gemm | 4 | 512 | 4112.7 | 13.4 | 0.5% | ok |
+| eager_small_gemm_f64_pytorch | #1904 | pytorch | pytorch-cpu | f64 | op=gemm | 4 | 1024 | 2022.5 | 7.9 | 2.4% | ok |
+| trace_metadata_trace-fold_f32_1024x64_k50 | #2226 #2238 | trace-fold | tenferro-rs | f32 | rows=1024, cols=64, steps=50 | 4 | 2 | 1776390.0 | 5623.0 | 0.8% | ok |
+| trace_metadata_trace-outputs_f32_1024x64_k50 | #2226 #2238 | trace-outputs | tenferro-rs | f32 | rows=1024, cols=64, steps=50 | 4 | 2 | 1696375.5 | 38364.2 | 1.2% | ok |
+| trace_metadata_eager_f32_1024x64_k50 | #2226 #2238 | eager | tenferro-rs | f32 | rows=1024, cols=64, steps=50 | 4 | 1 | 2522903.0 | 7785.0 | 0.9% | ok |
+| trace_metadata_pytorch_f32_1024x64_k50 | #2226 #2238 | pytorch | pytorch-cpu | f32 | rows=1024, cols=64, steps=50 | 4 | 2 | 1231720.5 | 6612.5 | 0.6% | ok |
+| trace_metadata_fixed_neg_f32_8 | #2226 #2238 | trace-fold | tenferro-rs | f32 | rows=8, cols=1, steps=0 | 4 | 1024 | 3261.8 | 38.4 | 2.1% | ok |
+| decode_proj_f32_eager-shared_in1024_out1024_len8 | #1992 #2003 #1995 #2229 | eager-shared | tenferro-rs | f32 | in=1024, out=1024, len=8 | 8 | 32 | 85568.9 | 345.5 | 0.5% | ok |
+| decode_proj_f32_faer-direct_in1024_out1024_len8 | #1992 #2003 #1995 #2229 | faer-direct | faer-direct | f32 | in=1024, out=1024, len=8 | 8 | 16 | 194541.6 | 6073.9 | 2.1% | ok |
+| decode_proj_f32_host-sgemm_in1024_out1024_len8 | #1992 #2003 #1995 #2229 | host-sgemm | matrixmultiply-sgemm | f32 | in=1024, out=1024, len=8 | 8 | 2 | 1199635.0 | 7238.2 | 0.3% | ok |
+| decode_proj_f32_pytorch_in1024_out1024_len8 | #1992 #2003 #1995 #2229 | pytorch | pytorch-cpu | f32 | in=1024, out=1024, len=8 | 8 | 32 | 96992.2 | 463.1 | 0.5% | ok |
+| decode_proj_f32_eager-shared_in1024_out1024_len64 | #1992 #2003 #1995 #2229 | eager-shared | tenferro-rs | f32 | in=1024, out=1024, len=64 | 8 | 8 | 314404.6 | 1016.9 | 0.6% | ok |
+| decode_proj_f32_faer-direct_in1024_out1024_len64 | #1992 #2003 #1995 #2229 | faer-direct | faer-direct | f32 | in=1024, out=1024, len=64 | 8 | 4 | 738933.0 | 24499.8 | 3.0% | ok |
+| decode_proj_f32_host-sgemm_in1024_out1024_len64 | #1992 #2003 #1995 #2229 | host-sgemm | matrixmultiply-sgemm | f32 | in=1024, out=1024, len=64 | 8 | 1 | 2054575.0 | 9383.0 | 0.3% | ok |
+| decode_proj_f32_pytorch_in1024_out1024_len64 | #1992 #2003 #1995 #2229 | pytorch | pytorch-cpu | f32 | in=1024, out=1024, len=64 | 8 | 8 | 387420.1 | 1071.4 | 0.5% | ok |
+| decode_proj_f32_eager-shared_in1024_out1024_len512 | #1992 #2003 #1995 #2229 | eager-shared | tenferro-rs | f32 | in=1024, out=1024, len=512 | 8 | 1 | 2398439.0 | 11671.0 | 0.4% | ok |
+| decode_proj_f32_faer-direct_in1024_out1024_len512 | #1992 #2003 #1995 #2229 | faer-direct | faer-direct | f32 | in=1024, out=1024, len=512 | 8 | 1 | 2670879.0 | 46427.0 | 2.0% | ok |
+| decode_proj_f32_host-sgemm_in1024_out1024_len512 | #1992 #2003 #1995 #2229 | host-sgemm | matrixmultiply-sgemm | f32 | in=1024, out=1024, len=512 | 8 | 1 | 5574934.0 | 18724.5 | 0.4% | ok |
+| decode_proj_f32_pytorch_in1024_out1024_len512 | #1992 #2003 #1995 #2229 | pytorch | pytorch-cpu | f32 | in=1024, out=1024, len=512 | 8 | 1 | 2638027.0 | 9507.0 | 0.4% | ok |
+| decode_proj_f32_eager-shared_in1024_out4096_len8 | #1992 #2003 #1995 #2229 | eager-shared | tenferro-rs | f32 | in=1024, out=4096, len=8 | 8 | 8 | 359267.4 | 2256.2 | 3.5% | ok |
+| decode_proj_f32_faer-direct_in1024_out4096_len8 | #1992 #2003 #1995 #2229 | faer-direct | faer-direct | f32 | in=1024, out=4096, len=8 | 8 | 8 | 479660.2 | 16361.3 | 4.1% | ok |
+| decode_proj_f32_host-sgemm_in1024_out4096_len8 | #1992 #2003 #1995 #2229 | host-sgemm | matrixmultiply-sgemm | f32 | in=1024, out=4096, len=8 | 8 | 1 | 5104974.0 | 26574.5 | 0.4% | ok |
+| decode_proj_f32_pytorch_in1024_out4096_len8 | #1992 #2003 #1995 #2229 | pytorch | pytorch-cpu | f32 | in=1024, out=4096, len=8 | 8 | 4 | 795604.0 | 22336.9 | 2.0% | ok |
+| decode_proj_f32_eager-shared_in1024_out4096_len64 | #1992 #2003 #1995 #2229 | eager-shared | tenferro-rs | f32 | in=1024, out=4096, len=64 | 8 | 2 | 1181637.0 | 29162.0 | 2.4% | ok |
+| decode_proj_f32_faer-direct_in1024_out4096_len64 | #1992 #2003 #1995 #2229 | faer-direct | faer-direct | f32 | in=1024, out=4096, len=64 | 8 | 2 | 1581089.0 | 48127.5 | 2.3% | ok |
+| decode_proj_f32_host-sgemm_in1024_out4096_len64 | #1992 #2003 #1995 #2229 | host-sgemm | matrixmultiply-sgemm | f32 | in=1024, out=4096, len=64 | 8 | 1 | 8640811.0 | 31143.0 | 1.2% | ok |
+| decode_proj_f32_pytorch_in1024_out4096_len64 | #1992 #2003 #1995 #2229 | pytorch | pytorch-cpu | f32 | in=1024, out=4096, len=64 | 8 | 1 | 2051660.0 | 37480.0 | 1.5% | ok |
+| decode_proj_f32_eager-shared_in1024_out4096_len512 | #1992 #2003 #1995 #2229 | eager-shared | tenferro-rs | f32 | in=1024, out=4096, len=512 | 8 | 1 | 8905457.0 | 16831.5 | 0.1% | ok |
+| decode_proj_f32_faer-direct_in1024_out4096_len512 | #1992 #2003 #1995 #2229 | faer-direct | faer-direct | f32 | in=1024, out=4096, len=512 | 8 | 1 | 9250593.0 | 92272.5 | 0.6% | ok |
+| decode_proj_f32_host-sgemm_in1024_out4096_len512 | #1992 #2003 #1995 #2229 | host-sgemm | matrixmultiply-sgemm | f32 | in=1024, out=4096, len=512 | 8 | 1 | 22571853.0 | 111008.0 | 0.4% | ok |
+| decode_proj_f32_pytorch_in1024_out4096_len512 | #1992 #2003 #1995 #2229 | pytorch | pytorch-cpu | f32 | in=1024, out=4096, len=512 | 8 | 1 | 12827696.0 | 192640.5 | 1.1% | ok |
+| gemm_c64_mm256_t1 | #1900 | dot-general-shared | tenferro-rs | c64 | n=256 | 8 | 1 | 4281784.0 | 12818.5 | 0.3% | ok |
+| gemm_f64_mm256_t1 | #1900 | dot-general-shared | tenferro-rs | f64 | n=256 | 8 | 2 | 1075442.5 | 3030.5 | 0.2% | ok |
+| conj_dot_f64_dot-general-rank1_len100 | #1615 | dot-general-rank1 | tenferro-rs | f64 | len=100 | 8 | 1024 | 2294.6 | 21.8 | 1.4% | ok |
+| conj_dot_f64_portable-loop_len100 | #1615 | portable-loop | rust-loop | f64 | len=100 | 8 | 32768 | 89.5 | 0.1 | 0.4% | ok |
+| conj_dot_f64_pytorch-vdot_len100 | #1615 | pytorch-vdot | pytorch-cpu | f64 | len=100 | 8 | 2048 | 1668.5 | 15.1 | 3.4% | ok |
+| conj_dot_f64_dot-general-rank1_len10000 | #1615 | dot-general-rank1 | tenferro-rs | f64 | len=10000 | 8 | 512 | 4981.6 | 11.1 | 0.7% | ok |
+| conj_dot_f64_portable-loop_len10000 | #1615 | portable-loop | rust-loop | f64 | len=10000 | 8 | 256 | 15021.9 | 8.1 | 0.1% | ok |
+| conj_dot_f64_pytorch-vdot_len10000 | #1615 | pytorch-vdot | pytorch-cpu | f64 | len=10000 | 8 | 1024 | 3201.1 | 16.5 | 0.6% | ok |
+| conj_dot_f64_dot-general-rank1_len1000000 | #1615 | dot-general-rank1 | tenferro-rs | f64 | len=1000000 | 8 | 32 | 64911.2 | 610.4 | 3.5% | ok |
+| conj_dot_f64_portable-loop_len1000000 | #1615 | portable-loop | rust-loop | f64 | len=1000000 | 8 | 2 | 1526311.5 | 24889.0 | 0.8% | ok |
+| conj_dot_f64_pytorch-vdot_len1000000 | #1615 | pytorch-vdot | pytorch-cpu | f64 | len=1000000 | 8 | 32 | 63816.6 | 1280.0 | 3.3% | ok |
+| conj_dot_c64_dot-general-rank1_len100 | #1615 | dot-general-rank1 | tenferro-rs | c64 | len=100 | 8 | 1024 | 2430.9 | 25.7 | 1.3% | ok |
+| conj_dot_c64_portable-loop_len100 | #1615 | portable-loop | rust-loop | c64 | len=100 | 8 | 16384 | 144.6 | 0.5 | 0.5% | ok |
+| conj_dot_c64_pytorch-vdot_len100 | #1615 | pytorch-vdot | pytorch-cpu | c64 | len=100 | 8 | 2048 | 1587.4 | 13.7 | 238.6% | NOISY |
+| conj_dot_c64_dot-general-rank1_len10000 | #1615 | dot-general-rank1 | tenferro-rs | c64 | len=10000 | 8 | 128 | 16315.5 | 43.7 | 0.3% | ok |
+| conj_dot_c64_portable-loop_len10000 | #1615 | portable-loop | rust-loop | c64 | len=10000 | 8 | 256 | 15298.0 | 16.5 | 0.2% | ok |
+| conj_dot_c64_pytorch-vdot_len10000 | #1615 | pytorch-vdot | pytorch-cpu | c64 | len=10000 | 8 | 512 | 3825.1 | 13.3 | 0.7% | ok |
+| conj_dot_c64_dot-general-rank1_len1000000 | #1615 | dot-general-rank1 | tenferro-rs | c64 | len=1000000 | 8 | 4 | 532769.5 | 19039.4 | 2.5% | ok |
+| conj_dot_c64_portable-loop_len1000000 | #1615 | portable-loop | rust-loop | c64 | len=1000000 | 8 | 2 | 1549414.5 | 2374.2 | 0.4% | ok |
+| conj_dot_c64_pytorch-vdot_len1000000 | #1615 | pytorch-vdot | pytorch-cpu | c64 | len=1000000 | 8 | 4 | 490169.8 | 26245.1 | 3.5% | ok |
+| small_solve_f64_solve-loop_k16_b64 | #2007 #1878 | solve-loop | tenferro-rs | f64 | k=16, batch=64 | 8 | 8 | 378277.9 | 2382.7 | 0.8% | ok |
+| small_solve_f64_triangular-solve-loop_k16_b64 | #2007 #1878 | triangular-solve-loop | tenferro-rs | f64 | k=16, batch=64 | 8 | 16 | 208532.8 | 449.6 | 0.2% | ok |
+| small_solve_f64_solve-batched_k16_b64 | #2007 #1878 | solve-batched | tenferro-rs | f64 | k=16, batch=64 | 8 | 64 | 31850.2 | 117.4 | 0.8% | ok |
+| small_solve_f64_pytorch-solve-batched_k16_b64 | #2007 #1878 | pytorch-solve-batched | pytorch-cpu | f64 | k=16, batch=64 | 8 | 16 | 172176.6 | 1413.2 | 0.5% | ok |
+| small_solve_f64_pytorch-solve-triangular-batched_k16_b64 | #2007 #1878 | pytorch-solve-triangular-batched | pytorch-cpu | f64 | k=16, batch=64 | 8 | 32 | 94940.5 | 120.1 | 0.2% | ok |
+| small_solve_f64_solve-loop_k64_b64 | #2007 #1878 | solve-loop | tenferro-rs | f64 | k=64, batch=64 | 8 | 1 | 3572275.0 | 16677.0 | 1.7% | ok |
+| small_solve_f64_triangular-solve-loop_k64_b64 | #2007 #1878 | triangular-solve-loop | tenferro-rs | f64 | k=64, batch=64 | 8 | 2 | 1711843.5 | 2472.2 | 0.2% | ok |
+| small_solve_f64_solve-batched_k64_b64 | #2007 #1878 | solve-batched | tenferro-rs | f64 | k=64, batch=64 | 8 | 4 | 479995.8 | 10627.4 | 1.3% | ok |
+| small_solve_f64_pytorch-solve-batched_k64_b64 | #2007 #1878 | pytorch-solve-batched | pytorch-cpu | f64 | k=64, batch=64 | 8 | 2 | 1576770.5 | 9034.0 | 0.7% | ok |
+| small_solve_f64_pytorch-solve-triangular-batched_k64_b64 | #2007 #1878 | pytorch-solve-triangular-batched | pytorch-cpu | f64 | k=64, batch=64 | 8 | 8 | 429135.5 | 6669.9 | 1.4% | ok |
+| tanh_chain_f32_compiled-prepared_k10_1024x64 | #1990 | compiled-prepared | tenferro-rs | f32 | rows=1024, cols=64, chain=10 | 8 | 4 | 226629.0 | 1008.1 | 0.4% | ok |
+| tanh_chain_f32_eager-shared_k10_1024x64 | #1990 | eager-shared | tenferro-rs | f32 | rows=1024, cols=64, chain=10 | 8 | 8 | 268039.1 | 668.8 | 0.4% | ok |
+| tanh_chain_f32_compiled-prepared_k100_1024x64 | #1990 | compiled-prepared | tenferro-rs | f32 | rows=1024, cols=64, chain=100 | 8 | 1 | 2182073.0 | 8185.0 | 0.4% | ok |
+| tanh_chain_f32_eager-shared_k100_1024x64 | #1990 | eager-shared | tenferro-rs | f32 | rows=1024, cols=64, chain=100 | 8 | 1 | 2677430.0 | 6582.5 | 0.3% | ok |
+| tanh_chain_f32_compiled-prepared_k200_1024x64 | #1990 | compiled-prepared | tenferro-rs | f32 | rows=1024, cols=64, chain=200 | 8 | 1 | 4344270.0 | 10369.5 | 0.4% | ok |
+| tanh_chain_f32_eager-shared_k200_1024x64 | #1990 | eager-shared | tenferro-rs | f32 | rows=1024, cols=64, chain=200 | 8 | 1 | 5347136.0 | 5105.0 | 5.9% | ok |
+| layer_norm_f32_eager-composed_d1024_len8_b1 | #2006 | eager-composed | tenferro-rs | f32 | norm=layer_norm, d=1024, len=8, batch=1 | 8 | 32 | 68091.8 | 213.5 | 0.3% | ok |
+| layer_norm_f32_pytorch-fused_d1024_len8_b1 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=layer_norm, d=1024, len=8, batch=1 | 8 | 512 | 6912.7 | 161.2 | 1.3% | ok |
+| layer_norm_f32_eager-single-call_d1024_len8_b1 | #2006 | eager-single-call | tenferro-rs | f32 | norm=layer_norm, d=1024, len=8, batch=1 | 8 | 16 | 71990.3 | 895.8 | 1.9% | ok |
+| layer_norm_f32_eager-composed_d1024_len8_b8 | #2006 | eager-composed | tenferro-rs | f32 | norm=layer_norm, d=1024, len=8, batch=8 | 8 | 16 | 118806.8 | 3239.5 | 1.8% | ok |
+| layer_norm_f32_pytorch-fused_d1024_len8_b8 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=layer_norm, d=1024, len=8, batch=8 | 8 | 128 | 13493.5 | 2005.3 | 7.5% | ok |
+| layer_norm_f32_eager-single-call_d1024_len8_b8 | #2006 | eager-single-call | tenferro-rs | f32 | norm=layer_norm, d=1024, len=8, batch=8 | 8 | 16 | 121433.5 | 383.5 | 0.4% | ok |
+| layer_norm_f32_eager-composed_d1024_len64_b1 | #2006 | eager-composed | tenferro-rs | f32 | norm=layer_norm, d=1024, len=64, batch=1 | 8 | 16 | 118765.4 | 3239.8 | 1.6% | ok |
+| layer_norm_f32_pytorch-fused_d1024_len64_b1 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=layer_norm, d=1024, len=64, batch=1 | 8 | 256 | 26598.2 | 1155.5 | 3.3% | ok |
+| layer_norm_f32_eager-single-call_d1024_len64_b1 | #2006 | eager-single-call | tenferro-rs | f32 | norm=layer_norm, d=1024, len=64, batch=1 | 8 | 16 | 121045.9 | 497.8 | 0.5% | ok |
+| layer_norm_f32_eager-composed_d1024_len64_b8 | #2006 | eager-composed | tenferro-rs | f32 | norm=layer_norm, d=1024, len=64, batch=8 | 8 | 4 | 514725.8 | 15359.9 | 2.0% | ok |
+| layer_norm_f32_pytorch-fused_d1024_len64_b8 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=layer_norm, d=1024, len=64, batch=8 | 8 | 32 | 137714.6 | 18520.0 | 7.2% | ok |
+| layer_norm_f32_eager-single-call_d1024_len64_b8 | #2006 | eager-single-call | tenferro-rs | f32 | norm=layer_norm, d=1024, len=64, batch=8 | 8 | 4 | 429015.2 | 15464.0 | 2.0% | ok |
+| rms_norm_f32_eager-composed_d1024_len8_b1 | #2006 | eager-composed | tenferro-rs | f32 | norm=rms_norm, d=1024, len=8, batch=1 | 8 | 64 | 36419.1 | 326.0 | 0.7% | ok |
+| rms_norm_f32_pytorch-fused_d1024_len8_b1 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=rms_norm, d=1024, len=8, batch=1 | 8 | 128 | 18147.8 | 78.6 | 0.6% | ok |
+| rms_norm_f32_eager-single-call_d1024_len8_b1 | #2006 | eager-single-call | tenferro-rs | f32 | norm=rms_norm, d=1024, len=8, batch=1 | 8 | 64 | 41924.5 | 199.1 | 0.3% | ok |
+| rms_norm_f32_eager-composed_d1024_len8_b8 | #2006 | eager-composed | tenferro-rs | f32 | norm=rms_norm, d=1024, len=8, batch=8 | 8 | 32 | 60475.3 | 1335.2 | 1.6% | ok |
+| rms_norm_f32_pytorch-fused_d1024_len8_b8 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=rms_norm, d=1024, len=8, batch=8 | 8 | 64 | 42481.8 | 487.6 | 1.0% | ok |
+| rms_norm_f32_eager-single-call_d1024_len8_b8 | #2006 | eager-single-call | tenferro-rs | f32 | norm=rms_norm, d=1024, len=8, batch=8 | 8 | 32 | 67607.4 | 507.3 | 0.8% | ok |
+| rms_norm_f32_eager-composed_d1024_len64_b1 | #2006 | eager-composed | tenferro-rs | f32 | norm=rms_norm, d=1024, len=64, batch=1 | 8 | 32 | 61378.9 | 2393.4 | 2.0% | ok |
+| rms_norm_f32_pytorch-fused_d1024_len64_b1 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=rms_norm, d=1024, len=64, batch=1 | 8 | 64 | 43055.7 | 368.4 | 1.0% | ok |
+| rms_norm_f32_eager-single-call_d1024_len64_b1 | #2006 | eager-single-call | tenferro-rs | f32 | norm=rms_norm, d=1024, len=64, batch=1 | 8 | 32 | 66069.9 | 2023.6 | 1.6% | ok |
+| rms_norm_f32_eager-composed_d1024_len64_b8 | #2006 | eager-composed | tenferro-rs | f32 | norm=rms_norm, d=1024, len=64, batch=8 | 8 | 4 | 221657.2 | 11504.0 | 2.6% | ok |
+| rms_norm_f32_pytorch-fused_d1024_len64_b8 | #2006 | pytorch-fused | pytorch-cpu | f32 | norm=rms_norm, d=1024, len=64, batch=8 | 8 | 16 | 281076.6 | 35341.4 | 7.5% | ok |
+| rms_norm_f32_eager-single-call_d1024_len64_b8 | #2006 | eager-single-call | tenferro-rs | f32 | norm=rms_norm, d=1024, len=64, batch=8 | 8 | 4 | 223300.2 | 5307.4 | 1.7% | ok |
+| small_contraction_abcd-dbef-acef_f64_shared-session-default-pool_d4 | #1885 #1897 #1901 | shared-session-default-pool | tenferro-rs | f64 | extent=4 | 8 | 512 | 4243.8 | 39.2 | 1.0% | ok |
+| activation_erf_f32_eager-single-call_1024x64 | #1975 #2069 #2032 | eager-single-call | tenferro-rs | f32 | op=erf, rows=1024, cols=64 | 8 | 64 | 42283.2 | 377.0 | 5.6% | ok |
+| activation_erf_f32_session-single-call_1024x64 | #1975 #2069 #2032 | session-single-call | tenferro-rs | f32 | op=erf, rows=1024, cols=64 | 8 | 64 | 41165.2 | 227.8 | 0.8% | ok |
+| activation_erf_f32_pytorch_1024x64 | #1975 #2069 #2032 | pytorch | pytorch-cpu | f32 | op=erf, rows=1024, cols=64 | 8 | 1 | 21019.0 | 721.5 | 318.1% | NOISY |
+| activation_sigmoid_f32_eager-single-call_1024x64 | #1975 #2069 #2032 | eager-single-call | tenferro-rs | f32 | op=sigmoid, rows=1024, cols=64 | 8 | 128 | 10126.5 | 326.2 | 9.6% | ok |
+| activation_sigmoid_f32_session-single-call_1024x64 | #1975 #2069 #2032 | session-single-call | tenferro-rs | f32 | op=sigmoid, rows=1024, cols=64 | 8 | 128 | 9542.5 | 282.2 | 2.5% | ok |
+| activation_sigmoid_f32_eager-composed_1024x64 | #1975 #2069 #2032 | eager-composed | tenferro-rs | f32 | op=sigmoid, rows=1024, cols=64 | 8 | 64 | 33969.7 | 344.5 | 1.8% | ok |
+| activation_sigmoid_f32_pytorch_1024x64 | #1975 #2069 #2032 | pytorch | pytorch-cpu | f32 | op=sigmoid, rows=1024, cols=64 | 8 | 1 | 25908.0 | 2490259.0 | 169.4% | NOISY |
+| activation_silu_f32_eager-single-call_1024x64 | #1975 #2069 #2032 | eager-single-call | tenferro-rs | f32 | op=silu, rows=1024, cols=64 | 8 | 128 | 10423.1 | 282.2 | 2.0% | ok |
+| activation_silu_f32_session-single-call_1024x64 | #1975 #2069 #2032 | session-single-call | tenferro-rs | f32 | op=silu, rows=1024, cols=64 | 8 | 128 | 9766.0 | 395.6 | 3.2% | ok |
+| activation_silu_f32_eager-composed_1024x64 | #1975 #2069 #2032 | eager-composed | tenferro-rs | f32 | op=silu, rows=1024, cols=64 | 8 | 64 | 42036.5 | 309.1 | 1.3% | ok |
+| activation_silu_f32_pytorch_1024x64 | #1975 #2069 #2032 | pytorch | pytorch-cpu | f32 | op=silu, rows=1024, cols=64 | 8 | 1 | 29555.0 | 561.0 | 205.2% | NOISY |
+| activation_softplus_f32_eager-single-call_1024x64 | #1975 #2069 #2032 | eager-single-call | tenferro-rs | f32 | op=softplus, rows=1024, cols=64 | 8 | 64 | 22745.8 | 370.5 | 9.4% | ok |
+| activation_softplus_f32_session-single-call_1024x64 | #1975 #2069 #2032 | session-single-call | tenferro-rs | f32 | op=softplus, rows=1024, cols=64 | 8 | 64 | 22315.3 | 156.9 | 1.4% | ok |
+| activation_softplus_f32_eager-composed_1024x64 | #1975 #2069 #2032 | eager-composed | tenferro-rs | f32 | op=softplus, rows=1024, cols=64 | 8 | 32 | 54659.4 | 353.2 | 0.6% | ok |
+| activation_softplus_f32_pytorch_1024x64 | #1975 #2069 #2032 | pytorch | pytorch-cpu | f32 | op=softplus, rows=1024, cols=64 | 8 | 1 | 90059.0 | 340.5 | 289.1% | NOISY |
+| activation_gelu_f32_eager-single-call_1024x64 | #1975 #2030 #2069 #2228 | eager-single-call | tenferro-rs | f32 | op=gelu, rows=1024, cols=64 | 8 | 128 | 11397.0 | 321.9 | 3.0% | ok |
+| activation_gelu_f32_session-single-call_1024x64 | #1975 #2030 #2069 #2228 | session-single-call | tenferro-rs | f32 | op=gelu, rows=1024, cols=64 | 8 | 128 | 10779.7 | 156.8 | 1.2% | ok |
+| activation_gelu_f32_pytorch_1024x64 | #1975 #2030 #2069 #2228 | pytorch | pytorch-cpu | f32 | op=gelu, rows=1024, cols=64 | 8 | 128 | 19190.6 | 1396.1 | 4.2% | ok |
+| activation_gelu_tanh_f32_eager-single-call_1024x64 | #1975 #2069 #2032 | eager-single-call | tenferro-rs | f32 | op=gelu_tanh, rows=1024, cols=64 | 8 | 64 | 26936.5 | 396.1 | 7.4% | ok |
+| activation_gelu_tanh_f32_session-single-call_1024x64 | #1975 #2069 #2032 | session-single-call | tenferro-rs | f32 | op=gelu_tanh, rows=1024, cols=64 | 8 | 64 | 26218.7 | 157.0 | 0.8% | ok |
+| activation_gelu_tanh_f32_eager-composed_1024x64 | #1975 #2069 #2032 | eager-composed | tenferro-rs | f32 | op=gelu_tanh, rows=1024, cols=64 | 8 | 16 | 112313.2 | 624.3 | 0.7% | ok |
+| activation_gelu_tanh_f32_pytorch_1024x64 | #1975 #2069 #2032 | pytorch | pytorch-cpu | f32 | op=gelu_tanh, rows=1024, cols=64 | 8 | 1 | 30096.0 | 225.5 | 205.3% | NOISY |
+| softmax_f32_eager-single-call_len64_b8 | #1976 #2031 #2231 | eager-single-call | tenferro-rs | f32 | op=softmax, len=64, batch=8, axis=0 | 8 | 128 | 14845.8 | 117.1 | 0.7% | ok |
+| softmax_f32_session-single-call_len64_b8 | #1976 #2031 #2231 | session-single-call | tenferro-rs | f32 | op=softmax, len=64, batch=8, axis=0 | 8 | 128 | 14203.7 | 81.9 | 0.7% | ok |
+| softmax_f32_eager-composed_len64_b8 | #1976 #2031 #2231 | eager-composed | tenferro-rs | f32 | op=softmax, len=64, batch=8, axis=0 | 8 | 32 | 64027.9 | 476.8 | 0.8% | ok |
+| softmax_f32_pytorch_len64_b8 | #1976 #2031 #2231 | pytorch | pytorch-cpu | f32 | op=softmax, len=64, batch=8, axis=0 | 8 | 256 | 8731.2 | 519.1 | 3.2% | ok |
+| softmax_f32_eager-single-call_len512_b8 | #1976 #2231 | eager-single-call | tenferro-rs | f32 | op=softmax, len=512, batch=8, axis=0 | 8 | 4 | 431274.2 | 102062.0 | 13.9% | NOISY |
+| softmax_f32_session-single-call_len512_b8 | #1976 #2231 | session-single-call | tenferro-rs | f32 | op=softmax, len=512, batch=8, axis=0 | 8 | 4 | 320765.0 | 37545.2 | 11.1% | NOISY |
+| softmax_f32_eager-composed_len512_b8 | #1976 #2231 | eager-composed | tenferro-rs | f32 | op=softmax, len=512, batch=8, axis=0 | 8 | 2 | 1669608.0 | 36473.2 | 1.9% | ok |
+| softmax_f32_pytorch_len512_b8 | #1976 #2231 | pytorch | pytorch-cpu | f32 | op=softmax, len=512, batch=8, axis=0 | 8 | 4 | 767480.8 | 36990.4 | 4.2% | ok |
+| log_softmax_f32_eager-single-call_len64_b8 | #1976 | eager-single-call | tenferro-rs | f32 | op=log_softmax, len=64, batch=8, axis=0 | 8 | 32 | 86191.2 | 298.7 | 0.5% | ok |
+| log_softmax_f32_session-single-call_len64_b8 | #1976 | session-single-call | tenferro-rs | f32 | op=log_softmax, len=64, batch=8, axis=0 | 8 | 32 | 62552.6 | 475.9 | 0.4% | ok |
+| log_softmax_f32_eager-composed_len64_b8 | #1976 | eager-composed | tenferro-rs | f32 | op=log_softmax, len=64, batch=8, axis=0 | 8 | 32 | 63968.1 | 305.4 | 0.3% | ok |
+| log_softmax_f32_pytorch_len64_b8 | #1976 | pytorch | pytorch-cpu | f32 | op=log_softmax, len=64, batch=8, axis=0 | 8 | 256 | 10442.6 | 1082.2 | 5.2% | ok |
+| log_softmax_f32_eager-single-call_len512_b8 | #1976 | eager-single-call | tenferro-rs | f32 | op=log_softmax, len=512, batch=8, axis=0 | 8 | 2 | 1543357.0 | 27977.2 | 1.7% | ok |
+| log_softmax_f32_session-single-call_len512_b8 | #1976 | session-single-call | tenferro-rs | f32 | op=log_softmax, len=512, batch=8, axis=0 | 8 | 2 | 1782173.5 | 35188.0 | 4.8% | ok |
+| log_softmax_f32_eager-composed_len512_b8 | #1976 | eager-composed | tenferro-rs | f32 | op=log_softmax, len=512, batch=8, axis=0 | 8 | 2 | 1774329.0 | 44285.0 | 2.3% | ok |
+| log_softmax_f32_pytorch_len512_b8 | #1976 | pytorch | pytorch-cpu | f32 | op=log_softmax, len=512, batch=8, axis=0 | 8 | 4 | 707360.8 | 35309.9 | 4.9% | ok |
+| masked_softmax_f32_eager-single-call_len64_b8 | #1976 | eager-single-call | tenferro-rs | f32 | op=masked_softmax, len=64, batch=8, axis=0 | 8 | 16 | 122021.4 | 282.7 | 0.3% | ok |
+| masked_softmax_f32_session-single-call_len64_b8 | #1976 | session-single-call | tenferro-rs | f32 | op=masked_softmax, len=64, batch=8, axis=0 | 8 | 32 | 97652.3 | 142.3 | 0.2% | ok |
+| masked_softmax_f32_eager-composed_len64_b8 | #1976 | eager-composed | tenferro-rs | f32 | op=masked_softmax, len=64, batch=8, axis=0 | 8 | 32 | 74397.0 | 768.2 | 0.7% | ok |
+| masked_softmax_f32_pytorch_len64_b8 | #1976 | pytorch | pytorch-cpu | f32 | op=masked_softmax, len=64, batch=8, axis=0 | 8 | 32 | 62050.8 | 457.4 | 0.6% | ok |
+| masked_softmax_f32_eager-single-call_len512_b8 | #1976 | eager-single-call | tenferro-rs | f32 | op=masked_softmax, len=512, batch=8, axis=0 | 8 | 1 | 1888973.0 | 12504.0 | 0.8% | ok |
+| masked_softmax_f32_session-single-call_len512_b8 | #1976 | session-single-call | tenferro-rs | f32 | op=masked_softmax, len=512, batch=8, axis=0 | 8 | 2 | 1924259.5 | 21510.0 | 0.8% | ok |
+| masked_softmax_f32_eager-composed_len512_b8 | #1976 | eager-composed | tenferro-rs | f32 | op=masked_softmax, len=512, batch=8, axis=0 | 8 | 1 | 2255158.0 | 22667.5 | 0.6% | ok |
+| masked_softmax_f32_pytorch_len512_b8 | #1976 | pytorch | pytorch-cpu | f32 | op=masked_softmax, len=512, batch=8, axis=0 | 8 | 2 | 1810051.0 | 97284.5 | 6.3% | ok |
+| reduce_mean_f32_eager-single-call_1024x64_axis0 | #1976 | eager-single-call | tenferro-rs | f32 | rows=1024, cols=64, axis=0 | 8 | 128 | 15383.1 | 142.5 | 0.6% | ok |
+| reduce_mean_f32_session-single-call_1024x64_axis0 | #1976 | session-single-call | tenferro-rs | f32 | rows=1024, cols=64, axis=0 | 8 | 256 | 8126.6 | 66.3 | 0.8% | ok |
+| reduce_mean_f32_eager-composed_1024x64_axis0 | #1976 | eager-composed | tenferro-rs | f32 | rows=1024, cols=64, axis=0 | 8 | 256 | 15266.6 | 38.7 | 0.3% | ok |
+| reduce_mean_f32_pytorch_1024x64_axis0 | #1976 | pytorch | pytorch-cpu | f32 | rows=1024, cols=64, axis=0 | 8 | 256 | 8227.1 | 77.4 | 0.9% | ok |
+| take_along_axis_rows_f64_eager-single-call_n64_b256 | #2008 | eager-single-call | tenferro-rs | f64 | n=64, batch=256, axis=0 | 8 | 2 | 1715168.0 | 50156.0 | 2.8% | ok |
+| take_along_axis_rows_f64_session-single-call_n64_b256 | #2008 | session-single-call | tenferro-rs | f64 | n=64, batch=256, axis=0 | 8 | 2 | 1579434.0 | 39739.5 | 2.1% | ok |
+| take_along_axis_rows_f64_eager-gather-prebuilt_n64_b256 | #2008 | eager-gather-prebuilt | tenferro-rs | f64 | n=64, batch=256, axis=0 | 8 | 2 | 1483304.5 | 31529.0 | 1.9% | ok |
+| take_along_axis_rows_f64_pytorch_n64_b256 | #2008 | pytorch | pytorch-cpu | f64 | n=64, batch=256, axis=0 | 8 | 2 | 944727.0 | 11837.0 | 1.7% | ok |
+| lstsq_f64_eager-shared_m768_n384_rhs16 | #2027 | eager-shared | tenferro-rs | f64 | operation=lstsq | 8 | 1 | 6064434.0 | 21265.0 | 0.8% | ok |
+| lstsq_f64_pytorch_m768_n384_rhs16 | #2027 | pytorch | pytorch-cpu | f64 | operation=lstsq | 8 | 1 | 3071475.0 | 12132.5 | 0.3% | ok |
+| triangular_f64_concrete-shared_n4096_rhs64 | #2028 | concrete-shared | tenferro-rs | f64 | operation=triangular | 8 | 1 | 11536529.0 | 199272.5 | 0.9% | ok |
+| triangular_f64_pytorch_n4096_rhs64 | #2028 | pytorch | pytorch-cpu | f64 | operation=triangular | 8 | 1 | 14381480.0 | 208175.0 | 3.3% | ok |
+| reshape_f64_concrete-shared_n33554432_to8192x4096 | #2029 | concrete-shared | tenferro-rs | f64 | operation=reshape | 8 | 1 | 16882378.0 | 317819.5 | 1.2% | ok |
+| reshape_f64_pytorch_n33554432_to8192x4096 | #2029 | pytorch | pytorch-cpu | f64 | operation=reshape | 8 | 1 | 18687323.0 | 474081.5 | 3.8% | ok |
+| followup_structural_broadcast_in_dim_direct-shared | #2021 | direct-shared | tenferro-rs | f64 | case_id=structural.broadcast_in_dim, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8192, 1], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 16729360.0 | 84282.0 | 0.4% | ok |
+| followup_structural_broadcast_in_dim_pytorch | #2021 | pytorch | pytorch-cpu | f64 | case_id=structural.broadcast_in_dim, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8192, 1], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 15593453.0 | 569449.5 | 4.4% | ok |
+| followup_real_tanh_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.tanh, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 6051066.0 | 24320.0 | 0.3% | ok |
+| followup_real_tanh_jax | #2033 | jax | jax-cpu | f64 | case_id=real.tanh, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 12227637.0 | 105552.0 | 1.7% | ok |
+| followup_real_log1p_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.log1p, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 1640348.0 | 32826.0 | 5.2% | ok |
+| followup_real_log1p_pytorch | #2033 | pytorch | pytorch-cpu | f64 | case_id=real.log1p, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 3688437.0 | 366780.5 | 5.6% | ok |
+| followup_real_cos_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.cos, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 3423211.0 | 77375.0 | 1.8% | ok |
+| followup_real_cos_pytorch | #2033 | pytorch | pytorch-cpu | f64 | case_id=real.cos, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 9213448.0 | 572971.0 | 4.4% | ok |
+| followup_real_sin_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.sin, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 3422539.0 | 41944.0 | 1.4% | ok |
+| followup_real_sin_pytorch | #2033 | pytorch | pytorch-cpu | f64 | case_id=real.sin, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 9040232.0 | 289747.5 | 4.0% | ok |
+| followup_real_exp_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.exp, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 3385741.0 | 59085.5 | 1.7% | ok |
+| followup_real_exp_jax | #2033 | jax | jax-cpu | f64 | case_id=real.exp, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 12423437.0 | 109986.0 | 0.5% | ok |
+| followup_real_expm1_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.expm1, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 2496187.0 | 17899.0 | 0.9% | ok |
+| followup_real_expm1_jax | #2033 | jax | jax-cpu | f64 | case_id=real.expm1, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 8997111.0 | 258704.0 | 2.1% | ok |
+| followup_real_pow_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.pow, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 9325945.0 | 20443.5 | 3.6% | ok |
+| followup_real_pow_pytorch | #2033 | pytorch | pytorch-cpu | f64 | case_id=real.pow, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 7056872.0 | 225942.5 | 2.3% | ok |
+| followup_complex_exp_direct-shared | #2033 | direct-shared | tenferro-rs | c64 | case_id=complex.exp, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [4194304], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 13182822.0 | 34630.0 | 0.2% | ok |
+| followup_complex_exp_julia-base | #2033 | julia-base | julia-base | c64 | case_id=complex.exp, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [4194304], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 80449668.0 | 469971.5 | 0.5% | ok |
+| followup_real_log_direct-shared | #2033 | direct-shared | tenferro-rs | f64 | case_id=real.log, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 3424921.0 | 72841.5 | 6.2% | ok |
+| followup_real_log_pytorch | #2033 | pytorch | pytorch-cpu | f64 | case_id=real.log, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 8054102.0 | 404291.0 | 3.7% | ok |
+| followup_real_reduce_max_axis1_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_max_axis1, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 4 | 706014.5 | 4705.0 | 0.6% | ok |
+| followup_real_reduce_max_axis1_julia-base | #2034 | julia-base | julia-base | f64 | case_id=real.reduce_max_axis1, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 2 | 1020056.0 | 5903.5 | 7.2% | ok |
+| followup_real_reduce_prod_axis1_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_prod_axis1, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 4 | 731259.0 | 85394.6 | 5.6% | ok |
+| followup_real_reduce_prod_axis1_pytorch | #2034 | pytorch | pytorch-cpu | f64 | case_id=real.reduce_prod_axis1, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 4 | 429612.8 | 33536.4 | 5.1% | ok |
+| followup_real_reduce_sum_axis1_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_sum_axis1, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 2 | 699211.5 | 6261.8 | 5.3% | ok |
+| followup_real_reduce_sum_axis1_pytorch | #2034 | pytorch | pytorch-cpu | f64 | case_id=real.reduce_sum_axis1, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 4 | 446409.2 | 32401.6 | 6.0% | ok |
+| followup_real_reduce_max_axis0_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_max_axis0, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 4 | 608569.5 | 30306.6 | 8.8% | ok |
+| followup_real_reduce_max_axis0_julia-base | #2034 | julia-base | julia-base | f64 | case_id=real.reduce_max_axis0, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 2 | 1682503.0 | 24270.5 | 2.1% | ok |
+| followup_real_reduce_min_axis1_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_min_axis1, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [4096, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 2739968.0 | 3907.5 | 0.7% | ok |
+| followup_real_reduce_min_axis1_julia-base | #2034 | julia-base | julia-base | f64 | case_id=real.reduce_min_axis1, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [4096, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 5705537.0 | 35040.5 | 0.8% | ok |
+| followup_real_reduce_min_axis0_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_min_axis0, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 2 | 666209.0 | 31664.5 | 10.0% | ok |
+| followup_real_reduce_min_axis0_julia-base | #2034 | julia-base | julia-base | f64 | case_id=real.reduce_min_axis0, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 1962676.0 | 102751.5 | 5.1% | ok |
+| followup_real_reduce_max_all_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_max_all, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [8192, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 5389305.0 | 25733.0 | 0.3% | ok |
+| followup_real_reduce_max_all_julia-base | #2034 | julia-base | julia-base | f64 | case_id=real.reduce_max_all, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [8192, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 15900462.0 | 144811.0 | 1.4% | ok |
+| followup_real_reduce_min_all_direct-shared | #2034 | direct-shared | tenferro-rs | f64 | case_id=real.reduce_min_all, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [8192, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 5361862.0 | 13781.0 | 0.3% | ok |
+| followup_real_reduce_min_all_julia-base | #2034 | julia-base | julia-base | f64 | case_id=real.reduce_min_all, rust_path=direct-shared, reference_path=julia-base, fixture={'input_shape': [8192, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 16925533.0 | 149514.0 | 0.8% | ok |
+| followup_complex_norm_fro_direct-shared | #2035 | direct-shared | tenferro-rs | c64 | case_id=complex.norm_fro, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [2048, 1536], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 2 | 910976.0 | 56162.5 | 3.9% | ok |
+| followup_complex_norm_fro_jax | #2035 | jax | jax-cpu | c64 | case_id=complex.norm_fro, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [2048, 1536], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 3333634.0 | 16540.5 | 0.3% | ok |
+| followup_index_gather_direct-shared | #2036 #1719 | direct-shared | tenferro-rs | f64 | case_id=index.gather, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [262144], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 16 | 96526.4 | 6237.6 | 8.3% | ok |
+| followup_index_gather_jax | #2036 #1719 | jax | jax-cpu | f64 | case_id=index.gather, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [262144], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 8 | 322945.5 | 4252.9 | 1.5% | ok |
+| followup_index_scatter_direct-shared | #2036 #1719 | direct-shared | tenferro-rs | f64 | case_id=index.scatter, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [262144], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 2 | 1023921.5 | 11331.0 | 3.6% | ok |
+| followup_index_scatter_pytorch | #2036 #1719 | pytorch | pytorch-cpu | f64 | case_id=index.scatter, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [262144], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 440523.0 | 298697.5 | 143.6% | NOISY |
+| followup_index_dynamic_update_slice_direct-shared | #2036 #1719 | direct-shared | tenferro-rs | f64 | case_id=index.dynamic_update_slice, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [2097152], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 2 | 1067232.5 | 6168.8 | 2.0% | ok |
+| followup_index_dynamic_update_slice_jax | #2036 #1719 | jax | jax-cpu | f64 | case_id=index.dynamic_update_slice, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [2097152], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 2 | 1873382.5 | 64836.0 | 3.2% | ok |
+| followup_perm_reverse_15d_3_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.reverse_15d_3, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 41435816.0 | 447185.0 | 1.0% | ok |
+| followup_perm_reverse_15d_3_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.reverse_15d_3, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 40123744.0 | 755997.0 | 1.2% | ok |
+| followup_structural_transpose_direct-shared | #2037 #2228 | direct-shared | tenferro-rs | f64 | case_id=structural.transpose, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [4096, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 15765320.0 | 318018.5 | 1.3% | ok |
+| followup_structural_transpose_pytorch | #2037 #2228 | pytorch | pytorch-cpu | f64 | case_id=structural.transpose, rust_path=direct-shared, reference_path=pytorch, fixture={'input_shape': [4096, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 62441472.0 | 480701.5 | 0.5% | ok |
+| followup_perm_reverse_23d_2_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.reverse_23d_2, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 13741529.0 | 292802.0 | 1.5% | ok |
+| followup_perm_reverse_23d_2_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.reverse_23d_2, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 33562636.0 | 157233.0 | 0.3% | ok |
+| followup_perm_transpose_3d_256_201_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.transpose_3d_256_201, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [256, 256, 256], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 12473752.0 | 285658.5 | 1.3% | ok |
+| followup_perm_transpose_3d_256_201_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.transpose_3d_256_201, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [256, 256, 256], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 12509328.0 | 153622.0 | 2.0% | ok |
+| followup_perm_cyclic_15d_3_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.cyclic_15d_3, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 8579754.0 | 240604.5 | 2.5% | ok |
+| followup_perm_cyclic_15d_3_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.cyclic_15d_3, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 8678237.0 | 273891.0 | 2.7% | ok |
+| followup_perm_transpose_3d_256_102_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.transpose_3d_256_102, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [256, 256, 256], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 10909502.0 | 132672.0 | 0.9% | ok |
+| followup_perm_transpose_3d_256_102_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.transpose_3d_256_102, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [256, 256, 256], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 10501970.0 | 157565.0 | 2.9% | ok |
+| followup_perm_tn_light_415_24d_scattered_to_colmajor_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.tn_light_415_24d_scattered_to_colmajor, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 10157858.0 | 326023.0 | 2.3% | ok |
+| followup_perm_tn_light_415_24d_scattered_to_colmajor_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.tn_light_415_24d_scattered_to_colmajor, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 10071396.0 | 413732.5 | 3.1% | ok |
+| followup_perm_tn_light_415_24d_contiguous_same_perm_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.tn_light_415_24d_contiguous_same_perm, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 9790271.0 | 280018.0 | 2.0% | ok |
+| followup_perm_tn_light_415_24d_contiguous_same_perm_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.tn_light_415_24d_contiguous_same_perm, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 9578316.0 | 896653.5 | 5.4% | ok |
+| followup_perm_rotation_6d_32_32_32_32_16_16_materialize | #2037 #2228 | materialize | tenferro-rs | f64 | case_id=perm.rotation_6d_32_32_32_32_16_16, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [32, 32, 32, 32, 16, 16], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 213337545.0 | 743641.0 | 0.6% | ok |
+| followup_perm_rotation_6d_32_32_32_32_16_16_strided-rs | #2037 #2228 | strided-rs | strided-rs | f64 | case_id=perm.rotation_6d_32_32_32_32_16_16, rust_path=materialize, reference_path=strided-rs, fixture={'input_shape': [32, 32, 32, 32, 16, 16], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 214109373.0 | 1104403.5 | 0.6% | ok |
+| followup_structural_extract_diagonal_direct-shared | #2038 #2228 | direct-shared | tenferro-rs | f64 | case_id=structural.extract_diagonal, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [8388608, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 25558591.0 | 75827.0 | 0.5% | ok |
+| followup_structural_extract_diagonal_jax | #2038 #2228 | jax | jax-cpu | f64 | case_id=structural.extract_diagonal, rust_path=direct-shared, reference_path=jax, fixture={'input_shape': [8388608, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 19040480.0 | 253973.5 | 0.9% | ok |
+| followup_fft_irfft_direct-shared | #2039 #2230 #2228 | direct-shared | tenferro-rs | c32 | case_id=fft.irfft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [524289], 'dtype': 'c32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 5062825.0 | 53208.5 | 0.8% | ok |
+| followup_fft_irfft_mkl-dfti | #2039 #2230 #2228 | mkl-dfti | mkl-dfti | c32 | case_id=fft.irfft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [524289], 'dtype': 'c32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 3172128.0 | 27671.5 | 0.7% | ok |
+| followup_fft_rfft_direct-shared | #2039 #2230 #2228 | direct-shared | tenferro-rs | f32 | case_id=fft.rfft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [1048576], 'dtype': 'f32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 4385391.0 | 47639.0 | 0.8% | ok |
+| followup_fft_rfft_mkl-dfti | #2039 #2230 #2228 | mkl-dfti | mkl-dfti | f32 | case_id=fft.rfft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [1048576], 'dtype': 'f32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 3356241.0 | 17898.0 | 0.7% | ok |
+| followup_fft_fft_direct-shared | #2039 #2228 | direct-shared | tenferro-rs | c64 | case_id=fft.fft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [1048576], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 13792417.0 | 66889.5 | 0.4% | ok |
+| followup_fft_fft_mkl-dfti | #2039 #2228 | mkl-dfti | mkl-dfti | c64 | case_id=fft.fft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [1048576], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 14372539.0 | 87087.5 | 0.7% | ok |
+| followup_fft_ifft_direct-shared | #2039 #2228 | direct-shared | tenferro-rs | c32 | case_id=fft.ifft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [1048576], 'dtype': 'c32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 8677224.0 | 27480.5 | 1.4% | ok |
+| followup_fft_ifft_mkl-dfti | #2039 #2228 | mkl-dfti | mkl-dfti | c32 | case_id=fft.ifft, rust_path=direct-shared, reference_path=mkl-dfti, fixture={'input_shape': [1048576], 'dtype': 'c32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'} | 8 | 1 | 2500995.0 | 39198.5 | 1.9% | ok |
+| followup_metadata_transpose_view_metadata | #2040 #1719 | metadata | tenferro-rs | f64 | case_id=metadata.transpose_view, rust_path=metadata, reference_path=julia-base, fixture={'input_shape': [2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 8 | 8192 | 288.6 | 2.8 | 3.3% | ok |
+| followup_metadata_transpose_view_julia-base | #2040 #1719 | julia-base | julia-base | f64 | case_id=metadata.transpose_view, rust_path=metadata, reference_path=julia-base, fixture={'input_shape': [2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 8 | 1864135 | 1.0 | 0.0 | 1.2% | ok |
+| followup_metadata_transpose_view_metadata-host-dyn | #2040 #1719 | metadata-host-dyn | tenferro-rs | f64 | case_id=metadata.transpose_view, rust_path=metadata-host-dyn, reference_path=julia-base, fixture={'input_shape': [2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 8 | 8192 | 377.8 | 3.3 | 1.0% | ok |
+| followup_metadata_transpose_view_metadata-host-static | #2040 #1719 | metadata-host-static | tenferro-rs | f64 | case_id=metadata.transpose_view, rust_path=metadata-host-static, reference_path=julia-base, fixture={'input_shape': [2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 8 | 8192 | 309.9 | 4.6 | 1.2% | ok |
+| followup_metadata_slice_view_metadata | #2040 #1719 | metadata | tenferro-rs | f64 | case_id=metadata.slice_view, rust_path=metadata, reference_path=julia-base, fixture={'input_shape': [4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 8 | 8192 | 378.6 | 8.4 | 2.1% | ok |
+| followup_metadata_slice_view_julia-base | #2040 #1719 | julia-base | julia-base | f64 | case_id=metadata.slice_view, rust_path=metadata, reference_path=julia-base, fixture={'input_shape': [4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 8 | 16256 | 7.0 | 1.3 | 11.2% | NOISY |
+| followup_metadata_slice_view_metadata-host-dyn | #2040 #1719 | metadata-host-dyn | tenferro-rs | f64 | case_id=metadata.slice_view, rust_path=metadata-host-dyn, reference_path=julia-base, fixture={'input_shape': [4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 8 | 8192 | 463.6 | 4.5 | 2.1% | ok |
+| followup_metadata_slice_view_metadata-host-static | #2040 #1719 | metadata-host-static | tenferro-rs | f64 | case_id=metadata.slice_view, rust_path=metadata-host-static, reference_path=julia-base, fixture={'input_shape': [4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 8 | 8192 | 329.5 | 3.0 | 1.5% | ok |
+| followup_metadata_reshape_view_metadata | #2040 #1719 | metadata | tenferro-rs | f64 | case_id=metadata.reshape_view, rust_path=metadata, reference_path=julia-base, fixture={'input_shape': [1024], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 8 | 4096 | 442.3 | 9.6 | 2.7% | ok |
+| followup_metadata_reshape_view_julia-base | #2040 #1719 | julia-base | julia-base | f64 | case_id=metadata.reshape_view, rust_path=metadata, reference_path=julia-base, fixture={'input_shape': [1024], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 8 | 63550 | 14.9 | 2.6 | 13.8% | NOISY |
+| followup_metadata_reshape_view_metadata-host-dyn | #2040 #1719 | metadata-host-dyn | tenferro-rs | f64 | case_id=metadata.reshape_view, rust_path=metadata-host-dyn, reference_path=julia-base, fixture={'input_shape': [1024], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 8 | 4096 | 486.4 | 2.2 | 0.9% | ok |
+| followup_metadata_reshape_view_metadata-host-static | #2040 #1719 | metadata-host-static | tenferro-rs | f64 | case_id=metadata.reshape_view, rust_path=metadata-host-static, reference_path=julia-base, fixture={'input_shape': [1024], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'} | 8 | 8192 | 445.8 | 4.7 | 0.8% | ok |
+| gemm_bound_f64_t1_t8_scaling | #2141 | tenferro | tenferro-rs | f64 | n=1536 | 8 | 1 | 30127449.0 | 61975.5 | 0.2% | ok |
+| gemm_bound_f64_t1_t8_scaling_pytorch | #2141 | pytorch | pytorch-cpu | f64 | n=1536 | 8 | 1 | 35859986.0 | 132207.0 | 0.3% | ok |
+| small_grad_qr_f64_trace-prepared_n4 | #2186 | trace-prepared | tenferro-rs | f64 | op=qr, n=4 | 8 | 64 | 55635.0 | 467.2 | 0.7% | ok |
+| small_grad_qr_f64_pytorch_n4 | #2186 | pytorch | pytorch-cpu | f64 | op=qr, n=4 | 8 | 32 | 74933.8 | 705.5 | 1.7% | ok |
+| small_grad_qr_f64_trace-prepared_n16 | #2186 | trace-prepared | tenferro-rs | f64 | op=qr, n=16 | 8 | 32 | 76819.5 | 610.8 | 1.0% | ok |
+| small_grad_qr_f64_pytorch_n16 | #2186 | pytorch | pytorch-cpu | f64 | op=qr, n=16 | 8 | 32 | 87762.3 | 1400.4 | 10.1% | NOISY |
+| small_grad_eigh_f64_trace-prepared_n4 | #2186 | trace-prepared | tenferro-rs | f64 | op=eigh, n=4 | 8 | 32 | 76183.0 | 496.2 | 0.8% | ok |
+| small_grad_eigh_f64_pytorch_n4 | #2186 | pytorch | pytorch-cpu | f64 | op=eigh, n=4 | 8 | 32 | 73523.0 | 1086.2 | 4.2% | ok |
+| small_grad_eigh_f64_trace-prepared_n16 | #2186 | trace-prepared | tenferro-rs | f64 | op=eigh, n=16 | 8 | 16 | 135111.2 | 668.8 | 0.5% | ok |
+| small_grad_eigh_f64_pytorch_n16 | #2186 | pytorch | pytorch-cpu | f64 | op=eigh, n=16 | 8 | 32 | 100252.8 | 651.5 | 0.7% | ok |
+| small_grad_lu_f64_trace-prepared_n4 | #2186 | trace-prepared | tenferro-rs | f64 | op=lu, n=4 | 8 | 64 | 40401.6 | 235.4 | 0.4% | ok |
+| small_grad_lu_f64_pytorch_n4 | #2186 | pytorch | pytorch-cpu | f64 | op=lu, n=4 | 8 | 32 | 86072.7 | 372.6 | 1.7% | ok |
+| small_grad_lu_f64_trace-prepared_n16 | #2186 | trace-prepared | tenferro-rs | f64 | op=lu, n=16 | 8 | 64 | 50347.8 | 231.4 | 0.4% | ok |
+| small_grad_lu_f64_pytorch_n16 | #2186 | pytorch | pytorch-cpu | f64 | op=lu, n=16 | 8 | 32 | 94831.2 | 889.5 | 0.8% | ok |
+| small_grad_svd_f64_trace-prepared_n4 | #2186 | trace-prepared | tenferro-rs | f64 | op=svd, n=4 | 8 | 32 | 122418.6 | 622.4 | 0.8% | ok |
+| small_grad_svd_f64_pytorch_n4 | #2186 | pytorch | pytorch-cpu | f64 | op=svd, n=4 | 8 | 32 | 112180.7 | 481.5 | 0.5% | ok |
+| small_grad_svd_f64_trace-prepared_n16 | #2186 | trace-prepared | tenferro-rs | f64 | op=svd, n=16 | 8 | 16 | 224146.6 | 897.9 | 0.8% | ok |
+| small_grad_svd_f64_pytorch_n16 | #2186 | pytorch | pytorch-cpu | f64 | op=svd, n=16 | 8 | 16 | 171176.6 | 996.5 | 0.8% | ok |
+| small_grad_solve_f64_trace-prepared_n4 | #2186 | trace-prepared | tenferro-rs | f64 | op=solve, n=4 | 8 | 64 | 34027.5 | 101.0 | 0.3% | ok |
+| small_grad_solve_f64_pytorch_n4 | #2186 | pytorch | pytorch-cpu | f64 | op=solve, n=4 | 8 | 64 | 61037.5 | 204.8 | 0.6% | ok |
+| small_grad_solve_f64_trace-prepared_n16 | #2186 | trace-prepared | tenferro-rs | f64 | op=solve, n=16 | 8 | 64 | 41040.3 | 154.8 | 0.3% | ok |
+| small_grad_solve_f64_pytorch_n16 | #2186 | pytorch | pytorch-cpu | f64 | op=solve, n=16 | 8 | 32 | 70645.2 | 133.4 | 0.4% | ok |
+| fft_axis0_c64_fft-executor_n128 | #1765 | fft-executor | tenferro-rs | c64 | n=128 | 8 | 1 | 3253605.0 | 42228.5 | 0.9% | ok |
+| fft_axis0_c64_pytorch_n128 | #1765 | pytorch | pytorch-cpu | c64 | n=128 | 8 | 1 | 4143886.0 | 145235.5 | 2.6% | ok |
+| degenerate_dot_hadamard_f64_dot-general-shared_n1024 | #2111 | dot-general-shared | tenferro-rs | f64 | form=hadamard, n=1024 | 8 | 4 | 444451.0 | 11562.6 | 2.6% | ok |
+| degenerate_dot_hadamard_f64_pytorch_n1024 | #2111 | pytorch | pytorch-cpu | f64 | form=hadamard, n=1024 | 8 | 4 | 432028.0 | 16723.6 | 12.5% | NOISY |
+| degenerate_dot_outer_f64_dot-general-shared_n1024 | #2111 | dot-general-shared | tenferro-rs | f64 | form=outer, n=1024 | 8 | 2 | 197293.0 | 7504.0 | 2.3% | ok |
+| degenerate_dot_outer_f64_pytorch_n1024 | #2111 | pytorch | pytorch-cpu | f64 | form=outer, n=1024 | 8 | 8 | 438667.9 | 18458.9 | 3.2% | ok |
+| degenerate_dot_rank0_f64_dot-general-shared_n1024 | #2111 | dot-general-shared | tenferro-rs | f64 | form=rank0, n=1024 | 8 | 1 | 16434419.0 | 433693.5 | 2.7% | ok |
+| degenerate_dot_rank0_f64_pytorch_n1024 | #2111 | pytorch | pytorch-cpu | f64 | form=rank0, n=1024 | 8 | 4 | 312059.5 | 26248.8 | 6.1% | ok |
+| erased_add_f64_session-add_n256 | #1766 | session-add | tenferro-rs | f64 | n=256 | 8 | 512 | 1624.2 | 63.1 | 3.6% | ok |
+| erased_add_f64_pytorch_n256 | #1766 | pytorch | pytorch-cpu | f64 | n=256 | 8 | 1024 | 1951.1 | 106.0 | 5.8% | ok |
+| erased_add_f64_session-add_n4096 | #1766 | session-add | tenferro-rs | f64 | n=4096 | 8 | 256 | 3290.3 | 75.0 | 2.0% | ok |
+| erased_add_f64_pytorch_n4096 | #1766 | pytorch | pytorch-cpu | f64 | n=4096 | 8 | 1024 | 3814.6 | 66.0 | 1.9% | ok |
+| erased_add_f64_session-add_n1048576 | #1766 | session-add | tenferro-rs | f64 | n=1048576 | 8 | 4 | 468020.2 | 12678.5 | 2.8% | ok |
+| erased_add_f64_pytorch_n1048576 | #1766 | pytorch | pytorch-cpu | f64 | n=1048576 | 8 | 4 | 436213.2 | 9773.2 | 3.2% | ok |
+| erased_construct_f64_col_n8 | #2177 | col-major | tenferro-rs | f64 | n=8, layout=col | 8 | 16384 | 131.4 | 2.7 | 14.6% | NOISY |
+| erased_construct_f64_row_n8 | #2177 | row-major | tenferro-rs | f64 | n=8, layout=row | 8 | 8192 | 230.3 | 2.7 | 8.3% | ok |
+| erased_construct_f64_col_n4096 | #2177 | col-major | tenferro-rs | f64 | n=4096, layout=col | 8 | 16384 | 230.2 | 9.0 | 2.7% | ok |
+| erased_construct_f64_row_n4096 | #2177 | row-major | tenferro-rs | f64 | n=4096, layout=row | 8 | 128 | 17898.1 | 860.1 | 13.2% | NOISY |
+| erased_construct_f64_col_n65536 | #2177 | col-major | tenferro-rs | f64 | n=65536, layout=col | 8 | 1024 | 139.0 | 1.7 | 0.9% | ok |
+| erased_construct_f64_row_n65536 | #2177 | row-major | tenferro-rs | f64 | n=65536, layout=row | 8 | 8 | 292361.2 | 11026.8 | 4.3% | ok |
+| eager_small_leaf_f64_eager-held-session | #1704 | eager-held-session | tenferro-rs | f64 | op=leaf | 8 | 1024 | 3530.6 | 75.8 | 1.8% | ok |
+| eager_small_add_f64_eager-held-session | #1667 | eager-held-session | tenferro-rs | f64 | op=add | 8 | 1024 | 2869.6 | 22.0 | 0.8% | ok |
+| eager_small_add_f64_pytorch | #1667 | pytorch | pytorch-cpu | f64 | op=add | 8 | 2048 | 1820.7 | 12.9 | 0.6% | ok |
+| eager_small_gemm_f64_eager-held-session | #1904 | eager-held-session | tenferro-rs | f64 | op=gemm | 8 | 512 | 4308.6 | 14.4 | 0.4% | ok |
+| eager_small_gemm_f64_pytorch | #1904 | pytorch | pytorch-cpu | f64 | op=gemm | 8 | 1024 | 2034.7 | 6.0 | 0.2% | ok |
 
 
 ## Timing boundaries
 
 - **activation / eager-composed** — inside: hand-written formula from pre-B1 eager primitives, intermediate and output allocation; outside: backend/runtime construction, input, constant, mask and index construction, eager session entry, correctness_check.
+- **activation / eager-single-call** — inside: declared API call, intrinsic output allocation, native completion; outside: fixtures, runtime/backend/session creation, input wrappers/descriptors, graph construction/compilation/preparation, FFT plans/scratch priming, validation/signatures, output retention allocation, input restoration, output destruction.
 - **activation / eager-single-call** — inside: one activation call, intermediate and output allocation; outside: backend/runtime construction, input, constant, mask and index construction, eager session entry, correctness_check.
+- **activation / pytorch** — inside: API execution, intrinsic output allocation, native completion; outside: fixtures, conversion, JIT compilation, initialization, validation, retention allocation, output destruction.
 - **activation / pytorch** — inside: torch gelu, output_allocation; outside: input_construction, torch.set_num_threads, correctness_check.
 - **activation / session-single-call** — inside: one activation call, intermediate and output allocation; outside: backend/runtime construction, input, constant, mask and index construction, with_backend_session entry (CpuBackend::new()), correctness_check.
 - **axpby_strided_source / contiguous-source** — inside: Engine::axpby_read_into_accum (contiguous owned source, compact owned destination); outside: backend/session construction, input_construction, strided/offset view construction (metadata only), per-sample destination allocation and seed restoration, correctness_check.
@@ -1212,6 +1207,15 @@ These rows measure dispatch/operation latency; they do not measure compute throu
 - **composed_norm / eager-single-call** — inside: one EagerSession layer_norm / rms_norm call (composite), intermediate and output allocation; outside: eager_runtime_construction, input/weight/bias/eps construction, eager session entry, correctness_check.
 - **composed_norm / pytorch-fused** — inside: torch.nn.functional.layer_norm (fused), output_allocation; outside: input_construction, torch.set_num_threads, correctness_check.
 - **composed_norm / pytorch-fused** — inside: torch.nn.functional.rms_norm (fused), output_allocation; outside: input_construction, torch.set_num_threads, correctness_check.
+- **cpu_followup_mwe / direct-shared** — inside: declared API call, intrinsic output allocation, native completion; outside: fixtures, runtime/backend/session creation, input wrappers/descriptors, graph construction/compilation/preparation, FFT plans/scratch priming, validation/signatures, output retention allocation, input restoration, output destruction.
+- **cpu_followup_mwe / jax** — inside: API execution, intrinsic output allocation, native completion; outside: fixtures, conversion, JIT compilation, initialization, validation, retention allocation, output destruction.
+- **cpu_followup_mwe / materialize** — inside: declared API call, intrinsic output allocation, native completion; outside: fixtures, runtime/backend/session creation, input wrappers/descriptors, graph construction/compilation/preparation, FFT plans/scratch priming, validation/signatures, output retention allocation, input restoration, output destruction.
+- **cpu_followup_mwe / metadata** — inside: declared API call, intrinsic output allocation, native completion; outside: fixtures, runtime/backend/session creation, input wrappers/descriptors, graph construction/compilation/preparation, FFT plans/scratch priming, validation/signatures, output retention allocation, input restoration, output destruction.
+- **cpu_followup_mwe / metadata-host-dyn** — inside: declared API call, intrinsic output allocation, native completion; outside: fixtures, runtime/backend/session creation, input wrappers/descriptors, graph construction/compilation/preparation, FFT plans/scratch priming, validation/signatures, output retention allocation, input restoration, output destruction.
+- **cpu_followup_mwe / metadata-host-static** — inside: declared API call, intrinsic output allocation, native completion; outside: fixtures, runtime/backend/session creation, input wrappers/descriptors, graph construction/compilation/preparation, FFT plans/scratch priming, validation/signatures, output retention allocation, input restoration, output destruction.
+- **cpu_followup_mwe / mkl-dfti** — inside: API execution, intrinsic output allocation, native completion; outside: fixtures, conversion, JIT compilation, initialization, validation, retention allocation, output destruction.
+- **cpu_followup_mwe / pytorch** — inside: API execution, intrinsic output allocation, native completion; outside: fixtures, conversion, JIT compilation, initialization, validation, retention allocation, output destruction.
+- **cpu_followup_mwe / strided-rs** — inside: declared API call, intrinsic output allocation, native completion; outside: fixtures, runtime/backend/session creation, input wrappers/descriptors, graph construction/compilation/preparation, FFT plans/scratch priming, validation/signatures, output retention allocation, input restoration, output destruction.
 - **cpu_gap_mwe / concrete-shared** — inside: reshape, intrinsic output allocation; outside: fixture construction, runtime/backend construction, session entry, FFT plans and scratch priming, correctness validation, retention vector allocation, output destruction.
 - **cpu_gap_mwe / concrete-shared** — inside: triangular, intrinsic output allocation; outside: fixture construction, runtime/backend construction, session entry, FFT plans and scratch priming, correctness validation, retention vector allocation, output destruction.
 - **cpu_gap_mwe / eager-shared** — inside: lstsq, intrinsic output allocation; outside: fixture construction, runtime/backend construction, session entry, FFT plans and scratch priming, correctness validation, retention vector allocation, output destruction.
@@ -1300,1413 +1304,3 @@ These rows measure dispatch/operation latency; they do not measure compute throu
 - **umbrella_matmul / tenferro** — inside: typed allocating matmul in held session; outside: backend/thread-pool initialization and explicit priming, input/output preparation and per-sample restoration, entered held session (except explicitly named entry diagnostics), validation, allocation counter queries, output destruction.
 - **umbrella_neg / pytorch** — inside: torch.neg allocating; outside: input_construction, torch.set_num_threads, correctness_check.
 - **umbrella_neg / tenferro** — inside: typed allocating neg; outside: backend/thread-pool initialization and explicit priming, input/output preparation and per-sample restoration, entered held session (except explicitly named entry diagnostics), validation, allocation counter queries, output destruction.
-
-### FAILED: activation_erf_f32_eager-single-call_1024x64 (1 threads)
-```
-RuntimeError('eager-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: activation_erf_f32_pytorch_1024x64 (1 threads)
-```
-RuntimeError('eager-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: activation_sigmoid_f32_eager-single-call_1024x64 (1 threads)
-```
-RuntimeError('eager-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: activation_sigmoid_f32_pytorch_1024x64 (1 threads)
-```
-RuntimeError('eager-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: activation_silu_f32_eager-single-call_1024x64 (1 threads)
-```
-RuntimeError('eager-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: activation_silu_f32_pytorch_1024x64 (1 threads)
-```
-RuntimeError('eager-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: activation_softplus_f32_eager-single-call_1024x64 (1 threads)
-```
-RuntimeError('eager-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: activation_softplus_f32_pytorch_1024x64 (1 threads)
-```
-RuntimeError('eager-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: activation_gelu_tanh_f32_eager-single-call_1024x64 (1 threads)
-```
-RuntimeError('eager-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: activation_gelu_tanh_f32_pytorch_1024x64 (1 threads)
-```
-RuntimeError('eager-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_structural_broadcast_in_dim_direct-shared (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_structural_broadcast_in_dim_pytorch (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_tanh_direct-shared (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_tanh_jax (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_log1p_direct-shared (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_log1p_pytorch (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_cos_direct-shared (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_cos_pytorch (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_sin_direct-shared (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_sin_pytorch (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_exp_direct-shared (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_exp_jax (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_expm1_direct-shared (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_expm1_jax (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_pow_direct-shared (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_pow_pytorch (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_complex_exp_direct-shared (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_complex_exp_julia-base (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_log_direct-shared (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_log_pytorch (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_max_axis1_direct-shared (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_max_axis1_julia-base (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_prod_axis1_direct-shared (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_prod_axis1_pytorch (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_sum_axis1_direct-shared (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_sum_axis1_pytorch (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_max_axis0_direct-shared (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_max_axis0_julia-base (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_min_axis1_direct-shared (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_min_axis1_julia-base (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_min_axis0_direct-shared (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_min_axis0_julia-base (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_max_all_direct-shared (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_max_all_julia-base (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_min_all_direct-shared (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_min_all_julia-base (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_complex_norm_fro_direct-shared (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_complex_norm_fro_jax (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_index_gather_direct-shared (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_index_gather_jax (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_index_scatter_direct-shared (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_index_scatter_pytorch (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_index_dynamic_update_slice_direct-shared (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_index_dynamic_update_slice_jax (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_reverse_15d_3_materialize (1 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_reverse_15d_3_strided-rs (1 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_structural_transpose_direct-shared (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_structural_transpose_pytorch (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_reverse_23d_2_materialize (1 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_reverse_23d_2_strided-rs (1 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_transpose_3d_256_201_materialize (1 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_transpose_3d_256_201_strided-rs (1 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_cyclic_15d_3_materialize (1 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_cyclic_15d_3_strided-rs (1 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_transpose_3d_256_102_materialize (1 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_transpose_3d_256_102_strided-rs (1 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_tn_light_415_24d_scattered_to_colmajor_materialize (1 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_tn_light_415_24d_scattered_to_colmajor_strided-rs (1 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_tn_light_415_24d_contiguous_same_perm_materialize (1 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_tn_light_415_24d_contiguous_same_perm_strided-rs (1 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_rotation_6d_32_32_32_32_16_16_materialize (1 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_rotation_6d_32_32_32_32_16_16_strided-rs (1 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_structural_extract_diagonal_direct-shared (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_structural_extract_diagonal_jax (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_fft_irfft_direct-shared (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_fft_irfft_mkl-dfti (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_fft_rfft_direct-shared (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_fft_rfft_mkl-dfti (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_fft_fft_direct-shared (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_fft_fft_mkl-dfti (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_fft_ifft_direct-shared (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_fft_ifft_mkl-dfti (1 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_metadata_transpose_view_metadata (1 threads)
-```
-RuntimeError('metadata: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_metadata_transpose_view_julia-base (1 threads)
-```
-RuntimeError('metadata: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_metadata_transpose_view_metadata-host-dyn (1 threads)
-```
-RuntimeError('metadata-host-dyn: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_metadata_transpose_view_metadata-host-static (1 threads)
-```
-RuntimeError('metadata-host-static: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_metadata_slice_view_metadata (1 threads)
-```
-RuntimeError('metadata: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_metadata_slice_view_julia-base (1 threads)
-```
-RuntimeError('metadata: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_metadata_slice_view_metadata-host-dyn (1 threads)
-```
-RuntimeError('metadata-host-dyn: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_metadata_slice_view_metadata-host-static (1 threads)
-```
-RuntimeError('metadata-host-static: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_metadata_reshape_view_metadata (1 threads)
-```
-RuntimeError('metadata: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_metadata_reshape_view_julia-base (1 threads)
-```
-RuntimeError('metadata: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_metadata_reshape_view_metadata-host-dyn (1 threads)
-```
-RuntimeError('metadata-host-dyn: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_metadata_reshape_view_metadata-host-static (1 threads)
-```
-RuntimeError('metadata-host-static: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: activation_erf_f32_eager-single-call_1024x64 (4 threads)
-```
-RuntimeError('eager-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: activation_erf_f32_pytorch_1024x64 (4 threads)
-```
-RuntimeError('eager-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: activation_sigmoid_f32_eager-single-call_1024x64 (4 threads)
-```
-RuntimeError('eager-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: activation_sigmoid_f32_pytorch_1024x64 (4 threads)
-```
-RuntimeError('eager-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: activation_silu_f32_eager-single-call_1024x64 (4 threads)
-```
-RuntimeError('eager-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: activation_silu_f32_pytorch_1024x64 (4 threads)
-```
-RuntimeError('eager-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: activation_softplus_f32_eager-single-call_1024x64 (4 threads)
-```
-RuntimeError('eager-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: activation_softplus_f32_pytorch_1024x64 (4 threads)
-```
-RuntimeError('eager-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: activation_gelu_tanh_f32_eager-single-call_1024x64 (4 threads)
-```
-RuntimeError('eager-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: activation_gelu_tanh_f32_pytorch_1024x64 (4 threads)
-```
-RuntimeError('eager-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_structural_broadcast_in_dim_direct-shared (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_structural_broadcast_in_dim_pytorch (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_tanh_direct-shared (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_tanh_jax (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_log1p_direct-shared (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_log1p_pytorch (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_cos_direct-shared (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_cos_pytorch (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_sin_direct-shared (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_sin_pytorch (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_exp_direct-shared (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_exp_jax (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_expm1_direct-shared (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_expm1_jax (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_pow_direct-shared (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_pow_pytorch (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_complex_exp_direct-shared (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_complex_exp_julia-base (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_log_direct-shared (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_log_pytorch (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_max_axis1_direct-shared (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_max_axis1_julia-base (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_prod_axis1_direct-shared (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_prod_axis1_pytorch (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_sum_axis1_direct-shared (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_sum_axis1_pytorch (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_max_axis0_direct-shared (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_max_axis0_julia-base (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_min_axis1_direct-shared (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_min_axis1_julia-base (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_min_axis0_direct-shared (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_min_axis0_julia-base (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_max_all_direct-shared (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_max_all_julia-base (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_min_all_direct-shared (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_min_all_julia-base (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_complex_norm_fro_direct-shared (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_complex_norm_fro_jax (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_index_gather_direct-shared (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_index_gather_jax (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_index_scatter_direct-shared (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_index_scatter_pytorch (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_index_dynamic_update_slice_direct-shared (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_index_dynamic_update_slice_jax (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_reverse_15d_3_materialize (4 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_reverse_15d_3_strided-rs (4 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_structural_transpose_direct-shared (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_structural_transpose_pytorch (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_reverse_23d_2_materialize (4 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_reverse_23d_2_strided-rs (4 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_transpose_3d_256_201_materialize (4 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_transpose_3d_256_201_strided-rs (4 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_cyclic_15d_3_materialize (4 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_cyclic_15d_3_strided-rs (4 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_transpose_3d_256_102_materialize (4 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_transpose_3d_256_102_strided-rs (4 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_tn_light_415_24d_scattered_to_colmajor_materialize (4 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_tn_light_415_24d_scattered_to_colmajor_strided-rs (4 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_tn_light_415_24d_contiguous_same_perm_materialize (4 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_tn_light_415_24d_contiguous_same_perm_strided-rs (4 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_rotation_6d_32_32_32_32_16_16_materialize (4 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_rotation_6d_32_32_32_32_16_16_strided-rs (4 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_structural_extract_diagonal_direct-shared (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_structural_extract_diagonal_jax (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_fft_irfft_direct-shared (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_fft_irfft_mkl-dfti (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_fft_rfft_direct-shared (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_fft_rfft_mkl-dfti (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_fft_fft_direct-shared (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_fft_fft_mkl-dfti (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_fft_ifft_direct-shared (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_fft_ifft_mkl-dfti (4 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_metadata_transpose_view_metadata (4 threads)
-```
-RuntimeError('metadata: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_metadata_transpose_view_julia-base (4 threads)
-```
-RuntimeError('metadata: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_metadata_transpose_view_metadata-host-dyn (4 threads)
-```
-RuntimeError('metadata-host-dyn: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_metadata_transpose_view_metadata-host-static (4 threads)
-```
-RuntimeError('metadata-host-static: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_metadata_slice_view_metadata (4 threads)
-```
-RuntimeError('metadata: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_metadata_slice_view_julia-base (4 threads)
-```
-RuntimeError('metadata: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_metadata_slice_view_metadata-host-dyn (4 threads)
-```
-RuntimeError('metadata-host-dyn: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_metadata_slice_view_metadata-host-static (4 threads)
-```
-RuntimeError('metadata-host-static: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_metadata_reshape_view_metadata (4 threads)
-```
-RuntimeError('metadata: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_metadata_reshape_view_julia-base (4 threads)
-```
-RuntimeError('metadata: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_metadata_reshape_view_metadata-host-dyn (4 threads)
-```
-RuntimeError('metadata-host-dyn: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_metadata_reshape_view_metadata-host-static (4 threads)
-```
-RuntimeError('metadata-host-static: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: activation_erf_f32_eager-single-call_1024x64 (8 threads)
-```
-RuntimeError('eager-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: activation_erf_f32_pytorch_1024x64 (8 threads)
-```
-RuntimeError('eager-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: activation_sigmoid_f32_eager-single-call_1024x64 (8 threads)
-```
-RuntimeError('eager-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: activation_sigmoid_f32_pytorch_1024x64 (8 threads)
-```
-RuntimeError('eager-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: activation_silu_f32_eager-single-call_1024x64 (8 threads)
-```
-RuntimeError('eager-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: activation_silu_f32_pytorch_1024x64 (8 threads)
-```
-RuntimeError('eager-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: activation_softplus_f32_eager-single-call_1024x64 (8 threads)
-```
-RuntimeError('eager-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: activation_softplus_f32_pytorch_1024x64 (8 threads)
-```
-RuntimeError('eager-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: activation_gelu_tanh_f32_eager-single-call_1024x64 (8 threads)
-```
-RuntimeError('eager-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: activation_gelu_tanh_f32_pytorch_1024x64 (8 threads)
-```
-RuntimeError('eager-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_structural_broadcast_in_dim_direct-shared (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_structural_broadcast_in_dim_pytorch (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_tanh_direct-shared (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_tanh_jax (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_log1p_direct-shared (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_log1p_pytorch (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_cos_direct-shared (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_cos_pytorch (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_sin_direct-shared (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_sin_pytorch (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_exp_direct-shared (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_exp_jax (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_expm1_direct-shared (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_expm1_jax (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_pow_direct-shared (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_pow_pytorch (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_complex_exp_direct-shared (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_complex_exp_julia-base (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_log_direct-shared (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_log_pytorch (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_max_axis1_direct-shared (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_max_axis1_julia-base (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_prod_axis1_direct-shared (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_prod_axis1_pytorch (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_sum_axis1_direct-shared (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_sum_axis1_pytorch (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_max_axis0_direct-shared (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_max_axis0_julia-base (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_min_axis1_direct-shared (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_min_axis1_julia-base (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_min_axis0_direct-shared (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_min_axis0_julia-base (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_max_all_direct-shared (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_max_all_julia-base (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_min_all_direct-shared (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_real_reduce_min_all_julia-base (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_complex_norm_fro_direct-shared (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_complex_norm_fro_jax (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_index_gather_direct-shared (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_index_gather_jax (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_index_scatter_direct-shared (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_index_scatter_pytorch (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_index_dynamic_update_slice_direct-shared (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_index_dynamic_update_slice_jax (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_reverse_15d_3_materialize (8 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_reverse_15d_3_strided-rs (8 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_structural_transpose_direct-shared (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_structural_transpose_pytorch (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_reverse_23d_2_materialize (8 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_reverse_23d_2_strided-rs (8 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_transpose_3d_256_201_materialize (8 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_transpose_3d_256_201_strided-rs (8 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_cyclic_15d_3_materialize (8 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_cyclic_15d_3_strided-rs (8 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_transpose_3d_256_102_materialize (8 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_transpose_3d_256_102_strided-rs (8 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_tn_light_415_24d_scattered_to_colmajor_materialize (8 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_tn_light_415_24d_scattered_to_colmajor_strided-rs (8 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_tn_light_415_24d_contiguous_same_perm_materialize (8 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_tn_light_415_24d_contiguous_same_perm_strided-rs (8 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_rotation_6d_32_32_32_32_16_16_materialize (8 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_perm_rotation_6d_32_32_32_32_16_16_strided-rs (8 threads)
-```
-RuntimeError('strided-rs: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_structural_extract_diagonal_direct-shared (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_structural_extract_diagonal_jax (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_fft_irfft_direct-shared (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_fft_irfft_mkl-dfti (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_fft_rfft_direct-shared (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_fft_rfft_mkl-dfti (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_fft_fft_direct-shared (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_fft_fft_mkl-dfti (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_fft_ifft_direct-shared (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_fft_ifft_mkl-dfti (8 threads)
-```
-RuntimeError('direct-shared: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_metadata_transpose_view_metadata (8 threads)
-```
-RuntimeError('metadata: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_metadata_transpose_view_julia-base (8 threads)
-```
-RuntimeError('metadata: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_metadata_transpose_view_metadata-host-dyn (8 threads)
-```
-RuntimeError('metadata-host-dyn: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_metadata_transpose_view_metadata-host-static (8 threads)
-```
-RuntimeError('metadata-host-static: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_metadata_slice_view_metadata (8 threads)
-```
-RuntimeError('metadata: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_metadata_slice_view_julia-base (8 threads)
-```
-RuntimeError('metadata: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_metadata_slice_view_metadata-host-dyn (8 threads)
-```
-RuntimeError('metadata-host-dyn: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_metadata_slice_view_metadata-host-static (8 threads)
-```
-RuntimeError('metadata-host-static: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_metadata_reshape_view_metadata (8 threads)
-```
-RuntimeError('metadata: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_metadata_reshape_view_julia-base (8 threads)
-```
-RuntimeError('metadata: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_metadata_reshape_view_metadata-host-dyn (8 threads)
-```
-RuntimeError('metadata-host-dyn: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
-
-### FAILED: followup_metadata_reshape_view_metadata-host-static (8 threads)
-```
-RuntimeError('metadata-host-static: /home/shinaoka/projects/tensor4all/tenferro-benchmark/target/followup-current/release/cpu-followup-mwe: error while loading shared libraries: libmkl_intel_lp64.so.3: cannot open shared object file: No such file or directory')
-```
