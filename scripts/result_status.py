@@ -12,8 +12,8 @@ FAILED_STATUSES = frozenset({
 })
 
 
-# A measured cell withdrawn after collection (``benchmarks/withdrawn-cells.yaml``,
-# ``scripts/withdrawn_cells.py``). It is neither a failure nor a skip: the page
+# A measured cell withdrawn after collection (``benchmarks/cell-corrections.yaml``,
+# ``scripts/cell_corrections.py``). It is neither a failure nor a skip: the page
 # names it with its reason, and it is not counted as a non-ok case outcome.
 WITHDRAWN_STATUS = 'withdrawn'
 

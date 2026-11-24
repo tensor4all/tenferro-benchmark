@@ -53,8 +53,10 @@ The first 0.12 harness (`03f0f80`, collected in the 2026-11-24 zen5-cpu runs) co
 derivative in one session and then recomputed the output in a second one, so its eager JVP/VJP
 cells timed two forward passes; the 256x256 4T `grad_sum_svd_s_vjp` and `grad_sum_eigh_vjp` cells
 read as a ~1.95x slowdown that a single-pass re-measurement does not reproduce (tenferro-benchmark
-#517). Those two cells are withdrawn through `benchmarks/withdrawn-cells.yaml`; the other eager
-JVP/VJP cells of those runs carry the same second forward and were not re-measured.
+#517). Through `benchmarks/cell-corrections.yaml`, `grad_sum_svd_s_vjp` is withdrawn (not
+distinguishable from the 2026-11-12 cell) and `grad_sum_eigh_vjp` prints its single-pass
+re-measurement. The other eager JVP/VJP cells of those runs carry the same second forward and were
+not re-measured; re-collecting them is a separate task.
 
 The eager call also carries the AD preparation it performs itself (the eager VJP caches its prepared
 derivative, the eager JVP re-prepares per call), because the public eager API exposes no separate
