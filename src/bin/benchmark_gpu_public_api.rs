@@ -893,7 +893,7 @@ fn main() -> Result<()> {
             row["input_layout_policy"] = json!(layout);
             row["setup_policy"] = json!(setup);
             if case.read_op.starts_with("reduce_") {
-                row["read_staging"] = json!("on both arms the CUDA engine stages a permuted (non-flat) view into a compact copy inside the timed operation before reducing (tenferro-gpu CudaEngine::reduce_axes, tenferro-rs 1ba9f335); elementwise reads are read in place");
+                row["read_staging"] = json!("on both arms the CUDA engine stages a permuted (non-flat) view into a compact copy inside the timed operation before reducing (tenferro-gpu CudaEngine::reduce_axes, at the tenferro-rs revision this run records in run.yaml); elementwise reads are read in place");
             }
         }
         if case.op.contains("_into_accum") {

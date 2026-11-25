@@ -428,8 +428,9 @@ The two tenferro arms take different routes, and each row records its own in
   arm does not. The timed region is the `EagerSession` operation on those
   permuted views.
 
-On both arms tenferro reads elementwise operands in place. A reduction over a
-permuted view is staged into a compact copy inside the timed operation
+On both arms tenferro reads elementwise operands in place. At tenferro-rs
+`1ba9f335` (the pin when this was written; re-check on a pin bump), a reduction
+over a permuted view is staged into a compact copy inside the timed operation
 (`CudaEngine::reduce_axes`), so the `reduce_*_strided_read` rows include that
 copy on both arms; such rows also record `read_staging`. PyTorch creates its
 native transposed view before timing. All arms receive the same logical values
