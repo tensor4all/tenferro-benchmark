@@ -10,6 +10,7 @@ use tenferro_tensor::{
     TensorRead, TensorView, TensorWrite,
 };
 
+#[allow(clippy::too_many_arguments)]
 fn execute(
     op: &str,
     inputs: &[Tensor],
@@ -67,6 +68,7 @@ fn execute(
     }
     Ok(())
 }
+#[allow(clippy::too_many_arguments)]
 pub(super) fn run(
     case: &Case,
     inputs: &[Tensor],

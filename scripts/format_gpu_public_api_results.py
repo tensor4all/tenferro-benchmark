@@ -13,6 +13,19 @@ import gpu_bandwidth_guard as guard
 GIGABYTE = 1e9
 
 
+def read_route_notes(suite, rows, backends):
+    """The route each arm recorded for its transposed-read rows, quoted from records.jsonl."""
+    read_cases = [case["id"] for case in suite["cases"] if case.get("read_op")]
+    lines = []
+    for backend in backends:
+        routes = sorted({(rows[case_id, backend].get("read_route") or "", rows[case_id, backend]["input_layout_policy"])
+                         for case_id in read_cases
+                         if rows[case_id, backend]["status"] == "ok" and rows[case_id, backend].get("input_layout_policy")})
+        for route, policy in routes:
+            lines.append(f"- `{backend}` transposed reads: {route + '; ' if route else ''}{policy}.")
+    return lines + [""] if lines else []
+
+
 def compile_note(accounting):
     """One sentence naming this run's compile, from the totals the run recorded.
 
@@ -162,7 +175,8 @@ def render(suite, paths, metadata, timestamp, run_path=None, allow_partial=False
             'Stack selects actual public Tensor.stack/EagerSession.stack with two distinct inputs and axis 0 or 2. Their intrinsic intermediate allocations are part of this public stack operation. PyTorch/JAX use native stack; final outputs are fully verified. Direct Rust initial/final pointer checks reject aliasing either input outside timing; eager original descriptors are checked before any untimed inspection copy.', ""]
     if any(case.get("read_op") for case in suite["cases"]):
         text[-2:-2] = [
-            'Transposed borrowed-read cases use prepared native CUDA views in tenferro and PyTorch. JAX compares the same logical values in its native representation; its columns do not claim an equivalent public strided-view contract. View creation and input conversion are outside timing.', ""]
+            'Transposed-read cases use prepared native CUDA views in tenferro and PyTorch. JAX compares the same logical values in its native representation; its columns do not claim an equivalent public strided-view contract. View creation and input conversion are outside timing.', ""]
+        text[-2:-2] = read_route_notes(suite, rows, backends)
     if any(case.get("jax_ref_addupdate") for case in suite["cases"]):
         text[-2:-2] = [
             'Unit-coefficient AXPBY uses native JAX Ref.addupdate with caller-owned fixed buffers. Its synchronization includes one GPU scalar completion token per destination and block_until_ready; tokens are retained through clock stop and included in the logical retention bound. Helper compilation and seed restoration are untimed. Full Ref snapshots are used only for untimed inspection. This scalar-token synchronization cost is included in the reported latency; it performs no full output copy or D2H transfer inside timing.', ""]

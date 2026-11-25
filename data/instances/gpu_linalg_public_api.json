@@ -46,9 +46,7 @@
       ],
       "issue": 155,
       "excluded": {},
-      "unavailable": {
-        "tenferro-cuda-eager": "EagerSessionLinalgExt has no values-only svdvals entry point; returning and discarding singular vectors is not equivalent."
-      }
+      "unavailable": {}
     },
     {
       "id": "svdvals_f64_32x32",
@@ -61,9 +59,7 @@
       ],
       "issue": 155,
       "excluded": {},
-      "unavailable": {
-        "tenferro-cuda-eager": "EagerSessionLinalgExt has no values-only svdvals entry point; returning and discarding singular vectors is not equivalent."
-      }
+      "unavailable": {}
     },
     {
       "id": "eigvalsh_f32_32x32",
@@ -101,12 +97,8 @@
         32
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-eager": "Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer."
-      },
-      "unavailable": {
-        "tenferro-cuda-direct": "CUDA concrete route fails at revision 8b13220c: pinv_from_svd passes a host threshold scalar to mul_read. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906."
-      }
+      "excluded": {},
+      "unavailable": {}
     },
     {
       "id": "pinv_f64_32x32",
@@ -118,12 +110,8 @@
         32
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-eager": "Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer."
-      },
-      "unavailable": {
-        "tenferro-cuda-direct": "CUDA concrete route fails at revision 8b13220c: pinv_from_svd passes a host threshold scalar to mul_read. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906."
-      }
+      "excluded": {},
+      "unavailable": {}
     },
     {
       "id": "inv_f32_32x32",
@@ -135,12 +123,8 @@
         32
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-eager": "Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer."
-      },
-      "unavailable": {
-        "tenferro-cuda-direct": "CUDA concrete route fails at revision 8b13220c: inv_owned/eye_like passes a host scalar to broadcast_in_dim. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906."
-      }
+      "excluded": {},
+      "unavailable": {}
     },
     {
       "id": "inv_f64_32x32",
@@ -152,12 +136,8 @@
         32
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-eager": "Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer."
-      },
-      "unavailable": {
-        "tenferro-cuda-direct": "CUDA concrete route fails at revision 8b13220c: inv_owned/eye_like passes a host scalar to broadcast_in_dim. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906."
-      }
+      "excluded": {},
+      "unavailable": {}
     },
     {
       "id": "det_f32_32x32",
@@ -274,9 +254,7 @@
       ],
       "issue": 155,
       "excluded": {},
-      "unavailable": {
-        "tenferro-cuda-eager": "EagerSessionLinalgExt has no values-only svdvals entry point; returning and discarding singular vectors is not equivalent."
-      }
+      "unavailable": {}
     },
     {
       "id": "svdvals_f64_512x512",
@@ -289,9 +267,7 @@
       ],
       "issue": 155,
       "excluded": {},
-      "unavailable": {
-        "tenferro-cuda-eager": "EagerSessionLinalgExt has no values-only svdvals entry point; returning and discarding singular vectors is not equivalent."
-      }
+      "unavailable": {}
     },
     {
       "id": "eigvalsh_f32_512x512",
@@ -329,12 +305,8 @@
         512
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-eager": "Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer."
-      },
-      "unavailable": {
-        "tenferro-cuda-direct": "CUDA concrete route fails at revision 8b13220c: pinv_from_svd passes a host threshold scalar to mul_read. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906."
-      }
+      "excluded": {},
+      "unavailable": {}
     },
     {
       "id": "pinv_f64_512x512",
@@ -346,12 +318,8 @@
         512
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-eager": "Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer."
-      },
-      "unavailable": {
-        "tenferro-cuda-direct": "CUDA concrete route fails at revision 8b13220c: pinv_from_svd passes a host threshold scalar to mul_read. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906."
-      }
+      "excluded": {},
+      "unavailable": {}
     },
     {
       "id": "inv_f32_512x512",
@@ -363,12 +331,8 @@
         512
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-eager": "Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer."
-      },
-      "unavailable": {
-        "tenferro-cuda-direct": "CUDA concrete route fails at revision 8b13220c: inv_owned/eye_like passes a host scalar to broadcast_in_dim. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906."
-      }
+      "excluded": {},
+      "unavailable": {}
     },
     {
       "id": "inv_f64_512x512",
@@ -380,12 +344,8 @@
         512
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-eager": "Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer."
-      },
-      "unavailable": {
-        "tenferro-cuda-direct": "CUDA concrete route fails at revision 8b13220c: inv_owned/eye_like passes a host scalar to broadcast_in_dim. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906."
-      }
+      "excluded": {},
+      "unavailable": {}
     },
     {
       "id": "det_f32_512x512",

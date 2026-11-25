@@ -20,10 +20,7 @@
         32
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      }
+      "excluded": {}
     },
     {
       "id": "sigmoid_f64_n1024",
@@ -36,10 +33,7 @@
         32
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      }
+      "excluded": {}
     },
     {
       "id": "silu_f32_n1024",
@@ -52,10 +46,7 @@
         32
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      }
+      "excluded": {}
     },
     {
       "id": "silu_f64_n1024",
@@ -68,10 +59,7 @@
         32
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      }
+      "excluded": {}
     },
     {
       "id": "softplus_f32_n1024",
@@ -110,10 +98,7 @@
         32
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      }
+      "excluded": {}
     },
     {
       "id": "gelu_f64_n1024",
@@ -126,10 +111,7 @@
         32
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      }
+      "excluded": {}
     },
     {
       "id": "gelu_tanh_f32_n1024",
@@ -142,10 +124,7 @@
         32
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      }
+      "excluded": {}
     },
     {
       "id": "gelu_tanh_f64_n1024",
@@ -158,10 +137,7 @@
         32
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      }
+      "excluded": {}
     },
     {
       "id": "softmax_f32_n1024",
@@ -174,10 +150,7 @@
         32
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      }
+      "excluded": {}
     },
     {
       "id": "softmax_f64_n1024",
@@ -190,10 +163,7 @@
         32
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      }
+      "excluded": {}
     },
     {
       "id": "log_softmax_f32_n1024",
@@ -206,10 +176,7 @@
         32
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      }
+      "excluded": {}
     },
     {
       "id": "log_softmax_f64_n1024",
@@ -222,10 +189,7 @@
         32
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      }
+      "excluded": {}
     },
     {
       "id": "masked_softmax_f32_n1024",
@@ -239,8 +203,6 @@
       ],
       "issue": 155,
       "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
         "pytorch-cuda": "No equivalent stable single PyTorch public masked-softmax operation; masked_fill plus softmax would change the operation contract."
       }
     },
@@ -256,8 +218,6 @@
       ],
       "issue": 155,
       "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
         "pytorch-cuda": "No equivalent stable single PyTorch public masked-softmax operation; masked_fill plus softmax would change the operation contract."
       }
     },
@@ -273,8 +233,6 @@
       ],
       "issue": 155,
       "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
         "pytorch-cuda": "No equivalent stable single PyTorch public masked-softmax operation; masked_fill plus softmax would change the operation contract."
       }
     },
@@ -290,8 +248,6 @@
       ],
       "issue": 155,
       "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
         "pytorch-cuda": "No equivalent stable single PyTorch public masked-softmax operation; masked_fill plus softmax would change the operation contract."
       }
     },
@@ -306,10 +262,7 @@
         32
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      }
+      "excluded": {}
     },
     {
       "id": "layer_norm_f64_n1024",
@@ -322,10 +275,7 @@
         32
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      }
+      "excluded": {}
     },
     {
       "id": "rms_norm_f32_n1024",
@@ -339,8 +289,6 @@
       ],
       "issue": 155,
       "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
         "jax-cuda": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API.",
         "jax-cuda-jit": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API."
       }
@@ -357,8 +305,6 @@
       ],
       "issue": 155,
       "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
         "jax-cuda": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API.",
         "jax-cuda-jit": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API."
       }
@@ -373,10 +319,7 @@
         1024
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      }
+      "excluded": {}
     },
     {
       "id": "sigmoid_f64_n1048576",
@@ -388,10 +331,7 @@
         1024
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      }
+      "excluded": {}
     },
     {
       "id": "silu_f32_n1048576",
@@ -403,10 +343,7 @@
         1024
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      }
+      "excluded": {}
     },
     {
       "id": "silu_f64_n1048576",
@@ -418,10 +355,7 @@
         1024
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      }
+      "excluded": {}
     },
     {
       "id": "softplus_f32_n1048576",
@@ -457,10 +391,7 @@
         1024
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      }
+      "excluded": {}
     },
     {
       "id": "gelu_f64_n1048576",
@@ -472,10 +403,7 @@
         1024
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      }
+      "excluded": {}
     },
     {
       "id": "gelu_tanh_f32_n1048576",
@@ -487,10 +415,7 @@
         1024
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      }
+      "excluded": {}
     },
     {
       "id": "gelu_tanh_f64_n1048576",
@@ -502,10 +427,7 @@
         1024
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      }
+      "excluded": {}
     },
     {
       "id": "softmax_f32_n1048576",
@@ -517,10 +439,7 @@
         1024
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      }
+      "excluded": {}
     },
     {
       "id": "softmax_f64_n1048576",
@@ -532,10 +451,7 @@
         1024
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      }
+      "excluded": {}
     },
     {
       "id": "log_softmax_f32_n1048576",
@@ -547,10 +463,7 @@
         1024
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      }
+      "excluded": {}
     },
     {
       "id": "log_softmax_f64_n1048576",
@@ -562,10 +475,7 @@
         1024
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      }
+      "excluded": {}
     },
     {
       "id": "masked_softmax_f32_n1048576",
@@ -578,8 +488,6 @@
       ],
       "issue": 155,
       "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
         "pytorch-cuda": "No equivalent stable single PyTorch public masked-softmax operation; masked_fill plus softmax would change the operation contract."
       }
     },
@@ -594,8 +502,6 @@
       ],
       "issue": 155,
       "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
         "pytorch-cuda": "No equivalent stable single PyTorch public masked-softmax operation; masked_fill plus softmax would change the operation contract."
       }
     },
@@ -610,8 +516,6 @@
       ],
       "issue": 155,
       "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
         "pytorch-cuda": "No equivalent stable single PyTorch public masked-softmax operation; masked_fill plus softmax would change the operation contract."
       }
     },
@@ -626,8 +530,6 @@
       ],
       "issue": 155,
       "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
         "pytorch-cuda": "No equivalent stable single PyTorch public masked-softmax operation; masked_fill plus softmax would change the operation contract."
       }
     },
@@ -641,10 +543,7 @@
         1024
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      }
+      "excluded": {}
     },
     {
       "id": "layer_norm_f64_n1048576",
@@ -656,10 +555,7 @@
         1024
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      }
+      "excluded": {}
     },
     {
       "id": "rms_norm_f32_n1048576",
@@ -672,8 +568,6 @@
       ],
       "issue": 155,
       "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
         "jax-cuda": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API.",
         "jax-cuda-jit": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API."
       }
@@ -689,8 +583,6 @@
       ],
       "issue": 155,
       "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
         "jax-cuda": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API.",
         "jax-cuda-jit": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API."
       }
@@ -706,10 +598,7 @@
         32
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      },
+      "excluded": {},
       "normalization_weight": true,
       "normalization_bias": false,
       "unavailable": {
@@ -728,10 +617,7 @@
         32
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      },
+      "excluded": {},
       "normalization_weight": false,
       "normalization_bias": true,
       "unavailable": {
@@ -750,10 +636,7 @@
         32
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      },
+      "excluded": {},
       "normalization_weight": true,
       "normalization_bias": true,
       "unavailable": {
@@ -772,10 +655,7 @@
         32
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      },
+      "excluded": {},
       "normalization_weight": true,
       "normalization_bias": false,
       "unavailable": {
@@ -794,10 +674,7 @@
         32
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      },
+      "excluded": {},
       "normalization_weight": false,
       "normalization_bias": true,
       "unavailable": {
@@ -816,10 +693,7 @@
         32
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      },
+      "excluded": {},
       "normalization_weight": true,
       "normalization_bias": true,
       "unavailable": {
@@ -839,8 +713,6 @@
       ],
       "issue": 155,
       "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
         "jax-cuda": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API.",
         "jax-cuda-jit": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API."
       },
@@ -863,8 +735,6 @@
       ],
       "issue": 155,
       "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
         "jax-cuda": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API.",
         "jax-cuda-jit": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API."
       },
@@ -888,8 +758,6 @@
       ],
       "issue": 155,
       "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
         "jax-cuda": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API.",
         "jax-cuda-jit": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API."
       },
@@ -913,8 +781,6 @@
       ],
       "issue": 155,
       "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
         "jax-cuda": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API.",
         "jax-cuda-jit": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API."
       },
@@ -937,8 +803,6 @@
       ],
       "issue": 155,
       "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
         "jax-cuda": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API.",
         "jax-cuda-jit": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API."
       },
@@ -962,8 +826,6 @@
       ],
       "issue": 155,
       "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
         "jax-cuda": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API.",
         "jax-cuda-jit": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API."
       },
@@ -985,10 +847,7 @@
         1024
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      },
+      "excluded": {},
       "normalization_weight": true,
       "normalization_bias": false,
       "unavailable": {
@@ -1006,10 +865,7 @@
         1024
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      },
+      "excluded": {},
       "normalization_weight": false,
       "normalization_bias": true,
       "unavailable": {
@@ -1027,10 +883,7 @@
         1024
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      },
+      "excluded": {},
       "normalization_weight": true,
       "normalization_bias": true,
       "unavailable": {
@@ -1048,10 +901,7 @@
         1024
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      },
+      "excluded": {},
       "normalization_weight": true,
       "normalization_bias": false,
       "unavailable": {
@@ -1069,10 +919,7 @@
         1024
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      },
+      "excluded": {},
       "normalization_weight": false,
       "normalization_bias": true,
       "unavailable": {
@@ -1090,10 +937,7 @@
         1024
       ],
       "issue": 155,
-      "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
-      },
+      "excluded": {},
       "normalization_weight": true,
       "normalization_bias": true,
       "unavailable": {
@@ -1112,8 +956,6 @@
       ],
       "issue": 155,
       "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
         "jax-cuda": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API.",
         "jax-cuda-jit": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API."
       },
@@ -1135,8 +977,6 @@
       ],
       "issue": 155,
       "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
         "jax-cuda": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API.",
         "jax-cuda-jit": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API."
       },
@@ -1159,8 +999,6 @@
       ],
       "issue": 155,
       "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
         "jax-cuda": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API.",
         "jax-cuda-jit": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API."
       },
@@ -1183,8 +1021,6 @@
       ],
       "issue": 155,
       "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
         "jax-cuda": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API.",
         "jax-cuda-jit": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API."
       },
@@ -1206,8 +1042,6 @@
       ],
       "issue": 155,
       "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
         "jax-cuda": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API.",
         "jax-cuda-jit": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API."
       },
@@ -1230,8 +1064,6 @@
       ],
       "issue": 155,
       "excluded": {
-        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
-        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
         "jax-cuda": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API.",
         "jax-cuda-jit": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API."
       },

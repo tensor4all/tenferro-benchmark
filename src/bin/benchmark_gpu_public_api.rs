@@ -737,6 +737,18 @@ fn run(
                 .into_iter()
                 .map(|a| Ok(session.constant_from(a)?))
                 .collect::<Result<Vec<_>>>()?;
+            if !case.read_op.is_empty() {
+                return read_layout::run_eager(
+                    case,
+                    &input,
+                    &expected.tensor,
+                    &rt,
+                    session,
+                    settings,
+                    bytes,
+                )
+                .map(|(timing, error)| (timing, error, uninstrumented_phases()));
+            }
             if let Some(op) = reuse::eager_op(&case.op) {
                 return reuse::run_eager(
                     case,
@@ -876,7 +888,13 @@ fn main() -> Result<()> {
             row["batch_output_policy"] = json!("native batch-last; reference axis normalization only during untimed CPU verification");
         }
         if !case.read_op.is_empty() {
-            row["input_layout_policy"] = json!("transposed borrowed TensorRead over prepared CUDA storage; view and read-handle construction outside timing");
+            let (route, layout, setup) = read_layout::provenance(&mode);
+            row["read_route"] = json!(route);
+            row["input_layout_policy"] = json!(layout);
+            row["setup_policy"] = json!(setup);
+            if case.read_op.starts_with("reduce_") {
+                row["read_staging"] = json!("on both arms the CUDA engine stages a permuted (non-flat) view into a compact copy inside the timed operation before reducing (tenferro-gpu CudaEngine::reduce_axes, at the tenferro-rs revision this run records in run.yaml); elementwise reads are read in place");
+            }
         }
         if case.op.contains("_into_accum") {
             row["input_restoration"] = json!("GPU seed copied into each destination before every batch; synchronized outside timing");

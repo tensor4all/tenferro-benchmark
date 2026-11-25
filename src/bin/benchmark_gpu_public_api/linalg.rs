@@ -41,6 +41,7 @@ pub(super) fn direct(
         }
         "cholesky" => x.cholesky(s)?,
         "svdvals" => x.svdvals(s)?,
+        "lstsq" => x.lstsq(&inputs[1], s)?,
         "eigvalsh" => x.eigvalsh(s)?,
         "pinv" => x.pinv_with(&PinvOptions::default().rtol(Some(1e-5)), s)?,
         "inv" => x.inv(s)?,
@@ -76,6 +77,7 @@ pub(super) fn eager(
         }
         "tensordot" => s.tensordot(x, &inputs[1], TensorDotAxes::Count(1))?,
         "lstsq" => s.lstsq(x, &inputs[1])?,
+        "svdvals" => s.svdvals(x)?,
         "cholesky" => s.cholesky(x)?,
         "eigvalsh" => s.eigvalsh(x)?,
         "pinv" => s.pinv_with(x, &PinvOptions::default().rtol(Some(1e-5)))?,

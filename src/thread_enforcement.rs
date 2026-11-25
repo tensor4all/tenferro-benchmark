@@ -67,7 +67,7 @@ pub fn enforce_thread_request(requested: usize) -> Result<(), String> {
         ));
     }
     for &name in THREAD_COUNT_ENV_VARS {
-        if env::var_os(name).map_or(true, |value| value.is_empty()) {
+        if env::var_os(name).is_none_or(|value| value.is_empty()) {
             // Edition 2021: set_var is safe; no other threads exist yet.
             env::set_var(name, requested.to_string());
         }
