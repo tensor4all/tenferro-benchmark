@@ -1,0 +1,21 @@
+{
+ "schema_version": 1,
+ "case_id": "lu_square_c32_s32",
+ "output": 1,
+ "dtype": "c32",
+ "shape": [
+  32,
+  32
+ ],
+ "fingerprint": {
+  "sum_re": 32.027692397881765,
+  "sum_im": -0.007701511800505045,
+  "sum_abs": 41.61101756378824,
+  "sum_squares": 32.211318980395525,
+  "max_abs": 1.0,
+  "dot_seeded_re": 2.7110675186561064,
+  "dot_seeded_im": 0.36303290066996163,
+  "elements": 1024
+ },
+ "unavailable_reason": null
+}

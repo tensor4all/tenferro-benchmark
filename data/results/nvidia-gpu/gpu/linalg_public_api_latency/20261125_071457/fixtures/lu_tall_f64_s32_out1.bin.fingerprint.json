@@ -1,0 +1,21 @@
+{
+ "schema_version": 1,
+ "case_id": "lu_tall_f64_s32",
+ "output": 1,
+ "dtype": "f64",
+ "shape": [
+  64,
+  32
+ ],
+ "fingerprint": {
+  "sum_re": 31.8776186477733,
+  "sum_im": 0.0,
+  "sum_abs": 51.17661985736236,
+  "sum_squares": 32.32182894219751,
+  "max_abs": 1.0,
+  "dot_seeded_re": 1.603462509746396,
+  "dot_seeded_im": 0.0,
+  "elements": 2048
+ },
+ "unavailable_reason": null
+}

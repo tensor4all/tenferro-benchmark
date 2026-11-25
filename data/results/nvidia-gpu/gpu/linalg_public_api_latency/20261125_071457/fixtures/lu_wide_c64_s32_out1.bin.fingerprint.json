@@ -1,0 +1,21 @@
+{
+ "schema_version": 1,
+ "case_id": "lu_wide_c64_s32",
+ "output": 1,
+ "dtype": "c64",
+ "shape": [
+  32,
+  32
+ ],
+ "fingerprint": {
+  "sum_re": 31.822962488184306,
+  "sum_im": -0.3005972155802014,
+  "sum_abs": 41.654962338018365,
+  "sum_squares": 32.21318593154454,
+  "max_abs": 1.0,
+  "dot_seeded_re": 2.657356814033315,
+  "dot_seeded_im": 0.46685203241157314,
+  "elements": 1024
+ },
+ "unavailable_reason": null
+}

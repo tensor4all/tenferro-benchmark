@@ -1,0 +1,20 @@
+{
+ "schema_version": 1,
+ "case_id": "svd_full_tall_c64_64x32",
+ "output": 1,
+ "dtype": "f64",
+ "shape": [
+  32
+ ],
+ "fingerprint": {
+  "sum_re": 32.315651702067896,
+  "sum_im": 0.0,
+  "sum_abs": 32.315651702067896,
+  "sum_squares": 32.856430666250006,
+  "max_abs": 1.2590984069512083,
+  "dot_seeded_re": 4.479488910542345,
+  "dot_seeded_im": 0.0,
+  "elements": 32
+ },
+ "unavailable_reason": null
+}

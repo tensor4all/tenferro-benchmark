@@ -1,0 +1,20 @@
+{
+ "schema_version": 1,
+ "case_id": "eigvalsh_f64_32x32",
+ "output": 0,
+ "dtype": "f64",
+ "shape": [
+  32
+ ],
+ "fingerprint": {
+  "sum_re": 34.66865364062501,
+  "sum_im": 0.0,
+  "sum_abs": 34.66865364062501,
+  "sum_squares": 38.95374342124673,
+  "max_abs": 1.8848744744927297,
+  "dot_seeded_re": 5.094558234611069,
+  "dot_seeded_im": 0.0,
+  "elements": 32
+ },
+ "unavailable_reason": null
+}

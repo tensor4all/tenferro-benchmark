@@ -1,0 +1,20 @@
+{
+ "schema_version": 1,
+ "case_id": "householder_from_factors_default_c32_64x32",
+ "output": 1,
+ "dtype": "c32",
+ "shape": [
+  32
+ ],
+ "fingerprint": {
+  "sum_re": 63.69006931781769,
+  "sum_im": 0.015423114236909896,
+  "sum_abs": 63.691662534498874,
+  "sum_squares": 126.76977279560448,
+  "max_abs": 1.9940883704498207,
+  "dot_seeded_re": 9.014534735169969,
+  "dot_seeded_im": -0.10965675260944158,
+  "elements": 32
+ },
+ "unavailable_reason": null
+}
