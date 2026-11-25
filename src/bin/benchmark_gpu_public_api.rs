@@ -737,6 +737,19 @@ fn run(
                 .into_iter()
                 .map(|a| Ok(session.constant_from(a)?))
                 .collect::<Result<Vec<_>>>()?;
+            if let Some(op) = reuse::eager_op(&case.op) {
+                return reuse::run_eager(
+                    case,
+                    op,
+                    &input,
+                    &expected.tensor,
+                    &rt,
+                    session,
+                    settings,
+                    bytes,
+                )
+                .map(|(timing, error)| (timing, error, uninstrumented_phases()));
+            }
             let probe = eager(case, &input, session, structural::prepare(case))?;
             let error = verify_eager_inspected(&rt, session, &probe, &mut expected)?;
             drop(probe);

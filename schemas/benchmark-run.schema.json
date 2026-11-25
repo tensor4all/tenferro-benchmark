@@ -146,7 +146,7 @@
         },
         "numa": {
           "type": ["object", "null"],
-          "description": "The NUMA layout the host exposed: the node count, which on a Zen 2 host is the NPS setting, and each node's CPU list.",
+          "description": "The NUMA layout the host exposed: the node count, which on a Zen 2 host is the NPS setting, each node's CPU list, and the automatic NUMA balancing setting (campaign-toolkit hostinfo records it since toolkit#88).",
           "additionalProperties": false,
           "required": ["nodes"],
           "properties": {
@@ -154,6 +154,10 @@
             "cpulists": {
               "type": "object",
               "additionalProperties": { "type": "string" }
+            },
+            "balancing": {
+              "type": "string",
+              "description": "The raw /proc/sys/kernel/numa_balancing value; absent when the host does not expose it or the run predates toolkit#88."
             }
           }
         },

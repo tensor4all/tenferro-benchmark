@@ -1,0 +1,21 @@
+{
+ "schema_version": 1,
+ "case_id": "triangular_solve_f32_32x32",
+ "output": 0,
+ "dtype": "f32",
+ "shape": [
+  32,
+  8
+ ],
+ "fingerprint": {
+  "sum_re": 25.565898072673008,
+  "sum_im": 0.0,
+  "sum_abs": 51.28854802227579,
+  "sum_squares": 15.33000858844639,
+  "max_abs": 0.5783501863479614,
+  "dot_seeded_re": -1.4648731923340945,
+  "dot_seeded_im": 0.0,
+  "elements": 256
+ },
+ "unavailable_reason": null
+}

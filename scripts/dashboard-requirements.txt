@@ -1,5 +1,5 @@
 # Rendering-only dependencies, matching the repository uv.lock.
 Markdown==3.11
 PyYAML==6.0.3
-campaign-toolkit @ git+https://github.com/tensor4all/campaign-toolkit@0e2476f292e4fc797e4cb4cf600ab41dfa7e337a
+campaign-toolkit @ git+https://github.com/tensor4all/campaign-toolkit@bcfc9901c5de004e60a2a88a9eb3d15b9a9e60ad
 jsonschema==4.26.0

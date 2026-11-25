@@ -1,0 +1,21 @@
+{
+ "schema_version": 1,
+ "case_id": "inv_f32_32x32",
+ "output": 0,
+ "dtype": "f32",
+ "shape": [
+  32,
+  32
+ ],
+ "fingerprint": {
+  "sum_re": 31.806936702283565,
+  "sum_im": 0.0,
+  "sum_abs": 47.06185350759188,
+  "sum_squares": 29.02260402026854,
+  "max_abs": 0.9535463452339172,
+  "dot_seeded_re": 2.3894559248736096,
+  "dot_seeded_im": 0.0,
+  "elements": 1024
+ },
+ "unavailable_reason": null
+}
