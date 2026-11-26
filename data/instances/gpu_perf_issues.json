@@ -2792,7 +2792,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2079 (1024x8 f32, decode-sized): the host-side cost of one eager op on CUDA. `eager-session` times the op in one reused with_eager_session with a single device synchronize at the batch edge, so the per-op nanoseconds are the host dispatch the issue measured (11.5 us per add, 41.3 us per GEMM) plus the amortized wait; `eager-per-call` enters a session per operation, the diagnostic that separates session entry from dispatch. The GPU work of one decode-shaped op is a small fraction of the host cost, so these are latency rows, not throughput. `launch-only-floor` runs the same elementwise kernel through `add_read_into` on a reused output, i.e. with the per-op output allocation removed: the floor the eager per-op cost is compared against. `eager-session-streaming` drops each result before the next op, the way a decode loop consumes intermediates, so the output pool can hand the buffer back."
+  "intent": "tenferro-rs #2079 (1024x8 f32, decode-sized): the host-side cost of one eager op on CUDA. `eager-session` times the op in one reused with_eager_session with a single device synchronize at the batch edge, so the per-op nanoseconds are the host dispatch the issue measured (11.5 us per add, 41.3 us per GEMM) plus the amortized wait; `eager-per-call` enters a session per operation, the diagnostic that separates session entry from dispatch. The GPU work of one decode-shaped op is a small fraction of the host cost, so these are latency rows, not throughput. `eager-session-streaming` drops each result before the next op, the way a decode loop consumes intermediates, so the output pool can hand the buffer back."
  },
  {
   "id": "eager_op_f32_dot_general_decode_eager-per-call",
@@ -2816,7 +2816,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2079 (1024x8 f32, decode-sized): the host-side cost of one eager op on CUDA. `eager-session` times the op in one reused with_eager_session with a single device synchronize at the batch edge, so the per-op nanoseconds are the host dispatch the issue measured (11.5 us per add, 41.3 us per GEMM) plus the amortized wait; `eager-per-call` enters a session per operation, the diagnostic that separates session entry from dispatch. The GPU work of one decode-shaped op is a small fraction of the host cost, so these are latency rows, not throughput. `launch-only-floor` runs the same elementwise kernel through `add_read_into` on a reused output, i.e. with the per-op output allocation removed: the floor the eager per-op cost is compared against. `eager-session-streaming` drops each result before the next op, the way a decode loop consumes intermediates, so the output pool can hand the buffer back.",
+  "intent": "tenferro-rs #2079 (1024x8 f32, decode-sized): the host-side cost of one eager op on CUDA. `eager-session` times the op in one reused with_eager_session with a single device synchronize at the batch edge, so the per-op nanoseconds are the host dispatch the issue measured (11.5 us per add, 41.3 us per GEMM) plus the amortized wait; `eager-per-call` enters a session per operation, the diagnostic that separates session entry from dispatch. The GPU work of one decode-shaped op is a small fraction of the host cost, so these are latency rows, not throughput. `eager-session-streaming` drops each result before the next op, the way a decode loop consumes intermediates, so the output pool can hand the buffer back.",
   "reference_for": "eager_op_f32_dot_general_decode_eager-session"
  },
  {
@@ -2841,32 +2841,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2079 (1024x8 f32, decode-sized): the host-side cost of one eager op on CUDA. `eager-session` times the op in one reused with_eager_session with a single device synchronize at the batch edge, so the per-op nanoseconds are the host dispatch the issue measured (11.5 us per add, 41.3 us per GEMM) plus the amortized wait; `eager-per-call` enters a session per operation, the diagnostic that separates session entry from dispatch. The GPU work of one decode-shaped op is a small fraction of the host cost, so these are latency rows, not throughput. `launch-only-floor` runs the same elementwise kernel through `add_read_into` on a reused output, i.e. with the per-op output allocation removed: the floor the eager per-op cost is compared against. `eager-session-streaming` drops each result before the next op, the way a decode loop consumes intermediates, so the output pool can hand the buffer back.",
-  "reference_for": "eager_op_f32_dot_general_decode_eager-session"
- },
- {
-  "id": "eager_op_f32_dot_general_decode_launch-only-floor",
-  "issues": [
-   "#2079"
-  ],
-  "kind": "eager_op",
-  "arm": "launch-only-floor",
-  "backend": "tenferro-cuda",
-  "dtype": "f32",
-  "params": {
-   "in": 1024,
-   "out": 1024,
-   "len": 8,
-   "op": "dot_general",
-   "kind": "eager_op",
-   "arm": "launch-only-floor",
-   "dtype": "f32"
-  },
-  "measurement_scope": "steady_state",
-  "profiles": [
-   "nvidia-gpu"
-  ],
-  "intent": "tenferro-rs #2079 (1024x8 f32, decode-sized): the host-side cost of one eager op on CUDA. `eager-session` times the op in one reused with_eager_session with a single device synchronize at the batch edge, so the per-op nanoseconds are the host dispatch the issue measured (11.5 us per add, 41.3 us per GEMM) plus the amortized wait; `eager-per-call` enters a session per operation, the diagnostic that separates session entry from dispatch. The GPU work of one decode-shaped op is a small fraction of the host cost, so these are latency rows, not throughput. `launch-only-floor` runs the same elementwise kernel through `add_read_into` on a reused output, i.e. with the per-op output allocation removed: the floor the eager per-op cost is compared against. `eager-session-streaming` drops each result before the next op, the way a decode loop consumes intermediates, so the output pool can hand the buffer back.",
+  "intent": "tenferro-rs #2079 (1024x8 f32, decode-sized): the host-side cost of one eager op on CUDA. `eager-session` times the op in one reused with_eager_session with a single device synchronize at the batch edge, so the per-op nanoseconds are the host dispatch the issue measured (11.5 us per add, 41.3 us per GEMM) plus the amortized wait; `eager-per-call` enters a session per operation, the diagnostic that separates session entry from dispatch. The GPU work of one decode-shaped op is a small fraction of the host cost, so these are latency rows, not throughput. `eager-session-streaming` drops each result before the next op, the way a decode loop consumes intermediates, so the output pool can hand the buffer back.",
   "reference_for": "eager_op_f32_dot_general_decode_eager-session"
  },
  {
