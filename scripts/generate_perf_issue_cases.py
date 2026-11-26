@@ -43,7 +43,7 @@ ROOT = Path(__file__).resolve().parents[1]
 INSTANCES = ROOT / "data/instances/perf_issues.json"
 MANIFEST = ROOT / "benchmarks/cpu/manifests/perf_issues.yaml"
 SUITE = ROOT / "benchmarks/cpu/perf_issues.yaml"
-MANIFEST_VERSION = 23
+MANIFEST_VERSION = 25
 SUITE_ID = "cpu/perf_issues"
 
 GPU_INSTANCES = ROOT / "data/instances/gpu_perf_issues.json"
@@ -728,6 +728,59 @@ def thin_complex_cases():
     return rows
 
 
+def ad_prepare_cases():
+    """#2678: derivative-graph preparation cost, timed through Runtime::prepare."""
+    rows = []
+    for graph in ("identity_layout_chain", "conj_chain"):
+        for length in (64, 256, 1024):
+            target = f"{graph}_prepare_c64_len{length}"
+            for arm in ("vjp", "forward"):
+                row = case(
+                    target if arm == "vjp" else target + "_forward",
+                    ("#2678",), "ad_prepare",
+                    {"graph": graph, "length": length, "n": 4},
+                    arm=arm, dtype="c64", scope="issue_workflow_diagnostic",
+                    reference_for=None if arm == "vjp" else target,
+                    intent=(
+                        f"tenferro-rs #2678: {graph} of length {length} on a 4x4 c64 leaf. "
+                        "The timed operation is Runtime::prepare of the traced graph; tracing, "
+                        "the AD transform, compile_many, engine/runtime construction and the "
+                        "finite-difference oracle are outside. The vjp arm prepares the value "
+                        "and gradient program; the forward arm is the forward-only control that "
+                        "isolates the AD preparation cost. Diagnostic, not a steady-state "
+                        "operation row."),
+                )
+                row.update(regime="latency", thread_counts=[1])
+                rows.append(row)
+    return rows
+
+
+def deep_reverse_mode_prepare_cases():
+    """#2643: deep reverse-mode preparation cost, timed through Runtime::prepare."""
+    rows = []
+    for steps in (1, 2, 3, 10):
+        target = f"deep_reverse_mode_prepare_f64_steps{steps}"
+        for arm in ("vjp", "forward"):
+            row = case(
+                target if arm == "vjp" else target + "_forward",
+                ("#2643",), "ad_prepare",
+                {"graph": "deep_reverse_mode", "steps": steps, "batch": 64, "hidden": 50},
+                arm=arm, dtype="f64", scope="issue_workflow_diagnostic",
+                reference_for=None if arm == "vjp" else target,
+                intent=(
+                    f"tenferro-rs #2643: {steps}-step RK4 neural-ODE window, batch 64, hidden "
+                    "50, H = 25/999, unrolled into one reverse-mode graph. The timed operation "
+                    "is Runtime::prepare; tracing, the AD transform, compile_many, "
+                    "engine/runtime construction and the finite-difference gradient check are "
+                    "outside. The vjp arm prepares the value and the four parameter gradients; "
+                    "the forward arm is the forward-only control. Diagnostic, not a steady-state "
+                    "operation row."),
+            )
+            row.update(regime="latency", thread_counts=[1])
+            rows.append(row)
+    return rows
+
+
 def gpu_cholesky_staging_cases(gpu):
     rows = []
     for dtype in ("f64", "f32"):
@@ -756,7 +809,8 @@ def generate_cases():
             + cpu_followup_cases() + cpu_umbrella_cases() + pool_state_cases()
             + small_grad_cases() + fft_axis_cases() + degenerate_dot_cases()
             + erased_binary_cases() + axpby_strided_source_cases()
-            + erased_construct_cases() + eager_small_call_cases() + trace_metadata_cases() + softmax_pool_cases())
+            + erased_construct_cases() + eager_small_call_cases() + trace_metadata_cases() + softmax_pool_cases()
+            + ad_prepare_cases() + deep_reverse_mode_prepare_cases())
 
 
 def cpu_umbrella_cases():
