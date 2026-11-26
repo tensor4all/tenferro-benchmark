@@ -2,7 +2,7 @@
 
 - Suite: `cpu/overhead_smoke`
 - Target profile: `mac-cpu`
-- Raw run: `data/results/mac-cpu/cpu/overhead_smoke/20261125_190008`
+- Raw run: `data/results/mac-cpu/cpu/overhead_smoke/20261126_185703`
 - tenferro-rs commit: `1ba9f33521691170c763dfce9b6c9bb56ca523c2`
 - Collection command: `BENCHMARK_TARGET_PROFILE=mac-cpu /Users/runner/work/tenferro-benchmark/tenferro-benchmark/scripts/run_overhead_smoke.sh `
 
@@ -14,14 +14,14 @@ Inputs, entered reusable sessions, initialization, tracing and preparation are o
 
 | Case | Workload | Budget | Median ns/op | IQR ns | CoV | allocs/op | bytes/op | Refs |
 |---|---|---:|---:|---:|---:|---:|---:|---|
-| typed_elemwise_f64_add_bcast_n16 | typed add, rank-0 scalar rhs (stride-0 operand) | 1 | 1440.1 | 583.9 | 30.8% NOISY | 0.00 | 0 | tenferro-rs#2178 |
-| typed_elemwise_f64_add_bcast_8x8x8 | typed add, rank-0 scalar rhs (stride-0 operand) | 1 | 3212.8 | 370.0 | 25.1% NOISY | 0.00 | 0 | tenferro-rs#2178 |
-| typed_elemwise_f64_add_permuted_view_8x8x8 | add_read, lhs a permuted view (perm [2,0,1]) | 1 | 1949.2 | 666.4 | 21.0% NOISY | 0.00 | 0 | tenferro-rs#2178 |
-| permute_materialize_f64_r4_4x4x4x4 | materializing rank-4 transpose (perm [3,1,0,2]) | 1 | 2839.3 | 452.9 | 13.4% NOISY | 0.00 | 0 | tenferro-rs#2178 |
-| reduce_axis_f64_8x8x8 | typed reduce_sum over axis 1 | 1 | 2549.6 | 760.1 | 17.1% NOISY | 0.00 | 0 | tenferro-rs#2178 |
-| concatenate_axis1_f64_8x8x8 | concatenate two 8x8x8 tensors along axis 1 | 1 | 2845.9 | 2701.9 | 48.7% NOISY | 0.00 | 0 | tenferro-rs#2178 |
-| einsum_prepared_f64_n2 | prepared ij,jk->ik execute_into a caller output (overlaps cpu/small_work) | 1 | 2011.2 | 743.0 | 26.2% NOISY | 2.00 | 1408 | tenferro-rs#2178 tenferro-rs#1899 |
-| einsum_prepared_f64_n4 | prepared ij,jk->ik execute_into a caller output (overlaps cpu/small_work) | 1 | 1992.2 | 692.4 | 26.7% NOISY | 2.00 | 1408 | tenferro-rs#2178 tenferro-rs#1899 |
+| typed_elemwise_f64_add_bcast_n16 | typed add, rank-0 scalar rhs (stride-0 operand) | 1 | 927.6 | 8.4 | 0.6% | 0.00 | 0 | tenferro-rs#2178 |
+| typed_elemwise_f64_add_bcast_8x8x8 | typed add, rank-0 scalar rhs (stride-0 operand) | 1 | 1134.4 | 26.7 | 3.6% | 0.03 | 2 | tenferro-rs#2178 |
+| typed_elemwise_f64_add_permuted_view_8x8x8 | add_read, lhs a permuted view (perm [2,0,1]) | 1 | 1364.6 | 31.7 | 26.3% NOISY | 0.00 | 0 | tenferro-rs#2178 |
+| permute_materialize_f64_r4_4x4x4x4 | materializing rank-4 transpose (perm [3,1,0,2]) | 1 | 1501.3 | 47.1 | 12.0% NOISY | 0.00 | 0 | tenferro-rs#2178 |
+| reduce_axis_f64_8x8x8 | typed reduce_sum over axis 1 | 1 | 1781.5 | 21.3 | 1.0% | 0.00 | 0 | tenferro-rs#2178 |
+| concatenate_axis1_f64_8x8x8 | concatenate two 8x8x8 tensors along axis 1 | 1 | 1520.4 | 20.6 | 3.1% | 0.00 | 0 | tenferro-rs#2178 |
+| einsum_prepared_f64_n2 | prepared ij,jk->ik execute_into a caller output (overlaps cpu/small_work) | 1 | 968.6 | 4.6 | 1.5% | 2.00 | 1408 | tenferro-rs#2178 tenferro-rs#1899 |
+| einsum_prepared_f64_n4 | prepared ij,jk->ik execute_into a caller output (overlaps cpu/small_work) | 1 | 978.0 | 6.8 | 0.8% | 2.00 | 1408 | tenferro-rs#2178 tenferro-rs#1899 |
 
 ## Runtime session-entry diagnostics
 
@@ -29,8 +29,8 @@ These rows time public `Runtime::run_prepared`, including its internal session e
 
 | Case | Workload | Budget | Median ns/op | IQR ns | CoV | allocs/op | bytes/op | Refs |
 |---|---|---:|---:|---:|---:|---:|---:|---|
-| prepared_mul_add_f64_budget1_32x32x32_session_entry_diagnostic | run_prepared a*b+c including internal session entry/exit, backend thread budget 1 (diagnostic) | 1 | 34522.1 | 16135.4 | 25.6% NOISY | 26.00 | 11968 | tenferro-rs#2178 strided-rs#305 |
-| prepared_mul_add_f64_budget2_32x32x32_session_entry_diagnostic | run_prepared a*b+c including internal session entry/exit, backend thread budget 2 (diagnostic) | 2 | 45421.9 | 16851.6 | 28.7% NOISY | 26.00 | 11968 | tenferro-rs#2178 strided-rs#305 |
+| prepared_mul_add_f64_budget1_32x32x32_session_entry_diagnostic | run_prepared a*b+c including internal session entry/exit, backend thread budget 1 (diagnostic) | 1 | 22494.8 | 1360.7 | 4.8% | 26.00 | 11968 | tenferro-rs#2178 strided-rs#305 |
+| prepared_mul_add_f64_budget2_32x32x32_session_entry_diagnostic | run_prepared a*b+c including internal session entry/exit, backend thread budget 2 (diagnostic) | 2 | 23160.2 | 37445.3 | 50.6% NOISY | 26.00 | 11968 | tenferro-rs#2178 strided-rs#305 |
 
 Numerical checks: **10/10 rows passed** against independent host loops before counting and sampling.
 
@@ -41,7 +41,7 @@ Whether the runtime executed the traced region as one fused command or declined 
 | Case | Planned regions | Fused executions | Fallbacks |
 |---|---:|---:|---:|
 | prepared_mul_add_f64_budget1_32x32x32_session_entry_diagnostic | 1 | 616 | 0 |
-| prepared_mul_add_f64_budget2_32x32x32_session_entry_diagnostic | 1 | 208 | 0 |
+| prepared_mul_add_f64_budget2_32x32x32_session_entry_diagnostic | 1 | 616 | 0 |
 
 ## CPU Information
 
@@ -59,10 +59,10 @@ Whether the runtime executed the traced region as one fused command or declined 
 
 ## Run metadata
 
-Full metadata: `data/results/mac-cpu/cpu/overhead_smoke/20261125_190008/run.yaml`
+Full metadata: `data/results/mac-cpu/cpu/overhead_smoke/20261126_185703/run.yaml`
 
 ```yaml
-timestamp: '2026-11-25T19:00:09Z'
+timestamp: '2026-11-26T18:57:03Z'
 tenferro_rs:
   path: /Users/runner/work/tenferro-benchmark/tenferro-benchmark/extern/tenferro-rs
   commit: 1ba9f33521691170c763dfce9b6c9bb56ca523c2
@@ -72,7 +72,7 @@ tenferro_rs:
   resolved_path: /Users/runner/work/tenferro-benchmark/tenferro-benchmark/extern/tenferro-rs
 environment:
   container: none
-  hostname: sjc22-bt144-00b82c69-006f-4acd-b9f0-e769505d592b-46EAA3084D5A.local
+  hostname: iad20-fj923-dad4e7a6-f252-45b3-932c-43b555f813c5-02FFA1A64A01.local
   os: macOS-26.7.2-arm64-arm-64bit-Mach-O
   arch: arm64
   cpu: arm
@@ -93,7 +93,7 @@ environment:
     OMP_DYNAMIC: 'FALSE'
     RAYON_NUM_THREADS: '1'
     BENCHMARK_TARGET_PROFILE: mac-cpu
-    BENCHMARK_COMMIT: 74775e4a2ad3480fb9ee9f859e0037b8cac731f2
+    BENCHMARK_COMMIT: 9b03dd718025b3350d93eaab13a8b93dcc66cab2
     OPENBLAS_NUM_THREADS: '1'
     GOTO_NUM_THREADS: '1'
     MKL_NUM_THREADS: '1'
