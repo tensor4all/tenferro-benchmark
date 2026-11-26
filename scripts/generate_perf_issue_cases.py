@@ -43,7 +43,7 @@ ROOT = Path(__file__).resolve().parents[1]
 INSTANCES = ROOT / "data/instances/perf_issues.json"
 MANIFEST = ROOT / "benchmarks/cpu/manifests/perf_issues.yaml"
 SUITE = ROOT / "benchmarks/cpu/perf_issues.yaml"
-MANIFEST_VERSION = 22
+MANIFEST_VERSION = 23
 SUITE_ID = "cpu/perf_issues"
 
 GPU_INSTANCES = ROOT / "data/instances/gpu_perf_issues.json"
@@ -692,22 +692,39 @@ def binary_shortcut_cases():
 
 def thin_complex_cases():
     rows = []
+    issues = ("#2524", "#2416", "#1099")
+    intent = ("tenferro-rs #2524 / #2416 / #1099 (benchmark #339/#456): column-major "
+              "complex128 products. m=1/2 are thin shapes; m=8, above the 1<<17 c64 volume "
+              "bound, is the primary. At 0.12 the budget-one serial native c64 contraction "
+              "takes the faer driver, and the 4-thread row is the packed-driver control; the "
+              "regression this guards is a budget-one host being sent down the packed path. "
+              "Public dot_general versus an allocating sequence faer product and "
+              "torch.matmul on identical values; the faer reference is sequence-only, so it "
+              "has no 4-thread arm. Engine, session, operands and views outside timing; "
+              "intrinsic output allocation inside. Latency/driver-route diagnostic, not "
+              "large GEMM throughput.")
     for m in (1, 2, 8):
         target = f"thin_c64_gemm_{m}x141_141x282_t1"
         for arm, backend in (("dot-general", "tenferro-rs"), ("faer-direct", "faer-direct"),
                              ("pytorch", "pytorch-cpu")):
             row = case(target if arm == "dot-general" else target + "_" + arm,
-                ("#2416", "#1099"), "thin_complex_gemm", {"m": m, "k": 141, "n": 282},
+                issues, "thin_complex_gemm", {"m": m, "k": 141, "n": 282},
                 arm=arm, backend=backend, dtype="c64", profiles=("mac-cpu",),
                 reference_for=target if arm != "dot-general" else None,
-                intent="tenferro-rs #2416 / #1099 (benchmark #339): column-major complex128 "
-                       "products on an Accelerate link, m=1/2 select the thin faer route; "
-                       "m=8 is the vendor-route control. Public dot_general versus allocating "
-                       "faer-direct and torch.matmul on identical values. Engine, session, "
-                       "operands and views outside timing; intrinsic output allocation inside. "
-                       "Latency/kernel-route diagnostic, not large GEMM throughput.")
+                intent=intent)
             row.update(regime="latency", execution_path=arm, thread_counts=[1])
             rows.append(row)
+    # The packed-driver control: at a budget of four the contraction stays on the
+    # packed driver, so a serial-faer regression cannot hide behind a threaded row.
+    target = "thin_c64_gemm_8x141_141x282_t4"
+    for arm, backend in (("dot-general", "tenferro-rs"), ("pytorch", "pytorch-cpu")):
+        row = case(target if arm == "dot-general" else target + "_" + arm,
+            issues, "thin_complex_gemm", {"m": 8, "k": 141, "n": 282},
+            arm=arm, backend=backend, dtype="c64", profiles=("mac-cpu",),
+            reference_for=target if arm != "dot-general" else None,
+            intent=intent + " This row is the 4-thread packed-driver control.")
+        row.update(regime="latency", execution_path=arm, thread_counts=[4])
+        rows.append(row)
     return rows
 
 
