@@ -3233,81 +3233,81 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only. Also tracks #1720."
+  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit public driver on a DMRG-like c64 input. `auto` is the backend policy; the issue compared the Jacobi driver (`jacobi`, at both dimensions <= 1024) with the QR-based driver (`qr-based`), and `polar` is the polar-decomposition driver added in #1849 (explicit-only). Also tracks #1720."
  },
  {
-  "id": "svd_driver_c64_n64_gesvdj",
+  "id": "svd_driver_c64_n64_jacobi",
   "issues": [
    "#1839",
    "#1849",
    "#1720"
   ],
   "kind": "svd_driver",
-  "arm": "gesvdj",
+  "arm": "jacobi",
   "backend": "tenferro-cuda",
   "dtype": "c64",
   "params": {
    "n": 64,
-   "driver": "gesvdj",
+   "driver": "jacobi",
    "kind": "svd_driver",
-   "arm": "gesvdj",
+   "arm": "jacobi",
    "dtype": "c64"
   },
   "measurement_scope": "steady_state",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only. Also tracks #1720.",
+  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit public driver on a DMRG-like c64 input. `auto` is the backend policy; the issue compared the Jacobi driver (`jacobi`, at both dimensions <= 1024) with the QR-based driver (`qr-based`), and `polar` is the polar-decomposition driver added in #1849 (explicit-only). Also tracks #1720.",
   "reference_for": "svd_driver_c64_n64_auto"
  },
  {
-  "id": "svd_driver_c64_n64_gesvd",
+  "id": "svd_driver_c64_n64_qr-based",
   "issues": [
    "#1839",
    "#1849",
    "#1720"
   ],
   "kind": "svd_driver",
-  "arm": "gesvd",
+  "arm": "qr-based",
   "backend": "tenferro-cuda",
   "dtype": "c64",
   "params": {
    "n": 64,
-   "driver": "gesvd",
+   "driver": "qr-based",
    "kind": "svd_driver",
-   "arm": "gesvd",
+   "arm": "qr-based",
    "dtype": "c64"
   },
   "measurement_scope": "steady_state",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only. Also tracks #1720.",
+  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit public driver on a DMRG-like c64 input. `auto` is the backend policy; the issue compared the Jacobi driver (`jacobi`, at both dimensions <= 1024) with the QR-based driver (`qr-based`), and `polar` is the polar-decomposition driver added in #1849 (explicit-only). Also tracks #1720.",
   "reference_for": "svd_driver_c64_n64_auto"
  },
  {
-  "id": "svd_driver_c64_n64_xgesvdp",
+  "id": "svd_driver_c64_n64_polar",
   "issues": [
    "#1839",
    "#1849",
    "#1720"
   ],
   "kind": "svd_driver",
-  "arm": "xgesvdp",
+  "arm": "polar",
   "backend": "tenferro-cuda",
   "dtype": "c64",
   "params": {
    "n": 64,
-   "driver": "xgesvdp",
+   "driver": "polar",
    "kind": "svd_driver",
-   "arm": "xgesvdp",
+   "arm": "polar",
    "dtype": "c64"
   },
   "measurement_scope": "steady_state",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only. Also tracks #1720.",
+  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit public driver on a DMRG-like c64 input. `auto` is the backend policy; the issue compared the Jacobi driver (`jacobi`, at both dimensions <= 1024) with the QR-based driver (`qr-based`), and `polar` is the polar-decomposition driver added in #1849 (explicit-only). Also tracks #1720.",
   "reference_for": "svd_driver_c64_n64_auto"
  },
  {
@@ -3332,81 +3332,81 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only. Also tracks #1720."
+  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit public driver on a DMRG-like c64 input. `auto` is the backend policy; the issue compared the Jacobi driver (`jacobi`, at both dimensions <= 1024) with the QR-based driver (`qr-based`), and `polar` is the polar-decomposition driver added in #1849 (explicit-only). Also tracks #1720."
  },
  {
-  "id": "svd_driver_c64_n256_gesvdj",
+  "id": "svd_driver_c64_n256_jacobi",
   "issues": [
    "#1839",
    "#1849",
    "#1720"
   ],
   "kind": "svd_driver",
-  "arm": "gesvdj",
+  "arm": "jacobi",
   "backend": "tenferro-cuda",
   "dtype": "c64",
   "params": {
    "n": 256,
-   "driver": "gesvdj",
+   "driver": "jacobi",
    "kind": "svd_driver",
-   "arm": "gesvdj",
+   "arm": "jacobi",
    "dtype": "c64"
   },
   "measurement_scope": "steady_state",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only. Also tracks #1720.",
+  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit public driver on a DMRG-like c64 input. `auto` is the backend policy; the issue compared the Jacobi driver (`jacobi`, at both dimensions <= 1024) with the QR-based driver (`qr-based`), and `polar` is the polar-decomposition driver added in #1849 (explicit-only). Also tracks #1720.",
   "reference_for": "svd_driver_c64_n256_auto"
  },
  {
-  "id": "svd_driver_c64_n256_gesvd",
+  "id": "svd_driver_c64_n256_qr-based",
   "issues": [
    "#1839",
    "#1849",
    "#1720"
   ],
   "kind": "svd_driver",
-  "arm": "gesvd",
+  "arm": "qr-based",
   "backend": "tenferro-cuda",
   "dtype": "c64",
   "params": {
    "n": 256,
-   "driver": "gesvd",
+   "driver": "qr-based",
    "kind": "svd_driver",
-   "arm": "gesvd",
+   "arm": "qr-based",
    "dtype": "c64"
   },
   "measurement_scope": "steady_state",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only. Also tracks #1720.",
+  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit public driver on a DMRG-like c64 input. `auto` is the backend policy; the issue compared the Jacobi driver (`jacobi`, at both dimensions <= 1024) with the QR-based driver (`qr-based`), and `polar` is the polar-decomposition driver added in #1849 (explicit-only). Also tracks #1720.",
   "reference_for": "svd_driver_c64_n256_auto"
  },
  {
-  "id": "svd_driver_c64_n256_xgesvdp",
+  "id": "svd_driver_c64_n256_polar",
   "issues": [
    "#1839",
    "#1849",
    "#1720"
   ],
   "kind": "svd_driver",
-  "arm": "xgesvdp",
+  "arm": "polar",
   "backend": "tenferro-cuda",
   "dtype": "c64",
   "params": {
    "n": 256,
-   "driver": "xgesvdp",
+   "driver": "polar",
    "kind": "svd_driver",
-   "arm": "xgesvdp",
+   "arm": "polar",
    "dtype": "c64"
   },
   "measurement_scope": "steady_state",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only. Also tracks #1720.",
+  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit public driver on a DMRG-like c64 input. `auto` is the backend policy; the issue compared the Jacobi driver (`jacobi`, at both dimensions <= 1024) with the QR-based driver (`qr-based`), and `polar` is the polar-decomposition driver added in #1849 (explicit-only). Also tracks #1720.",
   "reference_for": "svd_driver_c64_n256_auto"
  },
  {
@@ -3431,81 +3431,81 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only. Also tracks #1720."
+  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit public driver on a DMRG-like c64 input. `auto` is the backend policy; the issue compared the Jacobi driver (`jacobi`, at both dimensions <= 1024) with the QR-based driver (`qr-based`), and `polar` is the polar-decomposition driver added in #1849 (explicit-only). Also tracks #1720."
  },
  {
-  "id": "svd_driver_c64_n1024_gesvdj",
+  "id": "svd_driver_c64_n1024_jacobi",
   "issues": [
    "#1839",
    "#1849",
    "#1720"
   ],
   "kind": "svd_driver",
-  "arm": "gesvdj",
+  "arm": "jacobi",
   "backend": "tenferro-cuda",
   "dtype": "c64",
   "params": {
    "n": 1024,
-   "driver": "gesvdj",
+   "driver": "jacobi",
    "kind": "svd_driver",
-   "arm": "gesvdj",
+   "arm": "jacobi",
    "dtype": "c64"
   },
   "measurement_scope": "steady_state",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only. Also tracks #1720.",
+  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit public driver on a DMRG-like c64 input. `auto` is the backend policy; the issue compared the Jacobi driver (`jacobi`, at both dimensions <= 1024) with the QR-based driver (`qr-based`), and `polar` is the polar-decomposition driver added in #1849 (explicit-only). Also tracks #1720.",
   "reference_for": "svd_driver_c64_n1024_auto"
  },
  {
-  "id": "svd_driver_c64_n1024_gesvd",
+  "id": "svd_driver_c64_n1024_qr-based",
   "issues": [
    "#1839",
    "#1849",
    "#1720"
   ],
   "kind": "svd_driver",
-  "arm": "gesvd",
+  "arm": "qr-based",
   "backend": "tenferro-cuda",
   "dtype": "c64",
   "params": {
    "n": 1024,
-   "driver": "gesvd",
+   "driver": "qr-based",
    "kind": "svd_driver",
-   "arm": "gesvd",
+   "arm": "qr-based",
    "dtype": "c64"
   },
   "measurement_scope": "steady_state",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only. Also tracks #1720.",
+  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit public driver on a DMRG-like c64 input. `auto` is the backend policy; the issue compared the Jacobi driver (`jacobi`, at both dimensions <= 1024) with the QR-based driver (`qr-based`), and `polar` is the polar-decomposition driver added in #1849 (explicit-only). Also tracks #1720.",
   "reference_for": "svd_driver_c64_n1024_auto"
  },
  {
-  "id": "svd_driver_c64_n1024_xgesvdp",
+  "id": "svd_driver_c64_n1024_polar",
   "issues": [
    "#1839",
    "#1849",
    "#1720"
   ],
   "kind": "svd_driver",
-  "arm": "xgesvdp",
+  "arm": "polar",
   "backend": "tenferro-cuda",
   "dtype": "c64",
   "params": {
    "n": 1024,
-   "driver": "xgesvdp",
+   "driver": "polar",
    "kind": "svd_driver",
-   "arm": "xgesvdp",
+   "arm": "polar",
    "dtype": "c64"
   },
   "measurement_scope": "steady_state",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only. Also tracks #1720.",
+  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit public driver on a DMRG-like c64 input. `auto` is the backend policy; the issue compared the Jacobi driver (`jacobi`, at both dimensions <= 1024) with the QR-based driver (`qr-based`), and `polar` is the polar-decomposition driver added in #1849 (explicit-only). Also tracks #1720.",
   "reference_for": "svd_driver_c64_n1024_auto"
  },
  {
@@ -3531,58 +3531,58 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit cuSOLVER driver. Auto selects cusolverDnXsyevBatched for a batch (about 100x to 280x faster than the previous per-matrix loop on the issue's card); #1852 records the syevjBatched n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage."
+  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit public driver. Auto selects the batched divide-and-conquer path (about 100x to 280x faster than the previous per-matrix loop on the issue's card); `divide-and-conquer` and `jacobi` are the explicit drivers, and #1852 records the Jacobi n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage."
  },
  {
-  "id": "eigh_batched_f64_n16_syevd",
+  "id": "eigh_batched_f64_n16_divide-and-conquer",
   "issues": [
    "#1846",
    "#1852",
    "#1923"
   ],
   "kind": "eigh_driver",
-  "arm": "syevd",
+  "arm": "divide-and-conquer",
   "backend": "tenferro-cuda",
   "dtype": "f64",
   "params": {
    "n": 16,
    "batch": 64,
-   "driver": "syevd",
+   "driver": "divide-and-conquer",
    "kind": "eigh_driver",
-   "arm": "syevd",
+   "arm": "divide-and-conquer",
    "dtype": "f64"
   },
   "measurement_scope": "steady_state",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit cuSOLVER driver. Auto selects cusolverDnXsyevBatched for a batch (about 100x to 280x faster than the previous per-matrix loop on the issue's card); #1852 records the syevjBatched n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage.",
+  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit public driver. Auto selects the batched divide-and-conquer path (about 100x to 280x faster than the previous per-matrix loop on the issue's card); `divide-and-conquer` and `jacobi` are the explicit drivers, and #1852 records the Jacobi n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage.",
   "reference_for": "eigh_batched_f64_n16_auto"
  },
  {
-  "id": "eigh_batched_f64_n16_syevj",
+  "id": "eigh_batched_f64_n16_jacobi",
   "issues": [
    "#1846",
    "#1852",
    "#1923"
   ],
   "kind": "eigh_driver",
-  "arm": "syevj",
+  "arm": "jacobi",
   "backend": "tenferro-cuda",
   "dtype": "f64",
   "params": {
    "n": 16,
    "batch": 64,
-   "driver": "syevj",
+   "driver": "jacobi",
    "kind": "eigh_driver",
-   "arm": "syevj",
+   "arm": "jacobi",
    "dtype": "f64"
   },
   "measurement_scope": "steady_state",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit cuSOLVER driver. Auto selects cusolverDnXsyevBatched for a batch (about 100x to 280x faster than the previous per-matrix loop on the issue's card); #1852 records the syevjBatched n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage.",
+  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit public driver. Auto selects the batched divide-and-conquer path (about 100x to 280x faster than the previous per-matrix loop on the issue's card); `divide-and-conquer` and `jacobi` are the explicit drivers, and #1852 records the Jacobi n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage.",
   "reference_for": "eigh_batched_f64_n16_auto"
  },
  {
@@ -3608,58 +3608,58 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit cuSOLVER driver. Auto selects cusolverDnXsyevBatched for a batch (about 100x to 280x faster than the previous per-matrix loop on the issue's card); #1852 records the syevjBatched n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage."
+  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit public driver. Auto selects the batched divide-and-conquer path (about 100x to 280x faster than the previous per-matrix loop on the issue's card); `divide-and-conquer` and `jacobi` are the explicit drivers, and #1852 records the Jacobi n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage."
  },
  {
-  "id": "eigh_batched_f64_n32_syevd",
+  "id": "eigh_batched_f64_n32_divide-and-conquer",
   "issues": [
    "#1846",
    "#1852",
    "#1923"
   ],
   "kind": "eigh_driver",
-  "arm": "syevd",
+  "arm": "divide-and-conquer",
   "backend": "tenferro-cuda",
   "dtype": "f64",
   "params": {
    "n": 32,
    "batch": 64,
-   "driver": "syevd",
+   "driver": "divide-and-conquer",
    "kind": "eigh_driver",
-   "arm": "syevd",
+   "arm": "divide-and-conquer",
    "dtype": "f64"
   },
   "measurement_scope": "steady_state",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit cuSOLVER driver. Auto selects cusolverDnXsyevBatched for a batch (about 100x to 280x faster than the previous per-matrix loop on the issue's card); #1852 records the syevjBatched n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage.",
+  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit public driver. Auto selects the batched divide-and-conquer path (about 100x to 280x faster than the previous per-matrix loop on the issue's card); `divide-and-conquer` and `jacobi` are the explicit drivers, and #1852 records the Jacobi n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage.",
   "reference_for": "eigh_batched_f64_n32_auto"
  },
  {
-  "id": "eigh_batched_f64_n32_syevj",
+  "id": "eigh_batched_f64_n32_jacobi",
   "issues": [
    "#1846",
    "#1852",
    "#1923"
   ],
   "kind": "eigh_driver",
-  "arm": "syevj",
+  "arm": "jacobi",
   "backend": "tenferro-cuda",
   "dtype": "f64",
   "params": {
    "n": 32,
    "batch": 64,
-   "driver": "syevj",
+   "driver": "jacobi",
    "kind": "eigh_driver",
-   "arm": "syevj",
+   "arm": "jacobi",
    "dtype": "f64"
   },
   "measurement_scope": "steady_state",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit cuSOLVER driver. Auto selects cusolverDnXsyevBatched for a batch (about 100x to 280x faster than the previous per-matrix loop on the issue's card); #1852 records the syevjBatched n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage.",
+  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit public driver. Auto selects the batched divide-and-conquer path (about 100x to 280x faster than the previous per-matrix loop on the issue's card); `divide-and-conquer` and `jacobi` are the explicit drivers, and #1852 records the Jacobi n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage.",
   "reference_for": "eigh_batched_f64_n32_auto"
  },
  {
@@ -3685,58 +3685,58 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit cuSOLVER driver. Auto selects cusolverDnXsyevBatched for a batch (about 100x to 280x faster than the previous per-matrix loop on the issue's card); #1852 records the syevjBatched n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage."
+  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit public driver. Auto selects the batched divide-and-conquer path (about 100x to 280x faster than the previous per-matrix loop on the issue's card); `divide-and-conquer` and `jacobi` are the explicit drivers, and #1852 records the Jacobi n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage."
  },
  {
-  "id": "eigh_batched_f64_n128_syevd",
+  "id": "eigh_batched_f64_n128_divide-and-conquer",
   "issues": [
    "#1846",
    "#1852",
    "#1923"
   ],
   "kind": "eigh_driver",
-  "arm": "syevd",
+  "arm": "divide-and-conquer",
   "backend": "tenferro-cuda",
   "dtype": "f64",
   "params": {
    "n": 128,
    "batch": 64,
-   "driver": "syevd",
+   "driver": "divide-and-conquer",
    "kind": "eigh_driver",
-   "arm": "syevd",
+   "arm": "divide-and-conquer",
    "dtype": "f64"
   },
   "measurement_scope": "steady_state",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit cuSOLVER driver. Auto selects cusolverDnXsyevBatched for a batch (about 100x to 280x faster than the previous per-matrix loop on the issue's card); #1852 records the syevjBatched n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage.",
+  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit public driver. Auto selects the batched divide-and-conquer path (about 100x to 280x faster than the previous per-matrix loop on the issue's card); `divide-and-conquer` and `jacobi` are the explicit drivers, and #1852 records the Jacobi n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage.",
   "reference_for": "eigh_batched_f64_n128_auto"
  },
  {
-  "id": "eigh_batched_f64_n128_syevj",
+  "id": "eigh_batched_f64_n128_jacobi",
   "issues": [
    "#1846",
    "#1852",
    "#1923"
   ],
   "kind": "eigh_driver",
-  "arm": "syevj",
+  "arm": "jacobi",
   "backend": "tenferro-cuda",
   "dtype": "f64",
   "params": {
    "n": 128,
    "batch": 64,
-   "driver": "syevj",
+   "driver": "jacobi",
    "kind": "eigh_driver",
-   "arm": "syevj",
+   "arm": "jacobi",
    "dtype": "f64"
   },
   "measurement_scope": "steady_state",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit cuSOLVER driver. Auto selects cusolverDnXsyevBatched for a batch (about 100x to 280x faster than the previous per-matrix loop on the issue's card); #1852 records the syevjBatched n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage.",
+  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit public driver. Auto selects the batched divide-and-conquer path (about 100x to 280x faster than the previous per-matrix loop on the issue's card); `divide-and-conquer` and `jacobi` are the explicit drivers, and #1852 records the Jacobi n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage.",
   "reference_for": "eigh_batched_f64_n128_auto"
  },
  {
@@ -3762,58 +3762,58 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit cuSOLVER driver. Auto selects cusolverDnXsyevBatched for a batch (about 100x to 280x faster than the previous per-matrix loop on the issue's card); #1852 records the syevjBatched n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage."
+  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit public driver. Auto selects the batched divide-and-conquer path (about 100x to 280x faster than the previous per-matrix loop on the issue's card); `divide-and-conquer` and `jacobi` are the explicit drivers, and #1852 records the Jacobi n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage."
  },
  {
-  "id": "eigh_batched_c64_n16_syevd",
+  "id": "eigh_batched_c64_n16_divide-and-conquer",
   "issues": [
    "#1846",
    "#1852",
    "#1923"
   ],
   "kind": "eigh_driver",
-  "arm": "syevd",
+  "arm": "divide-and-conquer",
   "backend": "tenferro-cuda",
   "dtype": "c64",
   "params": {
    "n": 16,
    "batch": 64,
-   "driver": "syevd",
+   "driver": "divide-and-conquer",
    "kind": "eigh_driver",
-   "arm": "syevd",
+   "arm": "divide-and-conquer",
    "dtype": "c64"
   },
   "measurement_scope": "steady_state",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit cuSOLVER driver. Auto selects cusolverDnXsyevBatched for a batch (about 100x to 280x faster than the previous per-matrix loop on the issue's card); #1852 records the syevjBatched n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage.",
+  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit public driver. Auto selects the batched divide-and-conquer path (about 100x to 280x faster than the previous per-matrix loop on the issue's card); `divide-and-conquer` and `jacobi` are the explicit drivers, and #1852 records the Jacobi n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage.",
   "reference_for": "eigh_batched_c64_n16_auto"
  },
  {
-  "id": "eigh_batched_c64_n16_syevj",
+  "id": "eigh_batched_c64_n16_jacobi",
   "issues": [
    "#1846",
    "#1852",
    "#1923"
   ],
   "kind": "eigh_driver",
-  "arm": "syevj",
+  "arm": "jacobi",
   "backend": "tenferro-cuda",
   "dtype": "c64",
   "params": {
    "n": 16,
    "batch": 64,
-   "driver": "syevj",
+   "driver": "jacobi",
    "kind": "eigh_driver",
-   "arm": "syevj",
+   "arm": "jacobi",
    "dtype": "c64"
   },
   "measurement_scope": "steady_state",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit cuSOLVER driver. Auto selects cusolverDnXsyevBatched for a batch (about 100x to 280x faster than the previous per-matrix loop on the issue's card); #1852 records the syevjBatched n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage.",
+  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit public driver. Auto selects the batched divide-and-conquer path (about 100x to 280x faster than the previous per-matrix loop on the issue's card); `divide-and-conquer` and `jacobi` are the explicit drivers, and #1852 records the Jacobi n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage.",
   "reference_for": "eigh_batched_c64_n16_auto"
  },
  {
@@ -3839,58 +3839,58 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit cuSOLVER driver. Auto selects cusolverDnXsyevBatched for a batch (about 100x to 280x faster than the previous per-matrix loop on the issue's card); #1852 records the syevjBatched n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage."
+  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit public driver. Auto selects the batched divide-and-conquer path (about 100x to 280x faster than the previous per-matrix loop on the issue's card); `divide-and-conquer` and `jacobi` are the explicit drivers, and #1852 records the Jacobi n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage."
  },
  {
-  "id": "eigh_batched_c64_n32_syevd",
+  "id": "eigh_batched_c64_n32_divide-and-conquer",
   "issues": [
    "#1846",
    "#1852",
    "#1923"
   ],
   "kind": "eigh_driver",
-  "arm": "syevd",
+  "arm": "divide-and-conquer",
   "backend": "tenferro-cuda",
   "dtype": "c64",
   "params": {
    "n": 32,
    "batch": 64,
-   "driver": "syevd",
+   "driver": "divide-and-conquer",
    "kind": "eigh_driver",
-   "arm": "syevd",
+   "arm": "divide-and-conquer",
    "dtype": "c64"
   },
   "measurement_scope": "steady_state",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit cuSOLVER driver. Auto selects cusolverDnXsyevBatched for a batch (about 100x to 280x faster than the previous per-matrix loop on the issue's card); #1852 records the syevjBatched n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage.",
+  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit public driver. Auto selects the batched divide-and-conquer path (about 100x to 280x faster than the previous per-matrix loop on the issue's card); `divide-and-conquer` and `jacobi` are the explicit drivers, and #1852 records the Jacobi n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage.",
   "reference_for": "eigh_batched_c64_n32_auto"
  },
  {
-  "id": "eigh_batched_c64_n32_syevj",
+  "id": "eigh_batched_c64_n32_jacobi",
   "issues": [
    "#1846",
    "#1852",
    "#1923"
   ],
   "kind": "eigh_driver",
-  "arm": "syevj",
+  "arm": "jacobi",
   "backend": "tenferro-cuda",
   "dtype": "c64",
   "params": {
    "n": 32,
    "batch": 64,
-   "driver": "syevj",
+   "driver": "jacobi",
    "kind": "eigh_driver",
-   "arm": "syevj",
+   "arm": "jacobi",
    "dtype": "c64"
   },
   "measurement_scope": "steady_state",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit cuSOLVER driver. Auto selects cusolverDnXsyevBatched for a batch (about 100x to 280x faster than the previous per-matrix loop on the issue's card); #1852 records the syevjBatched n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage.",
+  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit public driver. Auto selects the batched divide-and-conquer path (about 100x to 280x faster than the previous per-matrix loop on the issue's card); `divide-and-conquer` and `jacobi` are the explicit drivers, and #1852 records the Jacobi n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage.",
   "reference_for": "eigh_batched_c64_n32_auto"
  },
  {
@@ -3916,58 +3916,58 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit cuSOLVER driver. Auto selects cusolverDnXsyevBatched for a batch (about 100x to 280x faster than the previous per-matrix loop on the issue's card); #1852 records the syevjBatched n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage."
+  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit public driver. Auto selects the batched divide-and-conquer path (about 100x to 280x faster than the previous per-matrix loop on the issue's card); `divide-and-conquer` and `jacobi` are the explicit drivers, and #1852 records the Jacobi n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage."
  },
  {
-  "id": "eigh_batched_c64_n128_syevd",
+  "id": "eigh_batched_c64_n128_divide-and-conquer",
   "issues": [
    "#1846",
    "#1852",
    "#1923"
   ],
   "kind": "eigh_driver",
-  "arm": "syevd",
+  "arm": "divide-and-conquer",
   "backend": "tenferro-cuda",
   "dtype": "c64",
   "params": {
    "n": 128,
    "batch": 64,
-   "driver": "syevd",
+   "driver": "divide-and-conquer",
    "kind": "eigh_driver",
-   "arm": "syevd",
+   "arm": "divide-and-conquer",
    "dtype": "c64"
   },
   "measurement_scope": "steady_state",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit cuSOLVER driver. Auto selects cusolverDnXsyevBatched for a batch (about 100x to 280x faster than the previous per-matrix loop on the issue's card); #1852 records the syevjBatched n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage.",
+  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit public driver. Auto selects the batched divide-and-conquer path (about 100x to 280x faster than the previous per-matrix loop on the issue's card); `divide-and-conquer` and `jacobi` are the explicit drivers, and #1852 records the Jacobi n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage.",
   "reference_for": "eigh_batched_c64_n128_auto"
  },
  {
-  "id": "eigh_batched_c64_n128_syevj",
+  "id": "eigh_batched_c64_n128_jacobi",
   "issues": [
    "#1846",
    "#1852",
    "#1923"
   ],
   "kind": "eigh_driver",
-  "arm": "syevj",
+  "arm": "jacobi",
   "backend": "tenferro-cuda",
   "dtype": "c64",
   "params": {
    "n": 128,
    "batch": 64,
-   "driver": "syevj",
+   "driver": "jacobi",
    "kind": "eigh_driver",
-   "arm": "syevj",
+   "arm": "jacobi",
    "dtype": "c64"
   },
   "measurement_scope": "steady_state",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit cuSOLVER driver. Auto selects cusolverDnXsyevBatched for a batch (about 100x to 280x faster than the previous per-matrix loop on the issue's card); #1852 records the syevjBatched n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage.",
+  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit public driver. Auto selects the batched divide-and-conquer path (about 100x to 280x faster than the previous per-matrix loop on the issue's card); `divide-and-conquer` and `jacobi` are the explicit drivers, and #1852 records the Jacobi n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage.",
   "reference_for": "eigh_batched_c64_n128_auto"
  },
  {

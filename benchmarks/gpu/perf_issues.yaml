@@ -175,35 +175,35 @@ problems:
   - pool_retention_f64_runtime-recreate
   - pool_retention_f64_driver-alloc-after-free
   - svd_driver_c64_n64_auto
-  - svd_driver_c64_n64_gesvdj
-  - svd_driver_c64_n64_gesvd
-  - svd_driver_c64_n64_xgesvdp
+  - svd_driver_c64_n64_jacobi
+  - svd_driver_c64_n64_qr-based
+  - svd_driver_c64_n64_polar
   - svd_driver_c64_n256_auto
-  - svd_driver_c64_n256_gesvdj
-  - svd_driver_c64_n256_gesvd
-  - svd_driver_c64_n256_xgesvdp
+  - svd_driver_c64_n256_jacobi
+  - svd_driver_c64_n256_qr-based
+  - svd_driver_c64_n256_polar
   - svd_driver_c64_n1024_auto
-  - svd_driver_c64_n1024_gesvdj
-  - svd_driver_c64_n1024_gesvd
-  - svd_driver_c64_n1024_xgesvdp
+  - svd_driver_c64_n1024_jacobi
+  - svd_driver_c64_n1024_qr-based
+  - svd_driver_c64_n1024_polar
   - eigh_batched_f64_n16_auto
-  - eigh_batched_f64_n16_syevd
-  - eigh_batched_f64_n16_syevj
+  - eigh_batched_f64_n16_divide-and-conquer
+  - eigh_batched_f64_n16_jacobi
   - eigh_batched_f64_n32_auto
-  - eigh_batched_f64_n32_syevd
-  - eigh_batched_f64_n32_syevj
+  - eigh_batched_f64_n32_divide-and-conquer
+  - eigh_batched_f64_n32_jacobi
   - eigh_batched_f64_n128_auto
-  - eigh_batched_f64_n128_syevd
-  - eigh_batched_f64_n128_syevj
+  - eigh_batched_f64_n128_divide-and-conquer
+  - eigh_batched_f64_n128_jacobi
   - eigh_batched_c64_n16_auto
-  - eigh_batched_c64_n16_syevd
-  - eigh_batched_c64_n16_syevj
+  - eigh_batched_c64_n16_divide-and-conquer
+  - eigh_batched_c64_n16_jacobi
   - eigh_batched_c64_n32_auto
-  - eigh_batched_c64_n32_syevd
-  - eigh_batched_c64_n32_syevj
+  - eigh_batched_c64_n32_divide-and-conquer
+  - eigh_batched_c64_n32_jacobi
   - eigh_batched_c64_n128_auto
-  - eigh_batched_c64_n128_syevd
-  - eigh_batched_c64_n128_syevj
+  - eigh_batched_c64_n128_divide-and-conquer
+  - eigh_batched_c64_n128_jacobi
   - hadamard_f32_1024x1024_dot-general
   - hadamard_f32_1024x1024_multiply
   - contraction_plan_churn_f64_distinct-plans

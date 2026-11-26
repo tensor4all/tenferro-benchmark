@@ -49,7 +49,7 @@ SUITE_ID = "cpu/perf_issues"
 GPU_INSTANCES = ROOT / "data/instances/gpu_perf_issues.json"
 GPU_MANIFEST = ROOT / "benchmarks/gpu/manifests/perf_issues.yaml"
 GPU_SUITE = ROOT / "benchmarks/gpu/perf_issues.yaml"
-GPU_MANIFEST_VERSION = 10
+GPU_MANIFEST_VERSION = 11
 GPU_SUITE_ID = "gpu/perf_issues"
 
 DIAGNOSTIC_SCOPES = {"session_entry_diagnostic", "counter_diagnostic", "eager_ad_workflow",
@@ -1342,20 +1342,20 @@ def gpu_linalg_driver_cases(gpu):
     """Workloads of the cuSOLVER driver-selection issues."""
     rows = []
     for n in (64, 256, 1024):
-        for driver in ("auto", "gesvdj", "gesvd", "xgesvdp"):
+        for driver in ("auto", "jacobi", "qr-based", "polar"):
             rows.append(case(
                 f"svd_driver_c64_n{n}_{driver}", ("#1839", "#1849", "#1720"), "svd_driver",
                 {"n": n, "driver": driver}, arm=driver, backend="tenferro-cuda", dtype="c64",
                 reference_for=None if driver == "auto" else f"svd_driver_c64_n{n}_auto",
                 profiles=gpu,
                 intent=("tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an "
-                        "explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the "
-                        "JAX-compatible policy (gesvdj at both dimensions <= 1024), which the "
-                        "issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the "
-                        "polar-decomposition driver added in #1849 and is explicit-only.")))
+                        "explicit public driver on a DMRG-like c64 input. `auto` is the backend "
+                        "policy; the issue compared the Jacobi driver (`jacobi`, at both "
+                        "dimensions <= 1024) with the QR-based driver (`qr-based`), and `polar` "
+                        "is the polar-decomposition driver added in #1849 (explicit-only).")))
     for dtype in ("f64", "c64"):
         for n in (16, 32, 128):
-            for driver in ("auto", "syevd", "syevj"):
+            for driver in ("auto", "divide-and-conquer", "jacobi"):
                 rows.append(case(
                     f"eigh_batched_{dtype}_n{n}_{driver}", ("#1846", "#1852", "#1923"),
                     "eigh_driver", {"n": n, "batch": 64, "driver": driver}, arm=driver,
@@ -1363,12 +1363,12 @@ def gpu_linalg_driver_cases(gpu):
                     reference_for=None if driver == "auto" else f"eigh_batched_{dtype}_n{n}_auto",
                     profiles=gpu,
                     intent=("tenferro-rs #1846 / #1852 / #1923: batched Hermitian "
-                            "eigendecomposition of 64 n x n items with an explicit cuSOLVER "
-                            "driver. Auto selects cusolverDnXsyevBatched for a batch (about 100x "
-                            "to 280x faster than the previous per-matrix loop on the issue's "
-                            "card); #1852 records the syevjBatched n <= 32 knee, so n=32 is the "
-                            "row that matters and n=16 / n=128 bracket it. #1923 is the c64 "
-                            "coverage.")))
+                            "eigendecomposition of 64 n x n items with an explicit public driver. "
+                            "Auto selects the batched divide-and-conquer path (about 100x to 280x "
+                            "faster than the previous per-matrix loop on the issue's card); "
+                            "`divide-and-conquer` and `jacobi` are the explicit drivers, and "
+                            "#1852 records the Jacobi n <= 32 knee, so n=32 is the row that "
+                            "matters and n=16 / n=128 bracket it. #1923 is the c64 coverage.")))
     return rows
 
 
