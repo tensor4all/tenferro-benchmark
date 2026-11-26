@@ -118,8 +118,11 @@ with the issue number noted next to the case, when the issue is opened (not
 at fix time). A performance-fix PR reports numbers from those cases. Add the
 cases with their reference arm(s) to `scripts/generate_perf_issue_cases.py`
 (`cpu/perf_issues`, `gpu/perf_issues`), or record the issue number on the
-existing case that already covers the workload. Build the cases only from
-public tenferro-rs APIs. This is the whole requirement: no automated audit,
+existing case that already covers the workload: a `perf_issues` array on its
+`data/instances/*.json` entry (the older `issue` field is the suite's
+originating tenferro-benchmark issue), enforced by
+`tests/test_perf_issue_coverage.py`. Build the cases only from public
+tenferro-rs APIs. This is the whole requirement: no automated audit,
 registry, lint, scheduled run or mandatory baseline campaign.
 
 ## Overhead Smoke Trend

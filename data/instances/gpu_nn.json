@@ -367,6 +367,9 @@
         1024
       ],
       "issue": 155,
+      "perf_issues": [
+        2530
+      ],
       "excluded": {}
     },
     {
@@ -379,6 +382,9 @@
         1024
       ],
       "issue": 155,
+      "perf_issues": [
+        2530
+      ],
       "excluded": {}
     },
     {

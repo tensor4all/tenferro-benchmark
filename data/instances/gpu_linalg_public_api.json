@@ -396,6 +396,9 @@
         512
       ],
       "issue": 155,
+      "perf_issues": [
+        2625
+      ],
       "excluded": {},
       "unavailable": {}
     },

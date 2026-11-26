@@ -22,7 +22,16 @@ class BotPerfCasesTest(unittest.TestCase):
         self.assertEqual({r['params']['m'] for r in thin}, {1,2,8})
         for row in thin:
             self.assertEqual(row['profiles'], ['mac-cpu'])
-            self.assertEqual(row['thread_counts'], [1])
+        t1 = [r for r in thin if r['thread_counts'] == [1]]
+        t4 = [r for r in thin if r['thread_counts'] == [4]]
+        self.assertEqual(len(t1), 9)
+        self.assertEqual(len(t4), 2)
+        for row in t1:
+            self.assertTrue(row['id'].endswith('_t1') or row['id'].endswith(('_t1_faer-direct', '_t1_pytorch')))
+        self.assertEqual({r['id'] for r in t4},
+                         {'thin_c64_gemm_8x141_141x282_t4', 'thin_c64_gemm_8x141_141x282_t4_pytorch'})
+        for row in thin:
+            self.assertIn('#2524', row['issues'])
 
     def test_dashboard_reads_source_regimes(self):
         from scripts.generate_dashboard import load_suite_metadata, case_regime
