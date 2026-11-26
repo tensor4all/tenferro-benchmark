@@ -22,6 +22,9 @@ import yaml
 
 MANIFEST = Path('benchmarks/gpu/manifests/routine.yaml')
 READBACK = 'perf-issues-readback'
+# The unfiltered standalone gpu/perf_issues lane: the published page, not the
+# solve/QR readback subset. It is not a routine manifest entry either.
+PERF_ISSUES_FULL = 'perf-issues-full'
 # The deferred-batch throughput collector is a standalone entry point
 # (`scripts/run_gpu_throughput.sh`), not a routine manifest suite. Its two
 # suites run through two binaries, so the workflow names the lane rather than a
@@ -49,9 +52,9 @@ def required_binaries(selection, manifest=MANIFEST):
     """Binary -> the selected suites that require it.
 
     `selection` is the workflow's suite input: `all`, a comma-separated list of
-    routine manifest suite files, or `perf-issues-readback` (which ships its own
-    readback binary instead of the routine collectors). A suite that is not in
-    the manifest, or a driver without a known binary, raises instead of being
+    routine manifest suite files, `perf-issues-readback` (the solve/QR subset)
+    or `perf-issues-full` (the published standalone lane). A suite that is not
+    in the manifest, or a driver without a known binary, raises instead of being
     skipped.
 
     `all` is the one unfiltered selection, so it also covers the routine control
@@ -60,8 +63,8 @@ def required_binaries(selection, manifest=MANIFEST):
     binary for a backend-filtered dispatch costs a build, not a gap.
     """
     selection = (selection or 'all').strip()
-    if selection == READBACK:
-        return {PERF_ISSUES_BINARY: [READBACK]}
+    if selection in (READBACK, PERF_ISSUES_FULL):
+        return {PERF_ISSUES_BINARY: [selection]}
     if selection == THROUGHPUT:
         return {binary: [THROUGHPUT] for binary in THROUGHPUT_BINARIES}
     suites = yaml.safe_load(Path(manifest).read_text())['suites']
