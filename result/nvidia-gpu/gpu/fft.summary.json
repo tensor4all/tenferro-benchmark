@@ -2,12 +2,12 @@
   "schema_version": 1,
   "target_profile": "nvidia-gpu",
   "suite_id": "gpu/fft",
-  "timestamp": "2026-11-21T08:23:11+00:00",
-  "tenferro_commit": "ce9125d0cff4ee40841120759b5df45252c27f22",
+  "timestamp": "2026-11-26T06:29:50+00:00",
+  "tenferro_commit": "1ba9f33521691170c763dfce9b6c9bb56ca523c2",
   "hardware": {
     "gpu": "NVIDIA A100 80GB PCIe",
     "cpu": "AMD EPYC 7543 32-Core Processor",
-    "host": "7894e3c40841"
+    "host": "d73a3a75b493"
   },
   "unit": "ms",
   "rows": [
@@ -15,8 +15,8 @@
       "case": "fft_c64_n1048576",
       "group": "fft",
       "backend": "jax-cuda",
-      "median": 0.877613,
-      "iqr": 0.01852137499999995,
+      "median": 0.77256925,
+      "iqr": 0.02398650000000002,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 4
@@ -25,128 +25,128 @@
       "case": "fft_c64_n1048576",
       "group": "fft",
       "backend": "pytorch-cuda",
-      "median": 0.0995240625,
-      "iqr": 0.00032940624999999724,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 16
-    },
-    {
-      "case": "fft_c64_n1048576",
-      "group": "fft",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.13358625,
-      "iqr": 0.00040818749999999016,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 8
-    },
-    {
-      "case": "fft_c64_n1048576",
-      "group": "fft",
-      "backend": "tenferro-cuda-eager",
-      "median": 0.178057875,
-      "iqr": 0.0008612812499999845,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 16
-    },
-    {
-      "case": "ifft_c64_n1048576",
-      "group": "ifft",
-      "backend": "jax-cuda",
-      "median": 0.89562325,
-      "iqr": 0.02873762499999999,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 4
-    },
-    {
-      "case": "ifft_c64_n1048576",
-      "group": "ifft",
-      "backend": "pytorch-cuda",
-      "median": 0.110311625,
-      "iqr": 0.00042031250000000575,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 16
-    },
-    {
-      "case": "ifft_c64_n1048576",
-      "group": "ifft",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.1741196875,
-      "iqr": 0.001453156250000004,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 16
-    },
-    {
-      "case": "ifft_c64_n1048576",
-      "group": "ifft",
-      "backend": "tenferro-cuda-eager",
-      "median": 0.2160694375,
-      "iqr": 0.0017303124999999975,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 16
-    },
-    {
-      "case": "irfft_c64_n1048576",
-      "group": "irfft",
-      "backend": "jax-cuda",
-      "median": 0.92137075,
-      "iqr": 0.021715125000000057,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 4
-    },
-    {
-      "case": "irfft_c64_n1048576",
-      "group": "irfft",
-      "backend": "pytorch-cuda",
-      "median": 0.0697228125,
-      "iqr": 8.501562500000392e-05,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "irfft_c64_n1048576",
-      "group": "irfft",
-      "backend": "tenferro-cuda-direct",
-      "median": 0.11746234375,
-      "iqr": 0.0007562499999999861,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 32
-    },
-    {
-      "case": "irfft_c64_n1048576",
-      "group": "irfft",
-      "backend": "tenferro-cuda-eager",
-      "median": 0.148722,
-      "iqr": 0.0013874687500000094,
-      "status": "ok",
-      "verified": true,
-      "operations_per_sample": 16
-    },
-    {
-      "case": "rfft_f64_n1048576",
-      "group": "rfft",
-      "backend": "jax-cuda",
-      "median": 0.9062535,
-      "iqr": 0.05495525000000001,
+      "median": 0.10501,
+      "iqr": 0.0009200000000000041,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 2
     },
     {
+      "case": "fft_c64_n1048576",
+      "group": "fft",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.1316871875,
+      "iqr": 0.0005803750000000218,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 16
+    },
+    {
+      "case": "fft_c64_n1048576",
+      "group": "fft",
+      "backend": "tenferro-cuda-eager",
+      "median": 0.1630046875,
+      "iqr": 0.00042968749999997,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 16
+    },
+    {
+      "case": "ifft_c64_n1048576",
+      "group": "ifft",
+      "backend": "jax-cuda",
+      "median": 0.78629925,
+      "iqr": 0.05471012499999994,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 4
+    },
+    {
+      "case": "ifft_c64_n1048576",
+      "group": "ifft",
+      "backend": "pytorch-cuda",
+      "median": 0.1111465,
+      "iqr": 0.00019750000000000323,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 16
+    },
+    {
+      "case": "ifft_c64_n1048576",
+      "group": "ifft",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.153937875,
+      "iqr": 0.0013838125000000256,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 8
+    },
+    {
+      "case": "ifft_c64_n1048576",
+      "group": "ifft",
+      "backend": "tenferro-cuda-eager",
+      "median": 0.180882875,
+      "iqr": 0.0015674999999999994,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 8
+    },
+    {
+      "case": "irfft_c64_n1048576",
+      "group": "irfft",
+      "backend": "jax-cuda",
+      "median": 0.7914515,
+      "iqr": 0.04092137500000004,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 4
+    },
+    {
+      "case": "irfft_c64_n1048576",
+      "group": "irfft",
+      "backend": "pytorch-cuda",
+      "median": 0.06946859375,
+      "iqr": 0.00011951562499998292,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "irfft_c64_n1048576",
+      "group": "irfft",
+      "backend": "tenferro-cuda-direct",
+      "median": 0.09557521875,
+      "iqr": 0.00039203124999999395,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "irfft_c64_n1048576",
+      "group": "irfft",
+      "backend": "tenferro-cuda-eager",
+      "median": 0.11398275,
+      "iqr": 0.0004228124999999944,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 32
+    },
+    {
+      "case": "rfft_f64_n1048576",
+      "group": "rfft",
+      "backend": "jax-cuda",
+      "median": 0.79879175,
+      "iqr": 0.01943125000000001,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 4
+    },
+    {
       "case": "rfft_f64_n1048576",
       "group": "rfft",
       "backend": "pytorch-cuda",
-      "median": 0.0502081935483871,
-      "iqr": 7.38548387096763e-05,
+      "median": 0.05007816129032258,
+      "iqr": 4.243548387096452e-05,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 31
@@ -155,8 +155,8 @@
       "case": "rfft_f64_n1048576",
       "group": "rfft",
       "backend": "tenferro-cuda-direct",
-      "median": 0.07965716129032258,
-      "iqr": 0.0002622580645161299,
+      "median": 0.08545116129032257,
+      "iqr": 0.014092145161290343,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 31
@@ -165,8 +165,8 @@
       "case": "rfft_f64_n1048576",
       "group": "rfft",
       "backend": "tenferro-cuda-eager",
-      "median": 0.11175329032258065,
-      "iqr": 0.0008495322580645281,
+      "median": 0.09711829032258065,
+      "iqr": 0.0006022419354838604,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 31

@@ -2,17 +2,17 @@
 
 - Target profile: `nvidia-gpu`
 - Suite: `gpu/sparse`
-- Suite file: `/tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261121_082311/gpu_sparse.yaml`
-- Timestamp: `2026-11-21T08:23:11+00:00`
-- tenferro-rs commit: `ce9125d0cff4ee40841120759b5df45252c27f22`
+- Suite file: `/tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261126_062950/gpu_sparse.yaml`
+- Timestamp: `2026-11-26T06:29:50+00:00`
+- tenferro-rs commit: `1ba9f33521691170c763dfce9b6c9bb56ca523c2`
 - Effort: `standard`; manifest version: `2`
-- Selection and case accounting: `/tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261121_082311/selection.json` (see adjacent `case_status.json` and `report.md`; unselected rows are not covered)
+- Selection and case accounting: `/tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261126_062950/selection.json` (see adjacent `case_status.json` and `report.md`; unselected rows are not covered)
 
 ## GPU Information
 
 - Device: `cuda:0`
 - Name: `NVIDIA A100 80GB PCIe`
-- UUID: `GPU-98d8618e-77c8-160a-92f2-117e34fd43df`
+- UUID: `GPU-e0c82f3d-3a11-a28c-b42e-1c92d26527fd`
 - Memory: `80 GiB`
 - Driver version: `595.112.07`
 - CUDA version: `13.2`
@@ -52,13 +52,13 @@ Non-`ok` cells show the structured backend status.
 
 | Problem | PyTorch CUDA |
 |---|---:|
-| sparse_synthetic_64k_4m_spmm_f64_rhs1024 | 14.964 |
+| sparse_synthetic_64k_4m_spmm_f64_rhs1024 | 15.139 |
 
 ## gpu/sparse / spmv / allocating output
 
 | Problem | PyTorch CUDA |
 |---|---:|
-| sparse_synthetic_4m_64m_spmv_f64 | 2.298 |
+| sparse_synthetic_4m_64m_spmv_f64 | 2.104 |
 
 ## Sampling
 
@@ -66,8 +66,8 @@ JAX uses compiled JIT execution; compilation, planning and numerical checks are 
 
 | Problem | Backend | Ops/sample | Raw batch ms | Setup and precision |
 | --- | --- | ---: | --- | --- |
-| sparse_synthetic_4m_64m_spmv_f64 | pytorch-cuda | 1 | 2.29188, 2.29943, 2.29769, 2.29301, 2.30047, 2.29094, 2.29887 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| sparse_synthetic_64k_4m_spmm_f64_rhs1024 | pytorch-cuda | 1 | 14.9058, 14.9746, 14.9672, 14.9654, 14.9644, 14.9596, 14.9541 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| sparse_synthetic_4m_64m_spmv_f64 | pytorch-cuda | 1 | 2.10994, 2.11104, 2.10307, 2.10366, 2.10357, 2.10352, 2.10038 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| sparse_synthetic_64k_4m_spmm_f64_rhs1024 | pytorch-cuda | 1 | 15.1486, 15.1349, 15.1382, 15.1418, 15.1421, 15.1386, 15.1356 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
 
 ## Output retention bounds
 

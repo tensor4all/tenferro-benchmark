@@ -1,10 +1,10 @@
 # gpu/lstsq: CUDA public API benchmark
 
-Measured cells: **0**. Unsupported cells: **4**, including **1** numerically verified but timing-excluded cells. Unsupported cells do not count as measured coverage.
+Measured cells: **2**. Unsupported cells: **2**, including **0** numerically verified but timing-excluded cells. Unsupported cells do not count as measured coverage.
 
-Logical traffic: this run measured a plain device copy of 67108864 bytes at **1397.5 GB/s** on this device. Every record carries the logical bytes the case must move per operation and the ratio of the case's implied rate to that copy rate, in the sampling table below. Logical bytes are the declared array sizes, not device DRAM traffic: a case whose operands stay in cache moves less DRAM than its arrays suggest, so a ratio above 1 is recorded, not rejected.
+Logical traffic: this run measured a plain device copy of 67108864 bytes at **1455.1 GB/s** on this device. Every record carries the logical bytes the case must move per operation and the ratio of the case's implied rate to that copy rate, in the sampling table below. Logical bytes are the declared array sizes, not device DRAM traffic: a case whose operands stay in cache moves less DRAM than its arrays suggest, so a ratio above 1 is recorded, not rejected.
 
-Raw run: `data/results/nvidia-gpu/gpu/lstsq/20261121_082311/`.
+Raw run: `data/results/nvidia-gpu/gpu/lstsq/20261126_062950/`.
 
 Isolated public APIs and explicit unsupported timing contracts. Issue 155.
 
@@ -20,7 +20,7 @@ All measured output elements are checked against independently generated NumPy/S
 
 | Case | tenferro-cuda-direct | tenferro-cuda-eager | pytorch-cuda | jax-cuda |
 | --- | ---: | ---: | ---: | ---: |
-| lstsq_tall_f64_s256_rhs8 | unsupported | unsupported | unsupported | unsupported |
+| lstsq_tall_f64_s256_rhs8 | 1686.234 (11.967) | 1754.764 (6.422) | unsupported | unsupported |
 
 ## Sampling
 
@@ -28,8 +28,8 @@ All measured output elements are checked against independently generated NumPy/S
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | lstsq_tall_f64_s256_rhs8 | jax-cuda | — | — | — | 1097728 | unavailable | No verified single public solution-only least-squares API with the same requested outputs; native candidate APIs also return residual/rank/singular-value outputs. |
 | lstsq_tall_f64_s256_rhs8 | pytorch-cuda | — | — | — | 1097728 | unavailable | No verified single public solution-only least-squares API with the same requested outputs; native candidate APIs also return residual/rank/singular-value outputs. |
-| lstsq_tall_f64_s256_rhs8 | tenferro-cuda-direct | — | — | — | 1097728 | unavailable | Current TensorLinalgExt has no direct lstsq operation; only the public eager composite is available. |
-| lstsq_tall_f64_s256_rhs8 | tenferro-cuda-eager | — | — | — | 1097728 | unavailable | Public EagerSession lstsq invokes QR whose CUDA Q application uploads scalar operands internally; no public interface can hoist this input preparation out of standard operation timing. |
+| lstsq_tall_f64_s256_rhs8 | tenferro-cuda-direct | 2 | 15 | 3.372 | 1097728 | 0.000 | 2.477e-06 |
+| lstsq_tall_f64_s256_rhs8 | tenferro-cuda-eager | 2 | 15 | 3.510 | 1097728 | 0.000 | 2.477e-06 |
 
 ## Run metadata
 
@@ -37,28 +37,29 @@ All measured output elements are checked against independently generated NumPy/S
 schema_version: 1
 target_profile: nvidia-gpu
 suite_id: gpu/lstsq
-suite_file: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261121_082311/gpu_lstsq.yaml
-timestamp: '2026-11-21T08:23:11+00:00'
+suite_file: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261126_062950/gpu_lstsq.yaml
+timestamp: '2026-11-26T06:29:50+00:00'
 tenferro_rs:
   path: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/extern/tenferro-rs
-  commit: ce9125d0cff4ee40841120759b5df45252c27f22
+  commit: 1ba9f33521691170c763dfce9b6c9bb56ca523c2
   dirty: false
   features:
   - cuda
   resolved_path: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/extern/tenferro-rs
 harness:
   path: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark
-  commit: a741cd656e4d51e77d8369154bf789e5f0147f5c
+  commit: cc9867403ef65b20357ed79bc78ec5fc2864c4a9
   dirty: false
 resolved_deps:
   strided-perm:
   - 0.8.0
-  - 0.12.0
+  - 0.15.1
   strided-view:
   - 0.7.1
+  - 0.8.1
   threadteam:
   - 0.1.0
-  - 0.5.1
+  - 0.6.1
 host:
   cpu: AMD EPYC 7543 32-Core Processor
   logical_cpus: 128
@@ -164,7 +165,7 @@ build:
     target_cpu: null
 environment:
   container: devcontainer
-  hostname: 7894e3c40841
+  hostname: d73a3a75b493
   os: Linux-6.8.0-138-generic-x86_64-with-glibc2.39
   arch: x86_64
   cpu: x86_64
@@ -204,7 +205,7 @@ environment:
     CUDA_HOME: /opt/tenferro-benchmark-ci/cuda
     CUDA_PATH: /opt/tenferro-benchmark-ci/cuda
     TENFERRO_CUTENSOR_PATH: /opt/tenferro-benchmark-ci/cutensor/lib/libcutensor.so.2
-    GPU_RUNTIME_SHA256: 3d603f753ad72a63b928ce8e1b63847b8a21f94f0919276124993a6548126185
+    GPU_RUNTIME_SHA256: a261fcdef53ecfd3885b6d565dc834faef59287ce2da88c3d6754be96741f84d
     UV_PROJECT_ENVIRONMENT: /opt/tenferro-benchmark-ci/venv
     BENCH_RUNS: '15'
     BENCH_WARMUPS: '3'
@@ -271,7 +272,7 @@ julia:
 cuda:
   device_ordinal: 0
   device_name: NVIDIA A100 80GB PCIe
-  device_uuid: GPU-98d8618e-77c8-160a-92f2-117e34fd43df
+  device_uuid: GPU-e0c82f3d-3a11-a28c-b42e-1c92d26527fd
   device_memory_bytes: 85899345920
   driver_version: 595.112.07
   runtime_version: '12.8'
@@ -295,31 +296,31 @@ gpu_memory_calibration:
   traffic_model: one read plus one write of buffer_bytes per copy
   warmups: 3
   sample_ms:
-  - 0.094591
-  - 0.09384
-  - 0.097431
-  - 0.096361
-  - 0.094361
-  - 0.096931
-  - 0.096061
-  - 0.095291
-  - 0.097421
-  - 0.096481
-  - 0.09491
-  - 0.095731
-  - 0.096041
-  - 0.094441
-  - 0.096351
-  median_ms: 0.096041
-  bytes_per_second: 1397504482460.6157
+  - 0.09224
+  - 0.09203
+  - 0.092511
+  - 0.09237
+  - 0.09173
+  - 0.09231
+  - 0.09284
+  - 0.093141
+  - 0.09199
+  - 0.09077
+  - 0.09264
+  - 0.09181
+  - 0.091741
+  - 0.09227
+  - 0.09146
+  median_ms: 0.09224
+  bytes_per_second: 1455092454466.609
   torch_version: 2.11.0+cu128
   cuda_version: '12.8'
-  timestamp: '2026-11-21T08:32:36.495558+00:00'
+  timestamp: '2026-11-26T06:41:21.736171+00:00'
 gpu_assignment:
   role: benchmark
   physical_device_index: 0
-  device_uuid: GPU-98d8618e-77c8-160a-92f2-117e34fd43df
-  cuda_visible_devices: GPU-98d8618e-77c8-160a-92f2-117e34fd43df
+  device_uuid: GPU-e0c82f3d-3a11-a28c-b42e-1c92d26527fd
+  cuda_visible_devices: GPU-e0c82f3d-3a11-a28c-b42e-1c92d26527fd
   process_device_ordinal: 0
   verification_only: false
 collection:
@@ -331,21 +332,21 @@ collection:
   sha256:
     .devcontainer/cuda/devcontainer.json: 402f3763533ea1531d0e400193395302213fd1b151a42baaeaebeafca3acabcd
     .devcontainer/cuda/Dockerfile: 6eff822595fa44f53a6fd9eebe0f4e3cc9e28362d9cfa8cac977a21b10a823f2
-    src/bin/benchmark_gpu_public_api.rs: a5ed803c89dc3085b18ed3220a6d484facf179c9b55fe13042beb19d83090196
+    src/bin/benchmark_gpu_public_api.rs: f807adb35a2c03383fde11227a47dffbf0ec5cc08c45ce298f7d9aa6341bbb67
     src/bin/benchmark_gpu_public_api/lifetime.rs: 34be366f56aac88f5f3b86ade8018a15dad2bca85cea74f56cb2fe121917d0a9
-    src/bin/benchmark_gpu_public_api/linalg.rs: 3d5bedcc3620f75cab2687fdf49210df324021d043b23aec6e169642ceff15ba
+    src/bin/benchmark_gpu_public_api/linalg.rs: e8121a793ab45e565d150633b7e9a473b4d4f2c457ae36baed344f2c809fcad5
     src/bin/benchmark_gpu_public_api/multi.rs: 950cb1b3c1a7cca37665b58e3de074bd906dafb8c84b17a51c27ce797a73afa8
-    src/bin/benchmark_gpu_public_api/plan.rs: 016e752c59edefc3ded1405c36325e8680736860cb65954919ea4cf0f3eed061
-    src/bin/benchmark_gpu_public_api/read_layout.rs: fc42e2160094ba5f9c7dd6facb5667a76e10b73f971ef9facfb1f64723e42467
-    src/bin/benchmark_gpu_public_api/reuse.rs: e9b588e54fd067e570b557a4b06e40f0b9b432d665f50b64ee7f2ff7f461754b
+    src/bin/benchmark_gpu_public_api/plan.rs: 108edbad472e42b1a734552826d6d233085b581a3484cc4444471435160a6fd8
+    src/bin/benchmark_gpu_public_api/read_layout.rs: f51757a34c90ce68e6fae0994df74169ed0438022031465349c7379c7b2c85e0
+    src/bin/benchmark_gpu_public_api/reuse.rs: 53bee3baaeba93f4e1ee57d0d1b9553c189edd51d1940ea630ad0dbaa05b11eb
     src/bin/benchmark_gpu_public_api/runtime_ops.rs: 88038508963fbc13303fb54b3898808e4303131321cabedb9f38255941ead438
     src/bin/benchmark_gpu_public_api/state.rs: e1cc2781ce7392154f32cc19372c9fc41ae29765aedc544c7ae7bf02f873c12b
-    src/bin/benchmark_gpu_public_api/structural.rs: 10850458a640d11e79262c215072482ee463bc4ca0604f40d82ae56f345f6564
+    src/bin/benchmark_gpu_public_api/structural.rs: 09b3cbf0dc0579978344c1aa738f6367112a0c25236924441f690a59de3fb80e
     /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/scripts/benchmark_gpu_public_api.py: d1ff68f86496d991bcbc730138fe6e3076001b3f23cc1a94c44b96f6857cb8ed
     /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/scripts/gpu_public_api_ops.py: e88823db3f4a1fe43dc13c4743c9d78ece6af76a968724091af318dd8d7f2528
     scripts/run_gpu_public_api.sh: 7995bcf409258185e07210969a738896f64860b67df251fcd1100d11128a5431
-    data/results/nvidia-gpu/gpu/lstsq/20261121_082311/fixtures/manifest.json: 9617042f36a65638696d203ef2d65058f19f6f6f79403698e3d4e76a6d6b300b
-    target/release/benchmark_gpu_public_api: c67dd59529f9c6644708d8bc0a5a5fabc82f29fff70f5532c20f6a3066720813
+    data/results/nvidia-gpu/gpu/lstsq/20261126_062950/fixtures/manifest.json: 159814706a4c363e77a6523e3609f9fb8e291bd5b2c4ad9c00efed1e535fbd15
+    target/release/benchmark_gpu_public_api: 3ff693b2ae7411a94a3e3337550156543b79bbe33a2720b00f7fb8181bdf1fd4
   reference_numpy_version: 2.4.2
   measurement_cpu:
     policy: 'disabled (GPU_BENCH_CPU_SELECT unset): arms run on the allocation unpinned'
@@ -355,27 +356,27 @@ collection:
         status: disabled
         reason: 'GPU_BENCH_CPU_SELECT is not 1: the arm runs on the allocation unpinned'
         exit_code: 0
-        finished_at: '2026-11-21T08:32:45Z'
+        finished_at: '2026-11-26T06:41:32Z'
       pytorch-cuda:
         arm: pytorch-cuda
         status: disabled
         reason: 'GPU_BENCH_CPU_SELECT is not 1: the arm runs on the allocation unpinned'
         exit_code: 0
-        finished_at: '2026-11-21T08:32:43Z'
+        finished_at: '2026-11-26T06:41:30Z'
       tenferro-cuda-direct:
         arm: tenferro-cuda-direct
         status: disabled
         reason: 'GPU_BENCH_CPU_SELECT is not 1: the arm runs on the allocation unpinned'
         exit_code: 0
-        finished_at: '2026-11-21T08:32:38Z'
+        finished_at: '2026-11-26T06:41:25Z'
       tenferro-cuda-eager:
         arm: tenferro-cuda-eager
         status: disabled
         reason: 'GPU_BENCH_CPU_SELECT is not 1: the arm runs on the allocation unpinned'
         exit_code: 0
-        finished_at: '2026-11-21T08:32:41Z'
+        finished_at: '2026-11-26T06:41:28Z'
   compile:
-    case_wall_seconds: 2.056
+    case_wall_seconds: 3.987
     compiling_processes: 0
     modules_compiled: 0
     compile_time_ms: null
@@ -383,3 +384,12 @@ collection:
       counts the NVRTC modules and the untimed wall is the case wall'
     untimed_wall_seconds: 0.0
 ```
+
+## Untimed work over the recorded budget
+
+Each row records the wall clock it spent outside its timed region. These cases spent more than the recorded budget ratio (0.2) there. The threshold has no measured basis, so this is a recorded warning: it does not change a cell, its acceptance or the exit status of the run.
+
+| Case | Backend | Warning |
+| --- | --- | --- |
+| lstsq_tall_f64_s256_rhs8 | tenferro-cuda-direct | lstsq_tall_f64_s256_rhs8 untimed 1987.4 ms is 3922% of the 50.7 ms timed region (budget 20%) |
+| lstsq_tall_f64_s256_rhs8 | tenferro-cuda-eager | lstsq_tall_f64_s256_rhs8 untimed 1896.5 ms is 3604% of the 52.6 ms timed region (budget 20%) |

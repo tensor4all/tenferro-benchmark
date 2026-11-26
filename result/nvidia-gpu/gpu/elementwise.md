@@ -2,17 +2,17 @@
 
 - Target profile: `nvidia-gpu`
 - Suite: `gpu/elementwise`
-- Suite file: `/tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261121_082311/gpu_elementwise.yaml`
-- Timestamp: `2026-11-21T08:23:11+00:00`
-- tenferro-rs commit: `ce9125d0cff4ee40841120759b5df45252c27f22`
+- Suite file: `/tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261126_062950/gpu_elementwise.yaml`
+- Timestamp: `2026-11-26T06:29:50+00:00`
+- tenferro-rs commit: `1ba9f33521691170c763dfce9b6c9bb56ca523c2`
 - Effort: `standard`; manifest version: `2`
-- Selection and case accounting: `/tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261121_082311/selection.json` (see adjacent `case_status.json` and `report.md`; unselected rows are not covered)
+- Selection and case accounting: `/tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261126_062950/selection.json` (see adjacent `case_status.json` and `report.md`; unselected rows are not covered)
 
 ## GPU Information
 
 - Device: `cuda:0`
 - Name: `NVIDIA A100 80GB PCIe`
-- UUID: `GPU-98d8618e-77c8-160a-92f2-117e34fd43df`
+- UUID: `GPU-e0c82f3d-3a11-a28c-b42e-1c92d26527fd`
 - Memory: `80 GiB`
 - Driver version: `595.112.07`
 - CUDA version: `13.2`
@@ -52,8 +52,8 @@ Non-`ok` cells show the structured backend status.
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | JAX CUDA JIT |
 |---|---:|---:|---:|---:|
-| elementwise_chain_f64_1k | 0.183 | 0.651 | 0.129 | 0.095 |
-| elementwise_chain_f64_1m | 0.343 | 1.001 | 0.316 | 0.104 |
+| elementwise_chain_f64_1k | 0.172 | 0.151 | 0.140 | 0.087 |
+| elementwise_chain_f64_1m | 0.350 | 0.331 | 0.302 | 0.085 |
 
 ## Sampling
 
@@ -61,11 +61,11 @@ JAX uses compiled JIT execution; compilation, planning and numerical checks are 
 
 | Problem | Backend | Ops/sample | Raw batch ms | Setup and precision |
 | --- | --- | ---: | --- | --- |
-| elementwise_chain_f64_1k | tenferro-cuda-trace | 16 | 2.90381, 2.97112, 2.92503, 2.96847, 2.934, 2.97787, 2.90475 | one caller-held CUDA engine for every sample; each Runtime::run call pays its own device-completion barrier inside the batch interval; inputs, plans and compilation outside clocks; native declared dtype; no AD recording |
-| elementwise_chain_f64_1m | tenferro-cuda-trace | 4 | 1.37874, 1.37039, 1.37034, 1.3768, 1.37133, 1.36859, 1.36957 | one caller-held CUDA engine for every sample; each Runtime::run call pays its own device-completion barrier inside the batch interval; inputs, plans and compilation outside clocks; native declared dtype; no AD recording |
-| elementwise_chain_f64_1k | tenferro-cuda-eager | 4 | 2.62355, 2.5959, 2.62002, 2.60338, 2.6089, 2.60065, 2.59281 | one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks; native declared dtype; no AD recording |
-| elementwise_chain_f64_1m | tenferro-cuda-eager | 2 | 2.01303, 2.03852, 2.01999, 1.98759, 2.00134, 2.00169, 1.99732 | one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks; native declared dtype; no AD recording |
-| elementwise_chain_f64_1k | pytorch-cuda | 16 | 2.05398, 2.07268, 2.05192, 2.04188, 2.06751, 2.08438, 2.08783 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| elementwise_chain_f64_1m | pytorch-cuda | 8 | 2.51609, 2.54098, 2.52935, 2.52497, 2.5323, 2.52788, 2.52933 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| elementwise_chain_f64_1k | jax-cuda | 16 | 1.34648, 1.44718, 1.52439, 1.52491, 1.8384, 1.96932, 1.94472 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| elementwise_chain_f64_1m | jax-cuda | 16 | 1.66949, 1.64654, 1.69285, 1.73934, 1.6587, 1.60397, 1.76678 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| elementwise_chain_f64_1k | tenferro-cuda-trace | 16 | 2.73315, 2.74791, 2.73804, 2.74996, 2.71782, 2.7449, 2.74962 | one caller-held CUDA engine for every sample; each Runtime::run call pays its own device-completion barrier inside the batch interval; inputs, plans and compilation outside clocks; native declared dtype; no AD recording |
+| elementwise_chain_f64_1m | tenferro-cuda-trace | 8 | 2.80606, 2.80144, 2.79557, 2.80258, 2.79916, 2.79855, 2.80465 | one caller-held CUDA engine for every sample; each Runtime::run call pays its own device-completion barrier inside the batch interval; inputs, plans and compilation outside clocks; native declared dtype; no AD recording |
+| elementwise_chain_f64_1k | tenferro-cuda-eager | 16 | 2.36309, 2.38253, 2.41717, 2.44867, 2.60181, 2.39781, 2.42053 | one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks; native declared dtype; no AD recording |
+| elementwise_chain_f64_1m | tenferro-cuda-eager | 8 | 2.6512, 2.64643, 2.65458, 2.64031, 2.64714, 2.6538, 2.64425 | one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks; native declared dtype; no AD recording |
+| elementwise_chain_f64_1k | pytorch-cuda | 16 | 2.16508, 2.25437, 2.25069, 2.19938, 2.25927, 2.22478, 2.23921 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| elementwise_chain_f64_1m | pytorch-cuda | 8 | 2.41591, 2.42023, 2.41669, 2.41909, 2.41663, 2.41695, 2.41331 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| elementwise_chain_f64_1k | jax-cuda | 32 | 2.78106, 2.78858, 2.77178, 2.72518, 2.73702, 2.81895, 2.75908 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| elementwise_chain_f64_1m | jax-cuda | 16 | 1.36245, 1.36758, 1.35542, 1.36707, 1.36245, 1.35583, 1.35658 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
