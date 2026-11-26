@@ -2,11 +2,12 @@
   "schema_version": 1,
   "target_profile": "nvidia-gpu",
   "suite_id": "gpu/perf_issues",
-  "timestamp": "2026-10-27T01:23:06Z",
-  "tenferro_commit": "234a51369c257ffd311e9e547b75b394b4adb5dc",
+  "timestamp": "2026-11-26T10:47:10Z",
+  "tenferro_commit": "1ba9f33521691170c763dfce9b6c9bb56ca523c2",
   "hardware": {
-    "gpu": "NVIDIA A100 80GB PCIe",
-    "host": "2da32d4129f4",
+    "gpu": "NVIDIA A100-SXM4-80GB",
+    "cpu": "AMD EPYC 7742 64-Core Processor",
+    "host": "590b08b58fca",
     "threads": [
       1
     ]
@@ -14,148 +15,1779 @@
   "unit": "ns/op",
   "rows": [
     {
-      "case": "qr_readback_latency_f64_n2",
-      "group": "steady_state",
+      "case": "alloc_zero_f64_alloc-zero-per-callback_0el",
+      "group": "threads=1 / session_entry_diagnostic",
       "backend": "tenferro-cuda",
-      "median": 278204.75,
-      "iqr": 4781.5,
+      "median": 910.94580078125,
+      "iqr": 6.91259765625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "alloc_zero_f64_alloc-zero-per-callback_16el",
+      "group": "threads=1 / session_entry_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 3771.625,
+      "iqr": 23.5888671875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "alloc_zero_f64_alloc-zero-per-callback_2097152el",
+      "group": "threads=1 / session_entry_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 11384.765625,
+      "iqr": 161.0078125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "alloc_zero_f64_alloc-zero-per-callback_32768el",
+      "group": "threads=1 / session_entry_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 4798.8125,
+      "iqr": 33.48046875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "alloc_zero_f64_alloc-zero-per-callback_512el",
+      "group": "threads=1 / session_entry_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 4173.20703125,
+      "iqr": 15.703125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "alloc_zero_f64_alloc-zero-within-callback_0el",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 886.6904296875,
+      "iqr": 24.1964111328125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "alloc_zero_f64_alloc-zero-within-callback_16el",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 3272.265625,
+      "iqr": 52.419921875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "alloc_zero_f64_alloc-zero-within-callback_2097152el",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 11511.5625,
+      "iqr": 187.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "alloc_zero_f64_alloc-zero-within-callback_32768el",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 4467.556640625,
+      "iqr": 54.771484375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "alloc_zero_f64_alloc-zero-within-callback_512el",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 3887.859375,
+      "iqr": 10.078125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "alloc_zero_f64_host-zero-upload_0el",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 976.01318359375,
+      "iqr": 2.6014404296875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "alloc_zero_f64_host-zero-upload_16el",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 8965.640625,
+      "iqr": 96.23828125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "alloc_zero_f64_host-zero-upload_2097152el",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 1729182.5,
+      "iqr": 36827.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "alloc_zero_f64_host-zero-upload_32768el",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 20054.375,
+      "iqr": 4204.71875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "alloc_zero_f64_host-zero-upload_512el",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 8645.02734375,
+      "iqr": 163.181640625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "batched_qr_f64_batched_n32_b16",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 2262902.0,
+      "iqr": 1168.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "batched_qr_f64_batched_n32_b256",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 35227730.0,
+      "iqr": 90181.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "batched_qr_f64_loop_n32_b16",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 2913138.0,
+      "iqr": 4002.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "batched_qr_f64_loop_n32_b256",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 47083509.0,
+      "iqr": 248598.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "batched_svd_f64_batched_n32_b16",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 14798041.0,
+      "iqr": 50711.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "batched_svd_f64_batched_n32_b256",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 231721860.0,
+      "iqr": 348928.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "batched_svd_f64_loop_n32_b16",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 15990710.0,
+      "iqr": 211427.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "batched_svd_f64_loop_n32_b256",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 253511313.0,
+      "iqr": 450546.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "borrowed_input_gemm_f64_n32_owned-input",
+      "group": "threads=1 / issue_workflow_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 24877.0,
+      "iqr": 526.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "borrowed_input_gemm_f64_n32_view-input",
+      "group": "threads=1 / issue_workflow_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 37431.0,
+      "iqr": 1112.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "borrowed_input_gemm_f64_n8_owned-input",
+      "group": "threads=1 / issue_workflow_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 26871.0,
+      "iqr": 1238.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "borrowed_input_gemm_f64_n8_view-input",
+      "group": "threads=1 / issue_workflow_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 37141.0,
+      "iqr": 2349.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "cholesky_readback_latency_f32_n512",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 274355.25,
+      "iqr": 499.625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "cholesky_readback_latency_f32_n512_eager",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda-eager",
+      "median": 304147.0,
+      "iqr": 4404.6875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "cholesky_readback_latency_f32_n512_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cuda",
+      "median": 276768.75,
+      "iqr": 679.375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "cholesky_readback_latency_f64_n512",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 333546.625,
+      "iqr": 797.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "cholesky_readback_latency_f64_n512_eager",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda-eager",
+      "median": 355606.0,
+      "iqr": 1822.875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "cholesky_readback_latency_f64_n512_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cuda",
+      "median": 336618.75,
+      "iqr": 1281.875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "contraction_plan_churn_f64_below-capacity-varying-workspace",
+      "group": "threads=1 / issue_workflow_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 53392.0,
+      "iqr": 485.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "contraction_plan_churn_f64_distinct-plans",
+      "group": "threads=1 / issue_workflow_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 60886.0,
+      "iqr": 496.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "contraction_plan_churn_f64_repeated-plan",
+      "group": "threads=1 / issue_workflow_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 30188.0,
+      "iqr": 1036.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "dot_general_destination_f64_borrowed-dst",
+      "group": "threads=1 / issue_workflow_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 65024.0,
+      "iqr": 3617.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "dot_general_destination_f64_owned-dst",
+      "group": "threads=1 / issue_workflow_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 42781.0,
+      "iqr": 240.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_op_f32_add_decode_eager-per-call",
+      "group": "threads=1 / session_entry_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 7429.18359375,
+      "iqr": 75.8662109375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_op_f32_add_decode_eager-session",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 7158.0625,
+      "iqr": 202.4951171875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_op_f32_add_decode_eager-session-streaming",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 8116.09375,
+      "iqr": 33.677734375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_op_f32_add_decode_launch-only-floor",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 4175.537109375,
+      "iqr": 59.791015625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_op_f32_dot_general_decode_eager-per-call",
+      "group": "threads=1 / session_entry_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 19661.046875,
+      "iqr": 99.7578125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_op_f32_dot_general_decode_eager-session",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 20321.2890625,
+      "iqr": 1711.578125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_op_f32_dot_general_decode_eager-session-streaming",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 21450.7734375,
+      "iqr": 151.97265625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eigh_batched_c64_n128_auto",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 3305594.0,
+      "iqr": 28229.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eigh_batched_c64_n128_divide-and-conquer",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 3233016.0,
+      "iqr": 6552.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eigh_batched_c64_n128_jacobi",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 49451365.0,
+      "iqr": 154609.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eigh_batched_c64_n16_auto",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 305330.5,
+      "iqr": 47039.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eigh_batched_c64_n16_divide-and-conquer",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 309002.5,
+      "iqr": 4699.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eigh_batched_c64_n16_jacobi",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 201016.5,
+      "iqr": 1457.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eigh_batched_c64_n32_auto",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 460410.0,
+      "iqr": 227029.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eigh_batched_c64_n32_divide-and-conquer",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 814814.0,
+      "iqr": 578820.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eigh_batched_c64_n32_jacobi",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 563593.75,
+      "iqr": 1076.875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eigh_batched_f64_n128_auto",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 5655927.0,
+      "iqr": 6552857.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eigh_batched_f64_n128_divide-and-conquer",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 3254737.0,
+      "iqr": 3252638.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eigh_batched_f64_n128_jacobi",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 20167458.0,
+      "iqr": 12048.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eigh_batched_f64_n16_auto",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 258575.25,
+      "iqr": 1176.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eigh_batched_f64_n16_divide-and-conquer",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 264142.0,
+      "iqr": 4345.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eigh_batched_f64_n16_jacobi",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 143423.25,
+      "iqr": 872.90625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eigh_batched_f64_n32_auto",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 397917.625,
+      "iqr": 2059.4375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eigh_batched_f64_n32_divide-and-conquer",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 403763.0,
+      "iqr": 45797.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eigh_batched_f64_n32_jacobi",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 324578.25,
+      "iqr": 1744.625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "first_call_transpose_copy-into_f64_layouts_r2-12_c5-7",
+      "group": "threads=1 / first_call_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": null,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "first_call_transpose_to-contiguous_f64_layouts_r2-12_c5-7",
+      "group": "threads=1 / first_call_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": null,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gather_embedding_f32_vocab248320_cudarc-row-copies",
+      "group": "threads=1 / steady_state",
+      "backend": "cudarc",
+      "median": 37889.84375,
+      "iqr": 894.984375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gather_embedding_f32_vocab248320_eager-gather",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 11712.421875,
+      "iqr": 119.228515625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gather_embedding_f32_vocab65536_cudarc-row-copies",
+      "group": "threads=1 / steady_state",
+      "backend": "cudarc",
+      "median": 37666.453125,
+      "iqr": 601.375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gather_embedding_f32_vocab65536_eager-gather",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 12203.31640625,
+      "iqr": 328.49609375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gather_embedding_f32_vocab8192_cudarc-row-copies",
+      "group": "threads=1 / steady_state",
+      "backend": "cudarc",
+      "median": 39109.8125,
+      "iqr": 452.5859375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gather_embedding_f32_vocab8192_eager-gather",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 12075.65625,
+      "iqr": 73.126953125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "hadamard_f32_1024x1024_dot-general",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 14626545.0,
+      "iqr": 30563.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "hadamard_f32_1024x1024_multiply",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 7495.34375,
+      "iqr": 27.71875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "pool_retention_f64_alloc-free",
+      "group": "threads=1 / state_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": null,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "pool_retention_f64_driver-alloc-after-free",
+      "group": "threads=1 / state_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": null,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "pool_retention_f64_runtime-recreate",
+      "group": "threads=1 / state_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": null,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "prepared_dot_general_f32_decode_len8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda-trace",
+      "median": 38302.046875,
+      "iqr": 359.578125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "prepared_dot_general_f32_decode_len8_eager-session",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda-eager",
+      "median": 19560.0,
+      "iqr": 239.4375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "prepared_dot_general_f32_decode_len8_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cuda",
+      "median": 15784.3828125,
+      "iqr": 10.6015625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "qr_live_buffers_f64_n32_live1024",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 184535.8125,
+      "iqr": 4722.78125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "qr_live_buffers_f64_n32_live16",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 182202.0,
+      "iqr": 7209.9375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "qr_live_buffers_f64_n32_live256",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 181658.4375,
+      "iqr": 286.15625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "qr_readback_latency_f64_n2",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 126739.6875,
+      "iqr": 624.9375,
       "status": "ok",
       "verified": true
     },
     {
       "case": "qr_readback_latency_f64_n2_pytorch",
-      "group": "steady_state",
+      "group": "threads=1 / steady_state",
       "backend": "pytorch-cuda",
-      "median": 139361.625,
-      "iqr": 898.9375,
+      "median": 101606.9375,
+      "iqr": 401.546875,
       "status": "ok",
       "verified": true
     },
     {
       "case": "qr_readback_latency_f64_n32",
-      "group": "steady_state",
+      "group": "threads=1 / steady_state",
       "backend": "tenferro-cuda",
-      "median": 282210.0,
-      "iqr": 12842.4375,
+      "median": 186663.0,
+      "iqr": 941.1875,
       "status": "ok",
       "verified": true
     },
     {
       "case": "qr_readback_latency_f64_n32_pytorch",
-      "group": "steady_state",
+      "group": "threads=1 / steady_state",
       "backend": "pytorch-cuda",
-      "median": 147410.5625,
-      "iqr": 179.71875,
+      "median": 148745.25,
+      "iqr": 81.40625,
       "status": "ok",
       "verified": true
     },
     {
       "case": "qr_readback_latency_f64_n4",
-      "group": "steady_state",
+      "group": "threads=1 / steady_state",
       "backend": "tenferro-cuda",
-      "median": 279392.0,
-      "iqr": 19531.75,
+      "median": 123670.75,
+      "iqr": 213.5625,
       "status": "ok",
       "verified": true
     },
     {
       "case": "qr_readback_latency_f64_n4_pytorch",
-      "group": "steady_state",
+      "group": "threads=1 / steady_state",
       "backend": "pytorch-cuda",
-      "median": 90128.78125,
-      "iqr": 7731.5,
+      "median": 102141.6875,
+      "iqr": 923.03125,
       "status": "ok",
       "verified": true
     },
     {
       "case": "qr_readback_latency_f64_n8",
-      "group": "steady_state",
+      "group": "threads=1 / steady_state",
       "backend": "tenferro-cuda",
-      "median": 278828.625,
-      "iqr": 13217.5,
+      "median": 125923.125,
+      "iqr": 225.78125,
       "status": "ok",
       "verified": true
     },
     {
       "case": "qr_readback_latency_f64_n8_pytorch",
-      "group": "steady_state",
+      "group": "threads=1 / steady_state",
       "backend": "pytorch-cuda",
-      "median": 86633.125,
-      "iqr": 1144.515625,
+      "median": 102168.625,
+      "iqr": 699.453125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "raw_scope_entry_f64_empty-behind-queued-gemm",
+      "group": "threads=1 / session_entry_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 255.5,
+      "iqr": 5.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "raw_scope_entry_f64_empty-idle",
+      "group": "threads=1 / session_entry_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 230.15863037109375,
+      "iqr": 2.277252197265625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "raw_scope_entry_f64_sync-behind-queued-gemm",
+      "group": "threads=1 / session_entry_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 31069154.0,
+      "iqr": 9307.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reshape_constant_f32_64M_constant",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 386442.25,
+      "iqr": 155.125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reshape_constant_f32_64M_op-output",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 496133.25,
+      "iqr": 2296.875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "shape_stream_f64_n16_capacity-thrash_counters",
+      "group": "threads=1 / counter_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": null,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "shape_stream_f64_n16_capacity-thrash_latency",
+      "group": "threads=1 / shape_stream_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 3279845.0,
+      "iqr": 15445.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "shape_stream_f64_n16_equal-shape-strides_counters",
+      "group": "threads=1 / counter_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": null,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "shape_stream_f64_n16_equal-shape-strides_latency",
+      "group": "threads=1 / shape_stream_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 683549.0,
+      "iqr": 22643.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "shape_stream_f64_n16_fixed-warm_counters",
+      "group": "threads=1 / counter_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": null,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "shape_stream_f64_n16_fixed-warm_latency",
+      "group": "threads=1 / shape_stream_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 415590.0,
+      "iqr": 10936.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "shape_stream_f64_n16_fresh_counters",
+      "group": "threads=1 / counter_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": null,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "shape_stream_f64_n16_fresh_latency",
+      "group": "threads=1 / shape_stream_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 134576.0,
+      "iqr": 7388.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "shape_stream_f64_n16_mixed-warm_counters",
+      "group": "threads=1 / counter_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": null,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "shape_stream_f64_n16_mixed-warm_latency",
+      "group": "threads=1 / shape_stream_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 420039.0,
+      "iqr": 5189.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "shape_stream_f64_n64_capacity-thrash_counters",
+      "group": "threads=1 / counter_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": null,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "shape_stream_f64_n64_capacity-thrash_latency",
+      "group": "threads=1 / shape_stream_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 3399212.0,
+      "iqr": 170959.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "shape_stream_f64_n64_equal-shape-strides_counters",
+      "group": "threads=1 / counter_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": null,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "shape_stream_f64_n64_equal-shape-strides_latency",
+      "group": "threads=1 / shape_stream_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 637382.0,
+      "iqr": 5876.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "shape_stream_f64_n64_fixed-warm_counters",
+      "group": "threads=1 / counter_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": null,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "shape_stream_f64_n64_fixed-warm_latency",
+      "group": "threads=1 / shape_stream_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 426871.0,
+      "iqr": 8190.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "shape_stream_f64_n64_fresh_counters",
+      "group": "threads=1 / counter_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": null,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "shape_stream_f64_n64_fresh_latency",
+      "group": "threads=1 / shape_stream_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 127903.0,
+      "iqr": 3421.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "shape_stream_f64_n64_mixed-warm_counters",
+      "group": "threads=1 / counter_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": null,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "shape_stream_f64_n64_mixed-warm_latency",
+      "group": "threads=1 / shape_stream_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 424978.0,
+      "iqr": 9202.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_blocks_gemm_f64_batched_n16_count256",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 14658.3359375,
+      "iqr": 57.84375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_blocks_gemm_f64_batched_n32_count256",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 14255.9296875,
+      "iqr": 51.5078125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_blocks_gemm_f64_batched_n64_count256",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 34067.25,
+      "iqr": 717.625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_blocks_gemm_f64_batched_n8_count256",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 16943.7734375,
+      "iqr": 12.5625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_blocks_gemm_f64_loop_n16_count256",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 3345370.0,
+      "iqr": 23600.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_blocks_gemm_f64_loop_n32_count256",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 3537094.0,
+      "iqr": 9949.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_blocks_gemm_f64_loop_n64_count256",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 4233669.0,
+      "iqr": 7284.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_blocks_gemm_f64_loop_n8_count256",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 3244408.0,
+      "iqr": 36153.0,
       "status": "ok",
       "verified": true
     },
     {
       "case": "solve_readback_latency_f64_n2",
-      "group": "steady_state",
+      "group": "threads=1 / steady_state",
       "backend": "tenferro-cuda",
-      "median": 434053.75,
-      "iqr": 13552.0,
+      "median": 125007.625,
+      "iqr": 325.9375,
       "status": "ok",
       "verified": true
     },
     {
       "case": "solve_readback_latency_f64_n2_pytorch",
-      "group": "steady_state",
+      "group": "threads=1 / steady_state",
       "backend": "pytorch-cuda",
-      "median": 112034.4375,
-      "iqr": 1667.828125,
+      "median": 124089.625,
+      "iqr": 260.46875,
       "status": "ok",
       "verified": true
     },
     {
       "case": "solve_readback_latency_f64_n32",
-      "group": "steady_state",
+      "group": "threads=1 / steady_state",
       "backend": "tenferro-cuda",
-      "median": 277950.5,
-      "iqr": 4195.5,
+      "median": 140066.875,
+      "iqr": 361.3125,
       "status": "ok",
       "verified": true
     },
     {
       "case": "solve_readback_latency_f64_n32_pytorch",
-      "group": "steady_state",
+      "group": "threads=1 / steady_state",
       "backend": "pytorch-cuda",
-      "median": 141797.5,
-      "iqr": 883.5625,
+      "median": 145774.0625,
+      "iqr": 624.625,
       "status": "ok",
       "verified": true
     },
     {
       "case": "solve_readback_latency_f64_n4",
-      "group": "steady_state",
+      "group": "threads=1 / steady_state",
       "backend": "tenferro-cuda",
-      "median": 278188.5,
-      "iqr": 4931.8125,
+      "median": 123491.0,
+      "iqr": 368.875,
       "status": "ok",
       "verified": true
     },
     {
       "case": "solve_readback_latency_f64_n4_pytorch",
-      "group": "steady_state",
+      "group": "threads=1 / steady_state",
       "backend": "pytorch-cuda",
-      "median": 112821.625,
-      "iqr": 1848.21875,
+      "median": 126661.4375,
+      "iqr": 1382.28125,
       "status": "ok",
       "verified": true
     },
     {
       "case": "solve_readback_latency_f64_n8",
-      "group": "steady_state",
+      "group": "threads=1 / steady_state",
       "backend": "tenferro-cuda",
-      "median": 257817.625,
-      "iqr": 11521.625,
+      "median": 125343.9375,
+      "iqr": 731.65625,
       "status": "ok",
       "verified": true
     },
     {
       "case": "solve_readback_latency_f64_n8_pytorch",
-      "group": "steady_state",
+      "group": "threads=1 / steady_state",
       "backend": "pytorch-cuda",
-      "median": 112420.5,
-      "iqr": 1371.03125,
+      "median": 126500.5,
+      "iqr": 612.40625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "standard_batched_matmul_f64_b16_32_cublas",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 13666.2890625,
+      "iqr": 124.41015625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "standard_batched_matmul_f64_b16_32_cublas_batch-outer",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 21248.6796875,
+      "iqr": 70.13671875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "standard_batched_matmul_f64_b16_32_cublas_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cuda",
+      "median": 12113.5703125,
+      "iqr": 204.171875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "svd_driver_c64_n1024_auto",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 388860037.0,
+      "iqr": 457259.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "svd_driver_c64_n1024_jacobi",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 387975376.0,
+      "iqr": 287441.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "svd_driver_c64_n1024_polar",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 61655104.0,
+      "iqr": 95251.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "svd_driver_c64_n1024_qr-based",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 267889497.0,
+      "iqr": 472152.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "svd_driver_c64_n256_auto",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 41110058.0,
+      "iqr": 23619.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "svd_driver_c64_n256_jacobi",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 41078138.0,
+      "iqr": 25989.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "svd_driver_c64_n256_polar",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 9303055.0,
+      "iqr": 37741.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "svd_driver_c64_n256_qr-based",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 33374704.0,
+      "iqr": 420610.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "svd_driver_c64_n64_auto",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 4620634.0,
+      "iqr": 6262.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "svd_driver_c64_n64_jacobi",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 4638537.0,
+      "iqr": 2935.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "svd_driver_c64_n64_polar",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 3440070.0,
+      "iqr": 12203.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "svd_driver_c64_n64_qr-based",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 6942287.0,
+      "iqr": 83193.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_cudarc-pageable-fresh_1048576B",
+      "group": "threads=1 / steady_state",
+      "backend": "cudarc",
+      "median": 474088.75,
+      "iqr": 18509.5625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_cudarc-pageable-fresh_16777216B",
+      "group": "threads=1 / steady_state",
+      "backend": "cudarc",
+      "median": 4320343.0,
+      "iqr": 261737.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_cudarc-pageable-fresh_268435456B",
+      "group": "threads=1 / steady_state",
+      "backend": "cudarc",
+      "median": 105144678.0,
+      "iqr": 1433735.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_cudarc-pageable-fresh_4096B",
+      "group": "threads=1 / steady_state",
+      "backend": "cudarc",
+      "median": 12073.1875,
+      "iqr": 57.3125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_cudarc-pageable-fresh_65536B",
+      "group": "threads=1 / steady_state",
+      "backend": "cudarc",
+      "median": 40846.875,
+      "iqr": 1784.4140625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_cudarc-pageable-fresh_8B",
+      "group": "threads=1 / steady_state",
+      "backend": "cudarc",
+      "median": 11605.1484375,
+      "iqr": 52.638671875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_cudarc-pageable_1048576B",
+      "group": "threads=1 / steady_state",
+      "backend": "cudarc",
+      "median": 114869.9375,
+      "iqr": 510.203125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_cudarc-pageable_16777216B",
+      "group": "threads=1 / steady_state",
+      "backend": "cudarc",
+      "median": 1816373.5,
+      "iqr": 144809.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_cudarc-pageable_268435456B",
+      "group": "threads=1 / steady_state",
+      "backend": "cudarc",
+      "median": 27064853.0,
+      "iqr": 468024.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_cudarc-pageable_4096B",
+      "group": "threads=1 / steady_state",
+      "backend": "cudarc",
+      "median": 15083.59375,
+      "iqr": 205.86328125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_cudarc-pageable_65536B",
+      "group": "threads=1 / steady_state",
+      "backend": "cudarc",
+      "median": 22907.9296875,
+      "iqr": 82.65625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_cudarc-pageable_8B",
+      "group": "threads=1 / steady_state",
+      "backend": "cudarc",
+      "median": 14223.484375,
+      "iqr": 95.083984375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_cudarc-pinned_1048576B",
+      "group": "threads=1 / steady_state",
+      "backend": "cudarc",
+      "median": 57339.46875,
+      "iqr": 452.6640625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_cudarc-pinned_16777216B",
+      "group": "threads=1 / steady_state",
+      "backend": "cudarc",
+      "median": 1131130.5,
+      "iqr": 18112.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_cudarc-pinned_268435456B",
+      "group": "threads=1 / steady_state",
+      "backend": "cudarc",
+      "median": 18706192.0,
+      "iqr": 208602.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_cudarc-pinned_4096B",
+      "group": "threads=1 / steady_state",
+      "backend": "cudarc",
+      "median": 16371.046875,
+      "iqr": 548.97265625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_cudarc-pinned_65536B",
+      "group": "threads=1 / steady_state",
+      "backend": "cudarc",
+      "median": 16206.5078125,
+      "iqr": 145.55859375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_cudarc-pinned_8B",
+      "group": "threads=1 / steady_state",
+      "backend": "cudarc",
+      "median": 15033.1953125,
+      "iqr": 91.93359375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_tenferro-into_1048576B",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 53849.71875,
+      "iqr": 767.3203125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_tenferro-into_16777216B",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 1159259.0,
+      "iqr": 4338.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_tenferro-into_268435456B",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 20011333.0,
+      "iqr": 312685.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_tenferro-into_4096B",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 15229.7734375,
+      "iqr": 41.130859375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_tenferro-into_65536B",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 18577.2734375,
+      "iqr": 212.234375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_tenferro-into_8B",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 15151.65625,
+      "iqr": 579.36328125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_tenferro_1048576B",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 441093.5,
+      "iqr": 4328.9375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_tenferro_16777216B",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 3918168.0,
+      "iqr": 60706.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_tenferro_268435456B",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 362040075.0,
+      "iqr": 47637036.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_tenferro_4096B",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 17530.984375,
+      "iqr": 127.3125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_tenferro_65536B",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 42882.78125,
+      "iqr": 1954.03125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_tenferro_8B",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 15919.953125,
+      "iqr": 144.8125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_up_f64_cudarc-pageable_1048576B",
+      "group": "threads=1 / steady_state",
+      "backend": "cudarc",
+      "median": 101094.0625,
+      "iqr": 640.421875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_up_f64_cudarc-pageable_16777216B",
+      "group": "threads=1 / steady_state",
+      "backend": "cudarc",
+      "median": 1043288.5,
+      "iqr": 47009.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_up_f64_cudarc-pageable_268435456B",
+      "group": "threads=1 / steady_state",
+      "backend": "cudarc",
+      "median": 17056486.0,
+      "iqr": 120123.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_up_f64_cudarc-pageable_4096B",
+      "group": "threads=1 / steady_state",
+      "backend": "cudarc",
+      "median": 11109.16796875,
+      "iqr": 29.91796875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_up_f64_cudarc-pageable_65536B",
+      "group": "threads=1 / steady_state",
+      "backend": "cudarc",
+      "median": 18998.2265625,
+      "iqr": 124.37890625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_up_f64_cudarc-pageable_8B",
+      "group": "threads=1 / steady_state",
+      "backend": "cudarc",
+      "median": 10779.8671875,
+      "iqr": 154.685546875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_up_f64_cudarc-pinned_1048576B",
+      "group": "threads=1 / steady_state",
+      "backend": "cudarc",
+      "median": 57342.4375,
+      "iqr": 371.9609375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_up_f64_cudarc-pinned_16777216B",
+      "group": "threads=1 / steady_state",
+      "backend": "cudarc",
+      "median": 673943.75,
+      "iqr": 10368.375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_up_f64_cudarc-pinned_268435456B",
+      "group": "threads=1 / steady_state",
+      "backend": "cudarc",
+      "median": 10275504.0,
+      "iqr": 21731.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_up_f64_cudarc-pinned_4096B",
+      "group": "threads=1 / steady_state",
+      "backend": "cudarc",
+      "median": 63613.125,
+      "iqr": 3037.65625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_up_f64_cudarc-pinned_65536B",
+      "group": "threads=1 / steady_state",
+      "backend": "cudarc",
+      "median": 18180.265625,
+      "iqr": 63.2421875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_up_f64_cudarc-pinned_8B",
+      "group": "threads=1 / steady_state",
+      "backend": "cudarc",
+      "median": 14890.18359375,
+      "iqr": 132.28515625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_up_f64_tenferro_1048576B",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 90473.875,
+      "iqr": 412.03125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_up_f64_tenferro_16777216B",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 2157351.0,
+      "iqr": 46382.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_up_f64_tenferro_268435456B",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 184664021.0,
+      "iqr": 53513628.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_up_f64_tenferro_4096B",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 16062.875,
+      "iqr": 102.97265625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_up_f64_tenferro_65536B",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 20660.2890625,
+      "iqr": 286.3671875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_up_f64_tenferro_8B",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-cuda",
+      "median": 16179.8984375,
+      "iqr": 91.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "vendor_churn_f64_cycles64",
+      "group": "threads=1 / state_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": null,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "vendor_churn_f64_cycles8",
+      "group": "threads=1 / state_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": null,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "vendor_handle_cublas_f64_create-destroy",
+      "group": "threads=1 / session_entry_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 1409905.5,
+      "iqr": 565104.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "vendor_handle_cublas_f64_reused",
+      "group": "threads=1 / session_entry_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 25027.28125,
+      "iqr": 323.765625,
       "status": "ok",
       "verified": true
     }
-  ]
+  ],
+  "counts": {
+    "expected": 198,
+    "selected": 198,
+    "executed": 198,
+    "unsupported": 0,
+    "failed": 0,
+    "missing": 0,
+    "noisy": 15,
+    "skipped": 0
+  }
 }
