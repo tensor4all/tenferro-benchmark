@@ -2,7 +2,7 @@
 # quick: steady-state operation rows and their reference arms; full adds the
 # explicitly labelled diagnostics (per-call session entry, eager AD workflows,
 # counter runs). Bump MANIFEST_VERSION in the generator on any change.
-manifest_version: 23
+manifest_version: 25
 suite_id: cpu/perf_issues
 source: data/instances/perf_issues.json
 generated_by: scripts/generate_perf_issue_cases.py
@@ -815,3 +815,23 @@ coverage:
   - softmax_f64_pool_pool4_1024x4096
   - softmax_f64_pool_pytorch_t1_1024x4096
   - softmax_f64_pool_pytorch_t4_1024x4096
+  - identity_layout_chain_prepare_c64_len64
+  - identity_layout_chain_prepare_c64_len64_forward
+  - identity_layout_chain_prepare_c64_len256
+  - identity_layout_chain_prepare_c64_len256_forward
+  - identity_layout_chain_prepare_c64_len1024
+  - identity_layout_chain_prepare_c64_len1024_forward
+  - conj_chain_prepare_c64_len64
+  - conj_chain_prepare_c64_len64_forward
+  - conj_chain_prepare_c64_len256
+  - conj_chain_prepare_c64_len256_forward
+  - conj_chain_prepare_c64_len1024
+  - conj_chain_prepare_c64_len1024_forward
+  - deep_reverse_mode_prepare_f64_steps1
+  - deep_reverse_mode_prepare_f64_steps1_forward
+  - deep_reverse_mode_prepare_f64_steps2
+  - deep_reverse_mode_prepare_f64_steps2_forward
+  - deep_reverse_mode_prepare_f64_steps3
+  - deep_reverse_mode_prepare_f64_steps3_forward
+  - deep_reverse_mode_prepare_f64_steps10
+  - deep_reverse_mode_prepare_f64_steps10_forward

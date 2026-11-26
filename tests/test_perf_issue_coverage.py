@@ -70,3 +70,39 @@ class PerfIssueCoverageTest(unittest.TestCase):
         cases = entries("data/instances/perf_issues.json")
         recorded = {case_id for case_id, case in cases.items() if "#2524" in case["issues"]}
         self.assertEqual(recorded, {row["id"] for row in rows})
+
+    def test_ad_prepare_cases_are_diagnostic_and_paired(self):
+        rows = gen.ad_prepare_cases() + gen.deep_reverse_mode_prepare_cases()
+        self.assertEqual(len(rows), 20)
+        for row in rows:
+            self.assertEqual(row["kind"], "ad_prepare")
+            self.assertEqual(row["measurement_scope"], "issue_workflow_diagnostic")
+            self.assertEqual(row["regime"], "latency")
+            self.assertEqual(row["thread_counts"], [1])
+        by_id = {row["id"]: row for row in rows}
+        for graph in ("identity_layout_chain", "conj_chain"):
+            for length in (64, 256, 1024):
+                target = f"{graph}_prepare_c64_len{length}"
+                self.assertIn("#2678", by_id[target]["issues"])
+                self.assertEqual(by_id[target]["arm"], "vjp")
+                self.assertIsNone(by_id[target].get("reference_for"))
+                control = by_id[target + "_forward"]
+                self.assertEqual(control["arm"], "forward")
+                self.assertEqual(control["reference_for"], target)
+        for steps in (1, 2, 3, 10):
+            target = f"deep_reverse_mode_prepare_f64_steps{steps}"
+            self.assertIn("#2643", by_id[target]["issues"])
+            self.assertEqual(by_id[target]["arm"], "vjp")
+            self.assertEqual(by_id[target]["params"]["batch"], 64)
+            self.assertEqual(by_id[target]["params"]["hidden"], 50)
+            control = by_id[target + "_forward"]
+            self.assertEqual(control["reference_for"], target)
+        cases = entries("data/instances/perf_issues.json")
+        for issue, generated in (
+            ("#2678", [row["id"] for row in gen.ad_prepare_cases()]),
+            ("#2643", [row["id"] for row in gen.deep_reverse_mode_prepare_cases()]),
+        ):
+            self.assertEqual(
+                {case_id for case_id, case in cases.items() if issue in case["issues"]},
+                set(generated),
+            )

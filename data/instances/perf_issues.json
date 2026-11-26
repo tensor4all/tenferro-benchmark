@@ -12080,5 +12080,563 @@
    4
   ],
   "regime": "throughput"
+ },
+ {
+  "id": "identity_layout_chain_prepare_c64_len64",
+  "issues": [
+   "#2678"
+  ],
+  "kind": "ad_prepare",
+  "arm": "vjp",
+  "backend": "tenferro-rs",
+  "dtype": "c64",
+  "params": {
+   "graph": "identity_layout_chain",
+   "length": 64,
+   "n": 4,
+   "kind": "ad_prepare",
+   "arm": "vjp",
+   "dtype": "c64"
+  },
+  "measurement_scope": "issue_workflow_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2678: identity_layout_chain of length 64 on a 4x4 c64 leaf. The timed operation is Runtime::prepare of the traced graph; tracing, the AD transform, compile_many, engine/runtime construction and the finite-difference oracle are outside. The vjp arm prepares the value and gradient program; the forward arm is the forward-only control that isolates the AD preparation cost. Diagnostic, not a steady-state operation row.",
+  "regime": "latency",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "identity_layout_chain_prepare_c64_len64_forward",
+  "issues": [
+   "#2678"
+  ],
+  "kind": "ad_prepare",
+  "arm": "forward",
+  "backend": "tenferro-rs",
+  "dtype": "c64",
+  "params": {
+   "graph": "identity_layout_chain",
+   "length": 64,
+   "n": 4,
+   "kind": "ad_prepare",
+   "arm": "forward",
+   "dtype": "c64"
+  },
+  "measurement_scope": "issue_workflow_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2678: identity_layout_chain of length 64 on a 4x4 c64 leaf. The timed operation is Runtime::prepare of the traced graph; tracing, the AD transform, compile_many, engine/runtime construction and the finite-difference oracle are outside. The vjp arm prepares the value and gradient program; the forward arm is the forward-only control that isolates the AD preparation cost. Diagnostic, not a steady-state operation row.",
+  "reference_for": "identity_layout_chain_prepare_c64_len64",
+  "regime": "latency",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "identity_layout_chain_prepare_c64_len256",
+  "issues": [
+   "#2678"
+  ],
+  "kind": "ad_prepare",
+  "arm": "vjp",
+  "backend": "tenferro-rs",
+  "dtype": "c64",
+  "params": {
+   "graph": "identity_layout_chain",
+   "length": 256,
+   "n": 4,
+   "kind": "ad_prepare",
+   "arm": "vjp",
+   "dtype": "c64"
+  },
+  "measurement_scope": "issue_workflow_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2678: identity_layout_chain of length 256 on a 4x4 c64 leaf. The timed operation is Runtime::prepare of the traced graph; tracing, the AD transform, compile_many, engine/runtime construction and the finite-difference oracle are outside. The vjp arm prepares the value and gradient program; the forward arm is the forward-only control that isolates the AD preparation cost. Diagnostic, not a steady-state operation row.",
+  "regime": "latency",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "identity_layout_chain_prepare_c64_len256_forward",
+  "issues": [
+   "#2678"
+  ],
+  "kind": "ad_prepare",
+  "arm": "forward",
+  "backend": "tenferro-rs",
+  "dtype": "c64",
+  "params": {
+   "graph": "identity_layout_chain",
+   "length": 256,
+   "n": 4,
+   "kind": "ad_prepare",
+   "arm": "forward",
+   "dtype": "c64"
+  },
+  "measurement_scope": "issue_workflow_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2678: identity_layout_chain of length 256 on a 4x4 c64 leaf. The timed operation is Runtime::prepare of the traced graph; tracing, the AD transform, compile_many, engine/runtime construction and the finite-difference oracle are outside. The vjp arm prepares the value and gradient program; the forward arm is the forward-only control that isolates the AD preparation cost. Diagnostic, not a steady-state operation row.",
+  "reference_for": "identity_layout_chain_prepare_c64_len256",
+  "regime": "latency",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "identity_layout_chain_prepare_c64_len1024",
+  "issues": [
+   "#2678"
+  ],
+  "kind": "ad_prepare",
+  "arm": "vjp",
+  "backend": "tenferro-rs",
+  "dtype": "c64",
+  "params": {
+   "graph": "identity_layout_chain",
+   "length": 1024,
+   "n": 4,
+   "kind": "ad_prepare",
+   "arm": "vjp",
+   "dtype": "c64"
+  },
+  "measurement_scope": "issue_workflow_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2678: identity_layout_chain of length 1024 on a 4x4 c64 leaf. The timed operation is Runtime::prepare of the traced graph; tracing, the AD transform, compile_many, engine/runtime construction and the finite-difference oracle are outside. The vjp arm prepares the value and gradient program; the forward arm is the forward-only control that isolates the AD preparation cost. Diagnostic, not a steady-state operation row.",
+  "regime": "latency",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "identity_layout_chain_prepare_c64_len1024_forward",
+  "issues": [
+   "#2678"
+  ],
+  "kind": "ad_prepare",
+  "arm": "forward",
+  "backend": "tenferro-rs",
+  "dtype": "c64",
+  "params": {
+   "graph": "identity_layout_chain",
+   "length": 1024,
+   "n": 4,
+   "kind": "ad_prepare",
+   "arm": "forward",
+   "dtype": "c64"
+  },
+  "measurement_scope": "issue_workflow_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2678: identity_layout_chain of length 1024 on a 4x4 c64 leaf. The timed operation is Runtime::prepare of the traced graph; tracing, the AD transform, compile_many, engine/runtime construction and the finite-difference oracle are outside. The vjp arm prepares the value and gradient program; the forward arm is the forward-only control that isolates the AD preparation cost. Diagnostic, not a steady-state operation row.",
+  "reference_for": "identity_layout_chain_prepare_c64_len1024",
+  "regime": "latency",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "conj_chain_prepare_c64_len64",
+  "issues": [
+   "#2678"
+  ],
+  "kind": "ad_prepare",
+  "arm": "vjp",
+  "backend": "tenferro-rs",
+  "dtype": "c64",
+  "params": {
+   "graph": "conj_chain",
+   "length": 64,
+   "n": 4,
+   "kind": "ad_prepare",
+   "arm": "vjp",
+   "dtype": "c64"
+  },
+  "measurement_scope": "issue_workflow_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2678: conj_chain of length 64 on a 4x4 c64 leaf. The timed operation is Runtime::prepare of the traced graph; tracing, the AD transform, compile_many, engine/runtime construction and the finite-difference oracle are outside. The vjp arm prepares the value and gradient program; the forward arm is the forward-only control that isolates the AD preparation cost. Diagnostic, not a steady-state operation row.",
+  "regime": "latency",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "conj_chain_prepare_c64_len64_forward",
+  "issues": [
+   "#2678"
+  ],
+  "kind": "ad_prepare",
+  "arm": "forward",
+  "backend": "tenferro-rs",
+  "dtype": "c64",
+  "params": {
+   "graph": "conj_chain",
+   "length": 64,
+   "n": 4,
+   "kind": "ad_prepare",
+   "arm": "forward",
+   "dtype": "c64"
+  },
+  "measurement_scope": "issue_workflow_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2678: conj_chain of length 64 on a 4x4 c64 leaf. The timed operation is Runtime::prepare of the traced graph; tracing, the AD transform, compile_many, engine/runtime construction and the finite-difference oracle are outside. The vjp arm prepares the value and gradient program; the forward arm is the forward-only control that isolates the AD preparation cost. Diagnostic, not a steady-state operation row.",
+  "reference_for": "conj_chain_prepare_c64_len64",
+  "regime": "latency",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "conj_chain_prepare_c64_len256",
+  "issues": [
+   "#2678"
+  ],
+  "kind": "ad_prepare",
+  "arm": "vjp",
+  "backend": "tenferro-rs",
+  "dtype": "c64",
+  "params": {
+   "graph": "conj_chain",
+   "length": 256,
+   "n": 4,
+   "kind": "ad_prepare",
+   "arm": "vjp",
+   "dtype": "c64"
+  },
+  "measurement_scope": "issue_workflow_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2678: conj_chain of length 256 on a 4x4 c64 leaf. The timed operation is Runtime::prepare of the traced graph; tracing, the AD transform, compile_many, engine/runtime construction and the finite-difference oracle are outside. The vjp arm prepares the value and gradient program; the forward arm is the forward-only control that isolates the AD preparation cost. Diagnostic, not a steady-state operation row.",
+  "regime": "latency",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "conj_chain_prepare_c64_len256_forward",
+  "issues": [
+   "#2678"
+  ],
+  "kind": "ad_prepare",
+  "arm": "forward",
+  "backend": "tenferro-rs",
+  "dtype": "c64",
+  "params": {
+   "graph": "conj_chain",
+   "length": 256,
+   "n": 4,
+   "kind": "ad_prepare",
+   "arm": "forward",
+   "dtype": "c64"
+  },
+  "measurement_scope": "issue_workflow_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2678: conj_chain of length 256 on a 4x4 c64 leaf. The timed operation is Runtime::prepare of the traced graph; tracing, the AD transform, compile_many, engine/runtime construction and the finite-difference oracle are outside. The vjp arm prepares the value and gradient program; the forward arm is the forward-only control that isolates the AD preparation cost. Diagnostic, not a steady-state operation row.",
+  "reference_for": "conj_chain_prepare_c64_len256",
+  "regime": "latency",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "conj_chain_prepare_c64_len1024",
+  "issues": [
+   "#2678"
+  ],
+  "kind": "ad_prepare",
+  "arm": "vjp",
+  "backend": "tenferro-rs",
+  "dtype": "c64",
+  "params": {
+   "graph": "conj_chain",
+   "length": 1024,
+   "n": 4,
+   "kind": "ad_prepare",
+   "arm": "vjp",
+   "dtype": "c64"
+  },
+  "measurement_scope": "issue_workflow_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2678: conj_chain of length 1024 on a 4x4 c64 leaf. The timed operation is Runtime::prepare of the traced graph; tracing, the AD transform, compile_many, engine/runtime construction and the finite-difference oracle are outside. The vjp arm prepares the value and gradient program; the forward arm is the forward-only control that isolates the AD preparation cost. Diagnostic, not a steady-state operation row.",
+  "regime": "latency",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "conj_chain_prepare_c64_len1024_forward",
+  "issues": [
+   "#2678"
+  ],
+  "kind": "ad_prepare",
+  "arm": "forward",
+  "backend": "tenferro-rs",
+  "dtype": "c64",
+  "params": {
+   "graph": "conj_chain",
+   "length": 1024,
+   "n": 4,
+   "kind": "ad_prepare",
+   "arm": "forward",
+   "dtype": "c64"
+  },
+  "measurement_scope": "issue_workflow_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2678: conj_chain of length 1024 on a 4x4 c64 leaf. The timed operation is Runtime::prepare of the traced graph; tracing, the AD transform, compile_many, engine/runtime construction and the finite-difference oracle are outside. The vjp arm prepares the value and gradient program; the forward arm is the forward-only control that isolates the AD preparation cost. Diagnostic, not a steady-state operation row.",
+  "reference_for": "conj_chain_prepare_c64_len1024",
+  "regime": "latency",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "deep_reverse_mode_prepare_f64_steps1",
+  "issues": [
+   "#2643"
+  ],
+  "kind": "ad_prepare",
+  "arm": "vjp",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "graph": "deep_reverse_mode",
+   "steps": 1,
+   "batch": 64,
+   "hidden": 50,
+   "kind": "ad_prepare",
+   "arm": "vjp",
+   "dtype": "f64"
+  },
+  "measurement_scope": "issue_workflow_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2643: 1-step RK4 neural-ODE window, batch 64, hidden 50, H = 25/999, unrolled into one reverse-mode graph. The timed operation is Runtime::prepare; tracing, the AD transform, compile_many, engine/runtime construction and the finite-difference gradient check are outside. The vjp arm prepares the value and the four parameter gradients; the forward arm is the forward-only control. Diagnostic, not a steady-state operation row.",
+  "regime": "latency",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "deep_reverse_mode_prepare_f64_steps1_forward",
+  "issues": [
+   "#2643"
+  ],
+  "kind": "ad_prepare",
+  "arm": "forward",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "graph": "deep_reverse_mode",
+   "steps": 1,
+   "batch": 64,
+   "hidden": 50,
+   "kind": "ad_prepare",
+   "arm": "forward",
+   "dtype": "f64"
+  },
+  "measurement_scope": "issue_workflow_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2643: 1-step RK4 neural-ODE window, batch 64, hidden 50, H = 25/999, unrolled into one reverse-mode graph. The timed operation is Runtime::prepare; tracing, the AD transform, compile_many, engine/runtime construction and the finite-difference gradient check are outside. The vjp arm prepares the value and the four parameter gradients; the forward arm is the forward-only control. Diagnostic, not a steady-state operation row.",
+  "reference_for": "deep_reverse_mode_prepare_f64_steps1",
+  "regime": "latency",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "deep_reverse_mode_prepare_f64_steps2",
+  "issues": [
+   "#2643"
+  ],
+  "kind": "ad_prepare",
+  "arm": "vjp",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "graph": "deep_reverse_mode",
+   "steps": 2,
+   "batch": 64,
+   "hidden": 50,
+   "kind": "ad_prepare",
+   "arm": "vjp",
+   "dtype": "f64"
+  },
+  "measurement_scope": "issue_workflow_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2643: 2-step RK4 neural-ODE window, batch 64, hidden 50, H = 25/999, unrolled into one reverse-mode graph. The timed operation is Runtime::prepare; tracing, the AD transform, compile_many, engine/runtime construction and the finite-difference gradient check are outside. The vjp arm prepares the value and the four parameter gradients; the forward arm is the forward-only control. Diagnostic, not a steady-state operation row.",
+  "regime": "latency",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "deep_reverse_mode_prepare_f64_steps2_forward",
+  "issues": [
+   "#2643"
+  ],
+  "kind": "ad_prepare",
+  "arm": "forward",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "graph": "deep_reverse_mode",
+   "steps": 2,
+   "batch": 64,
+   "hidden": 50,
+   "kind": "ad_prepare",
+   "arm": "forward",
+   "dtype": "f64"
+  },
+  "measurement_scope": "issue_workflow_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2643: 2-step RK4 neural-ODE window, batch 64, hidden 50, H = 25/999, unrolled into one reverse-mode graph. The timed operation is Runtime::prepare; tracing, the AD transform, compile_many, engine/runtime construction and the finite-difference gradient check are outside. The vjp arm prepares the value and the four parameter gradients; the forward arm is the forward-only control. Diagnostic, not a steady-state operation row.",
+  "reference_for": "deep_reverse_mode_prepare_f64_steps2",
+  "regime": "latency",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "deep_reverse_mode_prepare_f64_steps3",
+  "issues": [
+   "#2643"
+  ],
+  "kind": "ad_prepare",
+  "arm": "vjp",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "graph": "deep_reverse_mode",
+   "steps": 3,
+   "batch": 64,
+   "hidden": 50,
+   "kind": "ad_prepare",
+   "arm": "vjp",
+   "dtype": "f64"
+  },
+  "measurement_scope": "issue_workflow_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2643: 3-step RK4 neural-ODE window, batch 64, hidden 50, H = 25/999, unrolled into one reverse-mode graph. The timed operation is Runtime::prepare; tracing, the AD transform, compile_many, engine/runtime construction and the finite-difference gradient check are outside. The vjp arm prepares the value and the four parameter gradients; the forward arm is the forward-only control. Diagnostic, not a steady-state operation row.",
+  "regime": "latency",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "deep_reverse_mode_prepare_f64_steps3_forward",
+  "issues": [
+   "#2643"
+  ],
+  "kind": "ad_prepare",
+  "arm": "forward",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "graph": "deep_reverse_mode",
+   "steps": 3,
+   "batch": 64,
+   "hidden": 50,
+   "kind": "ad_prepare",
+   "arm": "forward",
+   "dtype": "f64"
+  },
+  "measurement_scope": "issue_workflow_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2643: 3-step RK4 neural-ODE window, batch 64, hidden 50, H = 25/999, unrolled into one reverse-mode graph. The timed operation is Runtime::prepare; tracing, the AD transform, compile_many, engine/runtime construction and the finite-difference gradient check are outside. The vjp arm prepares the value and the four parameter gradients; the forward arm is the forward-only control. Diagnostic, not a steady-state operation row.",
+  "reference_for": "deep_reverse_mode_prepare_f64_steps3",
+  "regime": "latency",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "deep_reverse_mode_prepare_f64_steps10",
+  "issues": [
+   "#2643"
+  ],
+  "kind": "ad_prepare",
+  "arm": "vjp",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "graph": "deep_reverse_mode",
+   "steps": 10,
+   "batch": 64,
+   "hidden": 50,
+   "kind": "ad_prepare",
+   "arm": "vjp",
+   "dtype": "f64"
+  },
+  "measurement_scope": "issue_workflow_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2643: 10-step RK4 neural-ODE window, batch 64, hidden 50, H = 25/999, unrolled into one reverse-mode graph. The timed operation is Runtime::prepare; tracing, the AD transform, compile_many, engine/runtime construction and the finite-difference gradient check are outside. The vjp arm prepares the value and the four parameter gradients; the forward arm is the forward-only control. Diagnostic, not a steady-state operation row.",
+  "regime": "latency",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "deep_reverse_mode_prepare_f64_steps10_forward",
+  "issues": [
+   "#2643"
+  ],
+  "kind": "ad_prepare",
+  "arm": "forward",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "graph": "deep_reverse_mode",
+   "steps": 10,
+   "batch": 64,
+   "hidden": 50,
+   "kind": "ad_prepare",
+   "arm": "forward",
+   "dtype": "f64"
+  },
+  "measurement_scope": "issue_workflow_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2643: 10-step RK4 neural-ODE window, batch 64, hidden 50, H = 25/999, unrolled into one reverse-mode graph. The timed operation is Runtime::prepare; tracing, the AD transform, compile_many, engine/runtime construction and the finite-difference gradient check are outside. The vjp arm prepares the value and the four parameter gradients; the forward arm is the forward-only control. Diagnostic, not a steady-state operation row.",
+  "reference_for": "deep_reverse_mode_prepare_f64_steps10",
+  "regime": "latency",
+  "thread_counts": [
+   1
+  ]
  }
 ]
