@@ -3,16 +3,16 @@
 - Target profile: `nvidia-gpu`
 - Suite: `gpu/linalg_ad_throughput`
 - Suite file: `/tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/benchmarks/gpu/linalg_ad_throughput.yaml`
-- Timestamp: `2026-11-14T06:24:19.636034+00:00`
-- tenferro-rs commit: `9a850b06155405acc99ecd0648829e9e6d3866ba`
+- Timestamp: `2026-11-26T06:57:55.851030+00:00`
+- tenferro-rs commit: `1ba9f33521691170c763dfce9b6c9bb56ca523c2`
 
 ## GPU Information
 
 - Device: `cuda:0`
 - Name: `NVIDIA A100 80GB PCIe`
-- UUID: `GPU-3893cd38-00e0-11b0-a833-6c82285da154`
+- UUID: `GPU-a95177dc-c682-83ff-0bc9-c1b3d7cca7ce`
 - Memory: `80 GiB`
-- Driver version: `595.91.07`
+- Driver version: `595.112.07`
 - CUDA version: `13.2`
 - CUDA runtime: `12.8`
 - cuDNN version: `91900`
@@ -24,18 +24,17 @@
 
 ## CPU Information
 
-- Model: `AMD EPYC 7502 32-Core Processor`
+- Model: `AMD EPYC 7763 64-Core Processor`
 - Vendor: `AuthenticAMD`
-- Logical CPUs: `128`
+- Logical CPUs: `252`
 - Sockets: `2`
-- Cores per socket: `32`
-- Threads per core: `2`
-- NUMA nodes: `2`
+- Cores per socket: `126`
+- Threads per core: `1`
+- NUMA nodes: `1`
 - Transparent huge pages: `madvise (always [madvise] never)`
 - Transparent huge page defrag: `madvise (always defer defer+madvise [madvise] never)`
-- Python platform: `Linux-6.8.0-147-generic-x86_64-with-glibc2.39`
-- L3 domains (shared CPUs): `0-3,64-67; 4-7,68-71; 8-11,72-75; 12-15,76-79; 16-19,80-83; 20-23,84-87; 24-27,88-91; 28-31,92-95; 32-35,96-99; 36-39,100-103; 40-43,104-107; 44-47,108-111; 48-51,112-115; 52-55,116-119; 56-59,120-123; 60-63,124-127`
-- CPU boost: `enabled`
+- Python platform: `Linux-6.8.0-138-generic-x86_64-with-glibc2.39`
+- L3 domains (shared CPUs): `0-125; 126-251`
 - Container: `devcontainer`
 
 Median ± IQR (ms). Missing backends are shown as `-`.
@@ -56,7 +55,7 @@ Compute-bound rows: every case here is over its family's floor in `docs/regime-f
 
 | suite | benchmark | dtype | shape | tenferro-rs CUDA trace | tenferro-rs CUDA eager, per call, incl. AD prepare | tenferro-rs CUDA trace (deferred batch throughput) | PyTorch CUDA | JAX CUDA JIT |
 |---|---|---:|---|---:|---:|---:|---:|---:|
-| large | `grad_sum_qr_jvp` | f64 | `4096x4096` | - | - | 149.162 ± 0.255 | - | - |
+| large | `grad_sum_qr_jvp` | f64 | `4096x4096` | - | - | 148.220 ± 0.231 | - | - |
 
 ### Latency regime
 
@@ -64,8 +63,8 @@ Per-call latency rows: the device kernels are a small fraction of each number, s
 
 | suite | benchmark | dtype | shape | tenferro-rs CUDA trace | tenferro-rs CUDA eager, per call, incl. AD prepare | tenferro-rs CUDA trace (deferred batch throughput) | PyTorch CUDA | JAX CUDA JIT |
 |---|---|---:|---|---:|---:|---:|---:|---:|
-| large | `grad_sum_qr_jvp` | f64 | `256x256` | - | - | 2.845 ± 0.011 | - | - |
-| large | `grad_sum_qr_vjp` | f64 | `256x256` | - | - | 2.841 ± 0.008 | - | - |
+| large | `grad_sum_qr_jvp` | f64 | `256x256` | - | - | 2.786 ± 0.009 | - | - |
+| large | `grad_sum_qr_vjp` | f64 | `256x256` | - | - | 2.773 ± 0.006 | - | - |
 
 ## Sampling and unsupported routes
 
