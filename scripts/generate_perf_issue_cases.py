@@ -49,7 +49,7 @@ SUITE_ID = "cpu/perf_issues"
 GPU_INSTANCES = ROOT / "data/instances/gpu_perf_issues.json"
 GPU_MANIFEST = ROOT / "benchmarks/gpu/manifests/perf_issues.yaml"
 GPU_SUITE = ROOT / "benchmarks/gpu/perf_issues.yaml"
-GPU_MANIFEST_VERSION = 11
+GPU_MANIFEST_VERSION = 12
 GPU_SUITE_ID = "gpu/perf_issues"
 
 DIAGNOSTIC_SCOPES = {"session_entry_diagnostic", "counter_diagnostic", "eager_ad_workflow",
@@ -1230,10 +1230,14 @@ def gpu_latency_cases(gpu):
     for op, shape in (("add", {"hidden": 1024, "tokens": 8}),
                       ("dot_general", {"in": 1024, "out": 1024, "len": 8})):
         label = f"{shape.get('hidden', shape.get('in'))}x{shape.get('tokens', shape.get('len'))}"
-        for arm, scope, ref in (("eager-session", "steady_state", None),
-                                ("eager-per-call", "session_entry_diagnostic", "eager-session"),
-                                ("eager-session-streaming", "steady_state", "eager-session"),
-                                ("launch-only-floor", "steady_state", "eager-session")):
+        arms = [("eager-session", "steady_state", None),
+                ("eager-per-call", "session_entry_diagnostic", "eager-session"),
+                ("eager-session-streaming", "steady_state", "eager-session")]
+        # The floor is the elementwise add with its output allocation removed;
+        # there is no equivalent preallocated dot_general row in the runner.
+        if op == "add":
+            arms.append(("launch-only-floor", "steady_state", "eager-session"))
+        for arm, scope, ref in arms:
             rows.append(case(
                 f"eager_op_f32_{op}_decode_{arm}", ("#2079",), "eager_op",
                 dict(shape, op=op), arm=arm, backend="tenferro-cuda", dtype="f32", scope=scope,
@@ -1246,12 +1250,14 @@ def gpu_latency_cases(gpu):
                         "`eager-per-call` enters a session per operation, the diagnostic that "
                         "separates session entry from dispatch. The GPU work of one decode-shaped "
                         "op is a small fraction of the host cost, so these are latency rows, not "
-                        "throughput. `launch-only-floor` runs the same elementwise kernel through "
-                        "`add_read_into` on a reused output, i.e. with the per-op output allocation "
-                        "removed: the floor the eager per-op cost is compared against. "
-                        "`eager-session-streaming` drops each result before the next op, the way a "
-                        "decode loop consumes intermediates, so the output pool can hand the buffer "
-                        "back.")))
+                        "throughput. "
+                        + ("`launch-only-floor` runs the same elementwise kernel through "
+                           "`add_read_into` on a reused output, i.e. with the per-op output "
+                           "allocation removed: the floor the eager per-op cost is compared "
+                           "against. " if op == "add" else "")
+                        + ("`eager-session-streaming` drops each result before the next op, the way a "
+                           "decode loop consumes intermediates, so the output pool can hand the buffer "
+                           "back."))))
     return rows
 
 
