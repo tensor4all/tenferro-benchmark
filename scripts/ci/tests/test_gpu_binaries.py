@@ -9,7 +9,7 @@ from unittest.mock import patch
 import yaml
 
 from scripts.ci.gpu_binaries import (
-    MANIFEST, READBACK, check, main, required_binaries,
+    MANIFEST, PERF_ISSUES_FULL, READBACK, check, main, required_binaries,
 )
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -92,6 +92,12 @@ class RequiredBinariesTest(unittest.TestCase):
     def test_readback_ships_its_own_binary(self):
         self.assertEqual(required_binaries(READBACK), {
             'benchmark_gpu_perf_issues': [READBACK]})
+
+    def test_full_perf_issues_lane_ships_its_own_binary(self):
+        # The unfiltered lane publishes gpu/perf_issues; the readback above is
+        # only the solve/QR subset.
+        self.assertEqual(required_binaries(PERF_ISSUES_FULL), {
+            'benchmark_gpu_perf_issues': [PERF_ISSUES_FULL]})
 
     def test_throughput_lane_ships_both_streams(self):
         # The deferred-batch lane is a standalone entry point over two suite

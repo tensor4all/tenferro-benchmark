@@ -190,7 +190,7 @@ jobs:
           # and that lane runs it. gpu_binaries.py derives the same set, so the
           # pod's transfer check names a missing control binary before the
           # collection starts rather than after the routine set is spent.
-          if [[ "$REQUESTED_SUITE" == perf-issues-readback ]]; then
+          if [[ "$REQUESTED_SUITE" == perf-issues-readback || "$REQUESTED_SUITE" == perf-issues-full ]]; then
             binaries=(benchmark_gpu_perf_issues)
           fi
           build_args=()
@@ -596,6 +596,13 @@ jobs:
             ./scripts/ci/run_gpu_readback.sh
             exit 0
           fi
+          if [[ "$REQUESTED_SUITE" == perf-issues-full ]]; then
+            # The standalone perf_issues lane, unfiltered: this produces the
+            # published gpu/perf_issues page. The readback above stays a
+            # solve/QR subset and is never published.
+            BENCH_COVERAGE=full BENCH_EFFORT=standard ./scripts/run_gpu_perf_issues.sh
+            exit 0
+          fi
           if [[ "$REQUESTED_SUITE" == throughput ]]; then
             # The deferred-batch lane is a standalone entry point: its suites
             # are not in the routine manifest, and a routine selection cannot
@@ -611,7 +618,7 @@ jobs:
 
       - name: Package this collection's GPU results
         timeout-minutes: 8
-        if: always() && inputs.suite != 'perf-issues-readback' && steps.collect.outputs.timestamp != ''
+        if: always() && inputs.suite != 'perf-issues-readback' && inputs.suite != 'perf-issues-full' && steps.collect.outputs.timestamp != ''
         env:
           COLLECTION_TIMESTAMP: ${{ steps.collect.outputs.timestamp }}
           COLLECTION_STARTED_AT: ${{ steps.collect.outputs.started_at }}
@@ -651,6 +658,19 @@ jobs:
           path: |
             data/results/nvidia-gpu/gpu/perf_issues/${{ steps.collect.outputs.readback_timestamp }}
             data/results/nvidia-gpu/gpu/perf_issues/${{ steps.collect.outputs.readback_timestamp }}_verify
+            result/nvidia-gpu/gpu/perf_issues.md
+            result/nvidia-gpu/gpu/perf_issues.summary.json
+          if-no-files-found: warn
+          retention-days: 90
+
+      - name: Archive standalone perf-issues results for review
+        timeout-minutes: 3
+        if: always() && inputs.suite == 'perf-issues-full' && steps.collect.outputs.timestamp != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: runpod-gpu-perf-issues-full-${{ github.run_id }}-attempt${{ github.run_attempt }}
+          path: |
+            data/results/nvidia-gpu/gpu/perf_issues/${{ steps.collect.outputs.timestamp }}
             result/nvidia-gpu/gpu/perf_issues.md
             result/nvidia-gpu/gpu/perf_issues.summary.json
           if-no-files-found: warn
