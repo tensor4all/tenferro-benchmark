@@ -2,12 +2,12 @@
   "schema_version": 1,
   "target_profile": "nvidia-gpu",
   "suite_id": "gpu/lstsq",
-  "timestamp": "2026-11-21T08:23:11+00:00",
-  "tenferro_commit": "ce9125d0cff4ee40841120759b5df45252c27f22",
+  "timestamp": "2026-11-26T06:29:50+00:00",
+  "tenferro_commit": "1ba9f33521691170c763dfce9b6c9bb56ca523c2",
   "hardware": {
     "gpu": "NVIDIA A100 80GB PCIe",
     "cpu": "AMD EPYC 7543 32-Core Processor",
-    "host": "7894e3c40841"
+    "host": "d73a3a75b493"
   },
   "unit": "ms",
   "rows": [
@@ -33,19 +33,21 @@
       "case": "lstsq_tall_f64_s256_rhs8",
       "group": "lstsq",
       "backend": "tenferro-cuda-direct",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "Current TensorLinalgExt has no direct lstsq operation; only the public eager composite is available."
+      "median": 1.686234,
+      "iqr": 0.011967249999999874,
+      "status": "ok",
+      "verified": true,
+      "operations_per_sample": 2
     },
     {
       "case": "lstsq_tall_f64_s256_rhs8",
       "group": "lstsq",
       "backend": "tenferro-cuda-eager",
-      "median": null,
-      "status": "unsupported",
+      "median": 1.754764,
+      "iqr": 0.006422499999999998,
+      "status": "ok",
       "verified": true,
-      "reason": "Public EagerSession lstsq invokes QR whose CUDA Q application uploads scalar operands internally; no public interface can hoist this input preparation out of standard operation timing."
+      "operations_per_sample": 2
     }
   ]
 }

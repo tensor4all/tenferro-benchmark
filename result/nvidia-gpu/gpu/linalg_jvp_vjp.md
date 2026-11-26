@@ -2,15 +2,15 @@
 
 - Target profile: `nvidia-gpu`
 - Suite: `gpu/linalg_jvp_vjp`
-- Suite file: `/tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261121_082311/gpu_linalg_jvp_vjp.yaml`
-- Timestamp: `2026-11-21T08:23:11+00:00`
-- tenferro-rs commit: `ce9125d0cff4ee40841120759b5df45252c27f22`
+- Suite file: `/tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261126_062950/gpu_linalg_jvp_vjp.yaml`
+- Timestamp: `2026-11-26T06:29:50+00:00`
+- tenferro-rs commit: `1ba9f33521691170c763dfce9b6c9bb56ca523c2`
 
 ## GPU Information
 
 - Device: `cuda:0`
 - Name: `NVIDIA A100 80GB PCIe`
-- UUID: `GPU-98d8618e-77c8-160a-92f2-117e34fd43df`
+- UUID: `GPU-e0c82f3d-3a11-a28c-b42e-1c92d26527fd`
 - Memory: `80 GiB`
 - Driver version: `595.112.07`
 - CUDA version: `13.2`
@@ -51,16 +51,16 @@ Timed runs include the host API call and backend-native device synchronization w
 
 | suite | benchmark | dtype | shape | tenferro-rs CUDA trace | tenferro-rs CUDA eager, per call, incl. AD prepare | tenferro-rs CUDA trace (deferred batch throughput) | PyTorch CUDA | JAX CUDA JIT |
 |---|---|---:|---|---:|---:|---:|---:|---:|
-| large | `grad_sum_eigh_jvp` | f64 | `256x256` | 5.558 ± 0.037 | 6.006 ± 0.017 | - | 3.185 ± 0.123 | 3.086 ± 0.080 |
-| large | `grad_sum_eigh_vjp` | f64 | `256x256` | 5.565 ± 0.015 | 3.083 ± 0.012 | - | 3.343 ± 0.166 | 3.008 ± 0.084 |
-| large | `grad_sum_lu_jvp` | f64 | `256x256` | 1.585 ± 0.006 | 2.705 ± 0.047 | - | 1.147 ± 0.004 | 0.996 ± 0.045 |
-| large | `grad_sum_lu_vjp` | f64 | `256x256` | 1.589 ± 0.006 | 1.603 ± 0.009 | - | 0.901 ± 0.003 | 1.019 ± 0.015 |
-| large | `grad_sum_qr_jvp` | f64 | `256x256` | 2.821 ± 0.019 | 3.963 ± 0.034 | - | 1.478 ± 0.010 | 1.575 ± 0.036 |
-| large | `grad_sum_qr_vjp` | f64 | `256x256` | 2.767 ± 0.014 | 2.128 ± 0.031 | - | 1.455 ± 0.004 | 1.532 ± 0.070 |
-| large | `grad_sum_solve_jvp` | f64 | `256x256,rhs=1` | 1.491 ± 0.006 | 1.801 ± 0.017 | - | 0.927 ± 0.010 | 0.836 ± 0.017 |
-| large | `grad_sum_solve_vjp` | f64 | `256x256,rhs=1` | 1.487 ± 0.005 | 1.104 ± 0.006 | - | 1.624 ± 0.034 | 0.925 ± 0.009 |
-| large | `grad_sum_svd_s_jvp` | f64 | `256x256` | 23.576 ± 0.046 | 23.847 ± 0.088 | - | 12.579 ± 0.041 | 11.846 ± 0.041 |
-| large | `grad_sum_svd_s_vjp` | f64 | `256x256` | 23.584 ± 0.040 | 12.029 ± 0.015 | - | 12.653 ± 0.044 | 11.839 ± 0.049 |
+| large | `grad_sum_eigh_jvp` | f64 | `256x256` | 5.489 ± 0.019 | 5.899 ± 0.015 | - | 3.060 ± 0.012 | 2.894 ± 0.044 |
+| large | `grad_sum_eigh_vjp` | f64 | `256x256` | 5.519 ± 0.035 | 2.992 ± 0.009 | - | 3.075 ± 0.377 | 2.957 ± 0.091 |
+| large | `grad_sum_lu_jvp` | f64 | `256x256` | 1.563 ± 0.005 | 2.469 ± 0.015 | - | 1.139 ± 0.006 | 0.893 ± 0.018 |
+| large | `grad_sum_lu_vjp` | f64 | `256x256` | 1.552 ± 0.005 | 1.359 ± 0.015 | - | 0.901 ± 0.005 | 0.902 ± 0.009 |
+| large | `grad_sum_qr_jvp` | f64 | `256x256` | 2.804 ± 0.014 | 2.993 ± 0.050 | - | 1.488 ± 0.012 | 1.553 ± 0.019 |
+| large | `grad_sum_qr_vjp` | f64 | `256x256` | 2.767 ± 0.009 | 1.757 ± 0.005 | - | 1.461 ± 0.013 | 1.489 ± 0.017 |
+| large | `grad_sum_solve_jvp` | f64 | `256x256,rhs=1` | 1.469 ± 0.006 | 1.626 ± 0.007 | - | 0.924 ± 0.010 | 0.883 ± 0.010 |
+| large | `grad_sum_solve_vjp` | f64 | `256x256,rhs=1` | 1.462 ± 0.007 | 0.910 ± 0.004 | - | 1.588 ± 0.014 | 0.904 ± 0.012 |
+| large | `grad_sum_svd_s_jvp` | f64 | `256x256` | 23.356 ± 0.032 | 23.526 ± 0.024 | - | 12.505 ± 0.040 | 11.691 ± 0.024 |
+| large | `grad_sum_svd_s_vjp` | f64 | `256x256` | 23.347 ± 0.035 | 11.782 ± 0.021 | - | 12.378 ± 0.059 | 11.693 ± 0.012 |
 
 ## Sampling and unsupported routes
 
@@ -103,7 +103,7 @@ Timed runs include the host API call and backend-native device synchronization w
 | linalg_ad_large_grad_sum_eigh_jvp_f64_256 | jax-cuda | 1 | 15 | steady_state_host_api_plus_device_sync |
 | linalg_ad_large_grad_sum_eigh_vjp_f64_256 | jax-cuda | 1 | 15 | steady_state_host_api_plus_device_sync |
 | linalg_ad_large_grad_sum_lu_jvp_f64_256 | jax-cuda | 4 | 15 | steady_state_host_api_plus_device_sync |
-| linalg_ad_large_grad_sum_lu_vjp_f64_256 | jax-cuda | 2 | 15 | steady_state_host_api_plus_device_sync |
+| linalg_ad_large_grad_sum_lu_vjp_f64_256 | jax-cuda | 4 | 15 | steady_state_host_api_plus_device_sync |
 | linalg_ad_large_grad_sum_solve_jvp_f64_256 | jax-cuda | 4 | 15 | steady_state_host_api_plus_device_sync |
 | linalg_ad_large_grad_sum_solve_vjp_f64_256 | jax-cuda | 4 | 15 | steady_state_host_api_plus_device_sync |
 
