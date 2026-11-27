@@ -49,7 +49,7 @@ SUITE_ID = "cpu/perf_issues"
 GPU_INSTANCES = ROOT / "data/instances/gpu_perf_issues.json"
 GPU_MANIFEST = ROOT / "benchmarks/gpu/manifests/perf_issues.yaml"
 GPU_SUITE = ROOT / "benchmarks/gpu/perf_issues.yaml"
-GPU_MANIFEST_VERSION = 12
+GPU_MANIFEST_VERSION = 13
 GPU_SUITE_ID = "gpu/perf_issues"
 
 DIAGNOSTIC_SCOPES = {"session_entry_diagnostic", "counter_diagnostic", "eager_ad_workflow",
@@ -1047,6 +1047,57 @@ def cpu_followup_cases():
                     rows.append(typed)
     return rows
 
+def gpu_matrix_norm_cases(gpu):
+    """#2636: matrix-norm composites move the whole input before the arithmetic."""
+    rows = []
+    intent = (
+        "tenferro-rs #2636: a matrix norm over explicit axes on an n x n f64 device matrix. "
+        "`one` (ord=1, the max column sum) and `inf` (the max row sum) take the composite "
+        "path: the operand is moved to the front first (an identity layout change that copies "
+        "the whole input) and the norm is two reduction passes. `frobenius` uses the same "
+        "explicit axes and the same input through the fused single-pass route, so both arms "
+        "read the identical 8*n*n bytes and the gap is that materialized copy plus the extra "
+        "pass, not a different amount of input. Fixture construction, upload and the host "
+        "reference are outside the timer; one device synchronize ends each batch. Throughput "
+        "row: the input read dominates.")
+    for n, orders in ((512, ("one", "frobenius")), (1024, ("one", "inf", "frobenius"))):
+        for order in orders:
+            row = case(
+                f"matrix_norm_{order}_f64_n{n}", ("#2636",), "matrix_norm",
+                {"n": n, "ord": order}, arm=order, backend="tenferro-cuda", dtype="f64",
+                reference_for=None if order == "frobenius" else f"matrix_norm_frobenius_f64_n{n}",
+                profiles=gpu, intent=intent)
+            row.update(regime="throughput", execution_path=order)
+            rows.append(row)
+    return rows
+
+
+def gpu_wide_reduction_cases(gpu):
+    """#2637: rank>8 reductions zero-fill the destination and allocate a partials buffer."""
+    rows = []
+    intent = (
+        "tenferro-rs #2637: sum over axis 0 of a rank-10 f64 device tensor (4^10 elements). The "
+        "`wide` arm takes the wide path above the reduction kernel's rank-8 limit, which "
+        "zero-fills the destination on every pass and allocates a zero-length partials tensor "
+        "for a direct reduction; the narrow path allocates its destination uninitialised. "
+        "`merged-narrow` reduces the identical elements through the rank-2 view [4, 4^9]: same "
+        "input bytes, same 2 MiB output, same fold, so the pair measures what a rank-10 operand "
+        "pays over the equivalent rank-2 one and the documented zero fill is part of that gap. "
+        "Fixture, upload and the host reference are outside the timer; one device synchronize "
+        "ends each batch. Throughput row: the input read and the destination write dominate at "
+        "this size.")
+    for arm, ref in (("wide", None), ("merged-narrow", "wide")):
+        row = case(
+            f"reduce_sum_axis0_f64_rank10_{arm}", ("#2637",), "wide_reduction",
+            {"rank": 10, "dim": 4}, arm=arm, backend="tenferro-cuda", dtype="f64",
+            reference_for=ref and f"reduce_sum_axis0_f64_rank10_{ref}", profiles=gpu,
+            intent=intent)
+        # 4^10 elements; the regime floor derives nothing from rank/dim.
+        row.update(regime="throughput", execution_path=arm, size_elements=4**10)
+        rows.append(row)
+    return rows
+
+
 def generate_gpu_cases():
     """gpu/perf_issues (CUDA): run by benchmark_gpu_perf_issues on the local device."""
     rows = []
@@ -1155,6 +1206,8 @@ def generate_gpu_cases():
     rows += gpu_contraction_cases(gpu)
     rows += gpu_borrowed_input_cases(gpu)
     rows += gpu_shape_stream_cases(gpu)
+    rows += gpu_matrix_norm_cases(gpu)
+    rows += gpu_wide_reduction_cases(gpu)
     return rows
 
 

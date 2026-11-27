@@ -24,11 +24,13 @@ use tenferro_gpu::cuda::raw::with_cuda_engine;
 use tenferro_gpu::cuda::{
     download_pending, download_tensor, upload_tensor, CudaDeviceId, CudaEngine, PinnedHostBuffer,
 };
-use tenferro_linalg::{Eigh, EighDriver, EighOptions, LinalgOps, Qr, Svd, SvdDriver, SvdOptions};
+use tenferro_linalg::{
+    Eigh, EighDriver, EighOptions, LinalgOps, NormOptions, NormOrd, Qr, Svd, SvdDriver, SvdOptions,
+};
 use tenferro_runtime::{CoreOps, ExecutionEngine};
 use tenferro_tensor::{
-    DotGeneralConfig, Engine, GatherConfig, Tensor, TensorDot, TensorElementwise, TensorRead,
-    TensorStructural, TensorView, TensorViewMut, TensorWrite,
+    AxisVec, DotGeneralConfig, Engine, GatherConfig, Tensor, TensorDot, TensorElementwise,
+    TensorRead, TensorStructural, TensorView, TensorViewMut, TensorWrite,
 };
 
 type BoxError = Box<dyn Error + Send + Sync>;
@@ -2752,6 +2754,127 @@ fn borrowed_input_gemm(params: &Value, timing: &Timing, device: usize) -> Result
     })
 }
 
+// ---------------------------------------------------------------------------
+// #2636: matrix-norm composites move the whole input before the arithmetic
+// ---------------------------------------------------------------------------
+
+/// The norm the case asks for, evaluated over the same host bytes.
+fn matrix_norm_host(data: &[f64], n: usize, ord: &str) -> Result<f64> {
+    Ok(match ord {
+        "one" => (0..n)
+            .map(|j| (0..n).map(|i| data[i + j * n].abs()).sum::<f64>())
+            .fold(0.0f64, f64::max),
+        "inf" => (0..n)
+            .map(|i| (0..n).map(|j| data[i + j * n].abs()).sum::<f64>())
+            .fold(0.0f64, f64::max),
+        "frobenius" => data.iter().map(|x| x * x).sum::<f64>().sqrt(),
+        other => return Err(format!("unknown matrix norm order {other}").into()),
+    })
+}
+
+fn matrix_norm(params: &Value, timing: &Timing, device: usize) -> Result<CaseOutcome> {
+    let n = param_usize(params, "n")?;
+    let ord = param_str(params, "ord")?;
+    let mut bk = backend(device)?;
+    let rt = bk.runtime().clone();
+    let data = values(n * n, 41);
+    let expected = matrix_norm_host(&data, n, ord)?;
+    let a = upload_tensor(&rt, &host(vec![n, n], data)?)?;
+    rt.synchronize()?;
+    let axes: AxisVec = [0isize, 1].into_iter().collect();
+    let options = NormOptions::default()
+        .ord(match ord {
+            "one" => NormOrd::P(1.0),
+            "inf" => NormOrd::Inf,
+            "frobenius" => NormOrd::Frobenius,
+            other => return Err(format!("unknown matrix norm order {other}").into()),
+        })
+        .axes(Some(axes));
+    // One input read for both arms; the composite arm adds the leading layout
+    // copy and the second reduction.
+    let bytes = n * n * 8;
+    let (error, value) = bk.with_backend_session(|s| -> Result<(f64, f64)> {
+        let out = a.norm_with(&options, s)?;
+        device_sync(s)?;
+        let got = download_tensor(&rt, &out)?.as_slice::<f64>()?.to_vec();
+        let error = worst_of(0.0, (got[0] - expected).abs() / expected.abs().max(1.0));
+        Ok((check_tol(error, 1e-10, "matrix norm")?, got[0]))
+    })??;
+    let m = bk.with_backend_session(|s| {
+        measure(timing, bytes, |it| {
+            timed_in_session(it, s, |s| Ok(a.norm_with(&options, s)?))
+        })
+    })??;
+    Ok(CaseOutcome {
+        max_rel_error: error,
+        measurement: Some(m),
+        timer: vec![
+            "one matrix norm over axes [0, 1] of an n x n f64 device matrix",
+            "device synchronize at the batch edge",
+        ],
+        outside_timer: vec![
+            "backend construction",
+            "host matrix construction and upload",
+            "host reference norm",
+        ],
+        extra: json!({"ord": ord, "n": n, "norm": value}),
+    })
+}
+
+// ---------------------------------------------------------------------------
+// #2637: rank>8 reductions zero-fill the destination and allocate partials
+// ---------------------------------------------------------------------------
+
+fn wide_reduction(params: &Value, timing: &Timing, device: usize) -> Result<CaseOutcome> {
+    let rank = param_usize(params, "rank")?;
+    let dim = param_usize(params, "dim")?;
+    let arm = param_str(params, "arm")?;
+    let mut bk = backend(device)?;
+    let rt = bk.runtime().clone();
+    let columns = dim.pow((rank - 1) as u32);
+    // The same elements and the same fold: reducing axis 0 of the rank-10
+    // tensor is reducing axis 0 of its rank-2 view.
+    let shape = match arm {
+        "wide" => vec![dim; rank],
+        "merged-narrow" => vec![dim, columns],
+        other => return Err(format!("unknown wide reduction arm {other}").into()),
+    };
+    let elements: usize = shape.iter().product();
+    let data: Vec<f64> = (0..elements).map(|i| 0.25 + (i % 7) as f64 / 8.0).collect();
+    let expected: Vec<f64> = (0..columns)
+        .map(|j| (0..dim).map(|i| data[i + j * dim]).sum())
+        .collect();
+    let a = upload_tensor(&rt, &host(shape, data)?)?;
+    rt.synchronize()?;
+    let bytes = elements * 8 + columns * 8;
+    let (error, front) = bk.with_backend_session(|s| -> Result<(f64, f64)> {
+        let out = a.reduce_sum(Some(&[0isize]), s)?;
+        device_sync(s)?;
+        let got = download_tensor(&rt, &out)?.as_slice::<f64>()?.to_vec();
+        let error = max_rel(&got, &expected);
+        Ok((check_tol(error, 1e-12, "wide reduction")?, got[0]))
+    })??;
+    let m = bk.with_backend_session(|s| {
+        measure(timing, bytes, |it| {
+            timed_in_session(it, s, |s| Ok(a.reduce_sum(Some(&[0isize]), s)?))
+        })
+    })??;
+    Ok(CaseOutcome {
+        max_rel_error: error,
+        measurement: Some(m),
+        timer: vec![
+            "one sum over axis 0 of a rank-10 f64 device tensor (wide path) or of its rank-2 view",
+            "device synchronize at the batch edge",
+        ],
+        outside_timer: vec![
+            "backend construction",
+            "host tensor construction and upload",
+            "host reference reduction",
+        ],
+        extra: json!({"rank": rank, "dim": dim, "front": front}),
+    })
+}
+
 fn main() -> Result<()> {
     let case_id = arg("--case").ok_or("--case is required")?;
     let params: Value = serde_json::from_str(&arg("--params").ok_or("--params is required")?)?;
@@ -2791,6 +2914,8 @@ fn main() -> Result<()> {
         "shape_stream" => shape_stream::run(&params, &timing, device),
         "owned_destination" => owned_destination(&params, &timing, device),
         "borrowed_input_gemm" => borrowed_input_gemm(&params, &timing, device),
+        "matrix_norm" => matrix_norm(&params, &timing, device),
+        "wide_reduction" => wide_reduction(&params, &timing, device),
         _ => Err(format!("unknown case kind {kind}").into()),
     }?;
     let mut output = json!({

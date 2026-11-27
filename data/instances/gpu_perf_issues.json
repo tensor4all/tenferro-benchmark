@@ -4665,5 +4665,179 @@
   ],
   "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with the CUDA extension-owned caches reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately, reporting the runtime's public allocation, launch and artifact/module cache counters (tenferro-gpu v0.8.0 removed the cuTENSOR plan/workspace counters and their capacity knob). This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
   "reference_for": "shape_stream_f64_n64_fixed-warm_counters"
+ },
+ {
+  "id": "matrix_norm_one_f64_n512",
+  "issues": [
+   "#2636"
+  ],
+  "kind": "matrix_norm",
+  "arm": "one",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "n": 512,
+   "ord": "one",
+   "kind": "matrix_norm",
+   "arm": "one",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2636: a matrix norm over explicit axes on an n x n f64 device matrix. `one` (ord=1, the max column sum) and `inf` (the max row sum) take the composite path: the operand is moved to the front first (an identity layout change that copies the whole input) and the norm is two reduction passes. `frobenius` uses the same explicit axes and the same input through the fused single-pass route, so both arms read the identical 8*n*n bytes and the gap is that materialized copy plus the extra pass, not a different amount of input. Fixture construction, upload and the host reference are outside the timer; one device synchronize ends each batch. Throughput row: the input read dominates.",
+  "reference_for": "matrix_norm_frobenius_f64_n512",
+  "regime": "throughput",
+  "execution_path": "one"
+ },
+ {
+  "id": "matrix_norm_frobenius_f64_n512",
+  "issues": [
+   "#2636"
+  ],
+  "kind": "matrix_norm",
+  "arm": "frobenius",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "n": 512,
+   "ord": "frobenius",
+   "kind": "matrix_norm",
+   "arm": "frobenius",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2636: a matrix norm over explicit axes on an n x n f64 device matrix. `one` (ord=1, the max column sum) and `inf` (the max row sum) take the composite path: the operand is moved to the front first (an identity layout change that copies the whole input) and the norm is two reduction passes. `frobenius` uses the same explicit axes and the same input through the fused single-pass route, so both arms read the identical 8*n*n bytes and the gap is that materialized copy plus the extra pass, not a different amount of input. Fixture construction, upload and the host reference are outside the timer; one device synchronize ends each batch. Throughput row: the input read dominates.",
+  "regime": "throughput",
+  "execution_path": "frobenius"
+ },
+ {
+  "id": "matrix_norm_one_f64_n1024",
+  "issues": [
+   "#2636"
+  ],
+  "kind": "matrix_norm",
+  "arm": "one",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "n": 1024,
+   "ord": "one",
+   "kind": "matrix_norm",
+   "arm": "one",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2636: a matrix norm over explicit axes on an n x n f64 device matrix. `one` (ord=1, the max column sum) and `inf` (the max row sum) take the composite path: the operand is moved to the front first (an identity layout change that copies the whole input) and the norm is two reduction passes. `frobenius` uses the same explicit axes and the same input through the fused single-pass route, so both arms read the identical 8*n*n bytes and the gap is that materialized copy plus the extra pass, not a different amount of input. Fixture construction, upload and the host reference are outside the timer; one device synchronize ends each batch. Throughput row: the input read dominates.",
+  "reference_for": "matrix_norm_frobenius_f64_n1024",
+  "regime": "throughput",
+  "execution_path": "one"
+ },
+ {
+  "id": "matrix_norm_inf_f64_n1024",
+  "issues": [
+   "#2636"
+  ],
+  "kind": "matrix_norm",
+  "arm": "inf",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "n": 1024,
+   "ord": "inf",
+   "kind": "matrix_norm",
+   "arm": "inf",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2636: a matrix norm over explicit axes on an n x n f64 device matrix. `one` (ord=1, the max column sum) and `inf` (the max row sum) take the composite path: the operand is moved to the front first (an identity layout change that copies the whole input) and the norm is two reduction passes. `frobenius` uses the same explicit axes and the same input through the fused single-pass route, so both arms read the identical 8*n*n bytes and the gap is that materialized copy plus the extra pass, not a different amount of input. Fixture construction, upload and the host reference are outside the timer; one device synchronize ends each batch. Throughput row: the input read dominates.",
+  "reference_for": "matrix_norm_frobenius_f64_n1024",
+  "regime": "throughput",
+  "execution_path": "inf"
+ },
+ {
+  "id": "matrix_norm_frobenius_f64_n1024",
+  "issues": [
+   "#2636"
+  ],
+  "kind": "matrix_norm",
+  "arm": "frobenius",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "n": 1024,
+   "ord": "frobenius",
+   "kind": "matrix_norm",
+   "arm": "frobenius",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2636: a matrix norm over explicit axes on an n x n f64 device matrix. `one` (ord=1, the max column sum) and `inf` (the max row sum) take the composite path: the operand is moved to the front first (an identity layout change that copies the whole input) and the norm is two reduction passes. `frobenius` uses the same explicit axes and the same input through the fused single-pass route, so both arms read the identical 8*n*n bytes and the gap is that materialized copy plus the extra pass, not a different amount of input. Fixture construction, upload and the host reference are outside the timer; one device synchronize ends each batch. Throughput row: the input read dominates.",
+  "regime": "throughput",
+  "execution_path": "frobenius"
+ },
+ {
+  "id": "reduce_sum_axis0_f64_rank10_wide",
+  "issues": [
+   "#2637"
+  ],
+  "kind": "wide_reduction",
+  "arm": "wide",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "rank": 10,
+   "dim": 4,
+   "kind": "wide_reduction",
+   "arm": "wide",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2637: sum over axis 0 of a rank-10 f64 device tensor (4^10 elements). The `wide` arm takes the wide path above the reduction kernel's rank-8 limit, which zero-fills the destination on every pass and allocates a zero-length partials tensor for a direct reduction; the narrow path allocates its destination uninitialised. `merged-narrow` reduces the identical elements through the rank-2 view [4, 4^9]: same input bytes, same 2 MiB output, same fold, so the pair measures what a rank-10 operand pays over the equivalent rank-2 one and the documented zero fill is part of that gap. Fixture, upload and the host reference are outside the timer; one device synchronize ends each batch. Throughput row: the input read and the destination write dominate at this size.",
+  "regime": "throughput",
+  "execution_path": "wide",
+  "size_elements": 1048576
+ },
+ {
+  "id": "reduce_sum_axis0_f64_rank10_merged-narrow",
+  "issues": [
+   "#2637"
+  ],
+  "kind": "wide_reduction",
+  "arm": "merged-narrow",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "rank": 10,
+   "dim": 4,
+   "kind": "wide_reduction",
+   "arm": "merged-narrow",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2637: sum over axis 0 of a rank-10 f64 device tensor (4^10 elements). The `wide` arm takes the wide path above the reduction kernel's rank-8 limit, which zero-fills the destination on every pass and allocates a zero-length partials tensor for a direct reduction; the narrow path allocates its destination uninitialised. `merged-narrow` reduces the identical elements through the rank-2 view [4, 4^9]: same input bytes, same 2 MiB output, same fold, so the pair measures what a rank-10 operand pays over the equivalent rank-2 one and the documented zero fill is part of that gap. Fixture, upload and the host reference are outside the timer; one device synchronize ends each batch. Throughput row: the input read and the destination write dominate at this size.",
+  "reference_for": "reduce_sum_axis0_f64_rank10_wide",
+  "regime": "throughput",
+  "execution_path": "merged-narrow",
+  "size_elements": 1048576
  }
 ]
