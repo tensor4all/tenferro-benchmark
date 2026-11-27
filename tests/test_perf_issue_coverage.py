@@ -26,6 +26,11 @@ EXISTING = {
         "reduce_prod_f64_n1048576": [2625],
         "reduce_max_f64_n1048576": [2625],
         "reduce_min_f64_n1048576": [2625],
+        "add_f64_n1048576": [2635],
+        "compare_f64_n1048576": [2635],
+        "where_select_f64_n1048576": [2635],
+        "mul_f64_n1048576": [2635],
+        "abs_f64_n1048576": [2635],
     },
     "data/instances/gpu_linalg_public_api.json": {
         "norm_f64_512x512": [2625],
@@ -101,6 +106,55 @@ class PerfIssueCoverageTest(unittest.TestCase):
         for issue, generated in (
             ("#2678", [row["id"] for row in gen.ad_prepare_cases()]),
             ("#2643", [row["id"] for row in gen.deep_reverse_mode_prepare_cases()]),
+        ):
+            self.assertEqual(
+                {case_id for case_id, case in cases.items() if issue in case["issues"]},
+                set(generated),
+            )
+
+    def test_matrix_norm_and_rank_gated_reduction_cases(self):
+        norm_rows = gen.gpu_matrix_norm_cases(("nvidia-gpu",))
+        self.assertEqual(
+            {row["id"] for row in norm_rows},
+            {
+                "matrix_norm_one_f64_n512",
+                "matrix_norm_frobenius_f64_n512",
+                "matrix_norm_one_f64_n1024",
+                "matrix_norm_inf_f64_n1024",
+                "matrix_norm_frobenius_f64_n1024",
+            },
+        )
+        for row in norm_rows:
+            self.assertEqual(row["kind"], "matrix_norm")
+            self.assertEqual(row["regime"], "throughput")
+            self.assertIn("#2636", row["issues"])
+            n = row["params"]["n"]
+            control = f"matrix_norm_frobenius_f64_n{n}"
+            if row["params"]["ord"] == "frobenius":
+                self.assertNotIn("reference_for", row)
+            else:
+                self.assertEqual(row["reference_for"], control)
+        reduce_rows = gen.gpu_wide_reduction_cases(("nvidia-gpu",))
+        self.assertEqual(
+            {row["id"]: row["arm"] for row in reduce_rows},
+            {
+                "reduce_sum_axis0_f64_rank10_wide": "wide",
+                "reduce_sum_axis0_f64_rank10_merged-narrow": "merged-narrow",
+            },
+        )
+        for row in reduce_rows:
+            self.assertEqual(row["kind"], "wide_reduction")
+            self.assertEqual(row["regime"], "throughput")
+            self.assertEqual(row["size_elements"], 4**10)
+            self.assertIn("#2637", row["issues"])
+        self.assertEqual(
+            {row["arm"]: row.get("reference_for") for row in reduce_rows},
+            {"wide": None, "merged-narrow": "reduce_sum_axis0_f64_rank10_wide"},
+        )
+        cases = entries("data/instances/gpu_perf_issues.json")
+        for issue, generated in (
+            ("#2636", [row["id"] for row in norm_rows]),
+            ("#2637", [row["id"] for row in reduce_rows]),
         ):
             self.assertEqual(
                 {case_id for case_id, case in cases.items() if issue in case["issues"]},
