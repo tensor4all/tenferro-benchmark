@@ -3,13 +3,13 @@
 - Target profile: `amd-cpu`
 - Suite: `cpu/permutation`
 - Suite file: `benchmarks/cpu/permutation.yaml`
-- Timestamp: `2026-11-26T19:42:52.574939+00:00`
+- Timestamp: `2026-11-27T19:34:40.270991+00:00`
 - tenferro-rs commit: `1ba9f33521691170c763dfce9b6c9bb56ca523c2`
 
 ## CPU Information
 
-- Model: `AMD EPYC 7763 64-Core Processor`
-- Vendor: `AuthenticAMD`
+- Model: `INTEL(R) XEON(R) PLATINUM 8573C`
+- Vendor: `GenuineIntel`
 - Logical CPUs: `4`
 - Sockets: `1`
 - Cores per socket: `2`
@@ -31,16 +31,16 @@ Median (p25 / p75) in ms. Missing backends are shown as `-`; the fastest backend
 
 | pattern | label | tenferro-rs (ms) | HPTT (ms) | strided-rs (ms) | Julia Base (ms) | Strided.jl (ms) | memcpy (ms) |
 |---|---|---:|---:|---:|---:|---:|---:|
-| `cyclic_15d_3` | 15D 3^15 cyclic [1,2,...,0] | 59.944 (59.771 / 60.111) | skipped (hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing) | 61.523 (61.377 / 61.886) | 82.574 (80.210 / 107.764) | **59.319 (57.801 / 84.402)** | - |
-| `memcpy_24d_contiguous` | memcpy baseline (24D 2^24) | - | - | **67.982 (67.838 / 68.576)** | - | - | 69.008 (68.606 / 69.494) |
-| `reverse_15d_3` | 15D 3^15 reverse | 108.292 (107.269 / 109.419) | skipped (hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing) | **96.419 (95.079 / 97.812)** | 278.245 (277.360 / 293.934) | 112.542 (111.593 / 137.686) | - |
-| `reverse_23d_2` | 23D 2^23 reverse | **31.131 (30.990 / 31.222)** | skipped (hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing) | 59.011 (58.789 / 59.169) | 272.658 (266.399 / 274.602) | 67.997 (66.790 / 88.792) | - |
-| `rotation_6d_32_32_32_32_16_16` | 6D 32^4x16x16 rotation [5,0,4,1,3,2] | **1261.356 (1254.738 / 1266.478)** | skipped (hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing) | 1387.296 (1376.962 / 1390.479) | 2054.319 (2037.349 / 2058.111) | 1622.853 (1615.131 / 1629.935) | - |
-| `tn_light_415_24d_contiguous_same_perm` | 24D contiguous source, TN light 415 late-step permutation | **67.392 (66.854 / 67.769)** | skipped (hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing) | 69.321 (69.121 / 69.990) | 122.740 (122.084 / 123.183) | 79.657 (79.034 / 80.168) | - |
-| `tn_light_415_24d_scattered_to_colmajor` | 24D scattered -> col-major | **71.314 (70.489 / 71.635)** | - | 72.105 (71.566 / 72.749) | 330.476 (320.587 / 332.860) | 82.368 (80.405 / 83.190) | - |
-| `transpose_2d_2048` | 2D 2048^2 transpose [1,0] | **7.736 (7.683 / 7.849)** | skipped (hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing) | 20.754 (20.600 / 21.008) | 50.503 (50.352 / 50.606) | 33.090 (33.022 / 33.175) | - |
-| `transpose_3d_256_102` | 3D 256^3 transpose [1,0,2] | 83.315 (82.824 / 83.598) | skipped (hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing) | **81.380 (81.024 / 81.594)** | 109.574 (106.291 / 110.061) | 104.886 (103.225 / 107.218) | - |
-| `transpose_3d_256_201` | 3D 256^3 transpose [2,0,1] | 83.927 (83.568 / 84.305) | skipped (hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing) | **82.840 (82.546 / 82.975)** | 148.333 (146.501 / 149.199) | 137.066 (135.720 / 137.321) | - |
+| `cyclic_15d_3` | 15D 3^15 cyclic [1,2,...,0] | **57.297 (57.073 / 57.419)** | skipped (hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing) | 58.469 (58.400 / 58.593) | 84.855 (82.513 / 94.400) | 59.294 (58.265 / 67.628) | - |
+| `memcpy_24d_contiguous` | memcpy baseline (24D 2^24) | - | - | 66.319 (66.245 / 66.637) | - | - | **66.161 (66.032 / 66.517)** |
+| `reverse_15d_3` | 15D 3^15 reverse | 97.307 (96.850 / 98.013) | skipped (hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing) | **90.666 (90.501 / 90.777)** | 210.960 (208.653 / 224.365) | 107.858 (106.731 / 121.798) | - |
+| `reverse_23d_2` | 23D 2^23 reverse | **26.097 (25.956 / 26.281)** | skipped (hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing) | 49.672 (48.923 / 49.998) | 181.546 (179.883 / 183.264) | 83.628 (80.669 / 93.918) | - |
+| `rotation_6d_32_32_32_32_16_16` | 6D 32^4x16x16 rotation [5,0,4,1,3,2] | **1082.272 (1066.635 / 1098.709)** | skipped (hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing) | 1146.787 (1139.744 / 1155.501) | 1491.112 (1457.904 / 1495.258) | 1172.253 (1158.219 / 1180.265) | - |
+| `tn_light_415_24d_contiguous_same_perm` | 24D contiguous source, TN light 415 late-step permutation | 57.677 (56.377 / 57.929) | skipped (hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing) | **57.002 (56.508 / 57.226)** | 96.127 (95.896 / 99.682) | 73.502 (69.769 / 73.801) | - |
+| `tn_light_415_24d_scattered_to_colmajor` | 24D scattered -> col-major | 59.677 (58.889 / 60.018) | - | **58.977 (58.620 / 59.422)** | 246.578 (243.290 / 250.614) | 78.347 (77.297 / 79.041) | - |
+| `transpose_2d_2048` | 2D 2048^2 transpose [1,0] | **10.138 (9.184 / 10.574)** | skipped (hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing) | 25.437 (24.668 / 26.420) | 34.859 (34.662 / 35.111) | 22.308 (22.196 / 22.486) | - |
+| `transpose_3d_256_102` | 3D 256^3 transpose [1,0,2] | **69.128 (68.673 / 69.938)** | skipped (hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing) | 69.444 (69.138 / 69.749) | 85.375 (83.748 / 85.845) | 80.219 (78.612 / 80.697) | - |
+| `transpose_3d_256_201` | 3D 256^3 transpose [2,0,1] | 185.928 (185.280 / 187.337) | skipped (hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing) | 170.986 (170.434 / 172.650) | 86.645 (85.189 / 87.095) | **79.706 (79.052 / 80.008)** | - |
 
 ## Threads: 4
 
@@ -48,13 +48,13 @@ Median (p25 / p75) in ms. Missing backends are shown as `-`; the fastest backend
 
 | pattern | label | tenferro-rs (ms) | HPTT (ms) | strided-rs (ms) | Julia Base (ms) | Strided.jl (ms) | memcpy (ms) |
 |---|---|---:|---:|---:|---:|---:|---:|
-| `cyclic_15d_3` | 15D 3^15 cyclic [1,2,...,0] | 22.147 (22.021 / 22.415) | skipped (hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing) | 20.053 (19.454 / 20.118) | 79.723 (77.448 / 101.659) | **19.917 (19.010 / 36.896)** | - |
-| `memcpy_24d_contiguous` | memcpy baseline (24D 2^24) | - | - | **67.860 (67.116 / 68.439)** | - | - | 68.185 (67.316 / 68.674) |
-| `reverse_15d_3` | 15D 3^15 reverse | 59.844 (58.943 / 60.077) | skipped (hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing) | 55.536 (55.129 / 56.250) | 277.872 (275.487 / 299.729) | **46.297 (43.762 / 75.345)** | - |
-| `reverse_23d_2` | 23D 2^23 reverse | 27.013 (26.920 / 27.449) | skipped (hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing) | 43.807 (43.227 / 44.240) | 284.275 (279.725 / 288.368) | **26.791 (26.390 / 26.819)** | - |
-| `rotation_6d_32_32_32_32_16_16` | 6D 32^4x16x16 rotation [5,0,4,1,3,2] | **494.490 (477.546 / 527.700)** | skipped (hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing) | 566.215 (509.550 / 600.584) | 2011.241 (1991.780 / 2026.856) | 723.117 (665.262 / 730.996) | - |
-| `tn_light_415_24d_contiguous_same_perm` | 24D contiguous source, TN light 415 late-step permutation | 23.763 (23.541 / 23.883) | skipped (hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing) | **23.035 (22.877 / 23.685)** | 122.222 (121.610 / 122.757) | 37.810 (35.062 / 48.679) | - |
-| `tn_light_415_24d_scattered_to_colmajor` | 24D scattered -> col-major | 26.363 (26.224 / 26.709) | - | **26.158 (26.009 / 26.307)** | 333.611 (330.874 / 339.697) | 38.091 (36.256 / 39.010) | - |
-| `transpose_2d_2048` | 2D 2048^2 transpose [1,0] | **3.476 (3.443 / 3.519)** | skipped (hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing) | 8.031 (7.958 / 8.117) | 50.488 (50.320 / 50.678) | 14.235 (14.046 / 14.514) | - |
-| `transpose_3d_256_102` | 3D 256^3 transpose [1,0,2] | 28.831 (28.539 / 29.171) | skipped (hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing) | **28.465 (28.303 / 28.801)** | 108.571 (106.511 / 109.337) | 42.188 (41.639 / 42.322) | - |
-| `transpose_3d_256_201` | 3D 256^3 transpose [2,0,1] | 28.743 (28.563 / 29.303) | skipped (hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing) | **28.335 (28.149 / 28.493)** | 149.334 (146.987 / 149.763) | 56.146 (53.730 / 56.455) | - |
+| `cyclic_15d_3` | 15D 3^15 cyclic [1,2,...,0] | 21.111 (20.943 / 21.605) | skipped (hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing) | **19.233 (19.187 / 19.485)** | 82.080 (81.762 / 88.771) | 21.162 (20.701 / 36.672) | - |
+| `memcpy_24d_contiguous` | memcpy baseline (24D 2^24) | - | - | **66.784 (66.407 / 67.065)** | - | - | 68.403 (67.407 / 68.865) |
+| `reverse_15d_3` | 15D 3^15 reverse | 56.121 (56.016 / 56.524) | skipped (hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing) | 54.387 (54.124 / 54.798) | 207.403 (205.380 / 216.037) | **53.076 (49.676 / 70.338)** | - |
+| `reverse_23d_2` | 23D 2^23 reverse | 50.911 (50.486 / 51.192) | skipped (hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing) | 36.515 (36.402 / 36.693) | 182.255 (179.727 / 191.071) | **30.101 (29.921 / 30.687)** | - |
+| `rotation_6d_32_32_32_32_16_16` | 6D 32^4x16x16 rotation [5,0,4,1,3,2] | **423.024 (419.705 / 459.389)** | skipped (hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing) | 440.894 (430.287 / 457.045) | 1411.020 (1404.285 / 1419.182) | 508.440 (504.672 / 525.604) | - |
+| `tn_light_415_24d_contiguous_same_perm` | 24D contiguous source, TN light 415 late-step permutation | 20.980 (20.861 / 21.163) | skipped (hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing) | **20.608 (20.516 / 20.823)** | 104.859 (104.475 / 104.955) | 34.008 (33.693 / 34.166) | - |
+| `tn_light_415_24d_scattered_to_colmajor` | 24D scattered -> col-major | 24.702 (24.561 / 25.188) | - | **21.580 (21.446 / 21.911)** | 233.455 (232.203 / 234.253) | 36.176 (35.370 / 36.291) | - |
+| `transpose_2d_2048` | 2D 2048^2 transpose [1,0] | **3.939 (3.778 / 4.384)** | skipped (hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing) | 7.109 (6.976 / 7.252) | 33.039 (32.704 / 33.310) | 9.779 (9.421 / 9.902) | - |
+| `transpose_3d_256_102` | 3D 256^3 transpose [1,0,2] | **27.385 (27.188 / 27.666)** | skipped (hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing) | 27.574 (27.406 / 27.729) | 84.546 (82.102 / 85.108) | 36.106 (35.784 / 37.237) | - |
+| `transpose_3d_256_201` | 3D 256^3 transpose [2,0,1] | **26.829 (26.588 / 26.999)** | skipped (hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing) | 27.224 (27.066 / 27.539) | 84.910 (83.906 / 85.367) | 35.393 (35.070 / 36.026) | - |

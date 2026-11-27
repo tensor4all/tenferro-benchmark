@@ -2,11 +2,11 @@
   "schema_version": 1,
   "target_profile": "amd-cpu",
   "suite_id": "cpu/einsum",
-  "timestamp": "2026-11-26T18:32:25.628209+00:00",
+  "timestamp": "2026-11-27T18:30:55.648913+00:00",
   "tenferro_commit": "1ba9f33521691170c763dfce9b6c9bb56ca523c2",
   "hardware": {
-    "cpu": "AMD EPYC 7763 64-Core Processor",
-    "host": "efb413200329",
+    "cpu": "INTEL(R) XEON(R) PLATINUM 8573C",
+    "host": "41f9d7d2b8f3",
     "threads": [
       1,
       4
@@ -18,8 +18,8 @@
       "case": "bin_batched_matmul_b32_m128_n128_k128",
       "group": "Threads: 1 / opt_flops",
       "backend": "jax-cpu",
-      "median": 4.282,
-      "iqr": 0.098,
+      "median": 4.819,
+      "iqr": 0.082,
       "status": "ok",
       "verified": true
     },
@@ -27,8 +27,8 @@
       "case": "bin_batched_matmul_b32_m128_n128_k128",
       "group": "Threads: 1 / opt_flops",
       "backend": "omeinsum_path",
-      "median": 9.577,
-      "iqr": 3.219,
+      "median": 8.074,
+      "iqr": 4.977,
       "status": "ok",
       "verified": true
     },
@@ -36,1304 +36,1304 @@
       "case": "bin_batched_matmul_b32_m128_n128_k128",
       "group": "Threads: 1 / opt_flops",
       "backend": "pytorch-cpu",
-      "median": 4.268,
-      "iqr": 0.326,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_matmul_b32_m128_n128_k128",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "tenferro-eager",
-      "median": 2.914,
-      "iqr": 0.018,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_matmul_b32_m128_n128_k128",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "tenferro-trace",
-      "median": 4.135,
-      "iqr": 0.444,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_matmul_b32_m128_n128_k128",
-      "group": "Threads: 1 / opt_size",
-      "backend": "jax-cpu",
-      "median": 4.282,
-      "iqr": 0.098,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_matmul_b32_m128_n128_k128",
-      "group": "Threads: 1 / opt_size",
-      "backend": "omeinsum_path",
-      "median": 9.577,
-      "iqr": 3.219,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_matmul_b32_m128_n128_k128",
-      "group": "Threads: 1 / opt_size",
-      "backend": "pytorch-cpu",
-      "median": 4.268,
-      "iqr": 0.326,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_matmul_b32_m128_n128_k128",
-      "group": "Threads: 1 / opt_size",
-      "backend": "tenferro-eager",
-      "median": 2.914,
-      "iqr": 0.018,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_matmul_b32_m128_n128_k128",
-      "group": "Threads: 1 / opt_size",
-      "backend": "tenferro-trace",
-      "median": 4.135,
-      "iqr": 0.444,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_matmul_b32_m128_n128_k128",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "jax-cpu",
-      "median": 2.895,
-      "iqr": 0.605,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_matmul_b32_m128_n128_k128",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "omeinsum_path",
-      "median": 12.887,
-      "iqr": 6.332,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_matmul_b32_m128_n128_k128",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "pytorch-cpu",
-      "median": 2.306,
-      "iqr": 0.105,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_matmul_b32_m128_n128_k128",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "tenferro-eager",
-      "median": 1.731,
-      "iqr": 0.011,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_matmul_b32_m128_n128_k128",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "tenferro-trace",
-      "median": 2.423,
-      "iqr": 0.046,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_matmul_b32_m128_n128_k128",
-      "group": "Threads: 4 / opt_size",
-      "backend": "jax-cpu",
-      "median": 2.895,
-      "iqr": 0.605,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_matmul_b32_m128_n128_k128",
-      "group": "Threads: 4 / opt_size",
-      "backend": "omeinsum_path",
-      "median": 12.887,
-      "iqr": 6.332,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_matmul_b32_m128_n128_k128",
-      "group": "Threads: 4 / opt_size",
-      "backend": "pytorch-cpu",
-      "median": 2.306,
-      "iqr": 0.105,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_matmul_b32_m128_n128_k128",
-      "group": "Threads: 4 / opt_size",
-      "backend": "tenferro-eager",
-      "median": 1.731,
-      "iqr": 0.011,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_matmul_b32_m128_n128_k128",
-      "group": "Threads: 4 / opt_size",
-      "backend": "tenferro-trace",
-      "median": 2.423,
-      "iqr": 0.046,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_matmul_b32_m64_n64_k64",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "jax-cpu",
-      "median": 0.83,
-      "iqr": 0.015,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_matmul_b32_m64_n64_k64",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "omeinsum_path",
-      "median": 1.493,
-      "iqr": 1.129,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_matmul_b32_m64_n64_k64",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "pytorch-cpu",
-      "median": 0.66,
-      "iqr": 0.016,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_matmul_b32_m64_n64_k64",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "tenferro-eager",
-      "median": 0.406,
-      "iqr": 0.015,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_matmul_b32_m64_n64_k64",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "tenferro-trace",
-      "median": 0.54,
-      "iqr": 0.028,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_matmul_b32_m64_n64_k64",
-      "group": "Threads: 1 / opt_size",
-      "backend": "jax-cpu",
-      "median": 0.83,
-      "iqr": 0.015,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_matmul_b32_m64_n64_k64",
-      "group": "Threads: 1 / opt_size",
-      "backend": "omeinsum_path",
-      "median": 1.493,
-      "iqr": 1.129,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_matmul_b32_m64_n64_k64",
-      "group": "Threads: 1 / opt_size",
-      "backend": "pytorch-cpu",
-      "median": 0.66,
-      "iqr": 0.016,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_matmul_b32_m64_n64_k64",
-      "group": "Threads: 1 / opt_size",
-      "backend": "tenferro-eager",
-      "median": 0.406,
-      "iqr": 0.015,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_matmul_b32_m64_n64_k64",
-      "group": "Threads: 1 / opt_size",
-      "backend": "tenferro-trace",
-      "median": 0.54,
-      "iqr": 0.028,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_matmul_b32_m64_n64_k64",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "jax-cpu",
-      "median": 0.842,
-      "iqr": 0.028,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_matmul_b32_m64_n64_k64",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "omeinsum_path",
-      "median": 1.702,
-      "iqr": 1.419,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_matmul_b32_m64_n64_k64",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "pytorch-cpu",
-      "median": 0.38,
-      "iqr": 0.028,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_matmul_b32_m64_n64_k64",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "tenferro-eager",
-      "median": 0.458,
-      "iqr": 0.015,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_matmul_b32_m64_n64_k64",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "tenferro-trace",
-      "median": 0.578,
-      "iqr": 0.015,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_matmul_b32_m64_n64_k64",
-      "group": "Threads: 4 / opt_size",
-      "backend": "jax-cpu",
-      "median": 0.842,
-      "iqr": 0.028,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_matmul_b32_m64_n64_k64",
-      "group": "Threads: 4 / opt_size",
-      "backend": "omeinsum_path",
-      "median": 1.702,
-      "iqr": 1.419,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_matmul_b32_m64_n64_k64",
-      "group": "Threads: 4 / opt_size",
-      "backend": "pytorch-cpu",
-      "median": 0.38,
-      "iqr": 0.028,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_matmul_b32_m64_n64_k64",
-      "group": "Threads: 4 / opt_size",
-      "backend": "tenferro-eager",
-      "median": 0.458,
-      "iqr": 0.015,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_matmul_b32_m64_n64_k64",
-      "group": "Threads: 4 / opt_size",
-      "backend": "tenferro-trace",
-      "median": 0.578,
-      "iqr": 0.015,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "jax-cpu",
-      "median": 0.608,
-      "iqr": 0.034,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "omeinsum_path",
-      "median": 3.935,
-      "iqr": 2.538,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "pytorch-cpu",
-      "median": 0.208,
-      "iqr": 0.024,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "tenferro-eager",
-      "median": 0.743,
-      "iqr": 0.016,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "tenferro-trace",
-      "median": 0.748,
-      "iqr": 0.015,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
-      "group": "Threads: 1 / opt_size",
-      "backend": "jax-cpu",
-      "median": 0.608,
-      "iqr": 0.034,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
-      "group": "Threads: 1 / opt_size",
-      "backend": "omeinsum_path",
-      "median": 3.935,
-      "iqr": 2.538,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
-      "group": "Threads: 1 / opt_size",
-      "backend": "pytorch-cpu",
-      "median": 0.208,
-      "iqr": 0.024,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
-      "group": "Threads: 1 / opt_size",
-      "backend": "tenferro-eager",
-      "median": 0.743,
-      "iqr": 0.016,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
-      "group": "Threads: 1 / opt_size",
-      "backend": "tenferro-trace",
-      "median": 0.748,
-      "iqr": 0.015,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "jax-cpu",
-      "median": 0.468,
-      "iqr": 0.036,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "omeinsum_path",
-      "median": 3.869,
-      "iqr": 2.028,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "pytorch-cpu",
-      "median": 0.17,
-      "iqr": 0.062,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "tenferro-eager",
-      "median": 0.433,
-      "iqr": 0.018,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "tenferro-trace",
-      "median": 0.426,
-      "iqr": 0.014,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
-      "group": "Threads: 4 / opt_size",
-      "backend": "jax-cpu",
-      "median": 0.468,
-      "iqr": 0.036,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
-      "group": "Threads: 4 / opt_size",
-      "backend": "omeinsum_path",
-      "median": 3.869,
-      "iqr": 2.028,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
-      "group": "Threads: 4 / opt_size",
-      "backend": "pytorch-cpu",
-      "median": 0.17,
-      "iqr": 0.062,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
-      "group": "Threads: 4 / opt_size",
-      "backend": "tenferro-eager",
-      "median": 0.433,
-      "iqr": 0.018,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
-      "group": "Threads: 4 / opt_size",
-      "backend": "tenferro-trace",
-      "median": 0.426,
-      "iqr": 0.014,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "jax-cpu",
-      "median": 0.602,
-      "iqr": 0.026,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "omeinsum_path",
-      "median": 4.954,
-      "iqr": 8.757,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "pytorch-cpu",
-      "median": 0.197,
-      "iqr": 0.014,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "tenferro-eager",
-      "median": 0.76,
-      "iqr": 0.002,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "tenferro-trace",
-      "median": 1.192,
-      "iqr": 0.008,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
-      "group": "Threads: 1 / opt_size",
-      "backend": "jax-cpu",
-      "median": 0.602,
-      "iqr": 0.026,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
-      "group": "Threads: 1 / opt_size",
-      "backend": "omeinsum_path",
-      "median": 4.954,
-      "iqr": 8.757,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
-      "group": "Threads: 1 / opt_size",
-      "backend": "pytorch-cpu",
-      "median": 0.197,
-      "iqr": 0.014,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
-      "group": "Threads: 1 / opt_size",
-      "backend": "tenferro-eager",
-      "median": 0.76,
-      "iqr": 0.002,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
-      "group": "Threads: 1 / opt_size",
-      "backend": "tenferro-trace",
-      "median": 1.192,
-      "iqr": 0.008,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "jax-cpu",
-      "median": 0.447,
-      "iqr": 0.032,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "omeinsum_path",
-      "median": 4.91,
-      "iqr": 2.576,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "pytorch-cpu",
-      "median": 0.133,
-      "iqr": 0.022,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "tenferro-eager",
-      "median": 0.425,
-      "iqr": 0.015,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "tenferro-trace",
-      "median": 0.3,
-      "iqr": 0.013,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
-      "group": "Threads: 4 / opt_size",
-      "backend": "jax-cpu",
-      "median": 0.447,
-      "iqr": 0.032,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
-      "group": "Threads: 4 / opt_size",
-      "backend": "omeinsum_path",
-      "median": 4.91,
-      "iqr": 2.576,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
-      "group": "Threads: 4 / opt_size",
-      "backend": "pytorch-cpu",
-      "median": 0.133,
-      "iqr": 0.022,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
-      "group": "Threads: 4 / opt_size",
-      "backend": "tenferro-eager",
-      "median": 0.425,
-      "iqr": 0.015,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
-      "group": "Threads: 4 / opt_size",
-      "backend": "tenferro-trace",
-      "median": 0.3,
-      "iqr": 0.013,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_2048x2048",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "jax-cpu",
-      "median": 18.315,
-      "iqr": 0.344,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_2048x2048",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "omeinsum_path",
-      "median": 18.517,
-      "iqr": 4.355,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_2048x2048",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "pytorch-cpu",
-      "median": 16.696,
-      "iqr": 0.552,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_2048x2048",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "tenferro-eager",
-      "median": 1.886,
-      "iqr": 0.152,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_2048x2048",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "tenferro-trace",
-      "median": 2.07,
-      "iqr": 0.098,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_2048x2048",
-      "group": "Threads: 1 / opt_size",
-      "backend": "jax-cpu",
-      "median": 18.315,
-      "iqr": 0.344,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_2048x2048",
-      "group": "Threads: 1 / opt_size",
-      "backend": "omeinsum_path",
-      "median": 18.517,
-      "iqr": 4.355,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_2048x2048",
-      "group": "Threads: 1 / opt_size",
-      "backend": "pytorch-cpu",
-      "median": 16.696,
-      "iqr": 0.552,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_2048x2048",
-      "group": "Threads: 1 / opt_size",
-      "backend": "tenferro-eager",
-      "median": 1.886,
-      "iqr": 0.152,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_2048x2048",
-      "group": "Threads: 1 / opt_size",
-      "backend": "tenferro-trace",
-      "median": 2.07,
-      "iqr": 0.098,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_2048x2048",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "jax-cpu",
-      "median": 9.566,
-      "iqr": 0.308,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_2048x2048",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "omeinsum_path",
-      "median": 18.962,
-      "iqr": 0.464,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_2048x2048",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "pytorch-cpu",
-      "median": 5.781,
-      "iqr": 0.282,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_2048x2048",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "tenferro-eager",
-      "median": 0.844,
-      "iqr": 0.024,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_2048x2048",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "tenferro-trace",
-      "median": 0.978,
-      "iqr": 0.034,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_2048x2048",
-      "group": "Threads: 4 / opt_size",
-      "backend": "jax-cpu",
-      "median": 9.566,
-      "iqr": 0.308,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_2048x2048",
-      "group": "Threads: 4 / opt_size",
-      "backend": "omeinsum_path",
-      "median": 18.962,
-      "iqr": 0.464,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_2048x2048",
-      "group": "Threads: 4 / opt_size",
-      "backend": "pytorch-cpu",
-      "median": 5.781,
-      "iqr": 0.282,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_2048x2048",
-      "group": "Threads: 4 / opt_size",
-      "backend": "tenferro-eager",
-      "median": 0.844,
-      "iqr": 0.024,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_2048x2048",
-      "group": "Threads: 4 / opt_size",
-      "backend": "tenferro-trace",
-      "median": 0.978,
-      "iqr": 0.034,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_512x512",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "jax-cpu",
-      "median": 0.353,
-      "iqr": 0.016,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_512x512",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "omeinsum_path",
-      "median": 0.169,
-      "iqr": 0.799,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_512x512",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "pytorch-cpu",
-      "median": 0.142,
-      "iqr": 0.019,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_512x512",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "tenferro-eager",
-      "median": 0.134,
-      "iqr": 0.02,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_512x512",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "tenferro-trace",
-      "median": 0.125,
-      "iqr": 0.015,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_512x512",
-      "group": "Threads: 1 / opt_size",
-      "backend": "jax-cpu",
-      "median": 0.353,
-      "iqr": 0.016,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_512x512",
-      "group": "Threads: 1 / opt_size",
-      "backend": "omeinsum_path",
-      "median": 0.169,
-      "iqr": 0.799,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_512x512",
-      "group": "Threads: 1 / opt_size",
-      "backend": "pytorch-cpu",
-      "median": 0.142,
-      "iqr": 0.019,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_512x512",
-      "group": "Threads: 1 / opt_size",
-      "backend": "tenferro-eager",
-      "median": 0.134,
-      "iqr": 0.02,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_512x512",
-      "group": "Threads: 1 / opt_size",
-      "backend": "tenferro-trace",
-      "median": 0.125,
-      "iqr": 0.015,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_512x512",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "jax-cpu",
-      "median": 0.38,
-      "iqr": 0.028,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_512x512",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "omeinsum_path",
-      "median": 0.164,
-      "iqr": 0.777,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_512x512",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "pytorch-cpu",
-      "median": 0.153,
-      "iqr": 0.031,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_512x512",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "tenferro-eager",
-      "median": 0.141,
-      "iqr": 0.007,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_512x512",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "tenferro-trace",
-      "median": 0.147,
-      "iqr": 0.03,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_512x512",
-      "group": "Threads: 4 / opt_size",
-      "backend": "jax-cpu",
-      "median": 0.38,
-      "iqr": 0.028,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_512x512",
-      "group": "Threads: 4 / opt_size",
-      "backend": "omeinsum_path",
-      "median": 0.164,
-      "iqr": 0.777,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_512x512",
-      "group": "Threads: 4 / opt_size",
-      "backend": "pytorch-cpu",
-      "median": 0.153,
-      "iqr": 0.031,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_512x512",
-      "group": "Threads: 4 / opt_size",
-      "backend": "tenferro-eager",
-      "median": 0.141,
-      "iqr": 0.007,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_elementwise_mul_512x512",
-      "group": "Threads: 4 / opt_size",
-      "backend": "tenferro-trace",
-      "median": 0.147,
-      "iqr": 0.03,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_matmul_1024",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "jax-cpu",
-      "median": 63.117,
-      "iqr": 0.737,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_matmul_1024",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "omeinsum_path",
-      "median": 69.369,
-      "iqr": 8.691,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_matmul_1024",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "pytorch-cpu",
-      "median": 60.61,
-      "iqr": 0.517,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_matmul_1024",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "tenferro-eager",
-      "median": 48.513,
-      "iqr": 0.171,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_matmul_1024",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "tenferro-trace",
-      "median": 128.418,
-      "iqr": 0.535,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_matmul_1024",
-      "group": "Threads: 1 / opt_size",
-      "backend": "jax-cpu",
-      "median": 63.117,
-      "iqr": 0.737,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_matmul_1024",
-      "group": "Threads: 1 / opt_size",
-      "backend": "omeinsum_path",
-      "median": 69.369,
-      "iqr": 8.691,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_matmul_1024",
-      "group": "Threads: 1 / opt_size",
-      "backend": "pytorch-cpu",
-      "median": 60.61,
-      "iqr": 0.517,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_matmul_1024",
-      "group": "Threads: 1 / opt_size",
-      "backend": "tenferro-eager",
-      "median": 48.513,
-      "iqr": 0.171,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_matmul_1024",
-      "group": "Threads: 1 / opt_size",
-      "backend": "tenferro-trace",
-      "median": 128.418,
-      "iqr": 0.535,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_matmul_1024",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "jax-cpu",
-      "median": 36.182,
-      "iqr": 0.412,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_matmul_1024",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "omeinsum_path",
-      "median": 50.801,
-      "iqr": 8.052,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_matmul_1024",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "pytorch-cpu",
-      "median": 35.83,
-      "iqr": 0.587,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_matmul_1024",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "tenferro-eager",
-      "median": 22.886,
-      "iqr": 0.129,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_matmul_1024",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "tenferro-trace",
-      "median": 44.216,
-      "iqr": 0.994,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_matmul_1024",
-      "group": "Threads: 4 / opt_size",
-      "backend": "jax-cpu",
-      "median": 36.182,
-      "iqr": 0.412,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_matmul_1024",
-      "group": "Threads: 4 / opt_size",
-      "backend": "omeinsum_path",
-      "median": 50.801,
-      "iqr": 8.052,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_matmul_1024",
-      "group": "Threads: 4 / opt_size",
-      "backend": "pytorch-cpu",
-      "median": 35.83,
-      "iqr": 0.587,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_matmul_1024",
-      "group": "Threads: 4 / opt_size",
-      "backend": "tenferro-eager",
-      "median": 22.886,
-      "iqr": 0.129,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_matmul_1024",
-      "group": "Threads: 4 / opt_size",
-      "backend": "tenferro-trace",
-      "median": 44.216,
-      "iqr": 0.994,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_matmul_256",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "jax-cpu",
-      "median": 1.224,
+      "median": 1.636,
       "iqr": 0.017,
       "status": "ok",
       "verified": true
     },
     {
-      "case": "bin_matmul_256",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "omeinsum_path",
-      "median": 1.257,
-      "iqr": 0.438,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_matmul_256",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "pytorch-cpu",
-      "median": 1.358,
-      "iqr": 0.011,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_matmul_256",
+      "case": "bin_batched_matmul_b32_m128_n128_k128",
       "group": "Threads: 1 / opt_flops",
       "backend": "tenferro-eager",
-      "median": 0.749,
-      "iqr": 0.006,
+      "median": 1.611,
+      "iqr": 0.019,
       "status": "ok",
       "verified": true
     },
     {
-      "case": "bin_matmul_256",
+      "case": "bin_batched_matmul_b32_m128_n128_k128",
       "group": "Threads: 1 / opt_flops",
       "backend": "tenferro-trace",
-      "median": 1.202,
-      "iqr": 0.052,
+      "median": 2.29,
+      "iqr": 0.043,
       "status": "ok",
       "verified": true
     },
     {
-      "case": "bin_matmul_256",
+      "case": "bin_batched_matmul_b32_m128_n128_k128",
       "group": "Threads: 1 / opt_size",
       "backend": "jax-cpu",
-      "median": 1.224,
+      "median": 4.819,
+      "iqr": 0.082,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_matmul_b32_m128_n128_k128",
+      "group": "Threads: 1 / opt_size",
+      "backend": "omeinsum_path",
+      "median": 8.074,
+      "iqr": 4.977,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_matmul_b32_m128_n128_k128",
+      "group": "Threads: 1 / opt_size",
+      "backend": "pytorch-cpu",
+      "median": 1.636,
       "iqr": 0.017,
       "status": "ok",
       "verified": true
     },
     {
+      "case": "bin_batched_matmul_b32_m128_n128_k128",
+      "group": "Threads: 1 / opt_size",
+      "backend": "tenferro-eager",
+      "median": 1.611,
+      "iqr": 0.019,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_matmul_b32_m128_n128_k128",
+      "group": "Threads: 1 / opt_size",
+      "backend": "tenferro-trace",
+      "median": 2.29,
+      "iqr": 0.043,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_matmul_b32_m128_n128_k128",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "jax-cpu",
+      "median": 3.384,
+      "iqr": 0.64,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_matmul_b32_m128_n128_k128",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "omeinsum_path",
+      "median": 13.706,
+      "iqr": 7.448,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_matmul_b32_m128_n128_k128",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "pytorch-cpu",
+      "median": 0.847,
+      "iqr": 0.024,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_matmul_b32_m128_n128_k128",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "tenferro-eager",
+      "median": 1.386,
+      "iqr": 0.021,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_matmul_b32_m128_n128_k128",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "tenferro-trace",
+      "median": 1.859,
+      "iqr": 0.015,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_matmul_b32_m128_n128_k128",
+      "group": "Threads: 4 / opt_size",
+      "backend": "jax-cpu",
+      "median": 3.384,
+      "iqr": 0.64,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_matmul_b32_m128_n128_k128",
+      "group": "Threads: 4 / opt_size",
+      "backend": "omeinsum_path",
+      "median": 13.706,
+      "iqr": 7.448,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_matmul_b32_m128_n128_k128",
+      "group": "Threads: 4 / opt_size",
+      "backend": "pytorch-cpu",
+      "median": 0.847,
+      "iqr": 0.024,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_matmul_b32_m128_n128_k128",
+      "group": "Threads: 4 / opt_size",
+      "backend": "tenferro-eager",
+      "median": 1.386,
+      "iqr": 0.021,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_matmul_b32_m128_n128_k128",
+      "group": "Threads: 4 / opt_size",
+      "backend": "tenferro-trace",
+      "median": 1.859,
+      "iqr": 0.015,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_matmul_b32_m64_n64_k64",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "jax-cpu",
+      "median": 0.948,
+      "iqr": 0.036,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_matmul_b32_m64_n64_k64",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "omeinsum_path",
+      "median": 0.683,
+      "iqr": 0.27,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_matmul_b32_m64_n64_k64",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "pytorch-cpu",
+      "median": 0.25,
+      "iqr": 0.023,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_matmul_b32_m64_n64_k64",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "tenferro-eager",
+      "median": 0.222,
+      "iqr": 0.003,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_matmul_b32_m64_n64_k64",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "tenferro-trace",
+      "median": 0.343,
+      "iqr": 0.025,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_matmul_b32_m64_n64_k64",
+      "group": "Threads: 1 / opt_size",
+      "backend": "jax-cpu",
+      "median": 0.948,
+      "iqr": 0.036,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_matmul_b32_m64_n64_k64",
+      "group": "Threads: 1 / opt_size",
+      "backend": "omeinsum_path",
+      "median": 0.683,
+      "iqr": 0.27,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_matmul_b32_m64_n64_k64",
+      "group": "Threads: 1 / opt_size",
+      "backend": "pytorch-cpu",
+      "median": 0.25,
+      "iqr": 0.023,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_matmul_b32_m64_n64_k64",
+      "group": "Threads: 1 / opt_size",
+      "backend": "tenferro-eager",
+      "median": 0.222,
+      "iqr": 0.003,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_matmul_b32_m64_n64_k64",
+      "group": "Threads: 1 / opt_size",
+      "backend": "tenferro-trace",
+      "median": 0.343,
+      "iqr": 0.025,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_matmul_b32_m64_n64_k64",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "jax-cpu",
+      "median": 0.944,
+      "iqr": 0.057,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_matmul_b32_m64_n64_k64",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "omeinsum_path",
+      "median": 0.678,
+      "iqr": 1.054,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_matmul_b32_m64_n64_k64",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "pytorch-cpu",
+      "median": 0.134,
+      "iqr": 0.116,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_matmul_b32_m64_n64_k64",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "tenferro-eager",
+      "median": 0.325,
+      "iqr": 0.02,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_matmul_b32_m64_n64_k64",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "tenferro-trace",
+      "median": 0.44,
+      "iqr": 0.03,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_matmul_b32_m64_n64_k64",
+      "group": "Threads: 4 / opt_size",
+      "backend": "jax-cpu",
+      "median": 0.944,
+      "iqr": 0.057,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_matmul_b32_m64_n64_k64",
+      "group": "Threads: 4 / opt_size",
+      "backend": "omeinsum_path",
+      "median": 0.678,
+      "iqr": 1.054,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_matmul_b32_m64_n64_k64",
+      "group": "Threads: 4 / opt_size",
+      "backend": "pytorch-cpu",
+      "median": 0.134,
+      "iqr": 0.116,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_matmul_b32_m64_n64_k64",
+      "group": "Threads: 4 / opt_size",
+      "backend": "tenferro-eager",
+      "median": 0.325,
+      "iqr": 0.02,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_matmul_b32_m64_n64_k64",
+      "group": "Threads: 4 / opt_size",
+      "backend": "tenferro-trace",
+      "median": 0.44,
+      "iqr": 0.03,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "jax-cpu",
+      "median": 0.623,
+      "iqr": 0.053,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "omeinsum_path",
+      "median": 1.055,
+      "iqr": 2.846,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "pytorch-cpu",
+      "median": 0.373,
+      "iqr": 0.025,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "tenferro-eager",
+      "median": 1.161,
+      "iqr": 0.013,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "tenferro-trace",
+      "median": 1.158,
+      "iqr": 0.013,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
+      "group": "Threads: 1 / opt_size",
+      "backend": "jax-cpu",
+      "median": 0.623,
+      "iqr": 0.053,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
+      "group": "Threads: 1 / opt_size",
+      "backend": "omeinsum_path",
+      "median": 1.055,
+      "iqr": 2.846,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
+      "group": "Threads: 1 / opt_size",
+      "backend": "pytorch-cpu",
+      "median": 0.373,
+      "iqr": 0.025,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
+      "group": "Threads: 1 / opt_size",
+      "backend": "tenferro-eager",
+      "median": 1.161,
+      "iqr": 0.013,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
+      "group": "Threads: 1 / opt_size",
+      "backend": "tenferro-trace",
+      "median": 1.158,
+      "iqr": 0.013,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "jax-cpu",
+      "median": 0.474,
+      "iqr": 0.026,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "omeinsum_path",
+      "median": 3.33,
+      "iqr": 1.34,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "pytorch-cpu",
+      "median": 0.202,
+      "iqr": 0.014,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "tenferro-eager",
+      "median": 0.414,
+      "iqr": 0.012,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "tenferro-trace",
+      "median": 0.422,
+      "iqr": 0.016,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
+      "group": "Threads: 4 / opt_size",
+      "backend": "jax-cpu",
+      "median": 0.474,
+      "iqr": 0.026,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
+      "group": "Threads: 4 / opt_size",
+      "backend": "omeinsum_path",
+      "median": 3.33,
+      "iqr": 1.34,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
+      "group": "Threads: 4 / opt_size",
+      "backend": "pytorch-cpu",
+      "median": 0.202,
+      "iqr": 0.014,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
+      "group": "Threads: 4 / opt_size",
+      "backend": "tenferro-eager",
+      "median": 0.414,
+      "iqr": 0.012,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_compact_j16_k16_o64_t64",
+      "group": "Threads: 4 / opt_size",
+      "backend": "tenferro-trace",
+      "median": 0.422,
+      "iqr": 0.016,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "jax-cpu",
+      "median": 0.625,
+      "iqr": 0.042,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "omeinsum_path",
+      "median": 3.706,
+      "iqr": 2.289,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "pytorch-cpu",
+      "median": 0.37,
+      "iqr": 0.013,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "tenferro-eager",
+      "median": 1.187,
+      "iqr": 0.019,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "tenferro-trace",
+      "median": 1.089,
+      "iqr": 0.019,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
+      "group": "Threads: 1 / opt_size",
+      "backend": "jax-cpu",
+      "median": 0.625,
+      "iqr": 0.042,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
+      "group": "Threads: 1 / opt_size",
+      "backend": "omeinsum_path",
+      "median": 3.706,
+      "iqr": 2.289,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
+      "group": "Threads: 1 / opt_size",
+      "backend": "pytorch-cpu",
+      "median": 0.37,
+      "iqr": 0.013,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
+      "group": "Threads: 1 / opt_size",
+      "backend": "tenferro-eager",
+      "median": 1.187,
+      "iqr": 0.019,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
+      "group": "Threads: 1 / opt_size",
+      "backend": "tenferro-trace",
+      "median": 1.089,
+      "iqr": 0.019,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "jax-cpu",
+      "median": 0.494,
+      "iqr": 0.049,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "omeinsum_path",
+      "median": 5.536,
+      "iqr": 5.288,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "pytorch-cpu",
+      "median": 0.213,
+      "iqr": 0.02,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "tenferro-eager",
+      "median": 0.418,
+      "iqr": 0.012,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "tenferro-trace",
+      "median": 0.335,
+      "iqr": 0.015,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
+      "group": "Threads: 4 / opt_size",
+      "backend": "jax-cpu",
+      "median": 0.494,
+      "iqr": 0.049,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
+      "group": "Threads: 4 / opt_size",
+      "backend": "omeinsum_path",
+      "median": 5.536,
+      "iqr": 5.288,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
+      "group": "Threads: 4 / opt_size",
+      "backend": "pytorch-cpu",
+      "median": 0.213,
+      "iqr": 0.02,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
+      "group": "Threads: 4 / opt_size",
+      "backend": "tenferro-eager",
+      "median": 0.418,
+      "iqr": 0.012,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
+      "group": "Threads: 4 / opt_size",
+      "backend": "tenferro-trace",
+      "median": 0.335,
+      "iqr": 0.015,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_2048x2048",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "jax-cpu",
+      "median": 18.811,
+      "iqr": 0.18,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_2048x2048",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "omeinsum_path",
+      "median": 16.869,
+      "iqr": 3.326,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_2048x2048",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "pytorch-cpu",
+      "median": 15.545,
+      "iqr": 0.23,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_2048x2048",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "tenferro-eager",
+      "median": 3.068,
+      "iqr": 0.805,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_2048x2048",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "tenferro-trace",
+      "median": 1.96,
+      "iqr": 0.254,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_2048x2048",
+      "group": "Threads: 1 / opt_size",
+      "backend": "jax-cpu",
+      "median": 18.811,
+      "iqr": 0.18,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_2048x2048",
+      "group": "Threads: 1 / opt_size",
+      "backend": "omeinsum_path",
+      "median": 16.869,
+      "iqr": 3.326,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_2048x2048",
+      "group": "Threads: 1 / opt_size",
+      "backend": "pytorch-cpu",
+      "median": 15.545,
+      "iqr": 0.23,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_2048x2048",
+      "group": "Threads: 1 / opt_size",
+      "backend": "tenferro-eager",
+      "median": 3.068,
+      "iqr": 0.805,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_2048x2048",
+      "group": "Threads: 1 / opt_size",
+      "backend": "tenferro-trace",
+      "median": 1.96,
+      "iqr": 0.254,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_2048x2048",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "jax-cpu",
+      "median": 10.401,
+      "iqr": 0.227,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_2048x2048",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "omeinsum_path",
+      "median": 16.311,
+      "iqr": 0.424,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_2048x2048",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "pytorch-cpu",
+      "median": 5.819,
+      "iqr": 0.172,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_2048x2048",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "tenferro-eager",
+      "median": 0.675,
+      "iqr": 0.011,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_2048x2048",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "tenferro-trace",
+      "median": 0.716,
+      "iqr": 0.081,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_2048x2048",
+      "group": "Threads: 4 / opt_size",
+      "backend": "jax-cpu",
+      "median": 10.401,
+      "iqr": 0.227,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_2048x2048",
+      "group": "Threads: 4 / opt_size",
+      "backend": "omeinsum_path",
+      "median": 16.311,
+      "iqr": 0.424,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_2048x2048",
+      "group": "Threads: 4 / opt_size",
+      "backend": "pytorch-cpu",
+      "median": 5.819,
+      "iqr": 0.172,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_2048x2048",
+      "group": "Threads: 4 / opt_size",
+      "backend": "tenferro-eager",
+      "median": 0.675,
+      "iqr": 0.011,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_2048x2048",
+      "group": "Threads: 4 / opt_size",
+      "backend": "tenferro-trace",
+      "median": 0.716,
+      "iqr": 0.081,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_512x512",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "jax-cpu",
+      "median": 0.521,
+      "iqr": 0.017,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_512x512",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "omeinsum_path",
+      "median": 0.317,
+      "iqr": 0.541,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_512x512",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "pytorch-cpu",
+      "median": 0.251,
+      "iqr": 0.021,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_512x512",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "tenferro-eager",
+      "median": 0.227,
+      "iqr": 0.005,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_512x512",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "tenferro-trace",
+      "median": 0.232,
+      "iqr": 0.015,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_512x512",
+      "group": "Threads: 1 / opt_size",
+      "backend": "jax-cpu",
+      "median": 0.521,
+      "iqr": 0.017,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_512x512",
+      "group": "Threads: 1 / opt_size",
+      "backend": "omeinsum_path",
+      "median": 0.317,
+      "iqr": 0.541,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_512x512",
+      "group": "Threads: 1 / opt_size",
+      "backend": "pytorch-cpu",
+      "median": 0.251,
+      "iqr": 0.021,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_512x512",
+      "group": "Threads: 1 / opt_size",
+      "backend": "tenferro-eager",
+      "median": 0.227,
+      "iqr": 0.005,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_512x512",
+      "group": "Threads: 1 / opt_size",
+      "backend": "tenferro-trace",
+      "median": 0.232,
+      "iqr": 0.015,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_512x512",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "jax-cpu",
+      "median": 0.407,
+      "iqr": 0.021,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_512x512",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "omeinsum_path",
+      "median": 0.723,
+      "iqr": 0.538,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_512x512",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "pytorch-cpu",
+      "median": 0.146,
+      "iqr": 0.026,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_512x512",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "tenferro-eager",
+      "median": 0.129,
+      "iqr": 0.003,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_512x512",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "tenferro-trace",
+      "median": 0.152,
+      "iqr": 0.015,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_512x512",
+      "group": "Threads: 4 / opt_size",
+      "backend": "jax-cpu",
+      "median": 0.407,
+      "iqr": 0.021,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_512x512",
+      "group": "Threads: 4 / opt_size",
+      "backend": "omeinsum_path",
+      "median": 0.723,
+      "iqr": 0.538,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_512x512",
+      "group": "Threads: 4 / opt_size",
+      "backend": "pytorch-cpu",
+      "median": 0.146,
+      "iqr": 0.026,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_512x512",
+      "group": "Threads: 4 / opt_size",
+      "backend": "tenferro-eager",
+      "median": 0.129,
+      "iqr": 0.003,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_elementwise_mul_512x512",
+      "group": "Threads: 4 / opt_size",
+      "backend": "tenferro-trace",
+      "median": 0.152,
+      "iqr": 0.015,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_matmul_1024",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "jax-cpu",
+      "median": 67.813,
+      "iqr": 0.626,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_matmul_1024",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "omeinsum_path",
+      "median": 50.55,
+      "iqr": 7.345,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_matmul_1024",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "pytorch-cpu",
+      "median": 24.804,
+      "iqr": 0.205,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_matmul_1024",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "tenferro-eager",
+      "median": 26.794,
+      "iqr": 0.263,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_matmul_1024",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "tenferro-trace",
+      "median": 30.469,
+      "iqr": 0.961,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_matmul_1024",
+      "group": "Threads: 1 / opt_size",
+      "backend": "jax-cpu",
+      "median": 67.813,
+      "iqr": 0.626,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_matmul_1024",
+      "group": "Threads: 1 / opt_size",
+      "backend": "omeinsum_path",
+      "median": 50.55,
+      "iqr": 7.345,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_matmul_1024",
+      "group": "Threads: 1 / opt_size",
+      "backend": "pytorch-cpu",
+      "median": 24.804,
+      "iqr": 0.205,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_matmul_1024",
+      "group": "Threads: 1 / opt_size",
+      "backend": "tenferro-eager",
+      "median": 26.794,
+      "iqr": 0.263,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_matmul_1024",
+      "group": "Threads: 1 / opt_size",
+      "backend": "tenferro-trace",
+      "median": 30.469,
+      "iqr": 0.961,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_matmul_1024",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "jax-cpu",
+      "median": 33.513,
+      "iqr": 1.864,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_matmul_1024",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "omeinsum_path",
+      "median": 33.039,
+      "iqr": 6.353,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_matmul_1024",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "pytorch-cpu",
+      "median": 12.247,
+      "iqr": 0.042,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_matmul_1024",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "tenferro-eager",
+      "median": 15.108,
+      "iqr": 0.149,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_matmul_1024",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "tenferro-trace",
+      "median": 16.969,
+      "iqr": 1.718,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_matmul_1024",
+      "group": "Threads: 4 / opt_size",
+      "backend": "jax-cpu",
+      "median": 33.513,
+      "iqr": 1.864,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_matmul_1024",
+      "group": "Threads: 4 / opt_size",
+      "backend": "omeinsum_path",
+      "median": 33.039,
+      "iqr": 6.353,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_matmul_1024",
+      "group": "Threads: 4 / opt_size",
+      "backend": "pytorch-cpu",
+      "median": 12.247,
+      "iqr": 0.042,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_matmul_1024",
+      "group": "Threads: 4 / opt_size",
+      "backend": "tenferro-eager",
+      "median": 15.108,
+      "iqr": 0.149,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_matmul_1024",
+      "group": "Threads: 4 / opt_size",
+      "backend": "tenferro-trace",
+      "median": 16.969,
+      "iqr": 1.718,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_matmul_256",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "jax-cpu",
+      "median": 1.169,
+      "iqr": 0.025,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_matmul_256",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "omeinsum_path",
+      "median": 0.867,
+      "iqr": 0.214,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_matmul_256",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "pytorch-cpu",
+      "median": 0.443,
+      "iqr": 0.021,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_matmul_256",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "tenferro-eager",
+      "median": 0.377,
+      "iqr": 0.009,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_matmul_256",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "tenferro-trace",
+      "median": 0.462,
+      "iqr": 0.033,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_matmul_256",
+      "group": "Threads: 1 / opt_size",
+      "backend": "jax-cpu",
+      "median": 1.169,
+      "iqr": 0.025,
+      "status": "ok",
+      "verified": true
+    },
+    {
       "case": "bin_matmul_256",
       "group": "Threads: 1 / opt_size",
       "backend": "omeinsum_path",
-      "median": 1.257,
-      "iqr": 0.438,
+      "median": 0.867,
+      "iqr": 0.214,
       "status": "ok",
       "verified": true
     },
@@ -1341,8 +1341,8 @@
       "case": "bin_matmul_256",
       "group": "Threads: 1 / opt_size",
       "backend": "pytorch-cpu",
-      "median": 1.358,
-      "iqr": 0.011,
+      "median": 0.443,
+      "iqr": 0.021,
       "status": "ok",
       "verified": true
     },
@@ -1350,8 +1350,8 @@
       "case": "bin_matmul_256",
       "group": "Threads: 1 / opt_size",
       "backend": "tenferro-eager",
-      "median": 0.749,
-      "iqr": 0.006,
+      "median": 0.377,
+      "iqr": 0.009,
       "status": "ok",
       "verified": true
     },
@@ -1359,8 +1359,8 @@
       "case": "bin_matmul_256",
       "group": "Threads: 1 / opt_size",
       "backend": "tenferro-trace",
-      "median": 1.202,
-      "iqr": 0.052,
+      "median": 0.462,
+      "iqr": 0.033,
       "status": "ok",
       "verified": true
     },
@@ -1368,8 +1368,8 @@
       "case": "bin_matmul_256",
       "group": "Threads: 4 / opt_flops",
       "backend": "jax-cpu",
-      "median": 0.849,
-      "iqr": 0.067,
+      "median": 0.838,
+      "iqr": 0.101,
       "status": "ok",
       "verified": true
     },
@@ -1377,8 +1377,8 @@
       "case": "bin_matmul_256",
       "group": "Threads: 4 / opt_flops",
       "backend": "omeinsum_path",
-      "median": 0.991,
-      "iqr": 0.377,
+      "median": 0.695,
+      "iqr": 0.047,
       "status": "ok",
       "verified": true
     },
@@ -1386,8 +1386,8 @@
       "case": "bin_matmul_256",
       "group": "Threads: 4 / opt_flops",
       "backend": "pytorch-cpu",
-      "median": 0.885,
-      "iqr": 0.024,
+      "median": 0.237,
+      "iqr": 0.015,
       "status": "ok",
       "verified": true
     },
@@ -1395,8 +1395,8 @@
       "case": "bin_matmul_256",
       "group": "Threads: 4 / opt_flops",
       "backend": "tenferro-eager",
-      "median": 0.458,
-      "iqr": 0.012,
+      "median": 0.237,
+      "iqr": 0.01,
       "status": "ok",
       "verified": true
     },
@@ -1404,7 +1404,7 @@
       "case": "bin_matmul_256",
       "group": "Threads: 4 / opt_flops",
       "backend": "tenferro-trace",
-      "median": 0.586,
+      "median": 0.326,
       "iqr": 0.013,
       "status": "ok",
       "verified": true
@@ -1413,8 +1413,8 @@
       "case": "bin_matmul_256",
       "group": "Threads: 4 / opt_size",
       "backend": "jax-cpu",
-      "median": 0.849,
-      "iqr": 0.067,
+      "median": 0.838,
+      "iqr": 0.101,
       "status": "ok",
       "verified": true
     },
@@ -1422,8 +1422,8 @@
       "case": "bin_matmul_256",
       "group": "Threads: 4 / opt_size",
       "backend": "omeinsum_path",
-      "median": 0.991,
-      "iqr": 0.377,
+      "median": 0.695,
+      "iqr": 0.047,
       "status": "ok",
       "verified": true
     },
@@ -1431,8 +1431,8 @@
       "case": "bin_matmul_256",
       "group": "Threads: 4 / opt_size",
       "backend": "pytorch-cpu",
-      "median": 0.885,
-      "iqr": 0.024,
+      "median": 0.237,
+      "iqr": 0.015,
       "status": "ok",
       "verified": true
     },
@@ -1440,8 +1440,8 @@
       "case": "bin_matmul_256",
       "group": "Threads: 4 / opt_size",
       "backend": "tenferro-eager",
-      "median": 0.458,
-      "iqr": 0.012,
+      "median": 0.237,
+      "iqr": 0.01,
       "status": "ok",
       "verified": true
     },
@@ -1449,7 +1449,7 @@
       "case": "bin_matmul_256",
       "group": "Threads: 4 / opt_size",
       "backend": "tenferro-trace",
-      "median": 0.586,
+      "median": 0.326,
       "iqr": 0.013,
       "status": "ok",
       "verified": true
@@ -1458,8 +1458,8 @@
       "case": "bin_omeinsum_batched_matmul_8x8_batch_4",
       "group": "Threads: 1 / opt_flops",
       "backend": "jax-cpu",
-      "median": 0.208,
-      "iqr": 0.017,
+      "median": 0.152,
+      "iqr": 0.015,
       "status": "ok",
       "verified": true
     },
@@ -1467,7 +1467,7 @@
       "case": "bin_omeinsum_batched_matmul_8x8_batch_4",
       "group": "Threads: 1 / opt_flops",
       "backend": "omeinsum_path",
-      "median": 0.013,
+      "median": 0.016,
       "iqr": 0.001,
       "status": "ok",
       "verified": true
@@ -1476,8 +1476,8 @@
       "case": "bin_omeinsum_batched_matmul_8x8_batch_4",
       "group": "Threads: 1 / opt_flops",
       "backend": "pytorch-cpu",
-      "median": 0.037,
-      "iqr": 0.004,
+      "median": 0.025,
+      "iqr": 0.01,
       "status": "ok",
       "verified": true
     },
@@ -1494,7 +1494,7 @@
       "case": "bin_omeinsum_batched_matmul_8x8_batch_4",
       "group": "Threads: 1 / opt_flops",
       "backend": "tenferro-trace",
-      "median": 0.01,
+      "median": 0.008,
       "iqr": 0.0,
       "status": "ok",
       "verified": true
@@ -1503,8 +1503,8 @@
       "case": "bin_omeinsum_batched_matmul_8x8_batch_4",
       "group": "Threads: 1 / opt_size",
       "backend": "jax-cpu",
-      "median": 0.208,
-      "iqr": 0.017,
+      "median": 0.152,
+      "iqr": 0.015,
       "status": "ok",
       "verified": true
     },
@@ -1512,7 +1512,7 @@
       "case": "bin_omeinsum_batched_matmul_8x8_batch_4",
       "group": "Threads: 1 / opt_size",
       "backend": "omeinsum_path",
-      "median": 0.013,
+      "median": 0.016,
       "iqr": 0.001,
       "status": "ok",
       "verified": true
@@ -1521,8 +1521,8 @@
       "case": "bin_omeinsum_batched_matmul_8x8_batch_4",
       "group": "Threads: 1 / opt_size",
       "backend": "pytorch-cpu",
-      "median": 0.037,
-      "iqr": 0.004,
+      "median": 0.025,
+      "iqr": 0.01,
       "status": "ok",
       "verified": true
     },
@@ -1539,7 +1539,7 @@
       "case": "bin_omeinsum_batched_matmul_8x8_batch_4",
       "group": "Threads: 1 / opt_size",
       "backend": "tenferro-trace",
-      "median": 0.01,
+      "median": 0.008,
       "iqr": 0.0,
       "status": "ok",
       "verified": true
@@ -1548,8 +1548,8 @@
       "case": "bin_omeinsum_batched_matmul_8x8_batch_4",
       "group": "Threads: 4 / opt_flops",
       "backend": "jax-cpu",
-      "median": 0.198,
-      "iqr": 0.025,
+      "median": 0.156,
+      "iqr": 0.022,
       "status": "ok",
       "verified": true
     },
@@ -1557,35 +1557,35 @@
       "case": "bin_omeinsum_batched_matmul_8x8_batch_4",
       "group": "Threads: 4 / opt_flops",
       "backend": "omeinsum_path",
-      "median": 0.013,
-      "iqr": 0.003,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_omeinsum_batched_matmul_8x8_batch_4",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "pytorch-cpu",
-      "median": 0.05,
-      "iqr": 0.006,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_omeinsum_batched_matmul_8x8_batch_4",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "tenferro-eager",
-      "median": 0.01,
-      "iqr": 0.0,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_omeinsum_batched_matmul_8x8_batch_4",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "tenferro-trace",
       "median": 0.016,
+      "iqr": 0.005,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_omeinsum_batched_matmul_8x8_batch_4",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "pytorch-cpu",
+      "median": 0.03,
       "iqr": 0.001,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_omeinsum_batched_matmul_8x8_batch_4",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "tenferro-eager",
+      "median": 0.007,
+      "iqr": 0.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_omeinsum_batched_matmul_8x8_batch_4",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "tenferro-trace",
+      "median": 0.011,
+      "iqr": 0.0,
       "status": "ok",
       "verified": true
     },
@@ -1593,8 +1593,8 @@
       "case": "bin_omeinsum_batched_matmul_8x8_batch_4",
       "group": "Threads: 4 / opt_size",
       "backend": "jax-cpu",
-      "median": 0.198,
-      "iqr": 0.025,
+      "median": 0.156,
+      "iqr": 0.022,
       "status": "ok",
       "verified": true
     },
@@ -1602,8 +1602,8 @@
       "case": "bin_omeinsum_batched_matmul_8x8_batch_4",
       "group": "Threads: 4 / opt_size",
       "backend": "omeinsum_path",
-      "median": 0.013,
-      "iqr": 0.003,
+      "median": 0.016,
+      "iqr": 0.005,
       "status": "ok",
       "verified": true
     },
@@ -1611,8 +1611,8 @@
       "case": "bin_omeinsum_batched_matmul_8x8_batch_4",
       "group": "Threads: 4 / opt_size",
       "backend": "pytorch-cpu",
-      "median": 0.05,
-      "iqr": 0.006,
+      "median": 0.03,
+      "iqr": 0.001,
       "status": "ok",
       "verified": true
     },
@@ -1620,7 +1620,7 @@
       "case": "bin_omeinsum_batched_matmul_8x8_batch_4",
       "group": "Threads: 4 / opt_size",
       "backend": "tenferro-eager",
-      "median": 0.01,
+      "median": 0.007,
       "iqr": 0.0,
       "status": "ok",
       "verified": true
@@ -1629,8 +1629,8 @@
       "case": "bin_omeinsum_batched_matmul_8x8_batch_4",
       "group": "Threads: 4 / opt_size",
       "backend": "tenferro-trace",
-      "median": 0.016,
-      "iqr": 0.001,
+      "median": 0.011,
+      "iqr": 0.0,
       "status": "ok",
       "verified": true
     },
@@ -1638,7 +1638,7 @@
       "case": "bin_omeinsum_high_d_12x12_contract_4_batch_4",
       "group": "Threads: 1 / opt_flops",
       "backend": "jax-cpu",
-      "median": 0.28,
+      "median": 0.205,
       "iqr": 0.029,
       "status": "ok",
       "verified": true
@@ -1647,8 +1647,8 @@
       "case": "bin_omeinsum_high_d_12x12_contract_4_batch_4",
       "group": "Threads: 1 / opt_flops",
       "backend": "omeinsum_path",
-      "median": 0.08,
-      "iqr": 0.038,
+      "median": 0.07,
+      "iqr": 0.03,
       "status": "ok",
       "verified": true
     },
@@ -1656,8 +1656,8 @@
       "case": "bin_omeinsum_high_d_12x12_contract_4_batch_4",
       "group": "Threads: 1 / opt_flops",
       "backend": "pytorch-cpu",
-      "median": 0.146,
-      "iqr": 0.011,
+      "median": 0.094,
+      "iqr": 0.008,
       "status": "ok",
       "verified": true
     },
@@ -1665,314 +1665,314 @@
       "case": "bin_omeinsum_high_d_12x12_contract_4_batch_4",
       "group": "Threads: 1 / opt_flops",
       "backend": "tenferro-eager",
-      "median": 0.032,
-      "iqr": 0.001,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_omeinsum_high_d_12x12_contract_4_batch_4",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "tenferro-trace",
-      "median": 0.033,
-      "iqr": 0.001,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_omeinsum_high_d_12x12_contract_4_batch_4",
-      "group": "Threads: 1 / opt_size",
-      "backend": "jax-cpu",
-      "median": 0.28,
-      "iqr": 0.029,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_omeinsum_high_d_12x12_contract_4_batch_4",
-      "group": "Threads: 1 / opt_size",
-      "backend": "omeinsum_path",
-      "median": 0.08,
-      "iqr": 0.038,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_omeinsum_high_d_12x12_contract_4_batch_4",
-      "group": "Threads: 1 / opt_size",
-      "backend": "pytorch-cpu",
-      "median": 0.146,
-      "iqr": 0.011,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_omeinsum_high_d_12x12_contract_4_batch_4",
-      "group": "Threads: 1 / opt_size",
-      "backend": "tenferro-eager",
-      "median": 0.032,
-      "iqr": 0.001,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_omeinsum_high_d_12x12_contract_4_batch_4",
-      "group": "Threads: 1 / opt_size",
-      "backend": "tenferro-trace",
-      "median": 0.033,
-      "iqr": 0.001,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_omeinsum_high_d_12x12_contract_4_batch_4",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "jax-cpu",
-      "median": 0.254,
-      "iqr": 0.023,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_omeinsum_high_d_12x12_contract_4_batch_4",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "omeinsum_path",
-      "median": 0.064,
-      "iqr": 0.028,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_omeinsum_high_d_12x12_contract_4_batch_4",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "pytorch-cpu",
-      "median": 0.222,
-      "iqr": 0.017,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_omeinsum_high_d_12x12_contract_4_batch_4",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "tenferro-eager",
-      "median": 0.047,
-      "iqr": 0.003,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_omeinsum_high_d_12x12_contract_4_batch_4",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "tenferro-trace",
-      "median": 0.049,
-      "iqr": 0.003,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_omeinsum_high_d_12x12_contract_4_batch_4",
-      "group": "Threads: 4 / opt_size",
-      "backend": "jax-cpu",
-      "median": 0.254,
-      "iqr": 0.023,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_omeinsum_high_d_12x12_contract_4_batch_4",
-      "group": "Threads: 4 / opt_size",
-      "backend": "omeinsum_path",
-      "median": 0.064,
-      "iqr": 0.028,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_omeinsum_high_d_12x12_contract_4_batch_4",
-      "group": "Threads: 4 / opt_size",
-      "backend": "pytorch-cpu",
-      "median": 0.222,
-      "iqr": 0.017,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_omeinsum_high_d_12x12_contract_4_batch_4",
-      "group": "Threads: 4 / opt_size",
-      "backend": "tenferro-eager",
-      "median": 0.047,
-      "iqr": 0.003,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_omeinsum_high_d_12x12_contract_4_batch_4",
-      "group": "Threads: 4 / opt_size",
-      "backend": "tenferro-trace",
-      "median": 0.049,
-      "iqr": 0.003,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_omeinsum_matmul_10x10",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "jax-cpu",
-      "median": 0.181,
-      "iqr": 0.029,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_omeinsum_matmul_10x10",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "omeinsum_path",
-      "median": 0.025,
-      "iqr": 0.001,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_omeinsum_matmul_10x10",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "pytorch-cpu",
-      "median": 0.034,
-      "iqr": 0.003,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_omeinsum_matmul_10x10",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "tenferro-eager",
-      "median": 0.009,
-      "iqr": 0.009,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_omeinsum_matmul_10x10",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "tenferro-trace",
-      "median": 0.017,
-      "iqr": 0.001,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_omeinsum_matmul_10x10",
-      "group": "Threads: 1 / opt_size",
-      "backend": "jax-cpu",
-      "median": 0.181,
-      "iqr": 0.029,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_omeinsum_matmul_10x10",
-      "group": "Threads: 1 / opt_size",
-      "backend": "omeinsum_path",
-      "median": 0.025,
-      "iqr": 0.001,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_omeinsum_matmul_10x10",
-      "group": "Threads: 1 / opt_size",
-      "backend": "pytorch-cpu",
-      "median": 0.034,
-      "iqr": 0.003,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_omeinsum_matmul_10x10",
-      "group": "Threads: 1 / opt_size",
-      "backend": "tenferro-eager",
-      "median": 0.009,
-      "iqr": 0.009,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_omeinsum_matmul_10x10",
-      "group": "Threads: 1 / opt_size",
-      "backend": "tenferro-trace",
-      "median": 0.017,
-      "iqr": 0.001,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_omeinsum_matmul_10x10",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "jax-cpu",
-      "median": 0.149,
-      "iqr": 0.019,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_omeinsum_matmul_10x10",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "omeinsum_path",
       "median": 0.026,
       "iqr": 0.001,
       "status": "ok",
       "verified": true
     },
     {
-      "case": "bin_omeinsum_matmul_10x10",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "pytorch-cpu",
-      "median": 0.047,
-      "iqr": 0.004,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_omeinsum_matmul_10x10",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "tenferro-eager",
-      "median": 0.014,
+      "case": "bin_omeinsum_high_d_12x12_contract_4_batch_4",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "tenferro-trace",
+      "median": 0.027,
       "iqr": 0.001,
       "status": "ok",
       "verified": true
     },
     {
-      "case": "bin_omeinsum_matmul_10x10",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "tenferro-trace",
-      "median": 0.027,
-      "iqr": 0.002,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_omeinsum_matmul_10x10",
-      "group": "Threads: 4 / opt_size",
+      "case": "bin_omeinsum_high_d_12x12_contract_4_batch_4",
+      "group": "Threads: 1 / opt_size",
       "backend": "jax-cpu",
-      "median": 0.149,
-      "iqr": 0.019,
+      "median": 0.205,
+      "iqr": 0.029,
       "status": "ok",
       "verified": true
     },
     {
-      "case": "bin_omeinsum_matmul_10x10",
-      "group": "Threads: 4 / opt_size",
+      "case": "bin_omeinsum_high_d_12x12_contract_4_batch_4",
+      "group": "Threads: 1 / opt_size",
       "backend": "omeinsum_path",
+      "median": 0.07,
+      "iqr": 0.03,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_omeinsum_high_d_12x12_contract_4_batch_4",
+      "group": "Threads: 1 / opt_size",
+      "backend": "pytorch-cpu",
+      "median": 0.094,
+      "iqr": 0.008,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_omeinsum_high_d_12x12_contract_4_batch_4",
+      "group": "Threads: 1 / opt_size",
+      "backend": "tenferro-eager",
       "median": 0.026,
       "iqr": 0.001,
       "status": "ok",
       "verified": true
     },
     {
+      "case": "bin_omeinsum_high_d_12x12_contract_4_batch_4",
+      "group": "Threads: 1 / opt_size",
+      "backend": "tenferro-trace",
+      "median": 0.027,
+      "iqr": 0.001,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_omeinsum_high_d_12x12_contract_4_batch_4",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "jax-cpu",
+      "median": 0.218,
+      "iqr": 0.033,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_omeinsum_high_d_12x12_contract_4_batch_4",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "omeinsum_path",
+      "median": 0.05,
+      "iqr": 0.029,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_omeinsum_high_d_12x12_contract_4_batch_4",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "pytorch-cpu",
+      "median": 0.137,
+      "iqr": 0.007,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_omeinsum_high_d_12x12_contract_4_batch_4",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "tenferro-eager",
+      "median": 0.035,
+      "iqr": 0.001,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_omeinsum_high_d_12x12_contract_4_batch_4",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "tenferro-trace",
+      "median": 0.034,
+      "iqr": 0.001,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_omeinsum_high_d_12x12_contract_4_batch_4",
+      "group": "Threads: 4 / opt_size",
+      "backend": "jax-cpu",
+      "median": 0.218,
+      "iqr": 0.033,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_omeinsum_high_d_12x12_contract_4_batch_4",
+      "group": "Threads: 4 / opt_size",
+      "backend": "omeinsum_path",
+      "median": 0.05,
+      "iqr": 0.029,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_omeinsum_high_d_12x12_contract_4_batch_4",
+      "group": "Threads: 4 / opt_size",
+      "backend": "pytorch-cpu",
+      "median": 0.137,
+      "iqr": 0.007,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_omeinsum_high_d_12x12_contract_4_batch_4",
+      "group": "Threads: 4 / opt_size",
+      "backend": "tenferro-eager",
+      "median": 0.035,
+      "iqr": 0.001,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_omeinsum_high_d_12x12_contract_4_batch_4",
+      "group": "Threads: 4 / opt_size",
+      "backend": "tenferro-trace",
+      "median": 0.034,
+      "iqr": 0.001,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_omeinsum_matmul_10x10",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "jax-cpu",
+      "median": 0.101,
+      "iqr": 0.012,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_omeinsum_matmul_10x10",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "omeinsum_path",
+      "median": 0.02,
+      "iqr": 0.008,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_omeinsum_matmul_10x10",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "pytorch-cpu",
+      "median": 0.019,
+      "iqr": 0.002,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_omeinsum_matmul_10x10",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "tenferro-eager",
+      "median": 0.014,
+      "iqr": 0.007,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_omeinsum_matmul_10x10",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "tenferro-trace",
+      "median": 0.016,
+      "iqr": 0.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_omeinsum_matmul_10x10",
+      "group": "Threads: 1 / opt_size",
+      "backend": "jax-cpu",
+      "median": 0.101,
+      "iqr": 0.012,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_omeinsum_matmul_10x10",
+      "group": "Threads: 1 / opt_size",
+      "backend": "omeinsum_path",
+      "median": 0.02,
+      "iqr": 0.008,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_omeinsum_matmul_10x10",
+      "group": "Threads: 1 / opt_size",
+      "backend": "pytorch-cpu",
+      "median": 0.019,
+      "iqr": 0.002,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_omeinsum_matmul_10x10",
+      "group": "Threads: 1 / opt_size",
+      "backend": "tenferro-eager",
+      "median": 0.014,
+      "iqr": 0.007,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_omeinsum_matmul_10x10",
+      "group": "Threads: 1 / opt_size",
+      "backend": "tenferro-trace",
+      "median": 0.016,
+      "iqr": 0.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_omeinsum_matmul_10x10",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "jax-cpu",
+      "median": 0.1,
+      "iqr": 0.011,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_omeinsum_matmul_10x10",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "omeinsum_path",
+      "median": 0.02,
+      "iqr": 0.008,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_omeinsum_matmul_10x10",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "pytorch-cpu",
+      "median": 0.026,
+      "iqr": 0.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_omeinsum_matmul_10x10",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "tenferro-eager",
+      "median": 0.02,
+      "iqr": 0.001,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_omeinsum_matmul_10x10",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "tenferro-trace",
+      "median": 0.024,
+      "iqr": 0.001,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_omeinsum_matmul_10x10",
+      "group": "Threads: 4 / opt_size",
+      "backend": "jax-cpu",
+      "median": 0.1,
+      "iqr": 0.011,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_omeinsum_matmul_10x10",
+      "group": "Threads: 4 / opt_size",
+      "backend": "omeinsum_path",
+      "median": 0.02,
+      "iqr": 0.008,
+      "status": "ok",
+      "verified": true
+    },
+    {
       "case": "bin_omeinsum_matmul_10x10",
       "group": "Threads: 4 / opt_size",
       "backend": "pytorch-cpu",
-      "median": 0.047,
-      "iqr": 0.004,
+      "median": 0.026,
+      "iqr": 0.0,
       "status": "ok",
       "verified": true
     },
@@ -1980,7 +1980,7 @@
       "case": "bin_omeinsum_matmul_10x10",
       "group": "Threads: 4 / opt_size",
       "backend": "tenferro-eager",
-      "median": 0.014,
+      "median": 0.02,
       "iqr": 0.001,
       "status": "ok",
       "verified": true
@@ -1989,8 +1989,8 @@
       "case": "bin_omeinsum_matmul_10x10",
       "group": "Threads: 4 / opt_size",
       "backend": "tenferro-trace",
-      "median": 0.027,
-      "iqr": 0.002,
+      "median": 0.024,
+      "iqr": 0.001,
       "status": "ok",
       "verified": true
     },
@@ -1998,8 +1998,8 @@
       "case": "bin_outer_product_4096",
       "group": "Threads: 1 / opt_flops",
       "backend": "jax-cpu",
-      "median": 58.642,
-      "iqr": 1.762,
+      "median": 54.279,
+      "iqr": 0.701,
       "status": "ok",
       "verified": true
     },
@@ -2007,8 +2007,8 @@
       "case": "bin_outer_product_4096",
       "group": "Threads: 1 / opt_flops",
       "backend": "omeinsum_path",
-      "median": 316.002,
-      "iqr": 41.747,
+      "median": 329.265,
+      "iqr": 34.513,
       "status": "ok",
       "verified": true
     },
@@ -2016,8 +2016,8 @@
       "case": "bin_outer_product_4096",
       "group": "Threads: 1 / opt_flops",
       "backend": "pytorch-cpu",
-      "median": 55.079,
-      "iqr": 0.489,
+      "median": 51.043,
+      "iqr": 0.804,
       "status": "ok",
       "verified": true
     },
@@ -2025,8 +2025,8 @@
       "case": "bin_outer_product_4096",
       "group": "Threads: 1 / opt_flops",
       "backend": "tenferro-eager",
-      "median": 64.493,
-      "iqr": 0.883,
+      "median": 58.579,
+      "iqr": 0.684,
       "status": "ok",
       "verified": true
     },
@@ -2034,8 +2034,8 @@
       "case": "bin_outer_product_4096",
       "group": "Threads: 1 / opt_flops",
       "backend": "tenferro-trace",
-      "median": 65.837,
-      "iqr": 0.794,
+      "median": 59.132,
+      "iqr": 0.596,
       "status": "ok",
       "verified": true
     },
@@ -2043,8 +2043,8 @@
       "case": "bin_outer_product_4096",
       "group": "Threads: 1 / opt_size",
       "backend": "jax-cpu",
-      "median": 58.642,
-      "iqr": 1.762,
+      "median": 54.279,
+      "iqr": 0.701,
       "status": "ok",
       "verified": true
     },
@@ -2052,8 +2052,8 @@
       "case": "bin_outer_product_4096",
       "group": "Threads: 1 / opt_size",
       "backend": "omeinsum_path",
-      "median": 316.002,
-      "iqr": 41.747,
+      "median": 329.265,
+      "iqr": 34.513,
       "status": "ok",
       "verified": true
     },
@@ -2061,8 +2061,8 @@
       "case": "bin_outer_product_4096",
       "group": "Threads: 1 / opt_size",
       "backend": "pytorch-cpu",
-      "median": 55.079,
-      "iqr": 0.489,
+      "median": 51.043,
+      "iqr": 0.804,
       "status": "ok",
       "verified": true
     },
@@ -2070,8 +2070,8 @@
       "case": "bin_outer_product_4096",
       "group": "Threads: 1 / opt_size",
       "backend": "tenferro-eager",
-      "median": 64.493,
-      "iqr": 0.883,
+      "median": 58.579,
+      "iqr": 0.684,
       "status": "ok",
       "verified": true
     },
@@ -2079,8 +2079,8 @@
       "case": "bin_outer_product_4096",
       "group": "Threads: 1 / opt_size",
       "backend": "tenferro-trace",
-      "median": 65.837,
-      "iqr": 0.794,
+      "median": 59.132,
+      "iqr": 0.596,
       "status": "ok",
       "verified": true
     },
@@ -2088,773 +2088,773 @@
       "case": "bin_outer_product_4096",
       "group": "Threads: 4 / opt_flops",
       "backend": "jax-cpu",
-      "median": 29.725,
-      "iqr": 0.463,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_outer_product_4096",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "omeinsum_path",
-      "median": 307.011,
-      "iqr": 33.508,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_outer_product_4096",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "pytorch-cpu",
-      "median": 19.447,
-      "iqr": 0.616,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_outer_product_4096",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "tenferro-eager",
-      "median": 22.461,
-      "iqr": 0.842,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_outer_product_4096",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "tenferro-trace",
-      "median": 22.26,
-      "iqr": 0.366,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_outer_product_4096",
-      "group": "Threads: 4 / opt_size",
-      "backend": "jax-cpu",
-      "median": 29.725,
-      "iqr": 0.463,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_outer_product_4096",
-      "group": "Threads: 4 / opt_size",
-      "backend": "omeinsum_path",
-      "median": 307.011,
-      "iqr": 33.508,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_outer_product_4096",
-      "group": "Threads: 4 / opt_size",
-      "backend": "pytorch-cpu",
-      "median": 19.447,
-      "iqr": 0.616,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_outer_product_4096",
-      "group": "Threads: 4 / opt_size",
-      "backend": "tenferro-eager",
-      "median": 22.461,
-      "iqr": 0.842,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_outer_product_4096",
-      "group": "Threads: 4 / opt_size",
-      "backend": "tenferro-trace",
-      "median": 22.26,
-      "iqr": 0.366,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "jax-cpu",
-      "median": 65.513,
-      "iqr": 1.408,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "omeinsum_path",
-      "median": 68.09,
-      "iqr": 5.583,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "pytorch-cpu",
-      "median": 60.825,
-      "iqr": 0.617,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "tenferro-eager",
-      "median": 49.482,
-      "iqr": 0.366,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "tenferro-trace",
-      "median": 50.468,
-      "iqr": 0.282,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
-      "group": "Threads: 1 / opt_size",
-      "backend": "jax-cpu",
-      "median": 65.513,
-      "iqr": 1.408,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
-      "group": "Threads: 1 / opt_size",
-      "backend": "omeinsum_path",
-      "median": 68.09,
-      "iqr": 5.583,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
-      "group": "Threads: 1 / opt_size",
-      "backend": "pytorch-cpu",
-      "median": 60.825,
-      "iqr": 0.617,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
-      "group": "Threads: 1 / opt_size",
-      "backend": "tenferro-eager",
-      "median": 49.482,
-      "iqr": 0.366,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
-      "group": "Threads: 1 / opt_size",
-      "backend": "tenferro-trace",
-      "median": 50.468,
-      "iqr": 0.282,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "jax-cpu",
-      "median": 38.354,
-      "iqr": 1.247,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "omeinsum_path",
-      "median": 42.495,
-      "iqr": 9.347,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "pytorch-cpu",
-      "median": 30.682,
-      "iqr": 0.329,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "tenferro-eager",
-      "median": 23.837,
-      "iqr": 0.15,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "tenferro-trace",
-      "median": 24.43,
-      "iqr": 0.392,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
-      "group": "Threads: 4 / opt_size",
-      "backend": "jax-cpu",
-      "median": 38.354,
-      "iqr": 1.247,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
-      "group": "Threads: 4 / opt_size",
-      "backend": "omeinsum_path",
-      "median": 42.495,
-      "iqr": 9.347,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
-      "group": "Threads: 4 / opt_size",
-      "backend": "pytorch-cpu",
-      "median": 30.682,
-      "iqr": 0.329,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
-      "group": "Threads: 4 / opt_size",
-      "backend": "tenferro-eager",
-      "median": 23.837,
-      "iqr": 0.15,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
-      "group": "Threads: 4 / opt_size",
-      "backend": "tenferro-trace",
-      "median": 24.43,
-      "iqr": 0.392,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "gm_queen5_5_3.wcsp",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "jax-cpu",
-      "median": 8215.347,
-      "iqr": 42.584,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "gm_queen5_5_3.wcsp",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "omeinsum_path",
-      "median": 9208.367,
-      "iqr": 125.361,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "gm_queen5_5_3.wcsp",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "pytorch-cpu",
-      "median": 6321.57,
-      "iqr": 39.681,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "gm_queen5_5_3.wcsp",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "tenferro-eager",
-      "median": 5657.86,
-      "iqr": 44.543,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "gm_queen5_5_3.wcsp",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "tenferro-trace",
-      "median": 5437.865,
-      "iqr": 36.639,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "gm_queen5_5_3.wcsp",
-      "group": "Threads: 1 / opt_size",
-      "backend": "jax-cpu",
-      "median": 2827.069,
-      "iqr": 22.494,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "gm_queen5_5_3.wcsp",
-      "group": "Threads: 1 / opt_size",
-      "backend": "omeinsum_path",
-      "median": 3324.321,
-      "iqr": 64.962,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "gm_queen5_5_3.wcsp",
-      "group": "Threads: 1 / opt_size",
-      "backend": "pytorch-cpu",
-      "median": 2460.671,
-      "iqr": 28.143,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "gm_queen5_5_3.wcsp",
-      "group": "Threads: 1 / opt_size",
-      "backend": "tenferro-eager",
-      "median": 2223.492,
-      "iqr": 10.793,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "gm_queen5_5_3.wcsp",
-      "group": "Threads: 1 / opt_size",
-      "backend": "tenferro-trace",
-      "median": 1849.645,
-      "iqr": 22.497,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "gm_queen5_5_3.wcsp",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "jax-cpu",
-      "median": 5324.86,
-      "iqr": 86.638,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "gm_queen5_5_3.wcsp",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "omeinsum_path",
-      "median": 8688.795,
-      "iqr": 32.776,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "gm_queen5_5_3.wcsp",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "pytorch-cpu",
-      "median": 2698.264,
-      "iqr": 28.509,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "gm_queen5_5_3.wcsp",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "tenferro-eager",
-      "median": 3939.264,
-      "iqr": 37.858,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "gm_queen5_5_3.wcsp",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "tenferro-trace",
-      "median": 3324.033,
-      "iqr": 42.639,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "gm_queen5_5_3.wcsp",
-      "group": "Threads: 4 / opt_size",
-      "backend": "jax-cpu",
-      "median": 1855.957,
-      "iqr": 37.462,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "gm_queen5_5_3.wcsp",
-      "group": "Threads: 4 / opt_size",
-      "backend": "omeinsum_path",
-      "median": 3085.164,
-      "iqr": 59.265,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "gm_queen5_5_3.wcsp",
-      "group": "Threads: 4 / opt_size",
-      "backend": "pytorch-cpu",
-      "median": 1130.408,
-      "iqr": 19.56,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "gm_queen5_5_3.wcsp",
-      "group": "Threads: 4 / opt_size",
-      "backend": "tenferro-eager",
-      "median": 1099.103,
-      "iqr": 12.468,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "gm_queen5_5_3.wcsp",
-      "group": "Threads: 4 / opt_size",
-      "backend": "tenferro-trace",
-      "median": 916.243,
-      "iqr": 16.22,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lm_batch_likelihood_brackets_4_4d",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "jax-cpu",
-      "median": 14.991,
-      "iqr": 0.336,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lm_batch_likelihood_brackets_4_4d",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "omeinsum_path",
-      "median": 36.309,
-      "iqr": 23.168,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lm_batch_likelihood_brackets_4_4d",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "pytorch-cpu",
-      "median": 35.131,
-      "iqr": 1.336,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lm_batch_likelihood_brackets_4_4d",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "tenferro-eager",
-      "median": 30.623,
-      "iqr": 0.324,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lm_batch_likelihood_brackets_4_4d",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "tenferro-trace",
-      "median": 23.187,
-      "iqr": 0.691,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lm_batch_likelihood_brackets_4_4d",
-      "group": "Threads: 1 / opt_size",
-      "backend": "jax-cpu",
-      "median": 15.503,
-      "iqr": 5.011,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lm_batch_likelihood_brackets_4_4d",
-      "group": "Threads: 1 / opt_size",
-      "backend": "omeinsum_path",
-      "median": 34.821,
-      "iqr": 38.906,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lm_batch_likelihood_brackets_4_4d",
-      "group": "Threads: 1 / opt_size",
-      "backend": "pytorch-cpu",
-      "median": 36.431,
-      "iqr": 1.447,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lm_batch_likelihood_brackets_4_4d",
-      "group": "Threads: 1 / opt_size",
-      "backend": "tenferro-eager",
-      "median": 28.837,
-      "iqr": 0.451,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lm_batch_likelihood_brackets_4_4d",
-      "group": "Threads: 1 / opt_size",
-      "backend": "tenferro-trace",
-      "median": 24.184,
-      "iqr": 1.193,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lm_batch_likelihood_brackets_4_4d",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "jax-cpu",
-      "median": 23.261,
-      "iqr": 0.576,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lm_batch_likelihood_brackets_4_4d",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "omeinsum_path",
-      "median": 39.548,
-      "iqr": 17.997,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lm_batch_likelihood_brackets_4_4d",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "pytorch-cpu",
-      "median": 17.087,
-      "iqr": 0.524,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lm_batch_likelihood_brackets_4_4d",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "tenferro-eager",
-      "median": 22.568,
-      "iqr": 0.183,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lm_batch_likelihood_brackets_4_4d",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "tenferro-trace",
-      "median": 17.784,
-      "iqr": 0.389,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lm_batch_likelihood_brackets_4_4d",
-      "group": "Threads: 4 / opt_size",
-      "backend": "jax-cpu",
-      "median": 22.787,
-      "iqr": 2.425,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lm_batch_likelihood_brackets_4_4d",
-      "group": "Threads: 4 / opt_size",
-      "backend": "omeinsum_path",
-      "median": 44.674,
-      "iqr": 1.667,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lm_batch_likelihood_brackets_4_4d",
-      "group": "Threads: 4 / opt_size",
-      "backend": "pytorch-cpu",
-      "median": 17.548,
-      "iqr": 0.407,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lm_batch_likelihood_brackets_4_4d",
-      "group": "Threads: 4 / opt_size",
-      "backend": "tenferro-eager",
-      "median": 21.563,
-      "iqr": 0.173,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lm_batch_likelihood_brackets_4_4d",
-      "group": "Threads: 4 / opt_size",
-      "backend": "tenferro-trace",
-      "median": 17.777,
-      "iqr": 0.246,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lm_batch_likelihood_sentence_3_12d",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "jax-cpu",
-      "median": 98.645,
-      "iqr": 3.425,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lm_batch_likelihood_sentence_3_12d",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "omeinsum_path",
-      "median": 77.446,
-      "iqr": 5.083,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lm_batch_likelihood_sentence_3_12d",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "pytorch-cpu",
-      "median": 106.617,
-      "iqr": 1.65,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lm_batch_likelihood_sentence_3_12d",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "tenferro-eager",
-      "median": 90.814,
-      "iqr": 0.976,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lm_batch_likelihood_sentence_3_12d",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "tenferro-trace",
-      "median": 53.955,
-      "iqr": 0.662,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lm_batch_likelihood_sentence_3_12d",
-      "group": "Threads: 1 / opt_size",
-      "backend": "jax-cpu",
-      "median": 73.37,
-      "iqr": 2.569,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lm_batch_likelihood_sentence_3_12d",
-      "group": "Threads: 1 / opt_size",
-      "backend": "omeinsum_path",
-      "median": 107.456,
-      "iqr": 47.501,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lm_batch_likelihood_sentence_3_12d",
-      "group": "Threads: 1 / opt_size",
-      "backend": "pytorch-cpu",
-      "median": 66.585,
-      "iqr": 0.749,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lm_batch_likelihood_sentence_3_12d",
-      "group": "Threads: 1 / opt_size",
-      "backend": "tenferro-eager",
-      "median": 117.341,
-      "iqr": 1.343,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lm_batch_likelihood_sentence_3_12d",
-      "group": "Threads: 1 / opt_size",
-      "backend": "tenferro-trace",
-      "median": 55.544,
-      "iqr": 0.941,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lm_batch_likelihood_sentence_3_12d",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "jax-cpu",
-      "median": 50.173,
-      "iqr": 5.669,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lm_batch_likelihood_sentence_3_12d",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "omeinsum_path",
-      "median": 74.148,
-      "iqr": 21.622,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lm_batch_likelihood_sentence_3_12d",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "pytorch-cpu",
-      "median": 57.483,
-      "iqr": 1.936,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lm_batch_likelihood_sentence_3_12d",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "tenferro-eager",
-      "median": 68.563,
-      "iqr": 1.395,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lm_batch_likelihood_sentence_3_12d",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "tenferro-trace",
-      "median": 30.069,
+      "median": 28.2,
       "iqr": 0.301,
       "status": "ok",
       "verified": true
     },
     {
+      "case": "bin_outer_product_4096",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "omeinsum_path",
+      "median": 314.113,
+      "iqr": 29.706,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_outer_product_4096",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "pytorch-cpu",
+      "median": 17.859,
+      "iqr": 0.205,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_outer_product_4096",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "tenferro-eager",
+      "median": 21.765,
+      "iqr": 0.169,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_outer_product_4096",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "tenferro-trace",
+      "median": 21.585,
+      "iqr": 0.355,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_outer_product_4096",
+      "group": "Threads: 4 / opt_size",
+      "backend": "jax-cpu",
+      "median": 28.2,
+      "iqr": 0.301,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_outer_product_4096",
+      "group": "Threads: 4 / opt_size",
+      "backend": "omeinsum_path",
+      "median": 314.113,
+      "iqr": 29.706,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_outer_product_4096",
+      "group": "Threads: 4 / opt_size",
+      "backend": "pytorch-cpu",
+      "median": 17.859,
+      "iqr": 0.205,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_outer_product_4096",
+      "group": "Threads: 4 / opt_size",
+      "backend": "tenferro-eager",
+      "median": 21.765,
+      "iqr": 0.169,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_outer_product_4096",
+      "group": "Threads: 4 / opt_size",
+      "backend": "tenferro-trace",
+      "median": 21.585,
+      "iqr": 0.355,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "jax-cpu",
+      "median": 75.014,
+      "iqr": 1.297,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "omeinsum_path",
+      "median": 45.427,
+      "iqr": 7.512,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "pytorch-cpu",
+      "median": 37.158,
+      "iqr": 0.317,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "tenferro-eager",
+      "median": 26.602,
+      "iqr": 0.201,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "tenferro-trace",
+      "median": 29.632,
+      "iqr": 0.359,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
+      "group": "Threads: 1 / opt_size",
+      "backend": "jax-cpu",
+      "median": 75.014,
+      "iqr": 1.297,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
+      "group": "Threads: 1 / opt_size",
+      "backend": "omeinsum_path",
+      "median": 45.427,
+      "iqr": 7.512,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
+      "group": "Threads: 1 / opt_size",
+      "backend": "pytorch-cpu",
+      "median": 37.158,
+      "iqr": 0.317,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
+      "group": "Threads: 1 / opt_size",
+      "backend": "tenferro-eager",
+      "median": 26.602,
+      "iqr": 0.201,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
+      "group": "Threads: 1 / opt_size",
+      "backend": "tenferro-trace",
+      "median": 29.632,
+      "iqr": 0.359,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "jax-cpu",
+      "median": 39.072,
+      "iqr": 2.882,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "omeinsum_path",
+      "median": 36.417,
+      "iqr": 7.529,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "pytorch-cpu",
+      "median": 16.175,
+      "iqr": 0.222,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "tenferro-eager",
+      "median": 13.829,
+      "iqr": 0.072,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "tenferro-trace",
+      "median": 14.179,
+      "iqr": 0.073,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
+      "group": "Threads: 4 / opt_size",
+      "backend": "jax-cpu",
+      "median": 39.072,
+      "iqr": 2.882,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
+      "group": "Threads: 4 / opt_size",
+      "backend": "omeinsum_path",
+      "median": 36.417,
+      "iqr": 7.529,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
+      "group": "Threads: 4 / opt_size",
+      "backend": "pytorch-cpu",
+      "median": 16.175,
+      "iqr": 0.222,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
+      "group": "Threads: 4 / opt_size",
+      "backend": "tenferro-eager",
+      "median": 13.829,
+      "iqr": 0.072,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "bin_permuted_r4_abcd_dbef_acef_d32",
+      "group": "Threads: 4 / opt_size",
+      "backend": "tenferro-trace",
+      "median": 14.179,
+      "iqr": 0.073,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gm_queen5_5_3.wcsp",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "jax-cpu",
+      "median": 5509.767,
+      "iqr": 157.794,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gm_queen5_5_3.wcsp",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "omeinsum_path",
+      "median": 7676.194,
+      "iqr": 86.43,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gm_queen5_5_3.wcsp",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "pytorch-cpu",
+      "median": 4997.046,
+      "iqr": 71.41,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gm_queen5_5_3.wcsp",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "tenferro-eager",
+      "median": 5170.583,
+      "iqr": 56.316,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gm_queen5_5_3.wcsp",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "tenferro-trace",
+      "median": 6568.567,
+      "iqr": 85.366,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gm_queen5_5_3.wcsp",
+      "group": "Threads: 1 / opt_size",
+      "backend": "jax-cpu",
+      "median": 2223.839,
+      "iqr": 12.302,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gm_queen5_5_3.wcsp",
+      "group": "Threads: 1 / opt_size",
+      "backend": "omeinsum_path",
+      "median": 2748.803,
+      "iqr": 42.263,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gm_queen5_5_3.wcsp",
+      "group": "Threads: 1 / opt_size",
+      "backend": "pytorch-cpu",
+      "median": 2315.913,
+      "iqr": 21.737,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gm_queen5_5_3.wcsp",
+      "group": "Threads: 1 / opt_size",
+      "backend": "tenferro-eager",
+      "median": 1839.533,
+      "iqr": 20.836,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gm_queen5_5_3.wcsp",
+      "group": "Threads: 1 / opt_size",
+      "backend": "tenferro-trace",
+      "median": 1694.818,
+      "iqr": 17.067,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gm_queen5_5_3.wcsp",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "jax-cpu",
+      "median": 3555.154,
+      "iqr": 72.574,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gm_queen5_5_3.wcsp",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "omeinsum_path",
+      "median": 7125.587,
+      "iqr": 167.358,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gm_queen5_5_3.wcsp",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "pytorch-cpu",
+      "median": 2168.166,
+      "iqr": 45.329,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gm_queen5_5_3.wcsp",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "tenferro-eager",
+      "median": 3604.362,
+      "iqr": 28.052,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gm_queen5_5_3.wcsp",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "tenferro-trace",
+      "median": 3603.282,
+      "iqr": 30.837,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gm_queen5_5_3.wcsp",
+      "group": "Threads: 4 / opt_size",
+      "backend": "jax-cpu",
+      "median": 1467.416,
+      "iqr": 15.188,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gm_queen5_5_3.wcsp",
+      "group": "Threads: 4 / opt_size",
+      "backend": "omeinsum_path",
+      "median": 2598.04,
+      "iqr": 52.254,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gm_queen5_5_3.wcsp",
+      "group": "Threads: 4 / opt_size",
+      "backend": "pytorch-cpu",
+      "median": 927.053,
+      "iqr": 12.029,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gm_queen5_5_3.wcsp",
+      "group": "Threads: 4 / opt_size",
+      "backend": "tenferro-eager",
+      "median": 914.399,
+      "iqr": 4.31,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gm_queen5_5_3.wcsp",
+      "group": "Threads: 4 / opt_size",
+      "backend": "tenferro-trace",
+      "median": 827.171,
+      "iqr": 5.11,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lm_batch_likelihood_brackets_4_4d",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "jax-cpu",
+      "median": 20.005,
+      "iqr": 0.45,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lm_batch_likelihood_brackets_4_4d",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "omeinsum_path",
+      "median": 31.337,
+      "iqr": 20.853,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lm_batch_likelihood_brackets_4_4d",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "pytorch-cpu",
+      "median": 26.699,
+      "iqr": 0.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lm_batch_likelihood_brackets_4_4d",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "tenferro-eager",
+      "median": 38.081,
+      "iqr": 0.884,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lm_batch_likelihood_brackets_4_4d",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "tenferro-trace",
+      "median": 21.181,
+      "iqr": 0.307,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lm_batch_likelihood_brackets_4_4d",
+      "group": "Threads: 1 / opt_size",
+      "backend": "jax-cpu",
+      "median": 18.627,
+      "iqr": 0.415,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lm_batch_likelihood_brackets_4_4d",
+      "group": "Threads: 1 / opt_size",
+      "backend": "omeinsum_path",
+      "median": 33.183,
+      "iqr": 14.915,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lm_batch_likelihood_brackets_4_4d",
+      "group": "Threads: 1 / opt_size",
+      "backend": "pytorch-cpu",
+      "median": 24.82,
+      "iqr": 0.64,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lm_batch_likelihood_brackets_4_4d",
+      "group": "Threads: 1 / opt_size",
+      "backend": "tenferro-eager",
+      "median": 39.839,
+      "iqr": 0.772,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lm_batch_likelihood_brackets_4_4d",
+      "group": "Threads: 1 / opt_size",
+      "backend": "tenferro-trace",
+      "median": 29.707,
+      "iqr": 1.781,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lm_batch_likelihood_brackets_4_4d",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "jax-cpu",
+      "median": 25.431,
+      "iqr": 2.204,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lm_batch_likelihood_brackets_4_4d",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "omeinsum_path",
+      "median": 36.604,
+      "iqr": 22.63,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lm_batch_likelihood_brackets_4_4d",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "pytorch-cpu",
+      "median": 11.985,
+      "iqr": 0.117,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lm_batch_likelihood_brackets_4_4d",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "tenferro-eager",
+      "median": 20.354,
+      "iqr": 0.926,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lm_batch_likelihood_brackets_4_4d",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "tenferro-trace",
+      "median": 12.658,
+      "iqr": 0.21,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lm_batch_likelihood_brackets_4_4d",
+      "group": "Threads: 4 / opt_size",
+      "backend": "jax-cpu",
+      "median": 24.584,
+      "iqr": 0.554,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lm_batch_likelihood_brackets_4_4d",
+      "group": "Threads: 4 / opt_size",
+      "backend": "omeinsum_path",
+      "median": 39.702,
+      "iqr": 4.426,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lm_batch_likelihood_brackets_4_4d",
+      "group": "Threads: 4 / opt_size",
+      "backend": "pytorch-cpu",
+      "median": 12.01,
+      "iqr": 0.212,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lm_batch_likelihood_brackets_4_4d",
+      "group": "Threads: 4 / opt_size",
+      "backend": "tenferro-eager",
+      "median": 20.691,
+      "iqr": 0.771,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lm_batch_likelihood_brackets_4_4d",
+      "group": "Threads: 4 / opt_size",
+      "backend": "tenferro-trace",
+      "median": 14.262,
+      "iqr": 0.497,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lm_batch_likelihood_sentence_3_12d",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "jax-cpu",
+      "median": 103.393,
+      "iqr": 0.905,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lm_batch_likelihood_sentence_3_12d",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "omeinsum_path",
+      "median": 67.426,
+      "iqr": 13.208,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lm_batch_likelihood_sentence_3_12d",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "pytorch-cpu",
+      "median": 32.396,
+      "iqr": 1.265,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lm_batch_likelihood_sentence_3_12d",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "tenferro-eager",
+      "median": 92.041,
+      "iqr": 1.242,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lm_batch_likelihood_sentence_3_12d",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "tenferro-trace",
+      "median": 40.78,
+      "iqr": 0.637,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lm_batch_likelihood_sentence_3_12d",
+      "group": "Threads: 1 / opt_size",
+      "backend": "jax-cpu",
+      "median": 128.25,
+      "iqr": 1.471,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lm_batch_likelihood_sentence_3_12d",
+      "group": "Threads: 1 / opt_size",
+      "backend": "omeinsum_path",
+      "median": 104.446,
+      "iqr": 43.381,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lm_batch_likelihood_sentence_3_12d",
+      "group": "Threads: 1 / opt_size",
+      "backend": "pytorch-cpu",
+      "median": 42.268,
+      "iqr": 1.55,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lm_batch_likelihood_sentence_3_12d",
+      "group": "Threads: 1 / opt_size",
+      "backend": "tenferro-eager",
+      "median": 120.54,
+      "iqr": 1.206,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lm_batch_likelihood_sentence_3_12d",
+      "group": "Threads: 1 / opt_size",
+      "backend": "tenferro-trace",
+      "median": 50.115,
+      "iqr": 1.707,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lm_batch_likelihood_sentence_3_12d",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "jax-cpu",
+      "median": 60.971,
+      "iqr": 10.979,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lm_batch_likelihood_sentence_3_12d",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "omeinsum_path",
+      "median": 70.271,
+      "iqr": 15.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lm_batch_likelihood_sentence_3_12d",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "pytorch-cpu",
+      "median": 16.017,
+      "iqr": 0.207,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lm_batch_likelihood_sentence_3_12d",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "tenferro-eager",
+      "median": 76.104,
+      "iqr": 0.433,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lm_batch_likelihood_sentence_3_12d",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "tenferro-trace",
+      "median": 19.229,
+      "iqr": 0.329,
+      "status": "ok",
+      "verified": true
+    },
+    {
       "case": "lm_batch_likelihood_sentence_3_12d",
       "group": "Threads: 4 / opt_size",
       "backend": "jax-cpu",
-      "median": 55.546,
-      "iqr": 17.637,
+      "median": 52.071,
+      "iqr": 2.734,
       "status": "ok",
       "verified": true
     },
@@ -2862,8 +2862,8 @@
       "case": "lm_batch_likelihood_sentence_3_12d",
       "group": "Threads: 4 / opt_size",
       "backend": "omeinsum_path",
-      "median": 96.066,
-      "iqr": 68.994,
+      "median": 72.205,
+      "iqr": 47.64,
       "status": "ok",
       "verified": true
     },
@@ -2871,8 +2871,8 @@
       "case": "lm_batch_likelihood_sentence_3_12d",
       "group": "Threads: 4 / opt_size",
       "backend": "pytorch-cpu",
-      "median": 32.96,
-      "iqr": 0.403,
+      "median": 17.455,
+      "iqr": 0.327,
       "status": "ok",
       "verified": true
     },
@@ -2880,8 +2880,8 @@
       "case": "lm_batch_likelihood_sentence_3_12d",
       "group": "Threads: 4 / opt_size",
       "backend": "tenferro-eager",
-      "median": 68.016,
-      "iqr": 0.677,
+      "median": 77.531,
+      "iqr": 0.518,
       "status": "ok",
       "verified": true
     },
@@ -2889,8 +2889,8 @@
       "case": "lm_batch_likelihood_sentence_3_12d",
       "group": "Threads: 4 / opt_size",
       "backend": "tenferro-trace",
-      "median": 30.819,
-      "iqr": 0.353,
+      "median": 20.878,
+      "iqr": 0.648,
       "status": "ok",
       "verified": true
     },
@@ -2898,8 +2898,8 @@
       "case": "lm_batch_likelihood_sentence_4_4d",
       "group": "Threads: 1 / opt_flops",
       "backend": "jax-cpu",
-      "median": 17.107,
-      "iqr": 0.268,
+      "median": 21.829,
+      "iqr": 0.294,
       "status": "ok",
       "verified": true
     },
@@ -2907,8 +2907,8 @@
       "case": "lm_batch_likelihood_sentence_4_4d",
       "group": "Threads: 1 / opt_flops",
       "backend": "omeinsum_path",
-      "median": 42.26,
-      "iqr": 19.143,
+      "median": 35.008,
+      "iqr": 7.787,
       "status": "ok",
       "verified": true
     },
@@ -2916,8 +2916,8 @@
       "case": "lm_batch_likelihood_sentence_4_4d",
       "group": "Threads: 1 / opt_flops",
       "backend": "pytorch-cpu",
-      "median": 36.342,
-      "iqr": 0.444,
+      "median": 28.569,
+      "iqr": 0.499,
       "status": "ok",
       "verified": true
     },
@@ -2925,8 +2925,8 @@
       "case": "lm_batch_likelihood_sentence_4_4d",
       "group": "Threads: 1 / opt_flops",
       "backend": "tenferro-eager",
-      "median": 31.988,
-      "iqr": 0.459,
+      "median": 40.506,
+      "iqr": 1.153,
       "status": "ok",
       "verified": true
     },
@@ -2934,43 +2934,7 @@
       "case": "lm_batch_likelihood_sentence_4_4d",
       "group": "Threads: 1 / opt_flops",
       "backend": "tenferro-trace",
-      "median": 24.867,
-      "iqr": 0.228,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lm_batch_likelihood_sentence_4_4d",
-      "group": "Threads: 1 / opt_size",
-      "backend": "jax-cpu",
-      "median": 16.242,
-      "iqr": 3.13,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lm_batch_likelihood_sentence_4_4d",
-      "group": "Threads: 1 / opt_size",
-      "backend": "omeinsum_path",
-      "median": 36.145,
-      "iqr": 35.466,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lm_batch_likelihood_sentence_4_4d",
-      "group": "Threads: 1 / opt_size",
-      "backend": "pytorch-cpu",
-      "median": 38.638,
-      "iqr": 0.679,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "lm_batch_likelihood_sentence_4_4d",
-      "group": "Threads: 1 / opt_size",
-      "backend": "tenferro-eager",
-      "median": 31.796,
+      "median": 21.62,
       "iqr": 0.381,
       "status": "ok",
       "verified": true
@@ -2978,9 +2942,45 @@
     {
       "case": "lm_batch_likelihood_sentence_4_4d",
       "group": "Threads: 1 / opt_size",
+      "backend": "jax-cpu",
+      "median": 20.584,
+      "iqr": 0.337,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lm_batch_likelihood_sentence_4_4d",
+      "group": "Threads: 1 / opt_size",
+      "backend": "omeinsum_path",
+      "median": 33.387,
+      "iqr": 15.039,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lm_batch_likelihood_sentence_4_4d",
+      "group": "Threads: 1 / opt_size",
+      "backend": "pytorch-cpu",
+      "median": 25.83,
+      "iqr": 0.478,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lm_batch_likelihood_sentence_4_4d",
+      "group": "Threads: 1 / opt_size",
+      "backend": "tenferro-eager",
+      "median": 46.336,
+      "iqr": 1.925,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lm_batch_likelihood_sentence_4_4d",
+      "group": "Threads: 1 / opt_size",
       "backend": "tenferro-trace",
-      "median": 22.683,
-      "iqr": 0.326,
+      "median": 20.921,
+      "iqr": 1.719,
       "status": "ok",
       "verified": true
     },
@@ -2988,8 +2988,8 @@
       "case": "lm_batch_likelihood_sentence_4_4d",
       "group": "Threads: 4 / opt_flops",
       "backend": "jax-cpu",
-      "median": 23.676,
-      "iqr": 1.151,
+      "median": 26.631,
+      "iqr": 1.271,
       "status": "ok",
       "verified": true
     },
@@ -2997,8 +2997,8 @@
       "case": "lm_batch_likelihood_sentence_4_4d",
       "group": "Threads: 4 / opt_flops",
       "backend": "omeinsum_path",
-      "median": 39.734,
-      "iqr": 5.407,
+      "median": 35.247,
+      "iqr": 7.031,
       "status": "ok",
       "verified": true
     },
@@ -3006,8 +3006,8 @@
       "case": "lm_batch_likelihood_sentence_4_4d",
       "group": "Threads: 4 / opt_flops",
       "backend": "pytorch-cpu",
-      "median": 17.455,
-      "iqr": 0.434,
+      "median": 12.745,
+      "iqr": 0.158,
       "status": "ok",
       "verified": true
     },
@@ -3015,8 +3015,8 @@
       "case": "lm_batch_likelihood_sentence_4_4d",
       "group": "Threads: 4 / opt_flops",
       "backend": "tenferro-eager",
-      "median": 22.706,
-      "iqr": 0.352,
+      "median": 20.593,
+      "iqr": 0.581,
       "status": "ok",
       "verified": true
     },
@@ -3024,8 +3024,8 @@
       "case": "lm_batch_likelihood_sentence_4_4d",
       "group": "Threads: 4 / opt_flops",
       "backend": "tenferro-trace",
-      "median": 18.752,
-      "iqr": 0.392,
+      "median": 13.139,
+      "iqr": 0.408,
       "status": "ok",
       "verified": true
     },
@@ -3033,8 +3033,8 @@
       "case": "lm_batch_likelihood_sentence_4_4d",
       "group": "Threads: 4 / opt_size",
       "backend": "jax-cpu",
-      "median": 23.255,
-      "iqr": 2.178,
+      "median": 26.189,
+      "iqr": 1.405,
       "status": "ok",
       "verified": true
     },
@@ -3042,8 +3042,8 @@
       "case": "lm_batch_likelihood_sentence_4_4d",
       "group": "Threads: 4 / opt_size",
       "backend": "omeinsum_path",
-      "median": 46.122,
-      "iqr": 17.438,
+      "median": 36.623,
+      "iqr": 11.074,
       "status": "ok",
       "verified": true
     },
@@ -3051,8 +3051,8 @@
       "case": "lm_batch_likelihood_sentence_4_4d",
       "group": "Threads: 4 / opt_size",
       "backend": "pytorch-cpu",
-      "median": 18.106,
-      "iqr": 0.22,
+      "median": 12.15,
+      "iqr": 0.256,
       "status": "ok",
       "verified": true
     },
@@ -3060,8 +3060,8 @@
       "case": "lm_batch_likelihood_sentence_4_4d",
       "group": "Threads: 4 / opt_size",
       "backend": "tenferro-eager",
-      "median": 21.982,
-      "iqr": 0.307,
+      "median": 22.766,
+      "iqr": 0.521,
       "status": "ok",
       "verified": true
     },
@@ -3069,8 +3069,8 @@
       "case": "lm_batch_likelihood_sentence_4_4d",
       "group": "Threads: 4 / opt_size",
       "backend": "tenferro-trace",
-      "median": 16.34,
-      "iqr": 0.323,
+      "median": 11.792,
+      "iqr": 0.229,
       "status": "ok",
       "verified": true
     },
@@ -3078,160 +3078,142 @@
       "case": "nary_matmul_chain_64",
       "group": "Threads: 1 / opt_flops",
       "backend": "jax-cpu",
-      "median": 0.198,
+      "median": 0.155,
+      "iqr": 0.01,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nary_matmul_chain_64",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "omeinsum_path",
+      "median": 0.052,
+      "iqr": 0.03,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nary_matmul_chain_64",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "pytorch-cpu",
+      "median": 0.05,
+      "iqr": 0.02,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nary_matmul_chain_64",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "tenferro-eager",
+      "median": 0.026,
+      "iqr": 0.007,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nary_matmul_chain_64",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "tenferro-trace",
+      "median": 0.032,
+      "iqr": 0.001,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nary_matmul_chain_64",
+      "group": "Threads: 1 / opt_size",
+      "backend": "jax-cpu",
+      "median": 0.155,
+      "iqr": 0.01,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nary_matmul_chain_64",
+      "group": "Threads: 1 / opt_size",
+      "backend": "omeinsum_path",
+      "median": 0.052,
+      "iqr": 0.03,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nary_matmul_chain_64",
+      "group": "Threads: 1 / opt_size",
+      "backend": "pytorch-cpu",
+      "median": 0.05,
+      "iqr": 0.02,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nary_matmul_chain_64",
+      "group": "Threads: 1 / opt_size",
+      "backend": "tenferro-eager",
+      "median": 0.026,
+      "iqr": 0.007,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nary_matmul_chain_64",
+      "group": "Threads: 1 / opt_size",
+      "backend": "tenferro-trace",
+      "median": 0.032,
+      "iqr": 0.001,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nary_matmul_chain_64",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "jax-cpu",
+      "median": 0.159,
       "iqr": 0.012,
       "status": "ok",
       "verified": true
     },
     {
       "case": "nary_matmul_chain_64",
-      "group": "Threads: 1 / opt_flops",
+      "group": "Threads: 4 / opt_flops",
       "backend": "omeinsum_path",
-      "median": 0.072,
-      "iqr": 0.002,
+      "median": 0.067,
+      "iqr": 0.017,
       "status": "ok",
       "verified": true
     },
     {
       "case": "nary_matmul_chain_64",
-      "group": "Threads: 1 / opt_flops",
+      "group": "Threads: 4 / opt_flops",
       "backend": "pytorch-cpu",
-      "median": 0.078,
+      "median": 0.044,
+      "iqr": 0.019,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nary_matmul_chain_64",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "tenferro-eager",
+      "median": 0.049,
       "iqr": 0.004,
       "status": "ok",
       "verified": true
     },
     {
       "case": "nary_matmul_chain_64",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "tenferro-eager",
-      "median": 0.034,
-      "iqr": 0.015,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "nary_matmul_chain_64",
-      "group": "Threads: 1 / opt_flops",
+      "group": "Threads: 4 / opt_flops",
       "backend": "tenferro-trace",
-      "median": 0.053,
-      "iqr": 0.0,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "nary_matmul_chain_64",
-      "group": "Threads: 1 / opt_size",
-      "backend": "jax-cpu",
-      "median": 0.198,
-      "iqr": 0.012,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "nary_matmul_chain_64",
-      "group": "Threads: 1 / opt_size",
-      "backend": "omeinsum_path",
-      "median": 0.072,
-      "iqr": 0.002,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "nary_matmul_chain_64",
-      "group": "Threads: 1 / opt_size",
-      "backend": "pytorch-cpu",
-      "median": 0.078,
+      "median": 0.059,
       "iqr": 0.004,
       "status": "ok",
       "verified": true
     },
     {
       "case": "nary_matmul_chain_64",
-      "group": "Threads: 1 / opt_size",
-      "backend": "tenferro-eager",
-      "median": 0.034,
-      "iqr": 0.015,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "nary_matmul_chain_64",
-      "group": "Threads: 1 / opt_size",
-      "backend": "tenferro-trace",
-      "median": 0.053,
-      "iqr": 0.0,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "nary_matmul_chain_64",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "jax-cpu",
-      "median": 0.279,
-      "iqr": 0.024,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "nary_matmul_chain_64",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "omeinsum_path",
-      "median": 0.095,
-      "iqr": 0.074,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "nary_matmul_chain_64",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "pytorch-cpu",
-      "median": 0.095,
-      "iqr": 0.012,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "nary_matmul_chain_64",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "tenferro-eager",
-      "median": 0.065,
-      "iqr": 0.001,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "nary_matmul_chain_64",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "tenferro-trace",
-      "median": 0.067,
-      "iqr": 0.001,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "nary_matmul_chain_64",
       "group": "Threads: 4 / opt_size",
       "backend": "jax-cpu",
-      "median": 0.279,
-      "iqr": 0.024,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "nary_matmul_chain_64",
-      "group": "Threads: 4 / opt_size",
-      "backend": "omeinsum_path",
-      "median": 0.095,
-      "iqr": 0.074,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "nary_matmul_chain_64",
-      "group": "Threads: 4 / opt_size",
-      "backend": "pytorch-cpu",
-      "median": 0.095,
+      "median": 0.159,
       "iqr": 0.012,
       "status": "ok",
       "verified": true
@@ -3239,9 +3221,27 @@
     {
       "case": "nary_matmul_chain_64",
       "group": "Threads: 4 / opt_size",
+      "backend": "omeinsum_path",
+      "median": 0.067,
+      "iqr": 0.017,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nary_matmul_chain_64",
+      "group": "Threads: 4 / opt_size",
+      "backend": "pytorch-cpu",
+      "median": 0.044,
+      "iqr": 0.019,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "nary_matmul_chain_64",
+      "group": "Threads: 4 / opt_size",
       "backend": "tenferro-eager",
-      "median": 0.065,
-      "iqr": 0.001,
+      "median": 0.049,
+      "iqr": 0.004,
       "status": "ok",
       "verified": true
     },
@@ -3249,8 +3249,8 @@
       "case": "nary_matmul_chain_64",
       "group": "Threads: 4 / opt_size",
       "backend": "tenferro-trace",
-      "median": 0.067,
-      "iqr": 0.001,
+      "median": 0.059,
+      "iqr": 0.004,
       "status": "ok",
       "verified": true
     },
@@ -3258,179 +3258,179 @@
       "case": "str_matrix_chain_multiplication_100",
       "group": "Threads: 1 / opt_flops",
       "backend": "jax-cpu",
-      "median": 14.983,
+      "median": 16.968,
+      "iqr": 1.899,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "str_matrix_chain_multiplication_100",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "omeinsum_path",
+      "median": 13.78,
+      "iqr": 0.23,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "str_matrix_chain_multiplication_100",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "pytorch-cpu",
+      "median": 8.129,
+      "iqr": 0.142,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "str_matrix_chain_multiplication_100",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "tenferro-eager",
+      "median": 9.169,
+      "iqr": 0.102,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "str_matrix_chain_multiplication_100",
+      "group": "Threads: 1 / opt_flops",
+      "backend": "tenferro-trace",
+      "median": 8.484,
+      "iqr": 0.188,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "str_matrix_chain_multiplication_100",
+      "group": "Threads: 1 / opt_size",
+      "backend": "jax-cpu",
+      "median": 16.835,
+      "iqr": 0.252,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "str_matrix_chain_multiplication_100",
+      "group": "Threads: 1 / opt_size",
+      "backend": "omeinsum_path",
+      "median": 13.979,
+      "iqr": 0.668,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "str_matrix_chain_multiplication_100",
+      "group": "Threads: 1 / opt_size",
+      "backend": "pytorch-cpu",
+      "median": 8.619,
+      "iqr": 0.279,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "str_matrix_chain_multiplication_100",
+      "group": "Threads: 1 / opt_size",
+      "backend": "tenferro-eager",
+      "median": 9.754,
+      "iqr": 0.151,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "str_matrix_chain_multiplication_100",
+      "group": "Threads: 1 / opt_size",
+      "backend": "tenferro-trace",
+      "median": 9.603,
+      "iqr": 0.183,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "str_matrix_chain_multiplication_100",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "jax-cpu",
+      "median": 15.239,
+      "iqr": 0.575,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "str_matrix_chain_multiplication_100",
+      "group": "Threads: 4 / opt_flops",
+      "backend": "omeinsum_path",
+      "median": 14.031,
       "iqr": 0.289,
       "status": "ok",
       "verified": true
     },
     {
       "case": "str_matrix_chain_multiplication_100",
-      "group": "Threads: 1 / opt_flops",
-      "backend": "omeinsum_path",
-      "median": 16.585,
-      "iqr": 0.225,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "str_matrix_chain_multiplication_100",
-      "group": "Threads: 1 / opt_flops",
+      "group": "Threads: 4 / opt_flops",
       "backend": "pytorch-cpu",
-      "median": 15.73,
-      "iqr": 0.174,
+      "median": 5.06,
+      "iqr": 0.045,
       "status": "ok",
       "verified": true
     },
     {
       "case": "str_matrix_chain_multiplication_100",
-      "group": "Threads: 1 / opt_flops",
+      "group": "Threads: 4 / opt_flops",
       "backend": "tenferro-eager",
-      "median": 13.28,
-      "iqr": 0.095,
+      "median": 6.882,
+      "iqr": 0.431,
       "status": "ok",
       "verified": true
     },
     {
       "case": "str_matrix_chain_multiplication_100",
-      "group": "Threads: 1 / opt_flops",
+      "group": "Threads: 4 / opt_flops",
       "backend": "tenferro-trace",
-      "median": 12.168,
-      "iqr": 0.088,
+      "median": 5.636,
+      "iqr": 0.222,
       "status": "ok",
       "verified": true
     },
     {
       "case": "str_matrix_chain_multiplication_100",
-      "group": "Threads: 1 / opt_size",
+      "group": "Threads: 4 / opt_size",
       "backend": "jax-cpu",
-      "median": 14.87,
+      "median": 15.387,
+      "iqr": 1.102,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "str_matrix_chain_multiplication_100",
+      "group": "Threads: 4 / opt_size",
+      "backend": "omeinsum_path",
+      "median": 14.428,
+      "iqr": 0.269,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "str_matrix_chain_multiplication_100",
+      "group": "Threads: 4 / opt_size",
+      "backend": "pytorch-cpu",
+      "median": 5.132,
+      "iqr": 0.203,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "str_matrix_chain_multiplication_100",
+      "group": "Threads: 4 / opt_size",
+      "backend": "tenferro-eager",
+      "median": 7.249,
       "iqr": 0.396,
       "status": "ok",
       "verified": true
     },
     {
       "case": "str_matrix_chain_multiplication_100",
-      "group": "Threads: 1 / opt_size",
-      "backend": "omeinsum_path",
-      "median": 16.695,
-      "iqr": 0.342,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "str_matrix_chain_multiplication_100",
-      "group": "Threads: 1 / opt_size",
-      "backend": "pytorch-cpu",
-      "median": 15.917,
-      "iqr": 0.189,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "str_matrix_chain_multiplication_100",
-      "group": "Threads: 1 / opt_size",
-      "backend": "tenferro-eager",
-      "median": 13.791,
-      "iqr": 0.346,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "str_matrix_chain_multiplication_100",
-      "group": "Threads: 1 / opt_size",
-      "backend": "tenferro-trace",
-      "median": 13.417,
-      "iqr": 0.258,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "str_matrix_chain_multiplication_100",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "jax-cpu",
-      "median": 15.295,
-      "iqr": 0.502,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "str_matrix_chain_multiplication_100",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "omeinsum_path",
-      "median": 14.584,
-      "iqr": 8.272,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "str_matrix_chain_multiplication_100",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "pytorch-cpu",
-      "median": 10.832,
-      "iqr": 0.237,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "str_matrix_chain_multiplication_100",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "tenferro-eager",
-      "median": 9.436,
-      "iqr": 0.275,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "str_matrix_chain_multiplication_100",
-      "group": "Threads: 4 / opt_flops",
-      "backend": "tenferro-trace",
-      "median": 7.758,
-      "iqr": 0.132,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "str_matrix_chain_multiplication_100",
-      "group": "Threads: 4 / opt_size",
-      "backend": "jax-cpu",
-      "median": 15.042,
-      "iqr": 1.041,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "str_matrix_chain_multiplication_100",
-      "group": "Threads: 4 / opt_size",
-      "backend": "omeinsum_path",
-      "median": 14.348,
-      "iqr": 0.453,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "str_matrix_chain_multiplication_100",
-      "group": "Threads: 4 / opt_size",
-      "backend": "pytorch-cpu",
-      "median": 11.039,
-      "iqr": 0.129,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "str_matrix_chain_multiplication_100",
-      "group": "Threads: 4 / opt_size",
-      "backend": "tenferro-eager",
-      "median": 9.808,
-      "iqr": 0.202,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "str_matrix_chain_multiplication_100",
       "group": "Threads: 4 / opt_size",
       "backend": "tenferro-trace",
-      "median": 8.267,
-      "iqr": 0.13,
+      "median": 5.943,
+      "iqr": 0.101,
       "status": "ok",
       "verified": true
     },
@@ -3438,8 +3438,8 @@
       "case": "str_mps_varying_inner_product_200",
       "group": "Threads: 1 / opt_flops",
       "backend": "jax-cpu",
-      "median": 23.928,
-      "iqr": 2.742,
+      "median": 25.649,
+      "iqr": 0.325,
       "status": "ok",
       "verified": true
     },
@@ -3447,8 +3447,8 @@
       "case": "str_mps_varying_inner_product_200",
       "group": "Threads: 1 / opt_flops",
       "backend": "omeinsum_path",
-      "median": 25.04,
-      "iqr": 1.417,
+      "median": 20.846,
+      "iqr": 1.727,
       "status": "ok",
       "verified": true
     },
@@ -3456,8 +3456,8 @@
       "case": "str_mps_varying_inner_product_200",
       "group": "Threads: 1 / opt_flops",
       "backend": "pytorch-cpu",
-      "median": 25.358,
-      "iqr": 0.608,
+      "median": 10.046,
+      "iqr": 0.38,
       "status": "ok",
       "verified": true
     },
@@ -3465,8 +3465,8 @@
       "case": "str_mps_varying_inner_product_200",
       "group": "Threads: 1 / opt_flops",
       "backend": "tenferro-eager",
-      "median": 15.042,
-      "iqr": 0.308,
+      "median": 13.246,
+      "iqr": 0.215,
       "status": "ok",
       "verified": true
     },
@@ -3474,8 +3474,8 @@
       "case": "str_mps_varying_inner_product_200",
       "group": "Threads: 1 / opt_flops",
       "backend": "tenferro-trace",
-      "median": 15.193,
-      "iqr": 0.311,
+      "median": 11.766,
+      "iqr": 0.135,
       "status": "ok",
       "verified": true
     },
@@ -3483,8 +3483,8 @@
       "case": "str_mps_varying_inner_product_200",
       "group": "Threads: 1 / opt_size",
       "backend": "jax-cpu",
-      "median": 24.304,
-      "iqr": 2.481,
+      "median": 26.063,
+      "iqr": 1.505,
       "status": "ok",
       "verified": true
     },
@@ -3492,8 +3492,8 @@
       "case": "str_mps_varying_inner_product_200",
       "group": "Threads: 1 / opt_size",
       "backend": "omeinsum_path",
-      "median": 24.91,
-      "iqr": 9.185,
+      "median": 19.852,
+      "iqr": 13.036,
       "status": "ok",
       "verified": true
     },
@@ -3501,8 +3501,8 @@
       "case": "str_mps_varying_inner_product_200",
       "group": "Threads: 1 / opt_size",
       "backend": "pytorch-cpu",
-      "median": 25.488,
-      "iqr": 0.246,
+      "median": 11.122,
+      "iqr": 0.177,
       "status": "ok",
       "verified": true
     },
@@ -3510,8 +3510,8 @@
       "case": "str_mps_varying_inner_product_200",
       "group": "Threads: 1 / opt_size",
       "backend": "tenferro-eager",
-      "median": 15.094,
-      "iqr": 0.099,
+      "median": 14.331,
+      "iqr": 0.234,
       "status": "ok",
       "verified": true
     },
@@ -3519,8 +3519,8 @@
       "case": "str_mps_varying_inner_product_200",
       "group": "Threads: 1 / opt_size",
       "backend": "tenferro-trace",
-      "median": 17.021,
-      "iqr": 0.186,
+      "median": 15.673,
+      "iqr": 0.4,
       "status": "ok",
       "verified": true
     },
@@ -3528,8 +3528,8 @@
       "case": "str_mps_varying_inner_product_200",
       "group": "Threads: 4 / opt_flops",
       "backend": "jax-cpu",
-      "median": 30.814,
-      "iqr": 0.556,
+      "median": 30.389,
+      "iqr": 0.982,
       "status": "ok",
       "verified": true
     },
@@ -3537,8 +3537,8 @@
       "case": "str_mps_varying_inner_product_200",
       "group": "Threads: 4 / opt_flops",
       "backend": "omeinsum_path",
-      "median": 24.544,
-      "iqr": 2.765,
+      "median": 20.975,
+      "iqr": 2.227,
       "status": "ok",
       "verified": true
     },
@@ -3546,8 +3546,8 @@
       "case": "str_mps_varying_inner_product_200",
       "group": "Threads: 4 / opt_flops",
       "backend": "pytorch-cpu",
-      "median": 25.811,
-      "iqr": 0.497,
+      "median": 11.54,
+      "iqr": 0.409,
       "status": "ok",
       "verified": true
     },
@@ -3555,8 +3555,8 @@
       "case": "str_mps_varying_inner_product_200",
       "group": "Threads: 4 / opt_flops",
       "backend": "tenferro-eager",
-      "median": 28.923,
-      "iqr": 0.254,
+      "median": 12.277,
+      "iqr": 0.33,
       "status": "ok",
       "verified": true
     },
@@ -3564,8 +3564,8 @@
       "case": "str_mps_varying_inner_product_200",
       "group": "Threads: 4 / opt_flops",
       "backend": "tenferro-trace",
-      "median": 26.787,
-      "iqr": 0.434,
+      "median": 11.797,
+      "iqr": 0.451,
       "status": "ok",
       "verified": true
     },
@@ -3573,8 +3573,8 @@
       "case": "str_mps_varying_inner_product_200",
       "group": "Threads: 4 / opt_size",
       "backend": "jax-cpu",
-      "median": 31.134,
-      "iqr": 0.842,
+      "median": 30.649,
+      "iqr": 1.042,
       "status": "ok",
       "verified": true
     },
@@ -3582,8 +3582,8 @@
       "case": "str_mps_varying_inner_product_200",
       "group": "Threads: 4 / opt_size",
       "backend": "omeinsum_path",
-      "median": 29.175,
-      "iqr": 9.573,
+      "median": 20.199,
+      "iqr": 2.103,
       "status": "ok",
       "verified": true
     },
@@ -3591,8 +3591,8 @@
       "case": "str_mps_varying_inner_product_200",
       "group": "Threads: 4 / opt_size",
       "backend": "pytorch-cpu",
-      "median": 28.942,
-      "iqr": 0.446,
+      "median": 14.369,
+      "iqr": 0.296,
       "status": "ok",
       "verified": true
     },
@@ -3600,8 +3600,8 @@
       "case": "str_mps_varying_inner_product_200",
       "group": "Threads: 4 / opt_size",
       "backend": "tenferro-eager",
-      "median": 30.402,
-      "iqr": 0.683,
+      "median": 15.862,
+      "iqr": 0.204,
       "status": "ok",
       "verified": true
     },
@@ -3609,8 +3609,8 @@
       "case": "str_mps_varying_inner_product_200",
       "group": "Threads: 4 / opt_size",
       "backend": "tenferro-trace",
-      "median": 31.088,
-      "iqr": 0.672,
+      "median": 16.563,
+      "iqr": 0.173,
       "status": "ok",
       "verified": true
     },
@@ -3618,8 +3618,8 @@
       "case": "str_nw_mera_closed_120",
       "group": "Threads: 1 / opt_flops",
       "backend": "jax-cpu",
-      "median": 2513.066,
-      "iqr": 9.949,
+      "median": 2412.316,
+      "iqr": 41.993,
       "status": "ok",
       "verified": true
     },
@@ -3627,8 +3627,8 @@
       "case": "str_nw_mera_closed_120",
       "group": "Threads: 1 / opt_flops",
       "backend": "omeinsum_path",
-      "median": 1889.344,
-      "iqr": 41.61,
+      "median": 1418.548,
+      "iqr": 22.464,
       "status": "ok",
       "verified": true
     },
@@ -3636,8 +3636,8 @@
       "case": "str_nw_mera_closed_120",
       "group": "Threads: 1 / opt_flops",
       "backend": "pytorch-cpu",
-      "median": 1973.902,
-      "iqr": 9.261,
+      "median": 1218.198,
+      "iqr": 23.82,
       "status": "ok",
       "verified": true
     },
@@ -3645,8 +3645,8 @@
       "case": "str_nw_mera_closed_120",
       "group": "Threads: 1 / opt_flops",
       "backend": "tenferro-eager",
-      "median": 1406.706,
-      "iqr": 4.788,
+      "median": 913.473,
+      "iqr": 13.203,
       "status": "ok",
       "verified": true
     },
@@ -3654,8 +3654,8 @@
       "case": "str_nw_mera_closed_120",
       "group": "Threads: 1 / opt_flops",
       "backend": "tenferro-trace",
-      "median": 1353.87,
-      "iqr": 26.725,
+      "median": 852.314,
+      "iqr": 7.14,
       "status": "ok",
       "verified": true
     },
@@ -3663,8 +3663,8 @@
       "case": "str_nw_mera_closed_120",
       "group": "Threads: 1 / opt_size",
       "backend": "jax-cpu",
-      "median": 2114.508,
-      "iqr": 26.304,
+      "median": 2085.501,
+      "iqr": 21.575,
       "status": "ok",
       "verified": true
     },
@@ -3672,8 +3672,8 @@
       "case": "str_nw_mera_closed_120",
       "group": "Threads: 1 / opt_size",
       "backend": "omeinsum_path",
-      "median": 1534.107,
-      "iqr": 31.449,
+      "median": 1131.289,
+      "iqr": 52.237,
       "status": "ok",
       "verified": true
     },
@@ -3681,8 +3681,8 @@
       "case": "str_nw_mera_closed_120",
       "group": "Threads: 1 / opt_size",
       "backend": "pytorch-cpu",
-      "median": 1532.454,
-      "iqr": 15.798,
+      "median": 925.042,
+      "iqr": 5.803,
       "status": "ok",
       "verified": true
     },
@@ -3690,8 +3690,8 @@
       "case": "str_nw_mera_closed_120",
       "group": "Threads: 1 / opt_size",
       "backend": "tenferro-eager",
-      "median": 1288.506,
-      "iqr": 17.965,
+      "median": 769.533,
+      "iqr": 5.046,
       "status": "ok",
       "verified": true
     },
@@ -3699,8 +3699,8 @@
       "case": "str_nw_mera_closed_120",
       "group": "Threads: 1 / opt_size",
       "backend": "tenferro-trace",
-      "median": 1333.686,
-      "iqr": 8.831,
+      "median": 826.284,
+      "iqr": 7.842,
       "status": "ok",
       "verified": true
     },
@@ -3708,8 +3708,8 @@
       "case": "str_nw_mera_closed_120",
       "group": "Threads: 4 / opt_flops",
       "backend": "jax-cpu",
-      "median": 1174.566,
-      "iqr": 29.236,
+      "median": 1096.872,
+      "iqr": 14.39,
       "status": "ok",
       "verified": true
     },
@@ -3717,8 +3717,8 @@
       "case": "str_nw_mera_closed_120",
       "group": "Threads: 4 / opt_flops",
       "backend": "omeinsum_path",
-      "median": 1220.727,
-      "iqr": 46.272,
+      "median": 949.243,
+      "iqr": 46.495,
       "status": "ok",
       "verified": true
     },
@@ -3726,8 +3726,8 @@
       "case": "str_nw_mera_closed_120",
       "group": "Threads: 4 / opt_flops",
       "backend": "pytorch-cpu",
-      "median": 947.768,
-      "iqr": 16.011,
+      "median": 635.165,
+      "iqr": 19.262,
       "status": "ok",
       "verified": true
     },
@@ -3735,8 +3735,8 @@
       "case": "str_nw_mera_closed_120",
       "group": "Threads: 4 / opt_flops",
       "backend": "tenferro-eager",
-      "median": 743.389,
-      "iqr": 8.75,
+      "median": 528.445,
+      "iqr": 10.301,
       "status": "ok",
       "verified": true
     },
@@ -3744,8 +3744,8 @@
       "case": "str_nw_mera_closed_120",
       "group": "Threads: 4 / opt_flops",
       "backend": "tenferro-trace",
-      "median": 693.575,
-      "iqr": 12.103,
+      "median": 471.038,
+      "iqr": 5.168,
       "status": "ok",
       "verified": true
     },
@@ -3753,8 +3753,8 @@
       "case": "str_nw_mera_closed_120",
       "group": "Threads: 4 / opt_size",
       "backend": "jax-cpu",
-      "median": 992.732,
-      "iqr": 21.605,
+      "median": 950.06,
+      "iqr": 12.857,
       "status": "ok",
       "verified": true
     },
@@ -3762,8 +3762,8 @@
       "case": "str_nw_mera_closed_120",
       "group": "Threads: 4 / opt_size",
       "backend": "omeinsum_path",
-      "median": 937.38,
-      "iqr": 66.133,
+      "median": 726.379,
+      "iqr": 39.397,
       "status": "ok",
       "verified": true
     },
@@ -3771,8 +3771,8 @@
       "case": "str_nw_mera_closed_120",
       "group": "Threads: 4 / opt_size",
       "backend": "pytorch-cpu",
-      "median": 773.423,
-      "iqr": 12.024,
+      "median": 502.481,
+      "iqr": 12.875,
       "status": "ok",
       "verified": true
     },
@@ -3780,8 +3780,8 @@
       "case": "str_nw_mera_closed_120",
       "group": "Threads: 4 / opt_size",
       "backend": "tenferro-eager",
-      "median": 671.329,
-      "iqr": 14.874,
+      "median": 470.066,
+      "iqr": 7.614,
       "status": "ok",
       "verified": true
     },
@@ -3789,8 +3789,8 @@
       "case": "str_nw_mera_closed_120",
       "group": "Threads: 4 / opt_size",
       "backend": "tenferro-trace",
-      "median": 728.204,
-      "iqr": 8.173,
+      "median": 498.824,
+      "iqr": 4.624,
       "status": "ok",
       "verified": true
     },
@@ -3798,8 +3798,8 @@
       "case": "str_nw_mera_open_26",
       "group": "Threads: 1 / opt_flops",
       "backend": "jax-cpu",
-      "median": 1959.27,
-      "iqr": 13.963,
+      "median": 1967.996,
+      "iqr": 33.825,
       "status": "ok",
       "verified": true
     },
@@ -3807,8 +3807,8 @@
       "case": "str_nw_mera_open_26",
       "group": "Threads: 1 / opt_flops",
       "backend": "omeinsum_path",
-      "median": 1653.994,
-      "iqr": 13.57,
+      "median": 1288.825,
+      "iqr": 35.444,
       "status": "ok",
       "verified": true
     },
@@ -3816,8 +3816,8 @@
       "case": "str_nw_mera_open_26",
       "group": "Threads: 1 / opt_flops",
       "backend": "pytorch-cpu",
-      "median": 1244.877,
-      "iqr": 2.917,
+      "median": 807.939,
+      "iqr": 6.233,
       "status": "ok",
       "verified": true
     },
@@ -3825,8 +3825,8 @@
       "case": "str_nw_mera_open_26",
       "group": "Threads: 1 / opt_flops",
       "backend": "tenferro-eager",
-      "median": 1483.555,
-      "iqr": 7.467,
+      "median": 1106.112,
+      "iqr": 12.656,
       "status": "ok",
       "verified": true
     },
@@ -3834,8 +3834,8 @@
       "case": "str_nw_mera_open_26",
       "group": "Threads: 1 / opt_flops",
       "backend": "tenferro-trace",
-      "median": 1085.434,
-      "iqr": 6.61,
+      "median": 731.935,
+      "iqr": 16.906,
       "status": "ok",
       "verified": true
     },
@@ -3843,8 +3843,8 @@
       "case": "str_nw_mera_open_26",
       "group": "Threads: 1 / opt_size",
       "backend": "jax-cpu",
-      "median": 2011.458,
-      "iqr": 19.385,
+      "median": 1979.87,
+      "iqr": 11.804,
       "status": "ok",
       "verified": true
     },
@@ -3852,8 +3852,8 @@
       "case": "str_nw_mera_open_26",
       "group": "Threads: 1 / opt_size",
       "backend": "omeinsum_path",
-      "median": 1652.507,
-      "iqr": 14.596,
+      "median": 1259.35,
+      "iqr": 46.804,
       "status": "ok",
       "verified": true
     },
@@ -3861,8 +3861,8 @@
       "case": "str_nw_mera_open_26",
       "group": "Threads: 1 / opt_size",
       "backend": "pytorch-cpu",
-      "median": 1253.716,
-      "iqr": 13.626,
+      "median": 815.279,
+      "iqr": 4.797,
       "status": "ok",
       "verified": true
     },
@@ -3870,8 +3870,8 @@
       "case": "str_nw_mera_open_26",
       "group": "Threads: 1 / opt_size",
       "backend": "tenferro-eager",
-      "median": 1479.717,
-      "iqr": 9.989,
+      "median": 1120.979,
+      "iqr": 19.507,
       "status": "ok",
       "verified": true
     },
@@ -3879,8 +3879,8 @@
       "case": "str_nw_mera_open_26",
       "group": "Threads: 1 / opt_size",
       "backend": "tenferro-trace",
-      "median": 1088.302,
-      "iqr": 7.9,
+      "median": 743.308,
+      "iqr": 4.918,
       "status": "ok",
       "verified": true
     },
@@ -3888,8 +3888,8 @@
       "case": "str_nw_mera_open_26",
       "group": "Threads: 4 / opt_flops",
       "backend": "jax-cpu",
-      "median": 945.684,
-      "iqr": 23.151,
+      "median": 896.804,
+      "iqr": 12.755,
       "status": "ok",
       "verified": true
     },
@@ -3897,8 +3897,8 @@
       "case": "str_nw_mera_open_26",
       "group": "Threads: 4 / opt_flops",
       "backend": "omeinsum_path",
-      "median": 1241.965,
-      "iqr": 86.118,
+      "median": 971.663,
+      "iqr": 67.733,
       "status": "ok",
       "verified": true
     },
@@ -3906,8 +3906,8 @@
       "case": "str_nw_mera_open_26",
       "group": "Threads: 4 / opt_flops",
       "backend": "pytorch-cpu",
-      "median": 587.003,
-      "iqr": 5.092,
+      "median": 388.984,
+      "iqr": 9.726,
       "status": "ok",
       "verified": true
     },
@@ -3915,8 +3915,8 @@
       "case": "str_nw_mera_open_26",
       "group": "Threads: 4 / opt_flops",
       "backend": "tenferro-eager",
-      "median": 725.732,
-      "iqr": 11.671,
+      "median": 566.813,
+      "iqr": 13.561,
       "status": "ok",
       "verified": true
     },
@@ -3924,8 +3924,8 @@
       "case": "str_nw_mera_open_26",
       "group": "Threads: 4 / opt_flops",
       "backend": "tenferro-trace",
-      "median": 629.269,
-      "iqr": 14.48,
+      "median": 427.181,
+      "iqr": 3.702,
       "status": "ok",
       "verified": true
     },
@@ -3933,8 +3933,8 @@
       "case": "str_nw_mera_open_26",
       "group": "Threads: 4 / opt_size",
       "backend": "jax-cpu",
-      "median": 969.798,
-      "iqr": 43.9,
+      "median": 910.757,
+      "iqr": 11.288,
       "status": "ok",
       "verified": true
     },
@@ -3942,8 +3942,8 @@
       "case": "str_nw_mera_open_26",
       "group": "Threads: 4 / opt_size",
       "backend": "omeinsum_path",
-      "median": 1238.061,
-      "iqr": 71.012,
+      "median": 956.932,
+      "iqr": 37.59,
       "status": "ok",
       "verified": true
     },
@@ -3951,8 +3951,8 @@
       "case": "str_nw_mera_open_26",
       "group": "Threads: 4 / opt_size",
       "backend": "pytorch-cpu",
-      "median": 596.477,
-      "iqr": 13.081,
+      "median": 386.082,
+      "iqr": 5.631,
       "status": "ok",
       "verified": true
     },
@@ -3960,8 +3960,8 @@
       "case": "str_nw_mera_open_26",
       "group": "Threads: 4 / opt_size",
       "backend": "tenferro-eager",
-      "median": 742.156,
-      "iqr": 13.348,
+      "median": 577.508,
+      "iqr": 14.397,
       "status": "ok",
       "verified": true
     },
@@ -3969,8 +3969,8 @@
       "case": "str_nw_mera_open_26",
       "group": "Threads: 4 / opt_size",
       "backend": "tenferro-trace",
-      "median": 638.588,
-      "iqr": 12.124,
+      "median": 437.806,
+      "iqr": 7.377,
       "status": "ok",
       "verified": true
     },
@@ -3978,8 +3978,8 @@
       "case": "tensornetwork_permutation_focus_step409_316",
       "group": "Threads: 1 / opt_flops",
       "backend": "jax-cpu",
-      "median": 711.858,
-      "iqr": 35.407,
+      "median": 744.966,
+      "iqr": 15.072,
       "status": "ok",
       "verified": true
     },
@@ -3987,8 +3987,8 @@
       "case": "tensornetwork_permutation_focus_step409_316",
       "group": "Threads: 1 / opt_flops",
       "backend": "omeinsum_path",
-      "median": 566.18,
-      "iqr": 32.368,
+      "median": 486.466,
+      "iqr": 19.786,
       "status": "ok",
       "verified": true
     },
@@ -3996,8 +3996,8 @@
       "case": "tensornetwork_permutation_focus_step409_316",
       "group": "Threads: 1 / opt_flops",
       "backend": "pytorch-cpu",
-      "median": 913.31,
-      "iqr": 3.028,
+      "median": 560.455,
+      "iqr": 2.835,
       "status": "ok",
       "verified": true
     },
@@ -4005,8 +4005,8 @@
       "case": "tensornetwork_permutation_focus_step409_316",
       "group": "Threads: 1 / opt_flops",
       "backend": "tenferro-eager",
-      "median": 411.125,
-      "iqr": 5.944,
+      "median": 375.186,
+      "iqr": 3.008,
       "status": "ok",
       "verified": true
     },
@@ -4014,8 +4014,8 @@
       "case": "tensornetwork_permutation_focus_step409_316",
       "group": "Threads: 1 / opt_flops",
       "backend": "tenferro-trace",
-      "median": 299.424,
-      "iqr": 3.24,
+      "median": 239.587,
+      "iqr": 1.436,
       "status": "ok",
       "verified": true
     },
@@ -4023,8 +4023,8 @@
       "case": "tensornetwork_permutation_focus_step409_316",
       "group": "Threads: 1 / opt_size",
       "backend": "jax-cpu",
-      "median": 711.858,
-      "iqr": 35.407,
+      "median": 744.966,
+      "iqr": 15.072,
       "status": "ok",
       "verified": true
     },
@@ -4032,8 +4032,8 @@
       "case": "tensornetwork_permutation_focus_step409_316",
       "group": "Threads: 1 / opt_size",
       "backend": "omeinsum_path",
-      "median": 566.18,
-      "iqr": 32.368,
+      "median": 486.466,
+      "iqr": 19.786,
       "status": "ok",
       "verified": true
     },
@@ -4041,8 +4041,8 @@
       "case": "tensornetwork_permutation_focus_step409_316",
       "group": "Threads: 1 / opt_size",
       "backend": "pytorch-cpu",
-      "median": 913.31,
-      "iqr": 3.028,
+      "median": 560.455,
+      "iqr": 2.835,
       "status": "ok",
       "verified": true
     },
@@ -4050,8 +4050,8 @@
       "case": "tensornetwork_permutation_focus_step409_316",
       "group": "Threads: 1 / opt_size",
       "backend": "tenferro-eager",
-      "median": 411.125,
-      "iqr": 5.944,
+      "median": 375.186,
+      "iqr": 3.008,
       "status": "ok",
       "verified": true
     },
@@ -4059,8 +4059,8 @@
       "case": "tensornetwork_permutation_focus_step409_316",
       "group": "Threads: 1 / opt_size",
       "backend": "tenferro-trace",
-      "median": 299.424,
-      "iqr": 3.24,
+      "median": 239.587,
+      "iqr": 1.436,
       "status": "ok",
       "verified": true
     },
@@ -4068,8 +4068,8 @@
       "case": "tensornetwork_permutation_focus_step409_316",
       "group": "Threads: 4 / opt_flops",
       "backend": "jax-cpu",
-      "median": 401.513,
-      "iqr": 14.892,
+      "median": 403.063,
+      "iqr": 13.172,
       "status": "ok",
       "verified": true
     },
@@ -4077,8 +4077,8 @@
       "case": "tensornetwork_permutation_focus_step409_316",
       "group": "Threads: 4 / opt_flops",
       "backend": "omeinsum_path",
-      "median": 538.425,
-      "iqr": 37.301,
+      "median": 462.3,
+      "iqr": 18.345,
       "status": "ok",
       "verified": true
     },
@@ -4086,8 +4086,8 @@
       "case": "tensornetwork_permutation_focus_step409_316",
       "group": "Threads: 4 / opt_flops",
       "backend": "pytorch-cpu",
-      "median": 343.238,
-      "iqr": 8.377,
+      "median": 244.692,
+      "iqr": 8.056,
       "status": "ok",
       "verified": true
     },
@@ -4095,8 +4095,8 @@
       "case": "tensornetwork_permutation_focus_step409_316",
       "group": "Threads: 4 / opt_flops",
       "backend": "tenferro-eager",
-      "median": 192.164,
-      "iqr": 1.987,
+      "median": 195.157,
+      "iqr": 2.42,
       "status": "ok",
       "verified": true
     },
@@ -4104,8 +4104,8 @@
       "case": "tensornetwork_permutation_focus_step409_316",
       "group": "Threads: 4 / opt_flops",
       "backend": "tenferro-trace",
-      "median": 188.733,
-      "iqr": 1.657,
+      "median": 143.43,
+      "iqr": 1.295,
       "status": "ok",
       "verified": true
     },
@@ -4113,8 +4113,8 @@
       "case": "tensornetwork_permutation_focus_step409_316",
       "group": "Threads: 4 / opt_size",
       "backend": "jax-cpu",
-      "median": 401.513,
-      "iqr": 14.892,
+      "median": 403.063,
+      "iqr": 13.172,
       "status": "ok",
       "verified": true
     },
@@ -4122,8 +4122,8 @@
       "case": "tensornetwork_permutation_focus_step409_316",
       "group": "Threads: 4 / opt_size",
       "backend": "omeinsum_path",
-      "median": 538.425,
-      "iqr": 37.301,
+      "median": 462.3,
+      "iqr": 18.345,
       "status": "ok",
       "verified": true
     },
@@ -4131,8 +4131,8 @@
       "case": "tensornetwork_permutation_focus_step409_316",
       "group": "Threads: 4 / opt_size",
       "backend": "pytorch-cpu",
-      "median": 343.238,
-      "iqr": 8.377,
+      "median": 244.692,
+      "iqr": 8.056,
       "status": "ok",
       "verified": true
     },
@@ -4140,8 +4140,8 @@
       "case": "tensornetwork_permutation_focus_step409_316",
       "group": "Threads: 4 / opt_size",
       "backend": "tenferro-eager",
-      "median": 192.164,
-      "iqr": 1.987,
+      "median": 195.157,
+      "iqr": 2.42,
       "status": "ok",
       "verified": true
     },
@@ -4149,8 +4149,8 @@
       "case": "tensornetwork_permutation_focus_step409_316",
       "group": "Threads: 4 / opt_size",
       "backend": "tenferro-trace",
-      "median": 188.733,
-      "iqr": 1.657,
+      "median": 143.43,
+      "iqr": 1.295,
       "status": "ok",
       "verified": true
     },
@@ -4158,8 +4158,8 @@
       "case": "tensornetwork_permutation_light_415",
       "group": "Threads: 1 / opt_flops",
       "backend": "jax-cpu",
-      "median": 734.676,
-      "iqr": 48.237,
+      "median": 763.457,
+      "iqr": 10.321,
       "status": "ok",
       "verified": true
     },
@@ -4167,8 +4167,8 @@
       "case": "tensornetwork_permutation_light_415",
       "group": "Threads: 1 / opt_flops",
       "backend": "omeinsum_path",
-      "median": 567.588,
-      "iqr": 18.85,
+      "median": 490.158,
+      "iqr": 16.531,
       "status": "ok",
       "verified": true
     },
@@ -4176,8 +4176,8 @@
       "case": "tensornetwork_permutation_light_415",
       "group": "Threads: 1 / opt_flops",
       "backend": "pytorch-cpu",
-      "median": 875.977,
-      "iqr": 2.306,
+      "median": 526.531,
+      "iqr": 6.579,
       "status": "ok",
       "verified": true
     },
@@ -4185,8 +4185,8 @@
       "case": "tensornetwork_permutation_light_415",
       "group": "Threads: 1 / opt_flops",
       "backend": "tenferro-eager",
-      "median": 339.713,
-      "iqr": 1.142,
+      "median": 286.136,
+      "iqr": 1.474,
       "status": "ok",
       "verified": true
     },
@@ -4194,8 +4194,8 @@
       "case": "tensornetwork_permutation_light_415",
       "group": "Threads: 1 / opt_flops",
       "backend": "tenferro-trace",
-      "median": 294.578,
-      "iqr": 2.337,
+      "median": 250.078,
+      "iqr": 1.299,
       "status": "ok",
       "verified": true
     },
@@ -4203,8 +4203,8 @@
       "case": "tensornetwork_permutation_light_415",
       "group": "Threads: 1 / opt_size",
       "backend": "jax-cpu",
-      "median": 734.676,
-      "iqr": 48.237,
+      "median": 763.457,
+      "iqr": 10.321,
       "status": "ok",
       "verified": true
     },
@@ -4212,8 +4212,8 @@
       "case": "tensornetwork_permutation_light_415",
       "group": "Threads: 1 / opt_size",
       "backend": "omeinsum_path",
-      "median": 567.588,
-      "iqr": 18.85,
+      "median": 490.158,
+      "iqr": 16.531,
       "status": "ok",
       "verified": true
     },
@@ -4221,8 +4221,8 @@
       "case": "tensornetwork_permutation_light_415",
       "group": "Threads: 1 / opt_size",
       "backend": "pytorch-cpu",
-      "median": 875.977,
-      "iqr": 2.306,
+      "median": 526.531,
+      "iqr": 6.579,
       "status": "ok",
       "verified": true
     },
@@ -4230,8 +4230,8 @@
       "case": "tensornetwork_permutation_light_415",
       "group": "Threads: 1 / opt_size",
       "backend": "tenferro-eager",
-      "median": 339.713,
-      "iqr": 1.142,
+      "median": 286.136,
+      "iqr": 1.474,
       "status": "ok",
       "verified": true
     },
@@ -4239,8 +4239,8 @@
       "case": "tensornetwork_permutation_light_415",
       "group": "Threads: 1 / opt_size",
       "backend": "tenferro-trace",
-      "median": 294.578,
-      "iqr": 2.337,
+      "median": 250.078,
+      "iqr": 1.299,
       "status": "ok",
       "verified": true
     },
@@ -4248,8 +4248,8 @@
       "case": "tensornetwork_permutation_light_415",
       "group": "Threads: 4 / opt_flops",
       "backend": "jax-cpu",
-      "median": 424.96,
-      "iqr": 38.338,
+      "median": 413.734,
+      "iqr": 13.728,
       "status": "ok",
       "verified": true
     },
@@ -4257,8 +4257,8 @@
       "case": "tensornetwork_permutation_light_415",
       "group": "Threads: 4 / opt_flops",
       "backend": "omeinsum_path",
-      "median": 548.307,
-      "iqr": 31.595,
+      "median": 473.54,
+      "iqr": 18.111,
       "status": "ok",
       "verified": true
     },
@@ -4266,8 +4266,8 @@
       "case": "tensornetwork_permutation_light_415",
       "group": "Threads: 4 / opt_flops",
       "backend": "pytorch-cpu",
-      "median": 343.757,
-      "iqr": 16.934,
+      "median": 236.923,
+      "iqr": 5.44,
       "status": "ok",
       "verified": true
     },
@@ -4275,8 +4275,8 @@
       "case": "tensornetwork_permutation_light_415",
       "group": "Threads: 4 / opt_flops",
       "backend": "tenferro-eager",
-      "median": 154.176,
-      "iqr": 0.827,
+      "median": 125.101,
+      "iqr": 0.991,
       "status": "ok",
       "verified": true
     },
@@ -4284,8 +4284,8 @@
       "case": "tensornetwork_permutation_light_415",
       "group": "Threads: 4 / opt_flops",
       "backend": "tenferro-trace",
-      "median": 188.906,
-      "iqr": 1.606,
+      "median": 167.823,
+      "iqr": 1.251,
       "status": "ok",
       "verified": true
     },
@@ -4293,8 +4293,8 @@
       "case": "tensornetwork_permutation_light_415",
       "group": "Threads: 4 / opt_size",
       "backend": "jax-cpu",
-      "median": 424.96,
-      "iqr": 38.338,
+      "median": 413.734,
+      "iqr": 13.728,
       "status": "ok",
       "verified": true
     },
@@ -4302,8 +4302,8 @@
       "case": "tensornetwork_permutation_light_415",
       "group": "Threads: 4 / opt_size",
       "backend": "omeinsum_path",
-      "median": 548.307,
-      "iqr": 31.595,
+      "median": 473.54,
+      "iqr": 18.111,
       "status": "ok",
       "verified": true
     },
@@ -4311,8 +4311,8 @@
       "case": "tensornetwork_permutation_light_415",
       "group": "Threads: 4 / opt_size",
       "backend": "pytorch-cpu",
-      "median": 343.757,
-      "iqr": 16.934,
+      "median": 236.923,
+      "iqr": 5.44,
       "status": "ok",
       "verified": true
     },
@@ -4320,8 +4320,8 @@
       "case": "tensornetwork_permutation_light_415",
       "group": "Threads: 4 / opt_size",
       "backend": "tenferro-eager",
-      "median": 154.176,
-      "iqr": 0.827,
+      "median": 125.101,
+      "iqr": 0.991,
       "status": "ok",
       "verified": true
     },
@@ -4329,8 +4329,8 @@
       "case": "tensornetwork_permutation_light_415",
       "group": "Threads: 4 / opt_size",
       "backend": "tenferro-trace",
-      "median": 188.906,
-      "iqr": 1.606,
+      "median": 167.823,
+      "iqr": 1.251,
       "status": "ok",
       "verified": true
     }
