@@ -2,9 +2,9 @@
 
 Measured cells: **16**. Unsupported cells: **0**, including **0** numerically verified but timing-excluded cells. Unsupported cells do not count as measured coverage.
 
-Logical traffic: this run measured a plain device copy of 67108864 bytes at **1449.0 GB/s** on this device. Every record carries the logical bytes the case must move per operation and the ratio of the case's implied rate to that copy rate, in the sampling table below. Logical bytes are the declared array sizes, not device DRAM traffic: a case whose operands stay in cache moves less DRAM than its arrays suggest, so a ratio above 1 is recorded, not rejected.
+Logical traffic: this run measured a plain device copy of 67108864 bytes at **1413.7 GB/s** on this device. Every record carries the logical bytes the case must move per operation and the ratio of the case's implied rate to that copy rate, in the sampling table below. Logical bytes are the declared array sizes, not device DRAM traffic: a case whose operands stay in cache moves less DRAM than its arrays suggest, so a ratio above 1 is recorded, not rejected.
 
-Raw run: `data/results/nvidia-gpu/gpu/fft/20261126_062950/`.
+Raw run: `data/results/nvidia-gpu/gpu/fft/20261128_082346/`.
 
 FftExecutor and borrowed eager sessions, PyTorch, JAX eager and JAX JIT. Issue 155.
 
@@ -20,31 +20,31 @@ All measured output elements are checked against independently generated NumPy/S
 
 | Case | tenferro-cuda-direct | tenferro-cuda-eager | pytorch-cuda | jax-cuda |
 | --- | ---: | ---: | ---: | ---: |
-| fft_c64_n1048576 † | 131.687 (0.580) | 163.005 (0.430) | 105.010 (0.920) | 772.569 (23.986) |
-| ifft_c64_n1048576 † | 153.938 (1.384) | 180.883 (1.567) | 111.146 (0.198) | 786.299 (54.710) |
-| rfft_f64_n1048576 † | 85.451 (14.092) | 97.118 (0.602) | 50.078 (0.042) | 798.792 (19.431) |
-| irfft_c64_n1048576 † | 95.575 (0.392) | 113.983 (0.423) | 69.469 (0.120) | 791.452 (40.921) |
+| fft_c64_n1048576 † | 132.643 (0.348) | 161.756 (1.589) | 103.997 (0.881) | 852.195 (20.882) |
+| ifft_c64_n1048576 † | 154.743 (1.084) | 186.044 (2.549) | 111.056 (0.299) | 944.612 (29.434) |
+| rfft_f64_n1048576 † | 79.305 (0.620) | 96.662 (1.499) | 49.915 (0.150) | 996.057 (79.388) |
+| irfft_c64_n1048576 † | 97.100 (0.652) | 112.219 (5.515) | 69.545 (0.119) | 949.163 (78.654) |
 
 ## Sampling
 
 | Case | Backend | Ops/sample | Samples | Median batch ms | Bytes/op | Copy ratio | Verification error/tolerance |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| fft_c64_n1048576 | jax-cuda | 4 | 15 | 3.090 | 33554432 | 0.030 | 0.01641 |
-| fft_c64_n1048576 | pytorch-cuda | 2 | 15 | 0.210 | 33554432 | 0.221 | 0.01641 |
-| fft_c64_n1048576 | tenferro-cuda-direct | 16 | 15 | 2.107 | 33554432 | 0.176 | 0.01641 |
-| fft_c64_n1048576 | tenferro-cuda-eager | 16 | 15 | 2.608 | 33554432 | 0.142 | 0.01641 |
-| ifft_c64_n1048576 | jax-cuda | 4 | 15 | 3.145 | 33554432 | 0.029 | 4.754e-08 |
-| ifft_c64_n1048576 | pytorch-cuda | 16 | 15 | 1.778 | 33554432 | 0.208 | 4.754e-08 |
-| ifft_c64_n1048576 | tenferro-cuda-direct | 8 | 15 | 1.232 | 33554432 | 0.150 | 4.754e-08 |
-| ifft_c64_n1048576 | tenferro-cuda-eager | 8 | 15 | 1.447 | 33554432 | 0.128 | 4.754e-08 |
-| irfft_c64_n1048576 | jax-cuda | 4 | 15 | 3.166 | 16777232 | 0.015 | 6.867e-08 |
-| irfft_c64_n1048576 | pytorch-cuda | 32 | 15 | 2.223 | 16777232 | 0.167 | 6.867e-08 |
-| irfft_c64_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.058 | 16777232 | 0.121 | 6.867e-08 |
-| irfft_c64_n1048576 | tenferro-cuda-eager | 32 | 15 | 3.647 | 16777232 | 0.102 | 6.867e-08 |
-| rfft_f64_n1048576 | jax-cuda | 4 | 15 | 3.195 | 16777232 | 0.014 | 0.01077 |
-| rfft_f64_n1048576 | pytorch-cuda | 31 | 15 | 1.552 | 16777232 | 0.231 | 0.01077 |
-| rfft_f64_n1048576 | tenferro-cuda-direct | 31 | 15 | 2.649 | 16777232 | 0.136 | 0.01077 |
-| rfft_f64_n1048576 | tenferro-cuda-eager | 31 | 15 | 3.011 | 16777232 | 0.119 | 0.01077 |
+| fft_c64_n1048576 | jax-cuda | 4 | 15 | 3.409 | 33554432 | 0.028 | 0.01641 |
+| fft_c64_n1048576 | pytorch-cuda | 2 | 15 | 0.208 | 33554432 | 0.228 | 0.01641 |
+| fft_c64_n1048576 | tenferro-cuda-direct | 16 | 15 | 2.122 | 33554432 | 0.179 | 0.01641 |
+| fft_c64_n1048576 | tenferro-cuda-eager | 4 | 15 | 0.647 | 33554432 | 0.147 | 0.01641 |
+| ifft_c64_n1048576 | jax-cuda | 2 | 15 | 1.889 | 33554432 | 0.025 | 4.754e-08 |
+| ifft_c64_n1048576 | pytorch-cuda | 16 | 15 | 1.777 | 33554432 | 0.214 | 4.754e-08 |
+| ifft_c64_n1048576 | tenferro-cuda-direct | 8 | 15 | 1.238 | 33554432 | 0.153 | 4.754e-08 |
+| ifft_c64_n1048576 | tenferro-cuda-eager | 8 | 15 | 1.488 | 33554432 | 0.128 | 4.754e-08 |
+| irfft_c64_n1048576 | jax-cuda | 4 | 15 | 3.797 | 16777232 | 0.013 | 6.867e-08 |
+| irfft_c64_n1048576 | pytorch-cuda | 32 | 15 | 2.225 | 16777232 | 0.171 | 6.867e-08 |
+| irfft_c64_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.107 | 16777232 | 0.122 | 6.867e-08 |
+| irfft_c64_n1048576 | tenferro-cuda-eager | 32 | 15 | 3.591 | 16777232 | 0.106 | 6.867e-08 |
+| rfft_f64_n1048576 | jax-cuda | 4 | 15 | 3.984 | 16777232 | 0.012 | 0.01077 |
+| rfft_f64_n1048576 | pytorch-cuda | 31 | 15 | 1.547 | 16777232 | 0.238 | 0.01077 |
+| rfft_f64_n1048576 | tenferro-cuda-direct | 31 | 15 | 2.458 | 16777232 | 0.150 | 0.01077 |
+| rfft_f64_n1048576 | tenferro-cuda-eager | 31 | 15 | 2.997 | 16777232 | 0.123 | 0.01077 |
 
 ## Run metadata
 
@@ -52,8 +52,8 @@ All measured output elements are checked against independently generated NumPy/S
 schema_version: 1
 target_profile: nvidia-gpu
 suite_id: gpu/fft
-suite_file: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261126_062950/gpu_fft.yaml
-timestamp: '2026-11-26T06:29:50+00:00'
+suite_file: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261128_082346/gpu_fft.yaml
+timestamp: '2026-11-28T08:23:46+00:00'
 tenferro_rs:
   path: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/extern/tenferro-rs
   commit: 1ba9f33521691170c763dfce9b6c9bb56ca523c2
@@ -63,7 +63,7 @@ tenferro_rs:
   resolved_path: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/extern/tenferro-rs
 harness:
   path: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark
-  commit: cc9867403ef65b20357ed79bc78ec5fc2864c4a9
+  commit: 28b35e0408e272b66d7460e3fa12213799c543f9
   dirty: false
 resolved_deps:
   strided-perm:
@@ -76,102 +76,273 @@ resolved_deps:
   - 0.1.0
   - 0.6.1
 host:
-  cpu: AMD EPYC 7543 32-Core Processor
-  logical_cpus: 128
+  cpu: AMD EPYC 9554 64-Core Processor
+  logical_cpus: 252
   power:
-    cpufreq_boost: '1'
-    governor: schedutil
-    scaling_max_freq_khz: '2800000'
     smt:
-      active: '1'
-      control: 'on'
+      active: '0'
+      control: notsupported
   numa:
     nodes: 2
     cpulists:
-      '0': 0-31,64-95
-      '1': 32-63,96-127
+      '0': 0-125
+      '1': 126-251
   smt_siblings:
-  - 0,64
-  - 1,65
-  - 2,66
-  - 3,67
-  - 4,68
-  - 5,69
-  - 6,70
-  - 7,71
-  - 8,72
-  - 9,73
-  - 10,74
-  - 11,75
-  - 12,76
-  - 13,77
-  - 14,78
-  - 15,79
-  - 16,80
-  - 17,81
-  - 18,82
-  - 19,83
-  - 20,84
-  - 21,85
-  - 22,86
-  - 23,87
-  - 24,88
-  - 25,89
-  - 26,90
-  - 27,91
-  - 28,92
-  - 29,93
-  - 30,94
-  - 31,95
-  - 32,96
-  - 33,97
-  - 34,98
-  - 35,99
-  - 36,100
-  - 37,101
-  - 38,102
-  - 39,103
-  - 40,104
-  - 41,105
-  - 42,106
-  - 43,107
-  - 44,108
-  - 45,109
-  - 46,110
-  - 47,111
-  - 48,112
-  - 49,113
-  - 50,114
-  - 51,115
-  - 52,116
-  - 53,117
-  - 54,118
-  - 55,119
-  - 56,120
-  - 57,121
-  - 58,122
-  - 59,123
-  - 60,124
-  - 61,125
-  - 62,126
-  - 63,127
+  - '0'
+  - '1'
+  - '2'
+  - '3'
+  - '4'
+  - '5'
+  - '6'
+  - '7'
+  - '8'
+  - '9'
+  - '10'
+  - '11'
+  - '12'
+  - '13'
+  - '14'
+  - '15'
+  - '16'
+  - '17'
+  - '18'
+  - '19'
+  - '20'
+  - '21'
+  - '22'
+  - '23'
+  - '24'
+  - '25'
+  - '26'
+  - '27'
+  - '28'
+  - '29'
+  - '30'
+  - '31'
+  - '32'
+  - '33'
+  - '34'
+  - '35'
+  - '36'
+  - '37'
+  - '38'
+  - '39'
+  - '40'
+  - '41'
+  - '42'
+  - '43'
+  - '44'
+  - '45'
+  - '46'
+  - '47'
+  - '48'
+  - '49'
+  - '50'
+  - '51'
+  - '52'
+  - '53'
+  - '54'
+  - '55'
+  - '56'
+  - '57'
+  - '58'
+  - '59'
+  - '60'
+  - '61'
+  - '62'
+  - '63'
+  - '64'
+  - '65'
+  - '66'
+  - '67'
+  - '68'
+  - '69'
+  - '70'
+  - '71'
+  - '72'
+  - '73'
+  - '74'
+  - '75'
+  - '76'
+  - '77'
+  - '78'
+  - '79'
+  - '80'
+  - '81'
+  - '82'
+  - '83'
+  - '84'
+  - '85'
+  - '86'
+  - '87'
+  - '88'
+  - '89'
+  - '90'
+  - '91'
+  - '92'
+  - '93'
+  - '94'
+  - '95'
+  - '96'
+  - '97'
+  - '98'
+  - '99'
+  - '100'
+  - '101'
+  - '102'
+  - '103'
+  - '104'
+  - '105'
+  - '106'
+  - '107'
+  - '108'
+  - '109'
+  - '110'
+  - '111'
+  - '112'
+  - '113'
+  - '114'
+  - '115'
+  - '116'
+  - '117'
+  - '118'
+  - '119'
+  - '120'
+  - '121'
+  - '122'
+  - '123'
+  - '124'
+  - '125'
+  - '126'
+  - '127'
+  - '128'
+  - '129'
+  - '130'
+  - '131'
+  - '132'
+  - '133'
+  - '134'
+  - '135'
+  - '136'
+  - '137'
+  - '138'
+  - '139'
+  - '140'
+  - '141'
+  - '142'
+  - '143'
+  - '144'
+  - '145'
+  - '146'
+  - '147'
+  - '148'
+  - '149'
+  - '150'
+  - '151'
+  - '152'
+  - '153'
+  - '154'
+  - '155'
+  - '156'
+  - '157'
+  - '158'
+  - '159'
+  - '160'
+  - '161'
+  - '162'
+  - '163'
+  - '164'
+  - '165'
+  - '166'
+  - '167'
+  - '168'
+  - '169'
+  - '170'
+  - '171'
+  - '172'
+  - '173'
+  - '174'
+  - '175'
+  - '176'
+  - '177'
+  - '178'
+  - '179'
+  - '180'
+  - '181'
+  - '182'
+  - '183'
+  - '184'
+  - '185'
+  - '186'
+  - '187'
+  - '188'
+  - '189'
+  - '190'
+  - '191'
+  - '192'
+  - '193'
+  - '194'
+  - '195'
+  - '196'
+  - '197'
+  - '198'
+  - '199'
+  - '200'
+  - '201'
+  - '202'
+  - '203'
+  - '204'
+  - '205'
+  - '206'
+  - '207'
+  - '208'
+  - '209'
+  - '210'
+  - '211'
+  - '212'
+  - '213'
+  - '214'
+  - '215'
+  - '216'
+  - '217'
+  - '218'
+  - '219'
+  - '220'
+  - '221'
+  - '222'
+  - '223'
+  - '224'
+  - '225'
+  - '226'
+  - '227'
+  - '228'
+  - '229'
+  - '230'
+  - '231'
+  - '232'
+  - '233'
+  - '234'
+  - '235'
+  - '236'
+  - '237'
+  - '238'
+  - '239'
+  - '240'
+  - '241'
+  - '242'
+  - '243'
+  - '244'
+  - '245'
+  - '246'
+  - '247'
+  - '248'
+  - '249'
+  - '250'
+  - '251'
   l3_domains:
-  - 0-3,64-67
-  - 4-7,68-71
-  - 8-11,72-75
-  - 12-15,76-79
-  - 16-19,80-83
-  - 20-23,84-87
-  - 24-27,88-91
-  - 28-31,92-95
-  - 32-35,96-99
-  - 36-39,100-103
-  - 40-43,104-107
-  - 44-47,108-111
-  - 48-51,112-115
-  - 52-55,116-119
-  - 56-59,120-123
-  - 60-63,124-127
+  - 0-125
+  - 126-251
 build:
   toolchain:
     rustc: null
@@ -180,8 +351,8 @@ build:
     target_cpu: null
 environment:
   container: devcontainer
-  hostname: d73a3a75b493
-  os: Linux-6.8.0-138-generic-x86_64-with-glibc2.39
+  hostname: 32b786430f5d
+  os: Linux-6.8.0-149-generic-x86_64-with-glibc2.39
   arch: x86_64
   cpu: x86_64
   affinity:
@@ -190,27 +361,13 @@ environment:
     observer_cpus: null
     override_of: null
     thread_budget: '1'
-    measured_cpus: 0-127
+    measured_cpus: 0-251
     l3_domains:
-    - 0-3,64-67
-    - 4-7,68-71
-    - 8-11,72-75
-    - 12-15,76-79
-    - 16-19,80-83
-    - 20-23,84-87
-    - 24-27,88-91
-    - 28-31,92-95
-    - 32-35,96-99
-    - 36-39,100-103
-    - 40-43,104-107
-    - 44-47,108-111
-    - 48-51,112-115
-    - 52-55,116-119
-    - 56-59,120-123
-    - 60-63,124-127
-    cpu_boost: enabled
-    scaling_governor: schedutil
-    scaling_driver: acpi-cpufreq
+    - 0-125
+    - 126-251
+    cpu_boost: null
+    scaling_governor: null
+    scaling_driver: null
   env:
     OMP_NUM_THREADS: '1'
     RAYON_NUM_THREADS: '1'
@@ -249,8 +406,8 @@ python_backends:
       \ oneAPI Math Kernel Library Version 2024.2-Product Build 20240605 for Intel(R)\
       \ 64 architecture applications\n  - Intel(R) MKL-DNN v3.10.2 (Git Hash f1d471933dc852f956fd05389f9313c7148783d5)\n\
       \  - OpenMP 201511 (a.k.a. OpenMP 4.5)\n  - LAPACK is enabled (usually provided\
-      \ by MKL)\n  - NNPACK is enabled\n  - CPU capability usage: AVX2\n  - CUDA Runtime\
-      \ 12.8\n  - NVCC architecture flags: -gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_86,code=sm_86;-gencode;arch=compute_90,code=sm_90;-gencode;arch=compute_100,code=sm_100;-gencode;arch=compute_120,code=sm_120\n\
+      \ by MKL)\n  - NNPACK is enabled\n  - CPU capability usage: AVX512\n  - CUDA\
+      \ Runtime 12.8\n  - NVCC architecture flags: -gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_86,code=sm_86;-gencode;arch=compute_90,code=sm_90;-gencode;arch=compute_100,code=sm_100;-gencode;arch=compute_120,code=sm_120\n\
       \  - CuDNN 91.9  (built against CUDA 12.9)\n  - Magma 2.6.1\n  - Build settings:\
       \ BLAS_INFO=mkl, BUILD_TYPE=Release, COMMIT_SHA=70d99e998b4955e0049d13a98d77ae1b14db1f45,\
       \ CUDA_VERSION=12.8, CUDNN_VERSION=9.19.0, CXX_COMPILER=/opt/rh/gcc-toolset-13/root/usr/bin/c++,\
@@ -287,7 +444,7 @@ julia:
 cuda:
   device_ordinal: 0
   device_name: NVIDIA A100 80GB PCIe
-  device_uuid: GPU-e0c82f3d-3a11-a28c-b42e-1c92d26527fd
+  device_uuid: GPU-12b45076-79d5-7b84-cb5c-7c6300074c8a
   device_memory_bytes: 85899345920
   driver_version: 595.112.07
   runtime_version: '12.8'
@@ -311,31 +468,31 @@ gpu_memory_calibration:
   traffic_model: one read plus one write of buffer_bytes per copy
   warmups: 3
   sample_ms:
-  - 0.09669
-  - 0.09304
-  - 0.09304
-  - 0.093911
-  - 0.09168
-  - 0.09241
-  - 0.09215
-  - 0.092631
-  - 0.09312
-  - 0.09247
-  - 0.09248
-  - 0.09139
-  - 0.09255
-  - 0.093121
-  - 0.09274
-  median_ms: 0.092631
-  bytes_per_second: 1448950437758.4177
+  - 0.095284
+  - 0.091587
+  - 0.096365
+  - 0.095453
+  - 0.091798
+  - 0.097677
+  - 0.095133
+  - 0.093361
+  - 0.094942
+  - 0.098049
+  - 0.092249
+  - 0.094562
+  - 0.094994
+  - 0.094482
+  - 0.093311
+  median_ms: 0.094942
+  bytes_per_second: 1413681279096.7117
   torch_version: 2.11.0+cu128
   cuda_version: '12.8'
-  timestamp: '2026-11-26T06:42:31.481143+00:00'
+  timestamp: '2026-11-28T08:34:37.421042+00:00'
 gpu_assignment:
   role: benchmark
   physical_device_index: 0
-  device_uuid: GPU-e0c82f3d-3a11-a28c-b42e-1c92d26527fd
-  cuda_visible_devices: GPU-e0c82f3d-3a11-a28c-b42e-1c92d26527fd
+  device_uuid: GPU-12b45076-79d5-7b84-cb5c-7c6300074c8a
+  cuda_visible_devices: GPU-12b45076-79d5-7b84-cb5c-7c6300074c8a
   process_device_ordinal: 0
   verification_only: false
 collection:
@@ -360,8 +517,8 @@ collection:
     /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/scripts/benchmark_gpu_public_api.py: d1ff68f86496d991bcbc730138fe6e3076001b3f23cc1a94c44b96f6857cb8ed
     /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/scripts/gpu_public_api_ops.py: e88823db3f4a1fe43dc13c4743c9d78ece6af76a968724091af318dd8d7f2528
     scripts/run_gpu_public_api.sh: 7995bcf409258185e07210969a738896f64860b67df251fcd1100d11128a5431
-    data/results/nvidia-gpu/gpu/fft/20261126_062950/fixtures/manifest.json: 291fe47a7068f6aa42602cf730357edc2d116c31ccf9b3998cb32b6737d90541
-    target/release/benchmark_gpu_public_api: 3ff693b2ae7411a94a3e3337550156543b79bbe33a2720b00f7fb8181bdf1fd4
+    data/results/nvidia-gpu/gpu/fft/20261128_082346/fixtures/manifest.json: 291fe47a7068f6aa42602cf730357edc2d116c31ccf9b3998cb32b6737d90541
+    target/release/benchmark_gpu_public_api: 54dda9d9f7540806d7ff5a5d68e1312bc33b0d58871d8e3e9467a819e7c59318
   reference_numpy_version: 2.4.2
   measurement_cpu:
     policy: 'disabled (GPU_BENCH_CPU_SELECT unset): arms run on the allocation unpinned'
@@ -371,27 +528,27 @@ collection:
         status: disabled
         reason: 'GPU_BENCH_CPU_SELECT is not 1: the arm runs on the allocation unpinned'
         exit_code: 0
-        finished_at: '2026-11-26T06:42:41Z'
+        finished_at: '2026-11-28T08:34:47Z'
       pytorch-cuda:
         arm: pytorch-cuda
         status: disabled
         reason: 'GPU_BENCH_CPU_SELECT is not 1: the arm runs on the allocation unpinned'
         exit_code: 0
-        finished_at: '2026-11-26T06:42:38Z'
+        finished_at: '2026-11-28T08:34:44Z'
       tenferro-cuda-direct:
         arm: tenferro-cuda-direct
         status: disabled
         reason: 'GPU_BENCH_CPU_SELECT is not 1: the arm runs on the allocation unpinned'
         exit_code: 0
-        finished_at: '2026-11-26T06:42:34Z'
+        finished_at: '2026-11-28T08:34:40Z'
       tenferro-cuda-eager:
         arm: tenferro-cuda-eager
         status: disabled
         reason: 'GPU_BENCH_CPU_SELECT is not 1: the arm runs on the allocation unpinned'
         exit_code: 0
-        finished_at: '2026-11-26T06:42:35Z'
+        finished_at: '2026-11-28T08:34:41Z'
   compile:
-    case_wall_seconds: 3.274
+    case_wall_seconds: 3.206
     compiling_processes: 0
     modules_compiled: 0
     compile_time_ms: null
@@ -406,19 +563,19 @@ Each row records the wall clock it spent outside its timed region. These cases s
 
 | Case | Backend | Warning |
 | --- | --- | --- |
-| fft_c64_n1048576 | tenferro-cuda-direct | fft_c64_n1048576 untimed 294.2 ms is 931% of the 31.6 ms timed region (budget 20%) |
-| ifft_c64_n1048576 | tenferro-cuda-direct | ifft_c64_n1048576 untimed 253.9 ms is 1364% of the 18.6 ms timed region (budget 20%) |
-| rfft_f64_n1048576 | tenferro-cuda-direct | rfft_f64_n1048576 untimed 135.5 ms is 332% of the 40.7 ms timed region (budget 20%) |
-| irfft_c64_n1048576 | tenferro-cuda-direct | irfft_c64_n1048576 untimed 202.2 ms is 441% of the 45.9 ms timed region (budget 20%) |
-| fft_c64_n1048576 | tenferro-cuda-eager | fft_c64_n1048576 untimed 297.8 ms is 761% of the 39.1 ms timed region (budget 20%) |
-| ifft_c64_n1048576 | tenferro-cuda-eager | ifft_c64_n1048576 untimed 168.2 ms is 774% of the 21.7 ms timed region (budget 20%) |
-| rfft_f64_n1048576 | tenferro-cuda-eager | rfft_f64_n1048576 untimed 82.9 ms is 182% of the 45.4 ms timed region (budget 20%) |
-| irfft_c64_n1048576 | tenferro-cuda-eager | irfft_c64_n1048576 untimed 120.6 ms is 220% of the 54.7 ms timed region (budget 20%) |
-| fft_c64_n1048576 | pytorch-cuda | fft_c64_n1048576 untimed 136.5 ms is 4308% of the 3.2 ms timed region (budget 20%) |
-| ifft_c64_n1048576 | pytorch-cuda | ifft_c64_n1048576 untimed 126.8 ms is 473% of the 26.8 ms timed region (budget 20%) |
-| rfft_f64_n1048576 | pytorch-cuda | rfft_f64_n1048576 untimed 39.6 ms is 170% of the 23.3 ms timed region (budget 20%) |
-| irfft_c64_n1048576 | pytorch-cuda | irfft_c64_n1048576 untimed 69.8 ms is 209% of the 33.4 ms timed region (budget 20%) |
-| fft_c64_n1048576 | jax-cuda | fft_c64_n1048576 untimed 343.7 ms is 735% of the 46.8 ms timed region (budget 20%) |
-| ifft_c64_n1048576 | jax-cuda | ifft_c64_n1048576 untimed 138.6 ms is 286% of the 48.5 ms timed region (budget 20%) |
-| rfft_f64_n1048576 | jax-cuda | rfft_f64_n1048576 untimed 140.5 ms is 292% of the 48.1 ms timed region (budget 20%) |
-| irfft_c64_n1048576 | jax-cuda | irfft_c64_n1048576 untimed 146.5 ms is 297% of the 49.3 ms timed region (budget 20%) |
+| fft_c64_n1048576 | tenferro-cuda-direct | fft_c64_n1048576 untimed 277.1 ms is 870% of the 31.8 ms timed region (budget 20%) |
+| ifft_c64_n1048576 | tenferro-cuda-direct | ifft_c64_n1048576 untimed 226.1 ms is 1217% of the 18.6 ms timed region (budget 20%) |
+| rfft_f64_n1048576 | tenferro-cuda-direct | rfft_f64_n1048576 untimed 107.8 ms is 292% of the 36.9 ms timed region (budget 20%) |
+| irfft_c64_n1048576 | tenferro-cuda-direct | irfft_c64_n1048576 untimed 171.3 ms is 368% of the 46.6 ms timed region (budget 20%) |
+| fft_c64_n1048576 | tenferro-cuda-eager | fft_c64_n1048576 untimed 271.2 ms is 2783% of the 9.7 ms timed region (budget 20%) |
+| ifft_c64_n1048576 | tenferro-cuda-eager | ifft_c64_n1048576 untimed 156.9 ms is 703% of the 22.3 ms timed region (budget 20%) |
+| rfft_f64_n1048576 | tenferro-cuda-eager | rfft_f64_n1048576 untimed 76.3 ms is 169% of the 45.0 ms timed region (budget 20%) |
+| irfft_c64_n1048576 | tenferro-cuda-eager | irfft_c64_n1048576 untimed 108.5 ms is 198% of the 54.9 ms timed region (budget 20%) |
+| fft_c64_n1048576 | pytorch-cuda | fft_c64_n1048576 untimed 108.7 ms is 3470% of the 3.1 ms timed region (budget 20%) |
+| ifft_c64_n1048576 | pytorch-cuda | ifft_c64_n1048576 untimed 108.3 ms is 406% of the 26.7 ms timed region (budget 20%) |
+| rfft_f64_n1048576 | pytorch-cuda | rfft_f64_n1048576 untimed 31.6 ms is 136% of the 23.2 ms timed region (budget 20%) |
+| irfft_c64_n1048576 | pytorch-cuda | irfft_c64_n1048576 untimed 57.4 ms is 172% of the 33.4 ms timed region (budget 20%) |
+| fft_c64_n1048576 | jax-cuda | fft_c64_n1048576 untimed 421.9 ms is 717% of the 58.9 ms timed region (budget 20%) |
+| ifft_c64_n1048576 | jax-cuda | ifft_c64_n1048576 untimed 143.2 ms is 504% of the 28.4 ms timed region (budget 20%) |
+| rfft_f64_n1048576 | jax-cuda | rfft_f64_n1048576 untimed 177.0 ms is 298% of the 59.4 ms timed region (budget 20%) |
+| irfft_c64_n1048576 | jax-cuda | irfft_c64_n1048576 untimed 204.7 ms is 347% of the 58.9 ms timed region (budget 20%) |
