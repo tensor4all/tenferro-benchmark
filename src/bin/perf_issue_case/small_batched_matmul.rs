@@ -14,7 +14,9 @@
 //!   competitor.
 //!
 //! Both arms are checked against a third, size-generic scalar implementation
-//! before timing, so neither arm vouches for the other.
+//! (dynamic `N`, k-outermost summation order) before timing. It is a different
+//! summation order and indexing path, not a different algorithm; the unit tests
+//! below pin it, and every fixed-size loop, to a hand-computed product.
 use super::*;
 use std::ops::{Add, Mul};
 use tenferro_tensor::{DotGeneralAccumulation, TensorScalar};
@@ -66,22 +68,35 @@ fn direct_loop<T: Elem, const N: usize>(a: &[T], b: &[T], c: &mut [T], accumulat
     }
 }
 
-/// Size-generic scalar implementation used only to verify the two arms.
+/// Size-generic scalar implementation used only to verify the two arms: dynamic
+/// `N`, k-outermost rank-1 updates into a zeroed block, then the update mode.
 fn check_product<T: Elem>(n: usize, a: &[T], b: &[T], c0: &[T], accumulate: bool) -> Vec<T> {
     let mut out = c0.to_vec();
     for (batch, out) in out.chunks_exact_mut(n * n).enumerate() {
         let (a, b) = (&a[batch * n * n..], &b[batch * n * n..]);
-        for j in 0..n {
-            for i in 0..n {
-                let mut sum = T::default();
-                for k in 0..n {
-                    sum = sum + a[i + n * k] * b[k + n * j];
+        let mut product = vec![T::default(); n * n];
+        for k in 0..n {
+            for j in 0..n {
+                for i in 0..n {
+                    product[i + n * j] = product[i + n * j] + a[i + n * k] * b[k + n * j];
                 }
-                out[i + n * j] = if accumulate { out[i + n * j] + sum } else { sum };
             }
+        }
+        for (o, x) in out.iter_mut().zip(product) {
+            *o = if accumulate { *o + x } else { x };
         }
     }
     out
+}
+
+/// `beta = 0` is `overwrite`, `beta = 1` is `accumulate`; the one parse drives the
+/// expected values, the direct loop and the tenferro accumulation.
+fn accumulate_flag(mode: &str) -> Result<bool> {
+    match mode {
+        "overwrite" => Ok(false),
+        "accumulate" => Ok(true),
+        other => Err(format!("unknown update mode {other}").into()),
+    }
 }
 
 fn worst_error<T: Elem>(got: &[T], want: &[T], what: &str) -> Result<f64> {
@@ -114,11 +129,7 @@ fn run_typed<T: Elem>(p: &Value, timing: &Timing, threads: usize) -> Result<Case
     let n = param_usize(p, "n")?;
     let batch = param_usize(p, "batch")?;
     let arm = param_str(p, "arm")?;
-    let accumulate = match param_str(p, "mode")? {
-        "overwrite" => false,
-        "accumulate" => true,
-        other => return Err(format!("unknown update mode {other}").into()),
-    };
+    let accumulate = accumulate_flag(param_str(p, "mode")?)?;
     let len = n * n * batch;
     let (a, b, c0) = (T::data(len, 301), T::data(len, 302), T::data(len, 303));
     let want = check_product(n, &a, &b, &c0, accumulate);
@@ -131,6 +142,8 @@ fn run_typed<T: Elem>(p: &Value, timing: &Timing, threads: usize) -> Result<Case
             direct(&a, &b, &mut c, accumulate);
             let error = worst_error(&c, &want, "direct loop")?;
             c.copy_from_slice(&c0);
+            // Nothing is retained (the output is the preallocated buffer), so the
+            // retention bound is irrelevant: pass 1 byte.
             let measurement = measure(timing, 1, || {
                 direct(black_box(&a), black_box(&b), black_box(&mut c), accumulate);
                 Ok(())
@@ -202,5 +215,58 @@ pub(super) fn run(p: &Value, timing: &Timing, threads: usize) -> Result<CaseOutc
         "f64" => run_typed::<f64>(p, timing, threads),
         "c64" => run_typed::<Complex64>(p, timing, threads),
         other => Err(format!("unsupported dtype {other}").into()),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn update_modes_map_to_beta() {
+        assert!(!accumulate_flag("overwrite").unwrap());
+        assert!(accumulate_flag("accumulate").unwrap());
+        assert!(accumulate_flag("add").is_err());
+    }
+
+    /// A = [[1, 2], [3, 4]], B = [[5, 6], [7, 8]] (column-major), AB = [[19, 22], [43, 50]].
+    #[test]
+    fn checker_and_every_direct_loop_match_a_hand_computed_product() {
+        let a = [1.0, 3.0, 2.0, 4.0];
+        let b = [5.0, 7.0, 6.0, 8.0];
+        let c0 = [100.0, 200.0, 300.0, 400.0];
+        let ab = [19.0, 43.0, 22.0, 50.0];
+        let acc: Vec<f64> = c0.iter().zip(ab).map(|(c, x)| c + x).collect();
+        assert_eq!(check_product(2, &a, &b, &c0, false), ab);
+        assert_eq!(check_product(2, &a, &b, &c0, true), acc);
+        let mut c = c0;
+        direct_for::<f64>(2).unwrap()(&a, &b, &mut c, false);
+        assert_eq!(c, ab);
+        let mut c = c0;
+        direct_for::<f64>(2).unwrap()(&a, &b, &mut c, true);
+        assert_eq!(c.to_vec(), acc);
+    }
+
+    #[test]
+    fn every_fixed_size_loop_matches_the_checker_for_both_scalars_and_modes() {
+        for &n in &[1usize, 2, 3, 4, 5, 8] {
+            for &accumulate in &[false, true] {
+                let len = n * n * 3;
+                let (a, b, c0) = (f64::data(len, 1), f64::data(len, 2), f64::data(len, 3));
+                let want = check_product(n, &a, &b, &c0, accumulate);
+                let mut c = c0.clone();
+                direct_for::<f64>(n).unwrap()(&a, &b, &mut c, accumulate);
+                worst_error(&c, &want, "f64").unwrap();
+                let (a, b, c0) = (
+                    Complex64::data(len, 1),
+                    Complex64::data(len, 2),
+                    Complex64::data(len, 3),
+                );
+                let want = check_product(n, &a, &b, &c0, accumulate);
+                let mut c = c0.clone();
+                direct_for::<Complex64>(n).unwrap()(&a, &b, &mut c, accumulate);
+                worst_error(&c, &want, "c64").unwrap();
+            }
+        }
     }
 }

@@ -835,6 +835,9 @@ def small_tn_ad_prepare_cases():
     return rows
 
 
+SMALL_BATCHED_THROUGHPUT_FLOOR = 1 << 16
+
+
 def small_batched_matmul_cases():
     """#2745 / benchmark #543: many independent small products through the batched contract."""
     rows = []
@@ -865,6 +868,13 @@ def small_batched_matmul_cases():
                                 "a size-generic scalar product before timing."),
                         )
                         row["thread_counts"] = [1]
+                        # A call over fewer than 2**16 scalars per operand is dominated by the
+                        # per-call fixed cost (the 1x1 / batch 256 cell is ~1 us per call), so
+                        # it is a latency cell; larger calls are bandwidth/compute bound and
+                        # must not be published on the latency page (AGENTS.md, regimes).
+                        elements = n * n * batch
+                        row.update(regime="throughput" if elements >= SMALL_BATCHED_THROUGHPUT_FLOOR
+                                   else "latency", size_elements=elements)
                         rows.append(row)
     return rows
 

@@ -12892,7 +12892,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 256 independent 1x1 complex128 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [1, 1, 256] operands, one dot_general over the batch axis into a preallocated output (beta = 0, overwrite). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 256
  },
  {
   "id": "small_batched_matmul_c64_1x1_b256_overwrite_direct-loop",
@@ -12920,7 +12922,9 @@
   "reference_for": "small_batched_matmul_c64_1x1_b256_overwrite",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 256
  },
  {
   "id": "small_batched_matmul_c64_1x1_b256_accumulate",
@@ -12947,7 +12951,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 256 independent 1x1 complex128 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [1, 1, 256] operands, one dot_general over the batch axis into a preallocated output (beta = 1, accumulate into C). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 256
  },
  {
   "id": "small_batched_matmul_c64_1x1_b256_accumulate_direct-loop",
@@ -12975,7 +12981,9 @@
   "reference_for": "small_batched_matmul_c64_1x1_b256_accumulate",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 256
  },
  {
   "id": "small_batched_matmul_c64_1x1_b4096_overwrite",
@@ -13002,7 +13010,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 4096 independent 1x1 complex128 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [1, 1, 4096] operands, one dot_general over the batch axis into a preallocated output (beta = 0, overwrite). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 4096
  },
  {
   "id": "small_batched_matmul_c64_1x1_b4096_overwrite_direct-loop",
@@ -13030,7 +13040,9 @@
   "reference_for": "small_batched_matmul_c64_1x1_b4096_overwrite",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 4096
  },
  {
   "id": "small_batched_matmul_c64_1x1_b4096_accumulate",
@@ -13057,7 +13069,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 4096 independent 1x1 complex128 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [1, 1, 4096] operands, one dot_general over the batch axis into a preallocated output (beta = 1, accumulate into C). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 4096
  },
  {
   "id": "small_batched_matmul_c64_1x1_b4096_accumulate_direct-loop",
@@ -13085,7 +13099,9 @@
   "reference_for": "small_batched_matmul_c64_1x1_b4096_accumulate",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 4096
  },
  {
   "id": "small_batched_matmul_c64_1x1_b32769_overwrite",
@@ -13112,7 +13128,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 32769 independent 1x1 complex128 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [1, 1, 32769] operands, one dot_general over the batch axis into a preallocated output (beta = 0, overwrite). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 32769
  },
  {
   "id": "small_batched_matmul_c64_1x1_b32769_overwrite_direct-loop",
@@ -13140,7 +13158,9 @@
   "reference_for": "small_batched_matmul_c64_1x1_b32769_overwrite",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 32769
  },
  {
   "id": "small_batched_matmul_c64_1x1_b32769_accumulate",
@@ -13167,7 +13187,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 32769 independent 1x1 complex128 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [1, 1, 32769] operands, one dot_general over the batch axis into a preallocated output (beta = 1, accumulate into C). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 32769
  },
  {
   "id": "small_batched_matmul_c64_1x1_b32769_accumulate_direct-loop",
@@ -13195,7 +13217,9 @@
   "reference_for": "small_batched_matmul_c64_1x1_b32769_accumulate",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 32769
  },
  {
   "id": "small_batched_matmul_c64_2x2_b256_overwrite",
@@ -13222,7 +13246,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 256 independent 2x2 complex128 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [2, 2, 256] operands, one dot_general over the batch axis into a preallocated output (beta = 0, overwrite). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 1024
  },
  {
   "id": "small_batched_matmul_c64_2x2_b256_overwrite_direct-loop",
@@ -13250,7 +13276,9 @@
   "reference_for": "small_batched_matmul_c64_2x2_b256_overwrite",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 1024
  },
  {
   "id": "small_batched_matmul_c64_2x2_b256_accumulate",
@@ -13277,7 +13305,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 256 independent 2x2 complex128 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [2, 2, 256] operands, one dot_general over the batch axis into a preallocated output (beta = 1, accumulate into C). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 1024
  },
  {
   "id": "small_batched_matmul_c64_2x2_b256_accumulate_direct-loop",
@@ -13305,7 +13335,9 @@
   "reference_for": "small_batched_matmul_c64_2x2_b256_accumulate",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 1024
  },
  {
   "id": "small_batched_matmul_c64_2x2_b4096_overwrite",
@@ -13332,7 +13364,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 4096 independent 2x2 complex128 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [2, 2, 4096] operands, one dot_general over the batch axis into a preallocated output (beta = 0, overwrite). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 16384
  },
  {
   "id": "small_batched_matmul_c64_2x2_b4096_overwrite_direct-loop",
@@ -13360,7 +13394,9 @@
   "reference_for": "small_batched_matmul_c64_2x2_b4096_overwrite",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 16384
  },
  {
   "id": "small_batched_matmul_c64_2x2_b4096_accumulate",
@@ -13387,7 +13423,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 4096 independent 2x2 complex128 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [2, 2, 4096] operands, one dot_general over the batch axis into a preallocated output (beta = 1, accumulate into C). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 16384
  },
  {
   "id": "small_batched_matmul_c64_2x2_b4096_accumulate_direct-loop",
@@ -13415,7 +13453,9 @@
   "reference_for": "small_batched_matmul_c64_2x2_b4096_accumulate",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 16384
  },
  {
   "id": "small_batched_matmul_c64_2x2_b32769_overwrite",
@@ -13442,7 +13482,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 32769 independent 2x2 complex128 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [2, 2, 32769] operands, one dot_general over the batch axis into a preallocated output (beta = 0, overwrite). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 131076
  },
  {
   "id": "small_batched_matmul_c64_2x2_b32769_overwrite_direct-loop",
@@ -13470,7 +13512,9 @@
   "reference_for": "small_batched_matmul_c64_2x2_b32769_overwrite",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 131076
  },
  {
   "id": "small_batched_matmul_c64_2x2_b32769_accumulate",
@@ -13497,7 +13541,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 32769 independent 2x2 complex128 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [2, 2, 32769] operands, one dot_general over the batch axis into a preallocated output (beta = 1, accumulate into C). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 131076
  },
  {
   "id": "small_batched_matmul_c64_2x2_b32769_accumulate_direct-loop",
@@ -13525,7 +13571,9 @@
   "reference_for": "small_batched_matmul_c64_2x2_b32769_accumulate",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 131076
  },
  {
   "id": "small_batched_matmul_c64_3x3_b256_overwrite",
@@ -13552,7 +13600,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 256 independent 3x3 complex128 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [3, 3, 256] operands, one dot_general over the batch axis into a preallocated output (beta = 0, overwrite). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 2304
  },
  {
   "id": "small_batched_matmul_c64_3x3_b256_overwrite_direct-loop",
@@ -13580,7 +13630,9 @@
   "reference_for": "small_batched_matmul_c64_3x3_b256_overwrite",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 2304
  },
  {
   "id": "small_batched_matmul_c64_3x3_b256_accumulate",
@@ -13607,7 +13659,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 256 independent 3x3 complex128 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [3, 3, 256] operands, one dot_general over the batch axis into a preallocated output (beta = 1, accumulate into C). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 2304
  },
  {
   "id": "small_batched_matmul_c64_3x3_b256_accumulate_direct-loop",
@@ -13635,7 +13689,9 @@
   "reference_for": "small_batched_matmul_c64_3x3_b256_accumulate",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 2304
  },
  {
   "id": "small_batched_matmul_c64_3x3_b4096_overwrite",
@@ -13662,7 +13718,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 4096 independent 3x3 complex128 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [3, 3, 4096] operands, one dot_general over the batch axis into a preallocated output (beta = 0, overwrite). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 36864
  },
  {
   "id": "small_batched_matmul_c64_3x3_b4096_overwrite_direct-loop",
@@ -13690,7 +13748,9 @@
   "reference_for": "small_batched_matmul_c64_3x3_b4096_overwrite",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 36864
  },
  {
   "id": "small_batched_matmul_c64_3x3_b4096_accumulate",
@@ -13717,7 +13777,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 4096 independent 3x3 complex128 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [3, 3, 4096] operands, one dot_general over the batch axis into a preallocated output (beta = 1, accumulate into C). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 36864
  },
  {
   "id": "small_batched_matmul_c64_3x3_b4096_accumulate_direct-loop",
@@ -13745,7 +13807,9 @@
   "reference_for": "small_batched_matmul_c64_3x3_b4096_accumulate",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 36864
  },
  {
   "id": "small_batched_matmul_c64_3x3_b32769_overwrite",
@@ -13772,7 +13836,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 32769 independent 3x3 complex128 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [3, 3, 32769] operands, one dot_general over the batch axis into a preallocated output (beta = 0, overwrite). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 294921
  },
  {
   "id": "small_batched_matmul_c64_3x3_b32769_overwrite_direct-loop",
@@ -13800,7 +13866,9 @@
   "reference_for": "small_batched_matmul_c64_3x3_b32769_overwrite",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 294921
  },
  {
   "id": "small_batched_matmul_c64_3x3_b32769_accumulate",
@@ -13827,7 +13895,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 32769 independent 3x3 complex128 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [3, 3, 32769] operands, one dot_general over the batch axis into a preallocated output (beta = 1, accumulate into C). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 294921
  },
  {
   "id": "small_batched_matmul_c64_3x3_b32769_accumulate_direct-loop",
@@ -13855,7 +13925,9 @@
   "reference_for": "small_batched_matmul_c64_3x3_b32769_accumulate",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 294921
  },
  {
   "id": "small_batched_matmul_c64_4x4_b256_overwrite",
@@ -13882,7 +13954,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 256 independent 4x4 complex128 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [4, 4, 256] operands, one dot_general over the batch axis into a preallocated output (beta = 0, overwrite). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 4096
  },
  {
   "id": "small_batched_matmul_c64_4x4_b256_overwrite_direct-loop",
@@ -13910,7 +13984,9 @@
   "reference_for": "small_batched_matmul_c64_4x4_b256_overwrite",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 4096
  },
  {
   "id": "small_batched_matmul_c64_4x4_b256_accumulate",
@@ -13937,7 +14013,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 256 independent 4x4 complex128 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [4, 4, 256] operands, one dot_general over the batch axis into a preallocated output (beta = 1, accumulate into C). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 4096
  },
  {
   "id": "small_batched_matmul_c64_4x4_b256_accumulate_direct-loop",
@@ -13965,7 +14043,9 @@
   "reference_for": "small_batched_matmul_c64_4x4_b256_accumulate",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 4096
  },
  {
   "id": "small_batched_matmul_c64_4x4_b4096_overwrite",
@@ -13992,7 +14072,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 4096 independent 4x4 complex128 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [4, 4, 4096] operands, one dot_general over the batch axis into a preallocated output (beta = 0, overwrite). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 65536
  },
  {
   "id": "small_batched_matmul_c64_4x4_b4096_overwrite_direct-loop",
@@ -14020,7 +14102,9 @@
   "reference_for": "small_batched_matmul_c64_4x4_b4096_overwrite",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 65536
  },
  {
   "id": "small_batched_matmul_c64_4x4_b4096_accumulate",
@@ -14047,7 +14131,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 4096 independent 4x4 complex128 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [4, 4, 4096] operands, one dot_general over the batch axis into a preallocated output (beta = 1, accumulate into C). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 65536
  },
  {
   "id": "small_batched_matmul_c64_4x4_b4096_accumulate_direct-loop",
@@ -14075,7 +14161,9 @@
   "reference_for": "small_batched_matmul_c64_4x4_b4096_accumulate",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 65536
  },
  {
   "id": "small_batched_matmul_c64_4x4_b32769_overwrite",
@@ -14102,7 +14190,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 32769 independent 4x4 complex128 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [4, 4, 32769] operands, one dot_general over the batch axis into a preallocated output (beta = 0, overwrite). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 524304
  },
  {
   "id": "small_batched_matmul_c64_4x4_b32769_overwrite_direct-loop",
@@ -14130,7 +14220,9 @@
   "reference_for": "small_batched_matmul_c64_4x4_b32769_overwrite",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 524304
  },
  {
   "id": "small_batched_matmul_c64_4x4_b32769_accumulate",
@@ -14157,7 +14249,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 32769 independent 4x4 complex128 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [4, 4, 32769] operands, one dot_general over the batch axis into a preallocated output (beta = 1, accumulate into C). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 524304
  },
  {
   "id": "small_batched_matmul_c64_4x4_b32769_accumulate_direct-loop",
@@ -14185,7 +14279,9 @@
   "reference_for": "small_batched_matmul_c64_4x4_b32769_accumulate",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 524304
  },
  {
   "id": "small_batched_matmul_c64_5x5_b256_overwrite",
@@ -14212,7 +14308,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 256 independent 5x5 complex128 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [5, 5, 256] operands, one dot_general over the batch axis into a preallocated output (beta = 0, overwrite). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 6400
  },
  {
   "id": "small_batched_matmul_c64_5x5_b256_overwrite_direct-loop",
@@ -14240,7 +14338,9 @@
   "reference_for": "small_batched_matmul_c64_5x5_b256_overwrite",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 6400
  },
  {
   "id": "small_batched_matmul_c64_5x5_b256_accumulate",
@@ -14267,7 +14367,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 256 independent 5x5 complex128 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [5, 5, 256] operands, one dot_general over the batch axis into a preallocated output (beta = 1, accumulate into C). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 6400
  },
  {
   "id": "small_batched_matmul_c64_5x5_b256_accumulate_direct-loop",
@@ -14295,7 +14397,9 @@
   "reference_for": "small_batched_matmul_c64_5x5_b256_accumulate",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 6400
  },
  {
   "id": "small_batched_matmul_c64_5x5_b4096_overwrite",
@@ -14322,7 +14426,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 4096 independent 5x5 complex128 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [5, 5, 4096] operands, one dot_general over the batch axis into a preallocated output (beta = 0, overwrite). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 102400
  },
  {
   "id": "small_batched_matmul_c64_5x5_b4096_overwrite_direct-loop",
@@ -14350,7 +14456,9 @@
   "reference_for": "small_batched_matmul_c64_5x5_b4096_overwrite",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 102400
  },
  {
   "id": "small_batched_matmul_c64_5x5_b4096_accumulate",
@@ -14377,7 +14485,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 4096 independent 5x5 complex128 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [5, 5, 4096] operands, one dot_general over the batch axis into a preallocated output (beta = 1, accumulate into C). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 102400
  },
  {
   "id": "small_batched_matmul_c64_5x5_b4096_accumulate_direct-loop",
@@ -14405,7 +14515,9 @@
   "reference_for": "small_batched_matmul_c64_5x5_b4096_accumulate",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 102400
  },
  {
   "id": "small_batched_matmul_c64_5x5_b32769_overwrite",
@@ -14432,7 +14544,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 32769 independent 5x5 complex128 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [5, 5, 32769] operands, one dot_general over the batch axis into a preallocated output (beta = 0, overwrite). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 819225
  },
  {
   "id": "small_batched_matmul_c64_5x5_b32769_overwrite_direct-loop",
@@ -14460,7 +14574,9 @@
   "reference_for": "small_batched_matmul_c64_5x5_b32769_overwrite",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 819225
  },
  {
   "id": "small_batched_matmul_c64_5x5_b32769_accumulate",
@@ -14487,7 +14603,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 32769 independent 5x5 complex128 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [5, 5, 32769] operands, one dot_general over the batch axis into a preallocated output (beta = 1, accumulate into C). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 819225
  },
  {
   "id": "small_batched_matmul_c64_5x5_b32769_accumulate_direct-loop",
@@ -14515,7 +14633,9 @@
   "reference_for": "small_batched_matmul_c64_5x5_b32769_accumulate",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 819225
  },
  {
   "id": "small_batched_matmul_c64_8x8_b256_overwrite",
@@ -14542,7 +14662,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 256 independent 8x8 complex128 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [8, 8, 256] operands, one dot_general over the batch axis into a preallocated output (beta = 0, overwrite). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 16384
  },
  {
   "id": "small_batched_matmul_c64_8x8_b256_overwrite_direct-loop",
@@ -14570,7 +14692,9 @@
   "reference_for": "small_batched_matmul_c64_8x8_b256_overwrite",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 16384
  },
  {
   "id": "small_batched_matmul_c64_8x8_b256_accumulate",
@@ -14597,7 +14721,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 256 independent 8x8 complex128 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [8, 8, 256] operands, one dot_general over the batch axis into a preallocated output (beta = 1, accumulate into C). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 16384
  },
  {
   "id": "small_batched_matmul_c64_8x8_b256_accumulate_direct-loop",
@@ -14625,7 +14751,9 @@
   "reference_for": "small_batched_matmul_c64_8x8_b256_accumulate",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 16384
  },
  {
   "id": "small_batched_matmul_c64_8x8_b4096_overwrite",
@@ -14652,7 +14780,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 4096 independent 8x8 complex128 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [8, 8, 4096] operands, one dot_general over the batch axis into a preallocated output (beta = 0, overwrite). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 262144
  },
  {
   "id": "small_batched_matmul_c64_8x8_b4096_overwrite_direct-loop",
@@ -14680,7 +14810,9 @@
   "reference_for": "small_batched_matmul_c64_8x8_b4096_overwrite",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 262144
  },
  {
   "id": "small_batched_matmul_c64_8x8_b4096_accumulate",
@@ -14707,7 +14839,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 4096 independent 8x8 complex128 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [8, 8, 4096] operands, one dot_general over the batch axis into a preallocated output (beta = 1, accumulate into C). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 262144
  },
  {
   "id": "small_batched_matmul_c64_8x8_b4096_accumulate_direct-loop",
@@ -14735,7 +14869,9 @@
   "reference_for": "small_batched_matmul_c64_8x8_b4096_accumulate",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 262144
  },
  {
   "id": "small_batched_matmul_c64_8x8_b32769_overwrite",
@@ -14762,7 +14898,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 32769 independent 8x8 complex128 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [8, 8, 32769] operands, one dot_general over the batch axis into a preallocated output (beta = 0, overwrite). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 2097216
  },
  {
   "id": "small_batched_matmul_c64_8x8_b32769_overwrite_direct-loop",
@@ -14790,7 +14928,9 @@
   "reference_for": "small_batched_matmul_c64_8x8_b32769_overwrite",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 2097216
  },
  {
   "id": "small_batched_matmul_c64_8x8_b32769_accumulate",
@@ -14817,7 +14957,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 32769 independent 8x8 complex128 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [8, 8, 32769] operands, one dot_general over the batch axis into a preallocated output (beta = 1, accumulate into C). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 2097216
  },
  {
   "id": "small_batched_matmul_c64_8x8_b32769_accumulate_direct-loop",
@@ -14845,7 +14987,9 @@
   "reference_for": "small_batched_matmul_c64_8x8_b32769_accumulate",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 2097216
  },
  {
   "id": "small_batched_matmul_f64_1x1_b256_overwrite",
@@ -14872,7 +15016,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 256 independent 1x1 float64 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [1, 1, 256] operands, one dot_general over the batch axis into a preallocated output (beta = 0, overwrite). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 256
  },
  {
   "id": "small_batched_matmul_f64_1x1_b256_overwrite_direct-loop",
@@ -14900,7 +15046,9 @@
   "reference_for": "small_batched_matmul_f64_1x1_b256_overwrite",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 256
  },
  {
   "id": "small_batched_matmul_f64_1x1_b256_accumulate",
@@ -14927,7 +15075,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 256 independent 1x1 float64 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [1, 1, 256] operands, one dot_general over the batch axis into a preallocated output (beta = 1, accumulate into C). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 256
  },
  {
   "id": "small_batched_matmul_f64_1x1_b256_accumulate_direct-loop",
@@ -14955,7 +15105,9 @@
   "reference_for": "small_batched_matmul_f64_1x1_b256_accumulate",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 256
  },
  {
   "id": "small_batched_matmul_f64_1x1_b4096_overwrite",
@@ -14982,7 +15134,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 4096 independent 1x1 float64 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [1, 1, 4096] operands, one dot_general over the batch axis into a preallocated output (beta = 0, overwrite). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 4096
  },
  {
   "id": "small_batched_matmul_f64_1x1_b4096_overwrite_direct-loop",
@@ -15010,7 +15164,9 @@
   "reference_for": "small_batched_matmul_f64_1x1_b4096_overwrite",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 4096
  },
  {
   "id": "small_batched_matmul_f64_1x1_b4096_accumulate",
@@ -15037,7 +15193,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 4096 independent 1x1 float64 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [1, 1, 4096] operands, one dot_general over the batch axis into a preallocated output (beta = 1, accumulate into C). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 4096
  },
  {
   "id": "small_batched_matmul_f64_1x1_b4096_accumulate_direct-loop",
@@ -15065,7 +15223,9 @@
   "reference_for": "small_batched_matmul_f64_1x1_b4096_accumulate",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 4096
  },
  {
   "id": "small_batched_matmul_f64_1x1_b32769_overwrite",
@@ -15092,7 +15252,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 32769 independent 1x1 float64 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [1, 1, 32769] operands, one dot_general over the batch axis into a preallocated output (beta = 0, overwrite). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 32769
  },
  {
   "id": "small_batched_matmul_f64_1x1_b32769_overwrite_direct-loop",
@@ -15120,7 +15282,9 @@
   "reference_for": "small_batched_matmul_f64_1x1_b32769_overwrite",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 32769
  },
  {
   "id": "small_batched_matmul_f64_1x1_b32769_accumulate",
@@ -15147,7 +15311,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 32769 independent 1x1 float64 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [1, 1, 32769] operands, one dot_general over the batch axis into a preallocated output (beta = 1, accumulate into C). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 32769
  },
  {
   "id": "small_batched_matmul_f64_1x1_b32769_accumulate_direct-loop",
@@ -15175,7 +15341,9 @@
   "reference_for": "small_batched_matmul_f64_1x1_b32769_accumulate",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 32769
  },
  {
   "id": "small_batched_matmul_f64_2x2_b256_overwrite",
@@ -15202,7 +15370,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 256 independent 2x2 float64 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [2, 2, 256] operands, one dot_general over the batch axis into a preallocated output (beta = 0, overwrite). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 1024
  },
  {
   "id": "small_batched_matmul_f64_2x2_b256_overwrite_direct-loop",
@@ -15230,7 +15400,9 @@
   "reference_for": "small_batched_matmul_f64_2x2_b256_overwrite",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 1024
  },
  {
   "id": "small_batched_matmul_f64_2x2_b256_accumulate",
@@ -15257,7 +15429,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 256 independent 2x2 float64 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [2, 2, 256] operands, one dot_general over the batch axis into a preallocated output (beta = 1, accumulate into C). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 1024
  },
  {
   "id": "small_batched_matmul_f64_2x2_b256_accumulate_direct-loop",
@@ -15285,7 +15459,9 @@
   "reference_for": "small_batched_matmul_f64_2x2_b256_accumulate",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 1024
  },
  {
   "id": "small_batched_matmul_f64_2x2_b4096_overwrite",
@@ -15312,7 +15488,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 4096 independent 2x2 float64 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [2, 2, 4096] operands, one dot_general over the batch axis into a preallocated output (beta = 0, overwrite). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 16384
  },
  {
   "id": "small_batched_matmul_f64_2x2_b4096_overwrite_direct-loop",
@@ -15340,7 +15518,9 @@
   "reference_for": "small_batched_matmul_f64_2x2_b4096_overwrite",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 16384
  },
  {
   "id": "small_batched_matmul_f64_2x2_b4096_accumulate",
@@ -15367,7 +15547,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 4096 independent 2x2 float64 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [2, 2, 4096] operands, one dot_general over the batch axis into a preallocated output (beta = 1, accumulate into C). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 16384
  },
  {
   "id": "small_batched_matmul_f64_2x2_b4096_accumulate_direct-loop",
@@ -15395,7 +15577,9 @@
   "reference_for": "small_batched_matmul_f64_2x2_b4096_accumulate",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 16384
  },
  {
   "id": "small_batched_matmul_f64_2x2_b32769_overwrite",
@@ -15422,7 +15606,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 32769 independent 2x2 float64 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [2, 2, 32769] operands, one dot_general over the batch axis into a preallocated output (beta = 0, overwrite). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 131076
  },
  {
   "id": "small_batched_matmul_f64_2x2_b32769_overwrite_direct-loop",
@@ -15450,7 +15636,9 @@
   "reference_for": "small_batched_matmul_f64_2x2_b32769_overwrite",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 131076
  },
  {
   "id": "small_batched_matmul_f64_2x2_b32769_accumulate",
@@ -15477,7 +15665,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 32769 independent 2x2 float64 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [2, 2, 32769] operands, one dot_general over the batch axis into a preallocated output (beta = 1, accumulate into C). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 131076
  },
  {
   "id": "small_batched_matmul_f64_2x2_b32769_accumulate_direct-loop",
@@ -15505,7 +15695,9 @@
   "reference_for": "small_batched_matmul_f64_2x2_b32769_accumulate",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 131076
  },
  {
   "id": "small_batched_matmul_f64_3x3_b256_overwrite",
@@ -15532,7 +15724,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 256 independent 3x3 float64 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [3, 3, 256] operands, one dot_general over the batch axis into a preallocated output (beta = 0, overwrite). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 2304
  },
  {
   "id": "small_batched_matmul_f64_3x3_b256_overwrite_direct-loop",
@@ -15560,7 +15754,9 @@
   "reference_for": "small_batched_matmul_f64_3x3_b256_overwrite",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 2304
  },
  {
   "id": "small_batched_matmul_f64_3x3_b256_accumulate",
@@ -15587,7 +15783,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 256 independent 3x3 float64 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [3, 3, 256] operands, one dot_general over the batch axis into a preallocated output (beta = 1, accumulate into C). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 2304
  },
  {
   "id": "small_batched_matmul_f64_3x3_b256_accumulate_direct-loop",
@@ -15615,7 +15813,9 @@
   "reference_for": "small_batched_matmul_f64_3x3_b256_accumulate",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 2304
  },
  {
   "id": "small_batched_matmul_f64_3x3_b4096_overwrite",
@@ -15642,7 +15842,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 4096 independent 3x3 float64 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [3, 3, 4096] operands, one dot_general over the batch axis into a preallocated output (beta = 0, overwrite). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 36864
  },
  {
   "id": "small_batched_matmul_f64_3x3_b4096_overwrite_direct-loop",
@@ -15670,7 +15872,9 @@
   "reference_for": "small_batched_matmul_f64_3x3_b4096_overwrite",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 36864
  },
  {
   "id": "small_batched_matmul_f64_3x3_b4096_accumulate",
@@ -15697,7 +15901,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 4096 independent 3x3 float64 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [3, 3, 4096] operands, one dot_general over the batch axis into a preallocated output (beta = 1, accumulate into C). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 36864
  },
  {
   "id": "small_batched_matmul_f64_3x3_b4096_accumulate_direct-loop",
@@ -15725,7 +15931,9 @@
   "reference_for": "small_batched_matmul_f64_3x3_b4096_accumulate",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 36864
  },
  {
   "id": "small_batched_matmul_f64_3x3_b32769_overwrite",
@@ -15752,7 +15960,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 32769 independent 3x3 float64 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [3, 3, 32769] operands, one dot_general over the batch axis into a preallocated output (beta = 0, overwrite). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 294921
  },
  {
   "id": "small_batched_matmul_f64_3x3_b32769_overwrite_direct-loop",
@@ -15780,7 +15990,9 @@
   "reference_for": "small_batched_matmul_f64_3x3_b32769_overwrite",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 294921
  },
  {
   "id": "small_batched_matmul_f64_3x3_b32769_accumulate",
@@ -15807,7 +16019,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 32769 independent 3x3 float64 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [3, 3, 32769] operands, one dot_general over the batch axis into a preallocated output (beta = 1, accumulate into C). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 294921
  },
  {
   "id": "small_batched_matmul_f64_3x3_b32769_accumulate_direct-loop",
@@ -15835,7 +16049,9 @@
   "reference_for": "small_batched_matmul_f64_3x3_b32769_accumulate",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 294921
  },
  {
   "id": "small_batched_matmul_f64_4x4_b256_overwrite",
@@ -15862,7 +16078,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 256 independent 4x4 float64 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [4, 4, 256] operands, one dot_general over the batch axis into a preallocated output (beta = 0, overwrite). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 4096
  },
  {
   "id": "small_batched_matmul_f64_4x4_b256_overwrite_direct-loop",
@@ -15890,7 +16108,9 @@
   "reference_for": "small_batched_matmul_f64_4x4_b256_overwrite",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 4096
  },
  {
   "id": "small_batched_matmul_f64_4x4_b256_accumulate",
@@ -15917,7 +16137,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 256 independent 4x4 float64 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [4, 4, 256] operands, one dot_general over the batch axis into a preallocated output (beta = 1, accumulate into C). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 4096
  },
  {
   "id": "small_batched_matmul_f64_4x4_b256_accumulate_direct-loop",
@@ -15945,7 +16167,9 @@
   "reference_for": "small_batched_matmul_f64_4x4_b256_accumulate",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 4096
  },
  {
   "id": "small_batched_matmul_f64_4x4_b4096_overwrite",
@@ -15972,7 +16196,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 4096 independent 4x4 float64 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [4, 4, 4096] operands, one dot_general over the batch axis into a preallocated output (beta = 0, overwrite). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 65536
  },
  {
   "id": "small_batched_matmul_f64_4x4_b4096_overwrite_direct-loop",
@@ -16000,7 +16226,9 @@
   "reference_for": "small_batched_matmul_f64_4x4_b4096_overwrite",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 65536
  },
  {
   "id": "small_batched_matmul_f64_4x4_b4096_accumulate",
@@ -16027,7 +16255,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 4096 independent 4x4 float64 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [4, 4, 4096] operands, one dot_general over the batch axis into a preallocated output (beta = 1, accumulate into C). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 65536
  },
  {
   "id": "small_batched_matmul_f64_4x4_b4096_accumulate_direct-loop",
@@ -16055,7 +16285,9 @@
   "reference_for": "small_batched_matmul_f64_4x4_b4096_accumulate",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 65536
  },
  {
   "id": "small_batched_matmul_f64_4x4_b32769_overwrite",
@@ -16082,7 +16314,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 32769 independent 4x4 float64 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [4, 4, 32769] operands, one dot_general over the batch axis into a preallocated output (beta = 0, overwrite). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 524304
  },
  {
   "id": "small_batched_matmul_f64_4x4_b32769_overwrite_direct-loop",
@@ -16110,7 +16344,9 @@
   "reference_for": "small_batched_matmul_f64_4x4_b32769_overwrite",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 524304
  },
  {
   "id": "small_batched_matmul_f64_4x4_b32769_accumulate",
@@ -16137,7 +16373,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 32769 independent 4x4 float64 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [4, 4, 32769] operands, one dot_general over the batch axis into a preallocated output (beta = 1, accumulate into C). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 524304
  },
  {
   "id": "small_batched_matmul_f64_4x4_b32769_accumulate_direct-loop",
@@ -16165,7 +16403,9 @@
   "reference_for": "small_batched_matmul_f64_4x4_b32769_accumulate",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 524304
  },
  {
   "id": "small_batched_matmul_f64_5x5_b256_overwrite",
@@ -16192,7 +16432,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 256 independent 5x5 float64 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [5, 5, 256] operands, one dot_general over the batch axis into a preallocated output (beta = 0, overwrite). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 6400
  },
  {
   "id": "small_batched_matmul_f64_5x5_b256_overwrite_direct-loop",
@@ -16220,7 +16462,9 @@
   "reference_for": "small_batched_matmul_f64_5x5_b256_overwrite",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 6400
  },
  {
   "id": "small_batched_matmul_f64_5x5_b256_accumulate",
@@ -16247,7 +16491,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 256 independent 5x5 float64 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [5, 5, 256] operands, one dot_general over the batch axis into a preallocated output (beta = 1, accumulate into C). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 6400
  },
  {
   "id": "small_batched_matmul_f64_5x5_b256_accumulate_direct-loop",
@@ -16275,7 +16521,9 @@
   "reference_for": "small_batched_matmul_f64_5x5_b256_accumulate",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 6400
  },
  {
   "id": "small_batched_matmul_f64_5x5_b4096_overwrite",
@@ -16302,7 +16550,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 4096 independent 5x5 float64 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [5, 5, 4096] operands, one dot_general over the batch axis into a preallocated output (beta = 0, overwrite). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 102400
  },
  {
   "id": "small_batched_matmul_f64_5x5_b4096_overwrite_direct-loop",
@@ -16330,7 +16580,9 @@
   "reference_for": "small_batched_matmul_f64_5x5_b4096_overwrite",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 102400
  },
  {
   "id": "small_batched_matmul_f64_5x5_b4096_accumulate",
@@ -16357,7 +16609,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 4096 independent 5x5 float64 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [5, 5, 4096] operands, one dot_general over the batch axis into a preallocated output (beta = 1, accumulate into C). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 102400
  },
  {
   "id": "small_batched_matmul_f64_5x5_b4096_accumulate_direct-loop",
@@ -16385,7 +16639,9 @@
   "reference_for": "small_batched_matmul_f64_5x5_b4096_accumulate",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 102400
  },
  {
   "id": "small_batched_matmul_f64_5x5_b32769_overwrite",
@@ -16412,7 +16668,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 32769 independent 5x5 float64 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [5, 5, 32769] operands, one dot_general over the batch axis into a preallocated output (beta = 0, overwrite). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 819225
  },
  {
   "id": "small_batched_matmul_f64_5x5_b32769_overwrite_direct-loop",
@@ -16440,7 +16698,9 @@
   "reference_for": "small_batched_matmul_f64_5x5_b32769_overwrite",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 819225
  },
  {
   "id": "small_batched_matmul_f64_5x5_b32769_accumulate",
@@ -16467,7 +16727,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 32769 independent 5x5 float64 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [5, 5, 32769] operands, one dot_general over the batch axis into a preallocated output (beta = 1, accumulate into C). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 819225
  },
  {
   "id": "small_batched_matmul_f64_5x5_b32769_accumulate_direct-loop",
@@ -16495,7 +16757,9 @@
   "reference_for": "small_batched_matmul_f64_5x5_b32769_accumulate",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 819225
  },
  {
   "id": "small_batched_matmul_f64_8x8_b256_overwrite",
@@ -16522,7 +16786,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 256 independent 8x8 float64 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [8, 8, 256] operands, one dot_general over the batch axis into a preallocated output (beta = 0, overwrite). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 16384
  },
  {
   "id": "small_batched_matmul_f64_8x8_b256_overwrite_direct-loop",
@@ -16550,7 +16816,9 @@
   "reference_for": "small_batched_matmul_f64_8x8_b256_overwrite",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 16384
  },
  {
   "id": "small_batched_matmul_f64_8x8_b256_accumulate",
@@ -16577,7 +16845,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 256 independent 8x8 float64 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [8, 8, 256] operands, one dot_general over the batch axis into a preallocated output (beta = 1, accumulate into C). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 16384
  },
  {
   "id": "small_batched_matmul_f64_8x8_b256_accumulate_direct-loop",
@@ -16605,7 +16875,9 @@
   "reference_for": "small_batched_matmul_f64_8x8_b256_accumulate",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "latency",
+  "size_elements": 16384
  },
  {
   "id": "small_batched_matmul_f64_8x8_b4096_overwrite",
@@ -16632,7 +16904,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 4096 independent 8x8 float64 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [8, 8, 4096] operands, one dot_general over the batch axis into a preallocated output (beta = 0, overwrite). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 262144
  },
  {
   "id": "small_batched_matmul_f64_8x8_b4096_overwrite_direct-loop",
@@ -16660,7 +16934,9 @@
   "reference_for": "small_batched_matmul_f64_8x8_b4096_overwrite",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 262144
  },
  {
   "id": "small_batched_matmul_f64_8x8_b4096_accumulate",
@@ -16687,7 +16963,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 4096 independent 8x8 float64 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [8, 8, 4096] operands, one dot_general over the batch axis into a preallocated output (beta = 1, accumulate into C). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 262144
  },
  {
   "id": "small_batched_matmul_f64_8x8_b4096_accumulate_direct-loop",
@@ -16715,7 +16993,9 @@
   "reference_for": "small_batched_matmul_f64_8x8_b4096_accumulate",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 262144
  },
  {
   "id": "small_batched_matmul_f64_8x8_b32769_overwrite",
@@ -16742,7 +17022,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 32769 independent 8x8 float64 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [8, 8, 32769] operands, one dot_general over the batch axis into a preallocated output (beta = 0, overwrite). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 2097216
  },
  {
   "id": "small_batched_matmul_f64_8x8_b32769_overwrite_direct-loop",
@@ -16770,7 +17052,9 @@
   "reference_for": "small_batched_matmul_f64_8x8_b32769_overwrite",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 2097216
  },
  {
   "id": "small_batched_matmul_f64_8x8_b32769_accumulate",
@@ -16797,7 +17081,9 @@
   "intent": "tenferro-rs #2745 / tenferro-benchmark #543: 32769 independent 8x8 float64 products, C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [8, 8, 32769] operands, one dot_general over the batch axis into a preallocated output (beta = 1, accumulate into C). The direct-loop arm is a reference cell, not a competitor: a naive fixed-size safe-Rust loop (N is a const generic), one thread, the same preallocated output and update mode, compiled into the same binary and timed by the same policy. Both arms are checked against a size-generic scalar product before timing.",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 2097216
  },
  {
   "id": "small_batched_matmul_f64_8x8_b32769_accumulate_direct-loop",
@@ -16825,6 +17111,8 @@
   "reference_for": "small_batched_matmul_f64_8x8_b32769_accumulate",
   "thread_counts": [
    1
-  ]
+  ],
+  "regime": "throughput",
+  "size_elements": 2097216
  }
 ]
