@@ -3,14 +3,14 @@
 - Target profile: `nvidia-gpu`
 - Suite: `gpu/permutation`
 - Suite file: `benchmarks/gpu/permutation.yaml`
-- Timestamp: `2026-11-26T06:29:50+00:00`
+- Timestamp: `2026-11-28T08:23:46+00:00`
 - tenferro-rs commit: `1ba9f33521691170c763dfce9b6c9bb56ca523c2`
 
 ## GPU Information
 
 - Device: `cuda:0`
 - Name: `NVIDIA A100 80GB PCIe`
-- UUID: `GPU-e0c82f3d-3a11-a28c-b42e-1c92d26527fd`
+- UUID: `GPU-12b45076-79d5-7b84-cb5c-7c6300074c8a`
 - Memory: `80 GiB`
 - Driver version: `595.112.07`
 - CUDA version: `13.2`
@@ -26,7 +26,7 @@
 
 The GPU-only pattern set is intentionally larger than the CPU permutation set: most rows contain 2^29 f64 elements (4 GiB per tensor) so A100-class measurements exercise steady-state device throughput at roughly the 10 ms scale instead of launch/synchronization overhead.
 
-Device-copy baseline: `memcpy-d2d` median 5.017 ms, 1712.03 GB/s for `memcpy_24d_64x2`. It is a bandwidth reference, not a permutation participant, so it is not shown as a table column.
+Device-copy baseline: `memcpy-d2d` median 5.152 ms, 1667.35 GB/s for `memcpy_24d_64x2`. It is a bandwidth reference, not a permutation participant, so it is not shown as a table column.
 
 ## Allocating output
 
@@ -34,15 +34,15 @@ Median (p25 / p75) in ms. Missing backends are shown as `-`; the fastest backend
 
 | pattern | label | tenferro-rs CUDA transpose (ms) | tenferro-rs CUDA to_contiguous (ms) |
 |---|---|---:|---:|
-| `cyclic_18d_3` | 18D 3^18 cyclic [1,2,...,0] | **10.101 (9.995 / 10.101)** | 10.101 (10.100 / 10.101) |
-| `reverse_18d_3` | 18D 3^18 reverse | 10.541 (10.477 / 10.590) | **10.474 (10.464 / 10.532)** |
-| `reverse_23d_128x2` | 23D 128x2^22 reverse | 9.856 (9.855 / 9.861) | **9.844 (9.838 / 9.892)** |
-| `rotation_6d_64_32_32_32_16_16` | 6D 64x32^3x16^2 rotation [5,0,4,1,3,2] | 7.420 (7.056 / 7.422) | **7.022 (6.996 / 7.025)** |
-| `tn_light_415_24d_contiguous_same_perm_gpu` | 24D 2^29 contiguous source, TN light 415 permutation | 6.255 (6.035 / 6.317) | **6.220 (6.016 / 6.261)** |
-| `tn_light_415_24d_scattered_to_colmajor_gpu` | 24D 2^29 scattered -> col-major | - | **8.526 (8.282 / 8.527)** |
-| `transpose_2d_32768_16384` | 2D 32768x16384 transpose [1,0] | **5.372 (5.370 / 5.376)** | 5.516 (5.513 / 5.517) |
-| `transpose_3d_1024_1024_512_102` | 3D 1024x1024x512 transpose [1,0,2] | **5.033 (5.032 / 5.039)** | 5.157 (5.149 / 5.159) |
-| `transpose_3d_1024_1024_512_201` | 3D 1024x1024x512 transpose [2,0,1] | **5.023 (5.018 / 5.026)** | 5.136 (5.132 / 5.139) |
+| `cyclic_18d_3` | 18D 3^18 cyclic [1,2,...,0] | **9.896 (9.890 / 9.899)** | 9.901 (9.899 / 9.903) |
+| `reverse_18d_3` | 18D 3^18 reverse | 10.448 (10.357 / 10.461) | **10.442 (10.423 / 10.448)** |
+| `reverse_23d_128x2` | 23D 128x2^22 reverse | 9.962 (9.958 / 9.965) | **9.961 (9.955 / 10.017)** |
+| `rotation_6d_64_32_32_32_16_16` | 6D 64x32^3x16^2 rotation [5,0,4,1,3,2] | **7.306 (7.004 / 7.312)** | 7.319 (7.196 / 7.343) |
+| `tn_light_415_24d_contiguous_same_perm_gpu` | 24D 2^29 contiguous source, TN light 415 permutation | **6.137 (6.026 / 6.160)** | 6.196 (6.127 / 6.217) |
+| `tn_light_415_24d_scattered_to_colmajor_gpu` | 24D 2^29 scattered -> col-major | - | **8.354 (8.280 / 8.377)** |
+| `transpose_2d_32768_16384` | 2D 32768x16384 transpose [1,0] | **5.585 (5.580 / 5.586)** | 5.725 (5.578 / 5.730) |
+| `transpose_3d_1024_1024_512_102` | 3D 1024x1024x512 transpose [1,0,2] | 5.284 (5.283 / 5.287) | **5.274 (5.269 / 5.278)** |
+| `transpose_3d_1024_1024_512_201` | 3D 1024x1024x512 transpose [2,0,1] | **5.213 (5.209 / 5.217)** | 5.311 (5.187 / 5.316) |
 
 ## Reusing output
 
@@ -50,12 +50,12 @@ Median (p25 / p75) in ms. Missing backends are shown as `-`; the fastest backend
 
 | pattern | label | tenferro-rs CUDA copy_read_into (ms) | cuTENSOR (ms) | PyTorch CUDA (ms) |
 |---|---|---:|---:|---:|
-| `cyclic_18d_3` | 18D 3^18 cyclic [1,2,...,0] | 10.100 (9.977 / 10.102) | **6.498 (6.423 / 6.502)** | 7.146 (7.143 / 7.148) |
-| `reverse_18d_3` | 18D 3^18 reverse | 9.023 (8.789 / 9.040) | **8.917 (8.915 / 8.918)** | 29.402 (29.400 / 29.406) |
-| `reverse_23d_128x2` | 23D 128x2^22 reverse | 7.564 (7.563 / 7.565) | **7.555 (7.554 / 7.555)** | 40.415 (40.407 / 40.420) |
-| `rotation_6d_64_32_32_32_16_16` | 6D 64x32^3x16^2 rotation [5,0,4,1,3,2] | 7.399 (7.093 / 7.400) | **5.141 (5.139 / 5.144)** | 5.539 (5.536 / 5.547) |
-| `tn_light_415_24d_contiguous_same_perm_gpu` | 24D 2^29 contiguous source, TN light 415 permutation | 6.193 (5.976 / 6.256) | 5.722 (5.337 / 5.820) | **5.093 (5.091 / 5.095)** |
-| `tn_light_415_24d_scattered_to_colmajor_gpu` | 24D 2^29 scattered -> col-major | - | 5.625 (5.286 / 5.753) | **5.139 (5.136 / 5.140)** |
-| `transpose_2d_32768_16384` | 2D 32768x16384 transpose [1,0] | 5.370 (5.368 / 5.373) | **5.316 (5.315 / 5.322)** | 20.761 (20.759 / 20.763) |
-| `transpose_3d_1024_1024_512_102` | 3D 1024x1024x512 transpose [1,0,2] | **5.035 (5.028 / 5.038)** | 5.150 (5.145 / 5.154) | 7.627 (7.527 / 7.642) |
-| `transpose_3d_1024_1024_512_201` | 3D 1024x1024x512 transpose [2,0,1] | **5.012 (5.011 / 5.014)** | 5.141 (5.137 / 5.144) | 27.411 (27.409 / 27.416) |
+| `cyclic_18d_3` | 18D 3^18 cyclic [1,2,...,0] | 9.905 (9.799 / 9.910) | **6.314 (6.030 / 6.357)** | 7.368 (7.364 / 7.369) |
+| `reverse_18d_3` | 18D 3^18 reverse | **8.724 (8.623 / 8.826)** | 8.830 (8.726 / 8.833) | 33.259 (33.240 / 33.260) |
+| `reverse_23d_128x2` | 23D 128x2^22 reverse | 7.572 (7.569 / 7.574) | **7.563 (7.562 / 7.564)** | 45.750 (45.743 / 45.757) |
+| `rotation_6d_64_32_32_32_16_16` | 6D 64x32^3x16^2 rotation [5,0,4,1,3,2] | 7.307 (7.025 / 7.315) | **5.346 (5.340 / 5.348)** | 5.950 (5.943 / 5.957) |
+| `tn_light_415_24d_contiguous_same_perm_gpu` | 24D 2^29 contiguous source, TN light 415 permutation | 6.160 (6.041 / 6.165) | 5.540 (5.401 / 5.614) | **5.265 (5.263 / 5.268)** |
+| `tn_light_415_24d_scattered_to_colmajor_gpu` | 24D 2^29 scattered -> col-major | - | 5.571 (5.434 / 5.621) | **5.406 (5.403 / 5.408)** |
+| `transpose_2d_32768_16384` | 2D 32768x16384 transpose [1,0] | 5.576 (5.573 / 5.583) | **5.524 (5.514 / 5.528)** | 20.818 (20.799 / 20.820) |
+| `transpose_3d_1024_1024_512_102` | 3D 1024x1024x512 transpose [1,0,2] | 5.266 (5.265 / 5.269) | **5.247 (5.239 / 5.250)** | 7.543 (7.475 / 7.551) |
+| `transpose_3d_1024_1024_512_201` | 3D 1024x1024x512 transpose [2,0,1] | **5.183 (5.180 / 5.184)** | 5.329 (5.323 / 5.336) | 27.448 (27.437 / 27.460) |

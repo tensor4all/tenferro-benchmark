@@ -2,15 +2,15 @@
 
 - Target profile: `nvidia-gpu`
 - Suite: `gpu/linalg_jvp_vjp`
-- Suite file: `/tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261126_062950/gpu_linalg_jvp_vjp.yaml`
-- Timestamp: `2026-11-26T06:29:50+00:00`
+- Suite file: `/tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261128_082346/gpu_linalg_jvp_vjp.yaml`
+- Timestamp: `2026-11-28T08:23:46+00:00`
 - tenferro-rs commit: `1ba9f33521691170c763dfce9b6c9bb56ca523c2`
 
 ## GPU Information
 
 - Device: `cuda:0`
 - Name: `NVIDIA A100 80GB PCIe`
-- UUID: `GPU-e0c82f3d-3a11-a28c-b42e-1c92d26527fd`
+- UUID: `GPU-12b45076-79d5-7b84-cb5c-7c6300074c8a`
 - Memory: `80 GiB`
 - Driver version: `595.112.07`
 - CUDA version: `13.2`
@@ -24,18 +24,17 @@
 
 ## CPU Information
 
-- Model: `AMD EPYC 7543 32-Core Processor`
+- Model: `AMD EPYC 9554 64-Core Processor`
 - Vendor: `AuthenticAMD`
-- Logical CPUs: `128`
+- Logical CPUs: `252`
 - Sockets: `2`
-- Cores per socket: `32`
-- Threads per core: `2`
+- Cores per socket: `126`
+- Threads per core: `1`
 - NUMA nodes: `2`
 - Transparent huge pages: `madvise (always [madvise] never)`
 - Transparent huge page defrag: `madvise (always defer defer+madvise [madvise] never)`
-- Python platform: `Linux-6.8.0-138-generic-x86_64-with-glibc2.39`
-- L3 domains (shared CPUs): `0-3,64-67; 4-7,68-71; 8-11,72-75; 12-15,76-79; 16-19,80-83; 20-23,84-87; 24-27,88-91; 28-31,92-95; 32-35,96-99; 36-39,100-103; 40-43,104-107; 44-47,108-111; 48-51,112-115; 52-55,116-119; 56-59,120-123; 60-63,124-127`
-- CPU boost: `enabled`
+- Python platform: `Linux-6.8.0-149-generic-x86_64-with-glibc2.39`
+- L3 domains (shared CPUs): `0-125; 126-251`
 - Container: `devcontainer`
 
 Median ± IQR (ms). Missing backends are shown as `-`.
@@ -51,16 +50,16 @@ Timed runs include the host API call and backend-native device synchronization w
 
 | suite | benchmark | dtype | shape | tenferro-rs CUDA trace | tenferro-rs CUDA eager, per call, incl. AD prepare | tenferro-rs CUDA trace (deferred batch throughput) | PyTorch CUDA | JAX CUDA JIT |
 |---|---|---:|---|---:|---:|---:|---:|---:|
-| large | `grad_sum_eigh_jvp` | f64 | `256x256` | 5.489 ± 0.019 | 5.899 ± 0.015 | - | 3.060 ± 0.012 | 2.894 ± 0.044 |
-| large | `grad_sum_eigh_vjp` | f64 | `256x256` | 5.519 ± 0.035 | 2.992 ± 0.009 | - | 3.075 ± 0.377 | 2.957 ± 0.091 |
-| large | `grad_sum_lu_jvp` | f64 | `256x256` | 1.563 ± 0.005 | 2.469 ± 0.015 | - | 1.139 ± 0.006 | 0.893 ± 0.018 |
-| large | `grad_sum_lu_vjp` | f64 | `256x256` | 1.552 ± 0.005 | 1.359 ± 0.015 | - | 0.901 ± 0.005 | 0.902 ± 0.009 |
-| large | `grad_sum_qr_jvp` | f64 | `256x256` | 2.804 ± 0.014 | 2.993 ± 0.050 | - | 1.488 ± 0.012 | 1.553 ± 0.019 |
-| large | `grad_sum_qr_vjp` | f64 | `256x256` | 2.767 ± 0.009 | 1.757 ± 0.005 | - | 1.461 ± 0.013 | 1.489 ± 0.017 |
-| large | `grad_sum_solve_jvp` | f64 | `256x256,rhs=1` | 1.469 ± 0.006 | 1.626 ± 0.007 | - | 0.924 ± 0.010 | 0.883 ± 0.010 |
-| large | `grad_sum_solve_vjp` | f64 | `256x256,rhs=1` | 1.462 ± 0.007 | 0.910 ± 0.004 | - | 1.588 ± 0.014 | 0.904 ± 0.012 |
-| large | `grad_sum_svd_s_jvp` | f64 | `256x256` | 23.356 ± 0.032 | 23.526 ± 0.024 | - | 12.505 ± 0.040 | 11.691 ± 0.024 |
-| large | `grad_sum_svd_s_vjp` | f64 | `256x256` | 23.347 ± 0.035 | 11.782 ± 0.021 | - | 12.378 ± 0.059 | 11.693 ± 0.012 |
+| large | `grad_sum_eigh_jvp` | f64 | `256x256` | 5.491 ± 0.010 | 5.859 ± 0.015 | - | 3.058 ± 0.044 | 2.950 ± 0.016 |
+| large | `grad_sum_eigh_vjp` | f64 | `256x256` | 5.504 ± 0.038 | 2.941 ± 0.018 | - | 3.092 ± 0.089 | 2.952 ± 0.039 |
+| large | `grad_sum_lu_jvp` | f64 | `256x256` | 1.573 ± 0.025 | 2.333 ± 0.022 | - | 1.137 ± 0.004 | 0.919 ± 0.008 |
+| large | `grad_sum_lu_vjp` | f64 | `256x256` | 1.548 ± 0.035 | 1.235 ± 0.012 | - | 0.903 ± 0.004 | 0.941 ± 0.007 |
+| large | `grad_sum_qr_jvp` | f64 | `256x256` | 2.789 ± 0.022 | 2.995 ± 0.017 | - | 1.475 ± 0.010 | 1.484 ± 0.011 |
+| large | `grad_sum_qr_vjp` | f64 | `256x256` | 2.768 ± 0.018 | 1.757 ± 0.008 | - | 1.465 ± 0.012 | 1.524 ± 0.019 |
+| large | `grad_sum_solve_jvp` | f64 | `256x256,rhs=1` | 1.462 ± 0.003 | 1.588 ± 0.007 | - | 0.901 ± 0.011 | 0.846 ± 0.003 |
+| large | `grad_sum_solve_vjp` | f64 | `256x256,rhs=1` | 1.466 ± 0.011 | 0.866 ± 0.006 | - | 1.627 ± 0.020 | 0.866 ± 0.008 |
+| large | `grad_sum_svd_s_jvp` | f64 | `256x256` | 23.410 ± 0.036 | 23.810 ± 0.100 | - | 12.554 ± 0.026 | 11.879 ± 0.043 |
+| large | `grad_sum_svd_s_vjp` | f64 | `256x256` | 23.355 ± 0.057 | 11.911 ± 0.025 | - | 12.920 ± 0.252 | 11.862 ± 0.114 |
 
 ## Sampling and unsupported routes
 

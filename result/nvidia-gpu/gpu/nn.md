@@ -2,13 +2,13 @@
 
 Measured cells: **41**. Unsupported cells: **3**, including **0** numerically verified but timing-excluded cells. Unsupported cells do not count as measured coverage.
 
-Logical traffic: this run measured a plain device copy of 67108864 bytes at **1449.3 GB/s** on this device. Every record carries the logical bytes the case must move per operation and the ratio of the case's implied rate to that copy rate, in the sampling table below. Logical bytes are the declared array sizes, not device DRAM traffic: a case whose operands stay in cache moves less DRAM than its arrays suggest, so a ratio above 1 is recorded, not rejected.
+Logical traffic: this run measured a plain device copy of 67108864 bytes at **1413.5 GB/s** on this device. Every record carries the logical bytes the case must move per operation and the ratio of the case's implied rate to that copy rate, in the sampling table below. Logical bytes are the declared array sizes, not device DRAM traffic: a case whose operands stay in cache moves less DRAM than its arrays suggest, so a ratio above 1 is recorded, not rejected.
 
-Raw run: `data/results/nvidia-gpu/gpu/nn/20261126_062950/`.
+Raw run: `data/results/nvidia-gpu/gpu/nn/20261128_082346/`.
 
 Isolated public APIs and explicit unsupported timing contracts. Issue 155.
 
-This run compiled **1 NVRTC modules** in 1 of its arms, because the CUDA artifact cache started cold. The untimed wall of the cases that compiled is **0.1 s** of its 9.1 s of recorded case wall clock, and that wall also holds their fixture read, transfers and verification, so it is not a compile time.
+This run compiled **1 NVRTC modules** in 1 of its arms, because the CUDA artifact cache started cold. The untimed wall of the cases that compiled is **0.1 s** of its 7.8 s of recorded case wall clock, and that wall also holds their fixture read, transfers and verification, so it is not a compile time.
 
 Values are median (IQR) **µs per operation**. Samples time batches of declared operations plus device synchronization; retained output memory is limited to 256 MiB. Batch counts and raw durations are preserved in JSONL.
 
@@ -20,66 +20,66 @@ All measured output elements are checked against independently generated NumPy/S
 
 | Case | tenferro-cuda-direct | tenferro-cuda-eager | pytorch-cuda | jax-cuda |
 | --- | ---: | ---: | ---: | ---: |
-| sigmoid_f64_n1048576 | 90.400 (0.108) | 90.555 (0.070) | 9.975 (0.056) | 64.373 (1.923) |
-| silu_f64_n1048576 | 100.142 (0.174) | 99.667 (0.287) | 11.151 (0.052) | 56.215 (1.268) |
-| softplus_f64_n1048576 | 28.231 (0.125) | 28.175 (0.053) | 25.655 (0.032) | 54.749 (2.499) |
-| gelu_f64_n1048576 † | 73.687 (0.091) | 73.884 (0.117) | 14.989 (0.057) | 636.637 (70.330) |
-| gelu_tanh_f64_n1048576 † | 113.322 (0.097) | 112.927 (0.369) | 9.415 (0.040) | 923.090 (109.065) |
-| softmax_f64_n1048576 † | 90.152 (0.091) | 90.755 (0.861) | 16.461 (0.021) | 521.979 (18.565) |
-| log_softmax_f64_n1048576 | 92.313 (0.201) | 92.646 (0.094) | 12.877 (0.018) | 60.894 (2.656) |
-| masked_softmax_f64_n1048576 † | 115.738 (0.122) | 116.138 (0.797) | unsupported | 865.929 (149.195) |
-| masked_log_softmax_f64_n1048576 † | 113.806 (0.208) | 114.688 (0.356) | unsupported | 62.228 (1.544) |
-| layer_norm_f64_n1048576 † | 87.567 (0.108) | 87.883 (3.653) | 30.623 (0.124) | 148.960 (16.101) |
-| rms_norm_f64_n1048576 | 48.657 (0.112) | 82.424 (33.140) | 30.416 (0.149) | unsupported |
+| sigmoid_f64_n1048576 † | 90.845 (0.168) | 90.305 (0.057) | 9.929 (0.060) | 58.278 (5.720) |
+| silu_f64_n1048576 | 101.202 (0.176) | 99.598 (0.397) | 11.093 (0.034) | 48.363 (3.264) |
+| softplus_f64_n1048576 | 28.399 (0.033) | 28.187 (0.031) | 25.698 (0.048) | 44.800 (1.253) |
+| gelu_f64_n1048576 † | 73.942 (0.063) | 73.490 (0.104) | 14.938 (0.063) | 554.109 (11.224) |
+| gelu_tanh_f64_n1048576 † | 114.079 (0.037) | 112.775 (0.091) | 9.429 (0.084) | 874.972 (21.686) |
+| softmax_f64_n1048576 † | 90.525 (0.084) | 90.052 (0.163) | 16.336 (0.028) | 456.826 (8.428) |
+| log_softmax_f64_n1048576 | 92.664 (0.119) | 91.614 (0.189) | 12.712 (0.045) | 45.532 (3.258) |
+| masked_softmax_f64_n1048576 † | 116.188 (0.124) | 115.976 (0.263) | unsupported | 710.940 (15.913) |
+| masked_log_softmax_f64_n1048576 | 114.135 (0.096) | 113.399 (0.171) | unsupported | 43.376 (1.498) |
+| layer_norm_f64_n1048576 † | 87.720 (0.116) | 86.437 (0.089) | 30.490 (0.058) | 149.511 (5.885) |
+| rms_norm_f64_n1048576 | 48.706 (0.135) | 47.988 (0.121) | 30.345 (0.045) | unsupported |
 
 ## Sampling
 
 | Case | Backend | Ops/sample | Samples | Median batch ms | Bytes/op | Copy ratio | Verification error/tolerance |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| gelu_f64_n1048576 | jax-cuda | 4 | 15 | 2.547 | 16777216 | 0.018 | 4.81e-08 |
-| gelu_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.480 | 16777216 | 0.772 | 4.899e-08 |
-| gelu_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.358 | 16777216 | 0.157 | 4.899e-08 |
-| gelu_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 2.364 | 16777216 | 0.157 | 4.899e-08 |
-| gelu_tanh_f64_n1048576 | jax-cuda | 4 | 15 | 3.692 | 16777216 | 0.013 | 4.349e-08 |
-| gelu_tanh_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.301 | 16777216 | 1.230 | 4.349e-08 |
-| gelu_tanh_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.626 | 16777216 | 0.102 | 4.349e-08 |
-| gelu_tanh_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 3.614 | 16777216 | 0.103 | 4.349e-08 |
-| layer_norm_f64_n1048576 | jax-cuda | 16 | 15 | 2.383 | 16777216 | 0.078 | 3.398e-07 |
-| layer_norm_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.980 | 16777216 | 0.378 | 3.138e-07 |
-| layer_norm_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.802 | 16777216 | 0.132 | 3.251e-07 |
-| layer_norm_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 2.812 | 16777216 | 0.132 | 3.251e-07 |
-| log_softmax_f64_n1048576 | jax-cuda | 32 | 15 | 1.949 | 16777216 | 0.190 | 2.377e-07 |
-| log_softmax_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.412 | 16777216 | 0.899 | 2.377e-07 |
-| log_softmax_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.954 | 16777216 | 0.125 | 2.377e-07 |
-| log_softmax_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 2.965 | 16777216 | 0.125 | 2.377e-07 |
-| masked_log_softmax_f64_n1048576 | jax-cuda | 32 | 15 | 1.991 | 17825792 | 0.198 | 2.489e-07 |
+| gelu_f64_n1048576 | jax-cuda | 4 | 15 | 2.216 | 16777216 | 0.021 | 4.81e-08 |
+| gelu_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.478 | 16777216 | 0.795 | 4.899e-08 |
+| gelu_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.366 | 16777216 | 0.161 | 4.899e-08 |
+| gelu_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 2.352 | 16777216 | 0.162 | 4.899e-08 |
+| gelu_tanh_f64_n1048576 | jax-cuda | 4 | 15 | 3.500 | 16777216 | 0.014 | 4.349e-08 |
+| gelu_tanh_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.302 | 16777216 | 1.259 | 4.349e-08 |
+| gelu_tanh_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.651 | 16777216 | 0.104 | 4.349e-08 |
+| gelu_tanh_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 3.609 | 16777216 | 0.105 | 4.349e-08 |
+| layer_norm_f64_n1048576 | jax-cuda | 16 | 15 | 2.392 | 16777216 | 0.079 | 3.398e-07 |
+| layer_norm_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.976 | 16777216 | 0.389 | 3.138e-07 |
+| layer_norm_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.807 | 16777216 | 0.135 | 3.251e-07 |
+| layer_norm_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 2.766 | 16777216 | 0.137 | 3.251e-07 |
+| log_softmax_f64_n1048576 | jax-cuda | 32 | 15 | 1.457 | 16777216 | 0.261 | 2.377e-07 |
+| log_softmax_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.407 | 16777216 | 0.934 | 2.377e-07 |
+| log_softmax_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.965 | 16777216 | 0.128 | 2.377e-07 |
+| log_softmax_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 2.932 | 16777216 | 0.130 | 2.377e-07 |
+| masked_log_softmax_f64_n1048576 | jax-cuda | 32 | 15 | 1.388 | 17825792 | 0.291 | 2.489e-07 |
 | masked_log_softmax_f64_n1048576 | pytorch-cuda | — | — | — | 17825792 | unavailable | No equivalent stable single PyTorch public masked-softmax operation; masked_fill plus softmax would change the operation contract. |
-| masked_log_softmax_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.642 | 17825792 | 0.108 | 2.489e-07 |
-| masked_log_softmax_f64_n1048576 | tenferro-cuda-eager | 16 | 15 | 1.835 | 17825792 | 0.107 | 2.489e-07 |
-| masked_softmax_f64_n1048576 | jax-cuda | 4 | 15 | 3.464 | 17825792 | 0.014 | 8.659e-10 |
+| masked_log_softmax_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.652 | 17825792 | 0.110 | 2.489e-07 |
+| masked_log_softmax_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 3.629 | 17825792 | 0.111 | 2.489e-07 |
+| masked_softmax_f64_n1048576 | jax-cuda | 4 | 15 | 2.844 | 17825792 | 0.018 | 8.658e-10 |
 | masked_softmax_f64_n1048576 | pytorch-cuda | — | — | — | 17825792 | unavailable | No equivalent stable single PyTorch public masked-softmax operation; masked_fill plus softmax would change the operation contract. |
-| masked_softmax_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.704 | 17825792 | 0.106 | 1.299e-09 |
-| masked_softmax_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 3.716 | 17825792 | 0.106 | 1.299e-09 |
+| masked_softmax_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.718 | 17825792 | 0.109 | 1.299e-09 |
+| masked_softmax_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 3.711 | 17825792 | 0.109 | 1.299e-09 |
 | rms_norm_f64_n1048576 | jax-cuda | — | — | — | 16777216 | unavailable | No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API. |
-| rms_norm_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.973 | 16777216 | 0.381 | 2.654e-07 |
-| rms_norm_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.557 | 16777216 | 0.238 | 2.71e-07 |
-| rms_norm_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 2.638 | 16777216 | 0.140 | 2.71e-07 |
-| sigmoid_f64_n1048576 | jax-cuda | 32 | 15 | 2.060 | 16777216 | 0.180 | 7.964e-08 |
-| sigmoid_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.319 | 16777216 | 1.161 | 7.964e-08 |
-| sigmoid_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.893 | 16777216 | 0.128 | 8.044e-08 |
-| sigmoid_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 2.898 | 16777216 | 0.128 | 8.044e-08 |
-| silu_f64_n1048576 | jax-cuda | 32 | 15 | 1.799 | 16777216 | 0.206 | 4.848e-08 |
-| silu_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.357 | 16777216 | 1.038 | 4.848e-08 |
-| silu_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.205 | 16777216 | 0.116 | 4.912e-08 |
-| silu_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 3.189 | 16777216 | 0.116 | 4.912e-08 |
-| softmax_f64_n1048576 | jax-cuda | 4 | 15 | 2.088 | 16777216 | 0.022 | 6.499e-10 |
-| softmax_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.527 | 16777216 | 0.703 | 8.661e-10 |
-| softmax_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.885 | 16777216 | 0.128 | 1.083e-09 |
-| softmax_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 2.904 | 16777216 | 0.128 | 1.083e-09 |
-| softplus_f64_n1048576 | jax-cuda | 32 | 15 | 1.752 | 16777216 | 0.211 | 1.467e-07 |
-| softplus_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.821 | 16777216 | 0.451 | 1.467e-07 |
-| softplus_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.903 | 16777216 | 0.410 | 1.467e-07 |
-| softplus_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 0.902 | 16777216 | 0.411 | 1.467e-07 |
+| rms_norm_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.971 | 16777216 | 0.391 | 2.654e-07 |
+| rms_norm_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.559 | 16777216 | 0.244 | 2.71e-07 |
+| rms_norm_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 1.536 | 16777216 | 0.247 | 2.71e-07 |
+| sigmoid_f64_n1048576 | jax-cuda | 8 | 15 | 0.466 | 16777216 | 0.204 | 7.964e-08 |
+| sigmoid_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.318 | 16777216 | 1.195 | 7.964e-08 |
+| sigmoid_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.907 | 16777216 | 0.131 | 8.044e-08 |
+| sigmoid_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 2.890 | 16777216 | 0.131 | 8.044e-08 |
+| silu_f64_n1048576 | jax-cuda | 32 | 15 | 1.548 | 16777216 | 0.245 | 4.848e-08 |
+| silu_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.355 | 16777216 | 1.070 | 4.848e-08 |
+| silu_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.238 | 16777216 | 0.117 | 4.912e-08 |
+| silu_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 3.187 | 16777216 | 0.119 | 4.912e-08 |
+| softmax_f64_n1048576 | jax-cuda | 8 | 15 | 3.655 | 16777216 | 0.026 | 8.661e-10 |
+| softmax_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.523 | 16777216 | 0.727 | 8.661e-10 |
+| softmax_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.897 | 16777216 | 0.131 | 1.083e-09 |
+| softmax_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 2.882 | 16777216 | 0.132 | 1.083e-09 |
+| softplus_f64_n1048576 | jax-cuda | 32 | 15 | 1.434 | 16777216 | 0.265 | 1.467e-07 |
+| softplus_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.822 | 16777216 | 0.462 | 1.467e-07 |
+| softplus_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.909 | 16777216 | 0.418 | 1.467e-07 |
+| softplus_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 0.902 | 16777216 | 0.421 | 1.467e-07 |
 
 ## Run metadata
 
@@ -87,8 +87,8 @@ All measured output elements are checked against independently generated NumPy/S
 schema_version: 1
 target_profile: nvidia-gpu
 suite_id: gpu/nn
-suite_file: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261126_062950/gpu_nn.yaml
-timestamp: '2026-11-26T06:29:50+00:00'
+suite_file: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261128_082346/gpu_nn.yaml
+timestamp: '2026-11-28T08:23:46+00:00'
 tenferro_rs:
   path: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/extern/tenferro-rs
   commit: 1ba9f33521691170c763dfce9b6c9bb56ca523c2
@@ -98,7 +98,7 @@ tenferro_rs:
   resolved_path: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/extern/tenferro-rs
 harness:
   path: /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark
-  commit: cc9867403ef65b20357ed79bc78ec5fc2864c4a9
+  commit: 28b35e0408e272b66d7460e3fa12213799c543f9
   dirty: false
 resolved_deps:
   strided-perm:
@@ -111,102 +111,273 @@ resolved_deps:
   - 0.1.0
   - 0.6.1
 host:
-  cpu: AMD EPYC 7543 32-Core Processor
-  logical_cpus: 128
+  cpu: AMD EPYC 9554 64-Core Processor
+  logical_cpus: 252
   power:
-    cpufreq_boost: '1'
-    governor: schedutil
-    scaling_max_freq_khz: '2800000'
     smt:
-      active: '1'
-      control: 'on'
+      active: '0'
+      control: notsupported
   numa:
     nodes: 2
     cpulists:
-      '0': 0-31,64-95
-      '1': 32-63,96-127
+      '0': 0-125
+      '1': 126-251
   smt_siblings:
-  - 0,64
-  - 1,65
-  - 2,66
-  - 3,67
-  - 4,68
-  - 5,69
-  - 6,70
-  - 7,71
-  - 8,72
-  - 9,73
-  - 10,74
-  - 11,75
-  - 12,76
-  - 13,77
-  - 14,78
-  - 15,79
-  - 16,80
-  - 17,81
-  - 18,82
-  - 19,83
-  - 20,84
-  - 21,85
-  - 22,86
-  - 23,87
-  - 24,88
-  - 25,89
-  - 26,90
-  - 27,91
-  - 28,92
-  - 29,93
-  - 30,94
-  - 31,95
-  - 32,96
-  - 33,97
-  - 34,98
-  - 35,99
-  - 36,100
-  - 37,101
-  - 38,102
-  - 39,103
-  - 40,104
-  - 41,105
-  - 42,106
-  - 43,107
-  - 44,108
-  - 45,109
-  - 46,110
-  - 47,111
-  - 48,112
-  - 49,113
-  - 50,114
-  - 51,115
-  - 52,116
-  - 53,117
-  - 54,118
-  - 55,119
-  - 56,120
-  - 57,121
-  - 58,122
-  - 59,123
-  - 60,124
-  - 61,125
-  - 62,126
-  - 63,127
+  - '0'
+  - '1'
+  - '2'
+  - '3'
+  - '4'
+  - '5'
+  - '6'
+  - '7'
+  - '8'
+  - '9'
+  - '10'
+  - '11'
+  - '12'
+  - '13'
+  - '14'
+  - '15'
+  - '16'
+  - '17'
+  - '18'
+  - '19'
+  - '20'
+  - '21'
+  - '22'
+  - '23'
+  - '24'
+  - '25'
+  - '26'
+  - '27'
+  - '28'
+  - '29'
+  - '30'
+  - '31'
+  - '32'
+  - '33'
+  - '34'
+  - '35'
+  - '36'
+  - '37'
+  - '38'
+  - '39'
+  - '40'
+  - '41'
+  - '42'
+  - '43'
+  - '44'
+  - '45'
+  - '46'
+  - '47'
+  - '48'
+  - '49'
+  - '50'
+  - '51'
+  - '52'
+  - '53'
+  - '54'
+  - '55'
+  - '56'
+  - '57'
+  - '58'
+  - '59'
+  - '60'
+  - '61'
+  - '62'
+  - '63'
+  - '64'
+  - '65'
+  - '66'
+  - '67'
+  - '68'
+  - '69'
+  - '70'
+  - '71'
+  - '72'
+  - '73'
+  - '74'
+  - '75'
+  - '76'
+  - '77'
+  - '78'
+  - '79'
+  - '80'
+  - '81'
+  - '82'
+  - '83'
+  - '84'
+  - '85'
+  - '86'
+  - '87'
+  - '88'
+  - '89'
+  - '90'
+  - '91'
+  - '92'
+  - '93'
+  - '94'
+  - '95'
+  - '96'
+  - '97'
+  - '98'
+  - '99'
+  - '100'
+  - '101'
+  - '102'
+  - '103'
+  - '104'
+  - '105'
+  - '106'
+  - '107'
+  - '108'
+  - '109'
+  - '110'
+  - '111'
+  - '112'
+  - '113'
+  - '114'
+  - '115'
+  - '116'
+  - '117'
+  - '118'
+  - '119'
+  - '120'
+  - '121'
+  - '122'
+  - '123'
+  - '124'
+  - '125'
+  - '126'
+  - '127'
+  - '128'
+  - '129'
+  - '130'
+  - '131'
+  - '132'
+  - '133'
+  - '134'
+  - '135'
+  - '136'
+  - '137'
+  - '138'
+  - '139'
+  - '140'
+  - '141'
+  - '142'
+  - '143'
+  - '144'
+  - '145'
+  - '146'
+  - '147'
+  - '148'
+  - '149'
+  - '150'
+  - '151'
+  - '152'
+  - '153'
+  - '154'
+  - '155'
+  - '156'
+  - '157'
+  - '158'
+  - '159'
+  - '160'
+  - '161'
+  - '162'
+  - '163'
+  - '164'
+  - '165'
+  - '166'
+  - '167'
+  - '168'
+  - '169'
+  - '170'
+  - '171'
+  - '172'
+  - '173'
+  - '174'
+  - '175'
+  - '176'
+  - '177'
+  - '178'
+  - '179'
+  - '180'
+  - '181'
+  - '182'
+  - '183'
+  - '184'
+  - '185'
+  - '186'
+  - '187'
+  - '188'
+  - '189'
+  - '190'
+  - '191'
+  - '192'
+  - '193'
+  - '194'
+  - '195'
+  - '196'
+  - '197'
+  - '198'
+  - '199'
+  - '200'
+  - '201'
+  - '202'
+  - '203'
+  - '204'
+  - '205'
+  - '206'
+  - '207'
+  - '208'
+  - '209'
+  - '210'
+  - '211'
+  - '212'
+  - '213'
+  - '214'
+  - '215'
+  - '216'
+  - '217'
+  - '218'
+  - '219'
+  - '220'
+  - '221'
+  - '222'
+  - '223'
+  - '224'
+  - '225'
+  - '226'
+  - '227'
+  - '228'
+  - '229'
+  - '230'
+  - '231'
+  - '232'
+  - '233'
+  - '234'
+  - '235'
+  - '236'
+  - '237'
+  - '238'
+  - '239'
+  - '240'
+  - '241'
+  - '242'
+  - '243'
+  - '244'
+  - '245'
+  - '246'
+  - '247'
+  - '248'
+  - '249'
+  - '250'
+  - '251'
   l3_domains:
-  - 0-3,64-67
-  - 4-7,68-71
-  - 8-11,72-75
-  - 12-15,76-79
-  - 16-19,80-83
-  - 20-23,84-87
-  - 24-27,88-91
-  - 28-31,92-95
-  - 32-35,96-99
-  - 36-39,100-103
-  - 40-43,104-107
-  - 44-47,108-111
-  - 48-51,112-115
-  - 52-55,116-119
-  - 56-59,120-123
-  - 60-63,124-127
+  - 0-125
+  - 126-251
 build:
   toolchain:
     rustc: null
@@ -215,8 +386,8 @@ build:
     target_cpu: null
 environment:
   container: devcontainer
-  hostname: d73a3a75b493
-  os: Linux-6.8.0-138-generic-x86_64-with-glibc2.39
+  hostname: 32b786430f5d
+  os: Linux-6.8.0-149-generic-x86_64-with-glibc2.39
   arch: x86_64
   cpu: x86_64
   affinity:
@@ -225,27 +396,13 @@ environment:
     observer_cpus: null
     override_of: null
     thread_budget: '1'
-    measured_cpus: 0-127
+    measured_cpus: 0-251
     l3_domains:
-    - 0-3,64-67
-    - 4-7,68-71
-    - 8-11,72-75
-    - 12-15,76-79
-    - 16-19,80-83
-    - 20-23,84-87
-    - 24-27,88-91
-    - 28-31,92-95
-    - 32-35,96-99
-    - 36-39,100-103
-    - 40-43,104-107
-    - 44-47,108-111
-    - 48-51,112-115
-    - 52-55,116-119
-    - 56-59,120-123
-    - 60-63,124-127
-    cpu_boost: enabled
-    scaling_governor: schedutil
-    scaling_driver: acpi-cpufreq
+    - 0-125
+    - 126-251
+    cpu_boost: null
+    scaling_governor: null
+    scaling_driver: null
   env:
     OMP_NUM_THREADS: '1'
     RAYON_NUM_THREADS: '1'
@@ -284,8 +441,8 @@ python_backends:
       \ oneAPI Math Kernel Library Version 2024.2-Product Build 20240605 for Intel(R)\
       \ 64 architecture applications\n  - Intel(R) MKL-DNN v3.10.2 (Git Hash f1d471933dc852f956fd05389f9313c7148783d5)\n\
       \  - OpenMP 201511 (a.k.a. OpenMP 4.5)\n  - LAPACK is enabled (usually provided\
-      \ by MKL)\n  - NNPACK is enabled\n  - CPU capability usage: AVX2\n  - CUDA Runtime\
-      \ 12.8\n  - NVCC architecture flags: -gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_86,code=sm_86;-gencode;arch=compute_90,code=sm_90;-gencode;arch=compute_100,code=sm_100;-gencode;arch=compute_120,code=sm_120\n\
+      \ by MKL)\n  - NNPACK is enabled\n  - CPU capability usage: AVX512\n  - CUDA\
+      \ Runtime 12.8\n  - NVCC architecture flags: -gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_86,code=sm_86;-gencode;arch=compute_90,code=sm_90;-gencode;arch=compute_100,code=sm_100;-gencode;arch=compute_120,code=sm_120\n\
       \  - CuDNN 91.9  (built against CUDA 12.9)\n  - Magma 2.6.1\n  - Build settings:\
       \ BLAS_INFO=mkl, BUILD_TYPE=Release, COMMIT_SHA=70d99e998b4955e0049d13a98d77ae1b14db1f45,\
       \ CUDA_VERSION=12.8, CUDNN_VERSION=9.19.0, CXX_COMPILER=/opt/rh/gcc-toolset-13/root/usr/bin/c++,\
@@ -322,7 +479,7 @@ julia:
 cuda:
   device_ordinal: 0
   device_name: NVIDIA A100 80GB PCIe
-  device_uuid: GPU-e0c82f3d-3a11-a28c-b42e-1c92d26527fd
+  device_uuid: GPU-12b45076-79d5-7b84-cb5c-7c6300074c8a
   device_memory_bytes: 85899345920
   driver_version: 595.112.07
   runtime_version: '12.8'
@@ -346,31 +503,31 @@ gpu_memory_calibration:
   traffic_model: one read plus one write of buffer_bytes per copy
   warmups: 3
   sample_ms:
-  - 0.09283
-  - 0.09247
-  - 0.09347
-  - 0.09311
-  - 0.09228
-  - 0.092311
-  - 0.09157
-  - 0.09387
-  - 0.09332
-  - 0.0923
-  - 0.092851
+  - 0.09318
   - 0.09261
-  - 0.09229
-  - 0.09294
-  - 0.09177
-  median_ms: 0.09261
-  bytes_per_second: 1449278997948.3857
+  - 0.097206
+  - 0.094582
+  - 0.090757
+  - 0.097306
+  - 0.095204
+  - 0.092089
+  - 0.097136
+  - 0.094952
+  - 0.09318
+  - 0.095996
+  - 0.096235
+  - 0.094223
+  - 0.096965
+  median_ms: 0.094952
+  bytes_per_second: 1413532395315.5278
   torch_version: 2.11.0+cu128
   cuda_version: '12.8'
-  timestamp: '2026-11-26T06:42:51.237421+00:00'
+  timestamp: '2026-11-28T08:34:56.483386+00:00'
 gpu_assignment:
   role: benchmark
   physical_device_index: 0
-  device_uuid: GPU-e0c82f3d-3a11-a28c-b42e-1c92d26527fd
-  cuda_visible_devices: GPU-e0c82f3d-3a11-a28c-b42e-1c92d26527fd
+  device_uuid: GPU-12b45076-79d5-7b84-cb5c-7c6300074c8a
+  cuda_visible_devices: GPU-12b45076-79d5-7b84-cb5c-7c6300074c8a
   process_device_ordinal: 0
   verification_only: false
 collection:
@@ -395,8 +552,8 @@ collection:
     /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/scripts/benchmark_gpu_public_api.py: d1ff68f86496d991bcbc730138fe6e3076001b3f23cc1a94c44b96f6857cb8ed
     /tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/scripts/gpu_public_api_ops.py: e88823db3f4a1fe43dc13c4743c9d78ece6af76a968724091af318dd8d7f2528
     scripts/run_gpu_public_api.sh: 7995bcf409258185e07210969a738896f64860b67df251fcd1100d11128a5431
-    data/results/nvidia-gpu/gpu/nn/20261126_062950/fixtures/manifest.json: 06ffcecd4fd9ca2058834e8c222d97a2dc8d86d5506100cc2b091e779e957bbf
-    target/release/benchmark_gpu_public_api: 3ff693b2ae7411a94a3e3337550156543b79bbe33a2720b00f7fb8181bdf1fd4
+    data/results/nvidia-gpu/gpu/nn/20261128_082346/fixtures/manifest.json: 06ffcecd4fd9ca2058834e8c222d97a2dc8d86d5506100cc2b091e779e957bbf
+    target/release/benchmark_gpu_public_api: 54dda9d9f7540806d7ff5a5d68e1312bc33b0d58871d8e3e9467a819e7c59318
   reference_numpy_version: 2.4.2
   measurement_cpu:
     policy: 'disabled (GPU_BENCH_CPU_SELECT unset): arms run on the allocation unpinned'
@@ -406,33 +563,33 @@ collection:
         status: disabled
         reason: 'GPU_BENCH_CPU_SELECT is not 1: the arm runs on the allocation unpinned'
         exit_code: 0
-        finished_at: '2026-11-26T06:43:07Z'
+        finished_at: '2026-11-28T08:35:10Z'
       pytorch-cuda:
         arm: pytorch-cuda
         status: disabled
         reason: 'GPU_BENCH_CPU_SELECT is not 1: the arm runs on the allocation unpinned'
         exit_code: 0
-        finished_at: '2026-11-26T06:43:01Z'
+        finished_at: '2026-11-28T08:35:05Z'
       tenferro-cuda-direct:
         arm: tenferro-cuda-direct
         status: disabled
         reason: 'GPU_BENCH_CPU_SELECT is not 1: the arm runs on the allocation unpinned'
         exit_code: 0
-        finished_at: '2026-11-26T06:42:55Z'
+        finished_at: '2026-11-28T08:35:00Z'
       tenferro-cuda-eager:
         arm: tenferro-cuda-eager
         status: disabled
         reason: 'GPU_BENCH_CPU_SELECT is not 1: the arm runs on the allocation unpinned'
         exit_code: 0
-        finished_at: '2026-11-26T06:42:57Z'
+        finished_at: '2026-11-28T08:35:02Z'
   compile:
-    case_wall_seconds: 9.121
+    case_wall_seconds: 7.802
     compiling_processes: 1
     modules_compiled: 1
     compile_time_ms: null
     compile_time_scope: 'not measured: no compile interval was recorded; `compile_modules`
       counts the NVRTC modules and the untimed wall is the case wall'
-    untimed_wall_seconds: 0.149
+    untimed_wall_seconds: 0.129
 ```
 
 ## Untimed work over the recorded budget
@@ -441,44 +598,44 @@ Each row records the wall clock it spent outside its timed region. These cases s
 
 | Case | Backend | Warning |
 | --- | --- | --- |
-| sigmoid_f64_n1048576 | tenferro-cuda-direct | sigmoid_f64_n1048576 untimed 164.2 ms is 377% of the 43.6 ms timed region (budget 20%) |
-| silu_f64_n1048576 | tenferro-cuda-direct | silu_f64_n1048576 untimed 93.7 ms is 194% of the 48.3 ms timed region (budget 20%) |
-| softplus_f64_n1048576 | tenferro-cuda-direct | softplus_f64_n1048576 untimed 149.0 ms is 1099% of the 13.6 ms timed region (budget 20%) |
-| gelu_f64_n1048576 | tenferro-cuda-direct | gelu_f64_n1048576 untimed 94.2 ms is 266% of the 35.4 ms timed region (budget 20%) |
-| gelu_tanh_f64_n1048576 | tenferro-cuda-direct | gelu_tanh_f64_n1048576 untimed 87.6 ms is 161% of the 54.4 ms timed region (budget 20%) |
-| softmax_f64_n1048576 | tenferro-cuda-direct | softmax_f64_n1048576 untimed 115.3 ms is 265% of the 43.5 ms timed region (budget 20%) |
-| log_softmax_f64_n1048576 | tenferro-cuda-direct | log_softmax_f64_n1048576 untimed 83.7 ms is 188% of the 44.5 ms timed region (budget 20%) |
-| masked_softmax_f64_n1048576 | tenferro-cuda-direct | masked_softmax_f64_n1048576 untimed 96.2 ms is 172% of the 55.8 ms timed region (budget 20%) |
-| masked_log_softmax_f64_n1048576 | tenferro-cuda-direct | masked_log_softmax_f64_n1048576 untimed 68.3 ms is 125% of the 54.8 ms timed region (budget 20%) |
-| layer_norm_f64_n1048576 | tenferro-cuda-direct | layer_norm_f64_n1048576 untimed 98.6 ms is 234% of the 42.2 ms timed region (budget 20%) |
-| rms_norm_f64_n1048576 | tenferro-cuda-direct | rms_norm_f64_n1048576 untimed 96.3 ms is 409% of the 23.5 ms timed region (budget 20%) |
-| sigmoid_f64_n1048576 | tenferro-cuda-eager | sigmoid_f64_n1048576 untimed 170.5 ms is 391% of the 43.7 ms timed region (budget 20%) |
-| silu_f64_n1048576 | tenferro-cuda-eager | silu_f64_n1048576 untimed 98.2 ms is 204% of the 48.0 ms timed region (budget 20%) |
-| softplus_f64_n1048576 | tenferro-cuda-eager | softplus_f64_n1048576 untimed 87.9 ms is 649% of the 13.5 ms timed region (budget 20%) |
-| gelu_f64_n1048576 | tenferro-cuda-eager | gelu_f64_n1048576 untimed 96.9 ms is 272% of the 35.7 ms timed region (budget 20%) |
-| gelu_tanh_f64_n1048576 | tenferro-cuda-eager | gelu_tanh_f64_n1048576 untimed 85.2 ms is 155% of the 54.8 ms timed region (budget 20%) |
-| softmax_f64_n1048576 | tenferro-cuda-eager | softmax_f64_n1048576 untimed 115.0 ms is 252% of the 45.6 ms timed region (budget 20%) |
-| log_softmax_f64_n1048576 | tenferro-cuda-eager | log_softmax_f64_n1048576 untimed 90.8 ms is 204% of the 44.5 ms timed region (budget 20%) |
-| masked_softmax_f64_n1048576 | tenferro-cuda-eager | masked_softmax_f64_n1048576 untimed 99.3 ms is 173% of the 57.3 ms timed region (budget 20%) |
-| masked_log_softmax_f64_n1048576 | tenferro-cuda-eager | masked_log_softmax_f64_n1048576 untimed 67.3 ms is 241% of the 27.9 ms timed region (budget 20%) |
-| layer_norm_f64_n1048576 | tenferro-cuda-eager | layer_norm_f64_n1048576 untimed 106.8 ms is 241% of the 44.4 ms timed region (budget 20%) |
-| rms_norm_f64_n1048576 | tenferro-cuda-eager | rms_norm_f64_n1048576 untimed 101.3 ms is 304% of the 33.3 ms timed region (budget 20%) |
-| sigmoid_f64_n1048576 | pytorch-cuda | sigmoid_f64_n1048576 untimed 264.5 ms is 5521% of the 4.8 ms timed region (budget 20%) |
-| silu_f64_n1048576 | pytorch-cuda | silu_f64_n1048576 untimed 141.3 ms is 2640% of the 5.4 ms timed region (budget 20%) |
-| softplus_f64_n1048576 | pytorch-cuda | softplus_f64_n1048576 untimed 135.5 ms is 1100% of the 12.3 ms timed region (budget 20%) |
-| gelu_f64_n1048576 | pytorch-cuda | gelu_f64_n1048576 untimed 135.4 ms is 1881% of the 7.2 ms timed region (budget 20%) |
-| gelu_tanh_f64_n1048576 | pytorch-cuda | gelu_tanh_f64_n1048576 untimed 130.3 ms is 2875% of the 4.5 ms timed region (budget 20%) |
-| softmax_f64_n1048576 | pytorch-cuda | softmax_f64_n1048576 untimed 148.1 ms is 1874% of the 7.9 ms timed region (budget 20%) |
-| log_softmax_f64_n1048576 | pytorch-cuda | log_softmax_f64_n1048576 untimed 135.7 ms is 2190% of the 6.2 ms timed region (budget 20%) |
-| layer_norm_f64_n1048576 | pytorch-cuda | layer_norm_f64_n1048576 untimed 142.9 ms is 970% of the 14.7 ms timed region (budget 20%) |
-| rms_norm_f64_n1048576 | pytorch-cuda | rms_norm_f64_n1048576 untimed 138.4 ms is 946% of the 14.6 ms timed region (budget 20%) |
-| sigmoid_f64_n1048576 | jax-cuda | sigmoid_f64_n1048576 untimed 418.2 ms is 1346% of the 31.1 ms timed region (budget 20%) |
-| silu_f64_n1048576 | jax-cuda | silu_f64_n1048576 untimed 224.4 ms is 833% of the 26.9 ms timed region (budget 20%) |
-| softplus_f64_n1048576 | jax-cuda | softplus_f64_n1048576 untimed 254.4 ms is 957% of the 26.6 ms timed region (budget 20%) |
-| gelu_f64_n1048576 | jax-cuda | gelu_f64_n1048576 untimed 520.5 ms is 1354% of the 38.4 ms timed region (budget 20%) |
-| gelu_tanh_f64_n1048576 | jax-cuda | gelu_tanh_f64_n1048576 untimed 387.2 ms is 657% of the 59.0 ms timed region (budget 20%) |
-| softmax_f64_n1048576 | jax-cuda | softmax_f64_n1048576 untimed 780.2 ms is 2453% of the 31.8 ms timed region (budget 20%) |
-| log_softmax_f64_n1048576 | jax-cuda | log_softmax_f64_n1048576 untimed 301.4 ms is 1029% of the 29.3 ms timed region (budget 20%) |
-| masked_softmax_f64_n1048576 | jax-cuda | masked_softmax_f64_n1048576 untimed 643.1 ms is 1258% of the 51.1 ms timed region (budget 20%) |
-| masked_log_softmax_f64_n1048576 | jax-cuda | masked_log_softmax_f64_n1048576 untimed 335.6 ms is 1116% of the 30.1 ms timed region (budget 20%) |
-| layer_norm_f64_n1048576 | jax-cuda | layer_norm_f64_n1048576 untimed 269.7 ms is 717% of the 37.6 ms timed region (budget 20%) |
+| sigmoid_f64_n1048576 | tenferro-cuda-direct | sigmoid_f64_n1048576 untimed 159.5 ms is 366% of the 43.6 ms timed region (budget 20%) |
+| silu_f64_n1048576 | tenferro-cuda-direct | silu_f64_n1048576 untimed 85.1 ms is 175% of the 48.6 ms timed region (budget 20%) |
+| softplus_f64_n1048576 | tenferro-cuda-direct | softplus_f64_n1048576 untimed 129.2 ms is 947% of the 13.6 ms timed region (budget 20%) |
+| gelu_f64_n1048576 | tenferro-cuda-direct | gelu_f64_n1048576 untimed 86.8 ms is 244% of the 35.5 ms timed region (budget 20%) |
+| gelu_tanh_f64_n1048576 | tenferro-cuda-direct | gelu_tanh_f64_n1048576 untimed 76.5 ms is 140% of the 54.8 ms timed region (budget 20%) |
+| softmax_f64_n1048576 | tenferro-cuda-direct | softmax_f64_n1048576 untimed 117.9 ms is 271% of the 43.5 ms timed region (budget 20%) |
+| log_softmax_f64_n1048576 | tenferro-cuda-direct | log_softmax_f64_n1048576 untimed 84.2 ms is 189% of the 44.5 ms timed region (budget 20%) |
+| masked_softmax_f64_n1048576 | tenferro-cuda-direct | masked_softmax_f64_n1048576 untimed 88.8 ms is 159% of the 55.8 ms timed region (budget 20%) |
+| masked_log_softmax_f64_n1048576 | tenferro-cuda-direct | masked_log_softmax_f64_n1048576 untimed 67.1 ms is 122% of the 54.8 ms timed region (budget 20%) |
+| layer_norm_f64_n1048576 | tenferro-cuda-direct | layer_norm_f64_n1048576 untimed 95.2 ms is 226% of the 42.1 ms timed region (budget 20%) |
+| rms_norm_f64_n1048576 | tenferro-cuda-direct | rms_norm_f64_n1048576 untimed 90.5 ms is 387% of the 23.4 ms timed region (budget 20%) |
+| sigmoid_f64_n1048576 | tenferro-cuda-eager | sigmoid_f64_n1048576 untimed 149.7 ms is 345% of the 43.4 ms timed region (budget 20%) |
+| silu_f64_n1048576 | tenferro-cuda-eager | silu_f64_n1048576 untimed 90.2 ms is 189% of the 47.8 ms timed region (budget 20%) |
+| softplus_f64_n1048576 | tenferro-cuda-eager | softplus_f64_n1048576 untimed 77.3 ms is 571% of the 13.5 ms timed region (budget 20%) |
+| gelu_f64_n1048576 | tenferro-cuda-eager | gelu_f64_n1048576 untimed 80.6 ms is 228% of the 35.3 ms timed region (budget 20%) |
+| gelu_tanh_f64_n1048576 | tenferro-cuda-eager | gelu_tanh_f64_n1048576 untimed 79.5 ms is 147% of the 54.1 ms timed region (budget 20%) |
+| softmax_f64_n1048576 | tenferro-cuda-eager | softmax_f64_n1048576 untimed 94.6 ms is 219% of the 43.3 ms timed region (budget 20%) |
+| log_softmax_f64_n1048576 | tenferro-cuda-eager | log_softmax_f64_n1048576 untimed 95.0 ms is 216% of the 44.0 ms timed region (budget 20%) |
+| masked_softmax_f64_n1048576 | tenferro-cuda-eager | masked_softmax_f64_n1048576 untimed 88.1 ms is 158% of the 55.7 ms timed region (budget 20%) |
+| masked_log_softmax_f64_n1048576 | tenferro-cuda-eager | masked_log_softmax_f64_n1048576 untimed 65.5 ms is 120% of the 54.4 ms timed region (budget 20%) |
+| layer_norm_f64_n1048576 | tenferro-cuda-eager | layer_norm_f64_n1048576 untimed 92.9 ms is 224% of the 41.5 ms timed region (budget 20%) |
+| rms_norm_f64_n1048576 | tenferro-cuda-eager | rms_norm_f64_n1048576 untimed 89.6 ms is 388% of the 23.1 ms timed region (budget 20%) |
+| sigmoid_f64_n1048576 | pytorch-cuda | sigmoid_f64_n1048576 untimed 208.3 ms is 4359% of the 4.8 ms timed region (budget 20%) |
+| silu_f64_n1048576 | pytorch-cuda | silu_f64_n1048576 untimed 111.7 ms is 2101% of the 5.3 ms timed region (budget 20%) |
+| softplus_f64_n1048576 | pytorch-cuda | softplus_f64_n1048576 untimed 112.0 ms is 908% of the 12.3 ms timed region (budget 20%) |
+| gelu_f64_n1048576 | pytorch-cuda | gelu_f64_n1048576 untimed 117.0 ms is 1630% of the 7.2 ms timed region (budget 20%) |
+| gelu_tanh_f64_n1048576 | pytorch-cuda | gelu_tanh_f64_n1048576 untimed 113.3 ms is 2505% of the 4.5 ms timed region (budget 20%) |
+| softmax_f64_n1048576 | pytorch-cuda | softmax_f64_n1048576 untimed 131.2 ms is 1672% of the 7.8 ms timed region (budget 20%) |
+| log_softmax_f64_n1048576 | pytorch-cuda | log_softmax_f64_n1048576 untimed 116.9 ms is 1914% of the 6.1 ms timed region (budget 20%) |
+| layer_norm_f64_n1048576 | pytorch-cuda | layer_norm_f64_n1048576 untimed 124.3 ms is 849% of the 14.6 ms timed region (budget 20%) |
+| rms_norm_f64_n1048576 | pytorch-cuda | rms_norm_f64_n1048576 untimed 114.6 ms is 787% of the 14.6 ms timed region (budget 20%) |
+| sigmoid_f64_n1048576 | jax-cuda | sigmoid_f64_n1048576 untimed 364.8 ms is 5000% of the 7.3 ms timed region (budget 20%) |
+| silu_f64_n1048576 | jax-cuda | silu_f64_n1048576 untimed 198.2 ms is 854% of the 23.2 ms timed region (budget 20%) |
+| softplus_f64_n1048576 | jax-cuda | softplus_f64_n1048576 untimed 195.9 ms is 899% of the 21.8 ms timed region (budget 20%) |
+| gelu_f64_n1048576 | jax-cuda | gelu_f64_n1048576 untimed 421.5 ms is 1264% of the 33.4 ms timed region (budget 20%) |
+| gelu_tanh_f64_n1048576 | jax-cuda | gelu_tanh_f64_n1048576 untimed 288.9 ms is 545% of the 53.0 ms timed region (budget 20%) |
+| softmax_f64_n1048576 | jax-cuda | softmax_f64_n1048576 untimed 608.7 ms is 1106% of the 55.0 ms timed region (budget 20%) |
+| log_softmax_f64_n1048576 | jax-cuda | log_softmax_f64_n1048576 untimed 244.9 ms is 1120% of the 21.9 ms timed region (budget 20%) |
+| masked_softmax_f64_n1048576 | jax-cuda | masked_softmax_f64_n1048576 untimed 470.4 ms is 1108% of the 42.5 ms timed region (budget 20%) |
+| masked_log_softmax_f64_n1048576 | jax-cuda | masked_log_softmax_f64_n1048576 untimed 265.8 ms is 1258% of the 21.1 ms timed region (budget 20%) |
+| layer_norm_f64_n1048576 | jax-cuda | layer_norm_f64_n1048576 untimed 200.8 ms is 559% of the 35.9 ms timed region (budget 20%) |

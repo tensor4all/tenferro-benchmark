@@ -2,12 +2,12 @@
   "schema_version": 1,
   "target_profile": "nvidia-gpu",
   "suite_id": "gpu/lstsq",
-  "timestamp": "2026-11-26T06:29:50+00:00",
+  "timestamp": "2026-11-28T08:23:46+00:00",
   "tenferro_commit": "1ba9f33521691170c763dfce9b6c9bb56ca523c2",
   "hardware": {
     "gpu": "NVIDIA A100 80GB PCIe",
-    "cpu": "AMD EPYC 7543 32-Core Processor",
-    "host": "d73a3a75b493"
+    "cpu": "AMD EPYC 9554 64-Core Processor",
+    "host": "32b786430f5d"
   },
   "unit": "ms",
   "rows": [
@@ -33,8 +33,8 @@
       "case": "lstsq_tall_f64_s256_rhs8",
       "group": "lstsq",
       "backend": "tenferro-cuda-direct",
-      "median": 1.686234,
-      "iqr": 0.011967249999999874,
+      "median": 1.6752465,
+      "iqr": 0.007480999999999849,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 2
@@ -43,8 +43,8 @@
       "case": "lstsq_tall_f64_s256_rhs8",
       "group": "lstsq",
       "backend": "tenferro-cuda-eager",
-      "median": 1.754764,
-      "iqr": 0.006422499999999998,
+      "median": 1.7469995,
+      "iqr": 0.010252750000000033,
       "status": "ok",
       "verified": true,
       "operations_per_sample": 2
