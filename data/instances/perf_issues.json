@@ -13719,7 +13719,7 @@
   "thread_counts": [
    1
   ],
-  "regime": "latency",
+  "regime": "throughput",
   "size_elements": 36864
  },
  {
@@ -13749,7 +13749,7 @@
   "thread_counts": [
    1
   ],
-  "regime": "latency",
+  "regime": "throughput",
   "size_elements": 36864
  },
  {
@@ -13778,7 +13778,7 @@
   "thread_counts": [
    1
   ],
-  "regime": "latency",
+  "regime": "throughput",
   "size_elements": 36864
  },
  {
@@ -13808,7 +13808,7 @@
   "thread_counts": [
    1
   ],
-  "regime": "latency",
+  "regime": "throughput",
   "size_elements": 36864
  },
  {
@@ -14663,7 +14663,7 @@
   "thread_counts": [
    1
   ],
-  "regime": "latency",
+  "regime": "throughput",
   "size_elements": 16384
  },
  {
@@ -14693,7 +14693,7 @@
   "thread_counts": [
    1
   ],
-  "regime": "latency",
+  "regime": "throughput",
   "size_elements": 16384
  },
  {
@@ -14722,7 +14722,7 @@
   "thread_counts": [
    1
   ],
-  "regime": "latency",
+  "regime": "throughput",
   "size_elements": 16384
  },
  {
@@ -14752,7 +14752,7 @@
   "thread_counts": [
    1
   ],
-  "regime": "latency",
+  "regime": "throughput",
   "size_elements": 16384
  },
  {
@@ -15843,7 +15843,7 @@
   "thread_counts": [
    1
   ],
-  "regime": "latency",
+  "regime": "throughput",
   "size_elements": 36864
  },
  {
@@ -15873,7 +15873,7 @@
   "thread_counts": [
    1
   ],
-  "regime": "latency",
+  "regime": "throughput",
   "size_elements": 36864
  },
  {
@@ -15902,7 +15902,7 @@
   "thread_counts": [
    1
   ],
-  "regime": "latency",
+  "regime": "throughput",
   "size_elements": 36864
  },
  {
@@ -15932,7 +15932,7 @@
   "thread_counts": [
    1
   ],
-  "regime": "latency",
+  "regime": "throughput",
   "size_elements": 36864
  },
  {
@@ -16787,7 +16787,7 @@
   "thread_counts": [
    1
   ],
-  "regime": "latency",
+  "regime": "throughput",
   "size_elements": 16384
  },
  {
@@ -16817,7 +16817,7 @@
   "thread_counts": [
    1
   ],
-  "regime": "latency",
+  "regime": "throughput",
   "size_elements": 16384
  },
  {
@@ -16846,7 +16846,7 @@
   "thread_counts": [
    1
   ],
-  "regime": "latency",
+  "regime": "throughput",
   "size_elements": 16384
  },
  {
@@ -16876,7 +16876,7 @@
   "thread_counts": [
    1
   ],
-  "regime": "latency",
+  "regime": "throughput",
   "size_elements": 16384
  },
  {

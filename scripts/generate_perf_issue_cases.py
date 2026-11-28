@@ -835,7 +835,7 @@ def small_tn_ad_prepare_cases():
     return rows
 
 
-SMALL_BATCHED_THROUGHPUT_FLOOR = 1 << 16
+SMALL_BATCHED_THROUGHPUT_MADDS = 1 << 16
 
 
 def small_batched_matmul_cases():
@@ -868,13 +868,15 @@ def small_batched_matmul_cases():
                                 "a size-generic scalar product before timing."),
                         )
                         row["thread_counts"] = [1]
-                        # A call over fewer than 2**16 scalars per operand is dominated by the
-                        # per-call fixed cost (the 1x1 / batch 256 cell is ~1 us per call), so
-                        # it is a latency cell; larger calls are bandwidth/compute bound and
-                        # must not be published on the latency page (AGENTS.md, regimes).
-                        elements = n * n * batch
-                        row.update(regime="throughput" if elements >= SMALL_BATCHED_THROUGHPUT_FLOOR
-                                   else "latency", size_elements=elements)
+                        # Regime by work per call: the harness's fixed per-call cost is ~1.2 us
+                        # (the 1x1 / batch 256 cell), so a call under 2**16 scalar multiply-adds
+                        # (n**3 * batch; roughly under 30 us, where that cost is >= ~4 %) is a
+                        # latency cell and a larger call is throughput. The line is a
+                        # declared cut, not a measurement: a cell close to it can sit on
+                        # either side for one scalar type.
+                        madds = n ** 3 * batch
+                        row.update(regime="throughput" if madds >= SMALL_BATCHED_THROUGHPUT_MADDS
+                                   else "latency", size_elements=n * n * batch)
                         rows.append(row)
     return rows
 

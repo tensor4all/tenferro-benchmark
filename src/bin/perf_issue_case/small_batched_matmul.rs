@@ -16,7 +16,8 @@
 //! Both arms are checked against a third, size-generic scalar implementation
 //! (dynamic `N`, k-outermost summation order) before timing. It is a different
 //! summation order and indexing path, not a different algorithm; the unit tests
-//! below pin it, and every fixed-size loop, to a hand-computed product.
+//! below pin it, and the 2x2 and 3x3 fixed-size loops, to hand-computed products;
+//! the other sizes are compared with the checker.
 use super::*;
 use std::ops::{Add, Mul};
 use tenferro_tensor::{DotGeneralAccumulation, TensorScalar};
@@ -245,6 +246,20 @@ mod tests {
         let mut c = c0;
         direct_for::<f64>(2).unwrap()(&a, &b, &mut c, true);
         assert_eq!(c.to_vec(), acc);
+    }
+
+    /// A = [[1, 2, 3], [4, 5, 6], [7, 8, 9]], B = [[1, 0, 2], [0, 1, 0], [3, 0, 1]],
+    /// AB = [[10, 2, 5], [22, 5, 14], [34, 8, 23]] (column-major below).
+    #[test]
+    fn three_by_three_matches_a_hand_computed_product() {
+        let a = [1.0, 4.0, 7.0, 2.0, 5.0, 8.0, 3.0, 6.0, 9.0];
+        let b = [1.0, 0.0, 3.0, 0.0, 1.0, 0.0, 2.0, 0.0, 1.0];
+        let ab = [10.0, 22.0, 34.0, 2.0, 5.0, 8.0, 5.0, 14.0, 23.0];
+        let c0 = [0.0; 9];
+        assert_eq!(check_product(3, &a, &b, &c0, false), ab);
+        let mut c = c0;
+        direct_for::<f64>(3).unwrap()(&a, &b, &mut c, false);
+        assert_eq!(c, ab);
     }
 
     #[test]

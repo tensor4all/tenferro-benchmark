@@ -95,10 +95,10 @@ class PerfIssueCoverageTest(unittest.TestCase):
             else:
                 self.assertEqual(row["backend"], "tenferro-rs")
                 self.assertIsNone(row.get("reference_for"))
-            # Calls below 2**16 scalars per operand are per-call-cost bound; larger are not.
-            elements = p["n"] * p["n"] * p["batch"]
-            self.assertEqual(row["size_elements"], elements)
-            self.assertEqual(row["regime"], "throughput" if elements >= 1 << 16 else "latency")
+            # Calls under 2**16 scalar multiply-adds are per-call-cost bound; larger are not.
+            self.assertEqual(row["size_elements"], p["n"] * p["n"] * p["batch"])
+            madds = p["n"] ** 3 * p["batch"]
+            self.assertEqual(row["regime"], "throughput" if madds >= 1 << 16 else "latency")
         self.assertEqual({row["regime"] for row in rows}, {"latency", "throughput"})
         self.assertEqual({row["params"]["n"] for row in rows}, {1, 2, 3, 4, 5, 8})
         self.assertEqual({row["params"]["batch"] for row in rows}, {256, 4096, 32769})
