@@ -25,6 +25,7 @@ pub(super) fn run(p: &Value, timing: &Timing, threads: usize) -> Result<CaseOutc
     match graph {
         "identity_layout_chain" | "conj_chain" => run_chain(p, timing, threads, graph, arm),
         "deep_reverse_mode" => run_deep_reverse_mode(p, timing, threads, arm),
+        "small_tn" => run_small_tn(p, timing, threads, arm),
         _ => Err(format!("unknown ad_prepare graph {graph}").into()),
     }
 }
@@ -125,10 +126,20 @@ fn run_chain(
         }
     }
 
-    timed_prepare(runtime, program, backend, target, timing, worst, graph, arm, json!({
-        "length": length,
-        "n": n,
-    }))
+    timed_prepare(
+        runtime,
+        program,
+        backend,
+        target,
+        timing,
+        worst,
+        graph,
+        arm,
+        json!({
+            "length": length,
+            "n": n,
+        }),
+    )
 }
 
 /// The traced graph whose preparation is measured.
@@ -213,26 +224,20 @@ fn run_deep_reverse_mode(
 
     // Setup: trace, AD transform, compile. None of this is timed.
     let trace = TraceContext::new();
-    let x = trace.from_tensor_concrete_shape(Tensor::from_vec_col_major(
-        vec![batch, 2],
-        x_data.clone(),
-    )?)?;
+    let x = trace
+        .from_tensor_concrete_shape(Tensor::from_vec_col_major(vec![batch, 2], x_data.clone())?)?;
     let w1 = trace.from_tensor_concrete_shape(Tensor::from_vec_col_major(
         vec![2, hidden],
         w1_data.clone(),
     )?)?;
-    let b1 = trace.from_tensor_concrete_shape(Tensor::from_vec_col_major(
-        vec![hidden],
-        b1_data.clone(),
-    )?)?;
+    let b1 = trace
+        .from_tensor_concrete_shape(Tensor::from_vec_col_major(vec![hidden], b1_data.clone())?)?;
     let w2 = trace.from_tensor_concrete_shape(Tensor::from_vec_col_major(
         vec![hidden, 2],
         w2_data.clone(),
     )?)?;
-    let b2 = trace.from_tensor_concrete_shape(Tensor::from_vec_col_major(
-        vec![2],
-        b2_data.clone(),
-    )?)?;
+    let b2 =
+        trace.from_tensor_concrete_shape(Tensor::from_vec_col_major(vec![2], b2_data.clone())?)?;
     let loss = build_rk4_loss(&x, &w1, &b1, &w2, &b2, steps, batch, hidden)?;
     let wrts = [&w1, &b1, &w2, &b2];
     let grads = if arm == "vjp" {
@@ -296,24 +301,58 @@ fn run_deep_reverse_mode(
                     let mut perturbed = values.clone();
                     perturbed[index] += scale * STEP;
                     let (w1, b1, w2, b2) = match parameter {
-                        0 => (perturbed.as_slice(), b1_data.as_slice(), w2_data.as_slice(), b2_data.as_slice()),
-                        1 => (w1_data.as_slice(), perturbed.as_slice(), w2_data.as_slice(), b2_data.as_slice()),
-                        2 => (w1_data.as_slice(), b1_data.as_slice(), perturbed.as_slice(), b2_data.as_slice()),
-                        _ => (w1_data.as_slice(), b1_data.as_slice(), w2_data.as_slice(), perturbed.as_slice()),
+                        0 => (
+                            perturbed.as_slice(),
+                            b1_data.as_slice(),
+                            w2_data.as_slice(),
+                            b2_data.as_slice(),
+                        ),
+                        1 => (
+                            w1_data.as_slice(),
+                            perturbed.as_slice(),
+                            w2_data.as_slice(),
+                            b2_data.as_slice(),
+                        ),
+                        2 => (
+                            w1_data.as_slice(),
+                            b1_data.as_slice(),
+                            perturbed.as_slice(),
+                            b2_data.as_slice(),
+                        ),
+                        _ => (
+                            w1_data.as_slice(),
+                            b1_data.as_slice(),
+                            w2_data.as_slice(),
+                            perturbed.as_slice(),
+                        ),
                     };
                     rk4_loss_value(x_data.as_slice(), w1, b1, w2, b2, steps, batch, hidden)
                 };
                 let fd = (loss_at(1.0) - loss_at(-1.0)) / (2.0 * STEP);
-                worst = worst.max(check_tol(rel_error(fd, gradient[index]), 1e-5, "parameter derivative")?);
+                worst = worst.max(check_tol(
+                    rel_error(fd, gradient[index]),
+                    1e-5,
+                    "parameter derivative",
+                )?);
             }
         }
     }
 
-    timed_prepare(runtime, program, backend, target, timing, worst, "deep_reverse_mode", arm, json!({
-        "steps": steps,
-        "batch": batch,
-        "hidden": hidden,
-    }))
+    timed_prepare(
+        runtime,
+        program,
+        backend,
+        target,
+        timing,
+        worst,
+        "deep_reverse_mode",
+        arm,
+        json!({
+            "steps": steps,
+            "batch": batch,
+            "hidden": hidden,
+        }),
+    )
 }
 
 /// The traced RK4 window whose preparation is measured.
@@ -331,8 +370,24 @@ fn build_rk4_loss(
     let mut state = x.clone();
     for _ in 0..steps {
         let k1 = rk4_rhs(&state, w1, b1, w2, b2, batch, hidden)?;
-        let k2 = rk4_rhs(&offset(&state, &k1, 0.5 * H)?, w1, b1, w2, b2, batch, hidden)?;
-        let k3 = rk4_rhs(&offset(&state, &k2, 0.5 * H)?, w1, b1, w2, b2, batch, hidden)?;
+        let k2 = rk4_rhs(
+            &offset(&state, &k1, 0.5 * H)?,
+            w1,
+            b1,
+            w2,
+            b2,
+            batch,
+            hidden,
+        )?;
+        let k3 = rk4_rhs(
+            &offset(&state, &k2, 0.5 * H)?,
+            w1,
+            b1,
+            w2,
+            b2,
+            batch,
+            hidden,
+        )?;
         let k4 = rk4_rhs(&offset(&state, &k3, H)?, w1, b1, w2, b2, batch, hidden)?;
         // H/6 (k1 + 2 k2 + 2 k3 + k4)
         let pair12 = add(&k1, &scale(&k2, 2.0)?)?;
@@ -442,6 +497,237 @@ fn offset_value(state: &[f64], direction: &[f64], factor: f64, out: &mut [f64]) 
     for index in 0..state.len() {
         out[index] = state[index] + factor * direction[index];
     }
+}
+
+// ---------------------------------------------------------------------------
+// #2678: a small tensor-network energy — an MPS expectation value with conj,
+// einsum and identity layout round trips, differentiated over every site.
+// ---------------------------------------------------------------------------
+
+fn run_small_tn(p: &Value, timing: &Timing, threads: usize, arm: &str) -> Result<CaseOutcome> {
+    let n = param_usize(p, "sites")?;
+    let d = param_usize(p, "d")?;
+    let bond = param_usize(p, "bond")?;
+    let center = n / 2;
+    // Open boundaries: one bond index of size 1 at each end, `bond` in between.
+    let shapes: Vec<[usize; 3]> = (0..n)
+        .map(|k| {
+            [
+                if k == 0 { 1 } else { bond },
+                d,
+                if k + 1 == n { 1 } else { bond },
+            ]
+        })
+        .collect();
+    let data: Vec<Vec<Complex64>> = shapes
+        .iter()
+        .enumerate()
+        .map(|(k, shape)| complex_values(shape[0] * shape[1] * shape[2], 101 + k as u64))
+        .collect();
+    let operator = complex_values(d * d, 97);
+
+    let mut backend = tenferro_einsum_benchmark::cpu_engine(Some(threads))?;
+
+    // Setup: trace, AD transform, compile. None of this is timed.
+    let trace = TraceContext::new();
+    let mut sites = Vec::with_capacity(n);
+    for (shape, values) in shapes.iter().zip(&data) {
+        sites.push(trace.from_tensor_concrete_shape(Tensor::from_vec_col_major(
+            shape.to_vec(),
+            values.clone(),
+        )?)?);
+    }
+    let h = trace
+        .from_tensor_concrete_shape(Tensor::from_vec_col_major(vec![d, d], operator.clone())?)?;
+    let loss = build_tn_loss(&trace, &sites, &h, n, d, bond, center)?;
+    let wrts: Vec<&TracedTensor> = sites.iter().collect();
+    let grads = if arm == "vjp" {
+        let ad = AdContext::builder().build()?;
+        let seed = trace.from_tensor_concrete_shape(Tensor::from_vec_col_major(
+            Vec::<usize>::new(),
+            vec![Complex64::new(1.0, 0.0)],
+        )?)?;
+        ad.vjp_many(&loss, &wrts, &seed)?
+            .into_iter()
+            .map(|product| product.ok_or_else(|| "missing gradient".into()))
+            .collect::<Result<Vec<_>>>()?
+    } else {
+        Vec::new()
+    };
+    let mut roots: Vec<&TracedTensor> = vec![&loss];
+    roots.extend(grads.iter());
+    let program = GraphCompiler::new().compile_many(&roots)?;
+    let mut builder = Runtime::builder();
+    builder.register_engine(runtime_engine_registration(&backend)?)?;
+    let runtime = builder.build()?;
+    let target = ExecutionEngine::target(&backend);
+
+    // Correctness (untimed): the scalar energy against an independent scalar
+    // contraction, and every site gradient against a central difference of the
+    // same contraction (real and imaginary directions, as in `run_chain`).
+    let prepared_check = runtime.prepare(&program, &[], std::slice::from_ref(&target))?;
+    let mut outputs = runtime
+        .run(&mut [&mut backend], &prepared_check, &[])?
+        .into_iter();
+    let loss_out = outputs
+        .next()
+        .ok_or("prepared program returned no loss")?
+        .into_tensor(&mut backend)?;
+    let got_loss = loss_out.as_slice::<Complex64>()?[0];
+    let want_loss = tn_loss_value(&data, &operator, n, d, bond, center);
+    let mut worst = check_tol(rel_error(got_loss.re, want_loss), 1e-10, "energy")?;
+
+    if arm == "vjp" {
+        let mut grad_tensors = Vec::with_capacity(grads.len());
+        for output in outputs {
+            grad_tensors.push(output.into_tensor(&mut backend)?);
+        }
+        const STEP: f64 = 1e-6;
+        for (k, (values, grad)) in data.iter().zip(&grad_tensors).enumerate() {
+            let gradient = grad.as_slice::<Complex64>()?;
+            if gradient.len() != values.len() {
+                return Err(format!("wrong-sized gradient for site {k}").into());
+            }
+            for index in 0..values.len() {
+                for (direction, component) in [
+                    (Complex64::new(1.0, 0.0), true),
+                    (Complex64::new(0.0, 1.0), false),
+                ] {
+                    let mut plus = data.clone();
+                    let mut minus = data.clone();
+                    plus[k][index] += direction * STEP;
+                    minus[k][index] -= direction * STEP;
+                    let fd = (tn_loss_value(&plus, &operator, n, d, bond, center)
+                        - tn_loss_value(&minus, &operator, n, d, bond, center))
+                        / (2.0 * STEP);
+                    let analytic = if component {
+                        gradient[index].re
+                    } else {
+                        gradient[index].im
+                    };
+                    worst = worst.max(check_tol(rel_error(fd, analytic), 1e-5, "site derivative")?);
+                }
+            }
+        }
+    }
+
+    timed_prepare(
+        runtime,
+        program,
+        backend,
+        target,
+        timing,
+        worst,
+        "small_tn",
+        arm,
+        json!({
+            "sites": n,
+            "d": d,
+            "bond": bond,
+        }),
+    )
+}
+
+/// One site with identity transition and reshape round trips on top of it: the
+/// layout aliases the simplifier rewrites, and the fan-out both the conjugated
+/// and the plain copy of the site read.
+fn tn_site_layout(
+    a: &TracedTensor,
+    bond_left: usize,
+    d: usize,
+    bond_right: usize,
+) -> Result<TracedTensor> {
+    let a_t = a.transpose(&[2, 1, 0])?.transpose(&[2, 1, 0])?;
+    let a_r = a_t.reshape(&[bond_left * d, bond_right])?;
+    Ok(a_r.reshape(&[bond_left, d, bond_right])?)
+}
+
+/// The traced MPS energy: a left-to-right transfer-matrix sweep over
+/// `[bond_left, bond_right]` environments, with the local operator inserted at
+/// `center`.
+///
+/// The contraction is `dot_general`, not `einsum`: at this revision
+/// `tenferro.einsum.v1` has no VJP rule, and the timed graph is the AD
+/// transform's output, so an einsum node would fail the transform instead of
+/// measuring preparation.
+fn build_tn_loss(
+    trace: &TraceContext,
+    sites: &[TracedTensor],
+    h: &TracedTensor,
+    n: usize,
+    d: usize,
+    bond: usize,
+    center: usize,
+) -> Result<TracedTensor> {
+    let mut env = trace.from_tensor_concrete_shape(Tensor::from_vec_col_major(
+        vec![1, 1],
+        vec![Complex64::new(1.0, 0.0)],
+    )?)?;
+    for (k, a) in sites.iter().enumerate() {
+        let bond_left = if k == 0 { 1 } else { bond };
+        let bond_right = if k + 1 == n { 1 } else { bond };
+        let site = tn_site_layout(a, bond_left, d, bond_right)?;
+        let conj = site.conj()?;
+        env = if k == center {
+            let with_conj = env.dot_general(&conj, matmul_config(&[0], &[0]))?;
+            let with_h = with_conj.dot_general(h, matmul_config(&[1], &[0]))?;
+            with_h.dot_general(&site, matmul_config(&[0, 2], &[0, 1]))?
+        } else {
+            let with_conj = env.dot_general(&conj, matmul_config(&[0], &[0]))?;
+            with_conj.dot_general(&site, matmul_config(&[0, 1], &[0, 1]))?
+        };
+    }
+    Ok(env.reduce_sum(None)?)
+}
+
+/// The same energy on flat column-major buffers, for the oracle.
+fn tn_loss_value(
+    data: &[Vec<Complex64>],
+    operator: &[Complex64],
+    n: usize,
+    d: usize,
+    bond: usize,
+    center: usize,
+) -> f64 {
+    let mut env = vec![Complex64::new(1.0, 0.0)];
+    let mut left = 1usize;
+    for k in 0..n {
+        let bond_left = if k == 0 { 1 } else { bond };
+        let bond_right = if k + 1 == n { 1 } else { bond };
+        let a = &data[k];
+        let mut next = vec![Complex64::new(0.0, 0.0); bond_right * bond_right];
+        for c in 0..bond_right {
+            for dd in 0..bond_right {
+                let mut sum = Complex64::new(0.0, 0.0);
+                for x in 0..bond_left {
+                    for y in 0..bond_left {
+                        let e = env[x + left * y];
+                        if e == Complex64::new(0.0, 0.0) || e == Complex64::new(-0.0, -0.0) {
+                            continue;
+                        }
+                        for s in 0..d {
+                            let a_s = a[x + bond_left * (s + d * c)];
+                            for t in 0..d {
+                                let a_t = a[y + bond_left * (t + d * dd)];
+                                let weight = if k == center {
+                                    operator[s + d * t]
+                                } else if s == t {
+                                    Complex64::new(1.0, 0.0)
+                                } else {
+                                    continue;
+                                };
+                                sum += e * a_s.conj() * weight * a_t;
+                            }
+                        }
+                    }
+                }
+                next[c + bond_right * dd] = sum;
+            }
+        }
+        env = next;
+        left = bond_right;
+    }
+    env[0].re
 }
 
 // ---------------------------------------------------------------------------

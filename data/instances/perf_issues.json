@@ -12638,5 +12638,233 @@
   "thread_counts": [
    1
   ]
+ },
+ {
+  "id": "small_tn_ad_prepare_c64_sites4",
+  "issues": [
+   "#2678"
+  ],
+  "kind": "ad_prepare",
+  "arm": "vjp",
+  "backend": "tenferro-rs",
+  "dtype": "c64",
+  "params": {
+   "graph": "small_tn",
+   "sites": 4,
+   "d": 2,
+   "bond": 2,
+   "kind": "ad_prepare",
+   "arm": "vjp",
+   "dtype": "c64"
+  },
+  "measurement_scope": "issue_workflow_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2678: the energy of a 4-site MPS with physical dimension 2 and bond dimension 2, differentiated over every site. The graph is a left-to-right transfer-matrix sweep whose local operator sits at the middle site; every site is read by both a conjugated and a plain copy, and carries an identity transpose pair plus an identity reshape round trip, the layout aliases and the conj fan-out the simplifier and the conj-sinking pass rewrite. The timed operation is Runtime::prepare of the vjp program; tracing, the AD transform, compile_many, engine/runtime construction and the finite-difference gradient check are outside. The forward arm is the same graph without the AD transform. The contraction is dot_general because tenferro.einsum.v1 has no VJP rule at this revision. Diagnostic, not a steady-state operation row.",
+  "regime": "latency",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "small_tn_ad_prepare_c64_sites4_forward",
+  "issues": [
+   "#2678"
+  ],
+  "kind": "ad_prepare",
+  "arm": "forward",
+  "backend": "tenferro-rs",
+  "dtype": "c64",
+  "params": {
+   "graph": "small_tn",
+   "sites": 4,
+   "d": 2,
+   "bond": 2,
+   "kind": "ad_prepare",
+   "arm": "forward",
+   "dtype": "c64"
+  },
+  "measurement_scope": "issue_workflow_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2678: the energy of a 4-site MPS with physical dimension 2 and bond dimension 2, differentiated over every site. The graph is a left-to-right transfer-matrix sweep whose local operator sits at the middle site; every site is read by both a conjugated and a plain copy, and carries an identity transpose pair plus an identity reshape round trip, the layout aliases and the conj fan-out the simplifier and the conj-sinking pass rewrite. The timed operation is Runtime::prepare of the vjp program; tracing, the AD transform, compile_many, engine/runtime construction and the finite-difference gradient check are outside. The forward arm is the same graph without the AD transform. The contraction is dot_general because tenferro.einsum.v1 has no VJP rule at this revision. Diagnostic, not a steady-state operation row.",
+  "reference_for": "small_tn_ad_prepare_c64_sites4",
+  "regime": "latency",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "small_tn_ad_prepare_c64_sites8",
+  "issues": [
+   "#2678"
+  ],
+  "kind": "ad_prepare",
+  "arm": "vjp",
+  "backend": "tenferro-rs",
+  "dtype": "c64",
+  "params": {
+   "graph": "small_tn",
+   "sites": 8,
+   "d": 2,
+   "bond": 2,
+   "kind": "ad_prepare",
+   "arm": "vjp",
+   "dtype": "c64"
+  },
+  "measurement_scope": "issue_workflow_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2678: the energy of a 8-site MPS with physical dimension 2 and bond dimension 2, differentiated over every site. The graph is a left-to-right transfer-matrix sweep whose local operator sits at the middle site; every site is read by both a conjugated and a plain copy, and carries an identity transpose pair plus an identity reshape round trip, the layout aliases and the conj fan-out the simplifier and the conj-sinking pass rewrite. The timed operation is Runtime::prepare of the vjp program; tracing, the AD transform, compile_many, engine/runtime construction and the finite-difference gradient check are outside. The forward arm is the same graph without the AD transform. The contraction is dot_general because tenferro.einsum.v1 has no VJP rule at this revision. Diagnostic, not a steady-state operation row.",
+  "regime": "latency",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "small_tn_ad_prepare_c64_sites8_forward",
+  "issues": [
+   "#2678"
+  ],
+  "kind": "ad_prepare",
+  "arm": "forward",
+  "backend": "tenferro-rs",
+  "dtype": "c64",
+  "params": {
+   "graph": "small_tn",
+   "sites": 8,
+   "d": 2,
+   "bond": 2,
+   "kind": "ad_prepare",
+   "arm": "forward",
+   "dtype": "c64"
+  },
+  "measurement_scope": "issue_workflow_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2678: the energy of a 8-site MPS with physical dimension 2 and bond dimension 2, differentiated over every site. The graph is a left-to-right transfer-matrix sweep whose local operator sits at the middle site; every site is read by both a conjugated and a plain copy, and carries an identity transpose pair plus an identity reshape round trip, the layout aliases and the conj fan-out the simplifier and the conj-sinking pass rewrite. The timed operation is Runtime::prepare of the vjp program; tracing, the AD transform, compile_many, engine/runtime construction and the finite-difference gradient check are outside. The forward arm is the same graph without the AD transform. The contraction is dot_general because tenferro.einsum.v1 has no VJP rule at this revision. Diagnostic, not a steady-state operation row.",
+  "reference_for": "small_tn_ad_prepare_c64_sites8",
+  "regime": "latency",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "small_tn_ad_prepare_c64_sites16",
+  "issues": [
+   "#2678"
+  ],
+  "kind": "ad_prepare",
+  "arm": "vjp",
+  "backend": "tenferro-rs",
+  "dtype": "c64",
+  "params": {
+   "graph": "small_tn",
+   "sites": 16,
+   "d": 2,
+   "bond": 2,
+   "kind": "ad_prepare",
+   "arm": "vjp",
+   "dtype": "c64"
+  },
+  "measurement_scope": "issue_workflow_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2678: the energy of a 16-site MPS with physical dimension 2 and bond dimension 2, differentiated over every site. The graph is a left-to-right transfer-matrix sweep whose local operator sits at the middle site; every site is read by both a conjugated and a plain copy, and carries an identity transpose pair plus an identity reshape round trip, the layout aliases and the conj fan-out the simplifier and the conj-sinking pass rewrite. The timed operation is Runtime::prepare of the vjp program; tracing, the AD transform, compile_many, engine/runtime construction and the finite-difference gradient check are outside. The forward arm is the same graph without the AD transform. The contraction is dot_general because tenferro.einsum.v1 has no VJP rule at this revision. Diagnostic, not a steady-state operation row.",
+  "regime": "latency",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "small_tn_ad_prepare_c64_sites16_forward",
+  "issues": [
+   "#2678"
+  ],
+  "kind": "ad_prepare",
+  "arm": "forward",
+  "backend": "tenferro-rs",
+  "dtype": "c64",
+  "params": {
+   "graph": "small_tn",
+   "sites": 16,
+   "d": 2,
+   "bond": 2,
+   "kind": "ad_prepare",
+   "arm": "forward",
+   "dtype": "c64"
+  },
+  "measurement_scope": "issue_workflow_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2678: the energy of a 16-site MPS with physical dimension 2 and bond dimension 2, differentiated over every site. The graph is a left-to-right transfer-matrix sweep whose local operator sits at the middle site; every site is read by both a conjugated and a plain copy, and carries an identity transpose pair plus an identity reshape round trip, the layout aliases and the conj fan-out the simplifier and the conj-sinking pass rewrite. The timed operation is Runtime::prepare of the vjp program; tracing, the AD transform, compile_many, engine/runtime construction and the finite-difference gradient check are outside. The forward arm is the same graph without the AD transform. The contraction is dot_general because tenferro.einsum.v1 has no VJP rule at this revision. Diagnostic, not a steady-state operation row.",
+  "reference_for": "small_tn_ad_prepare_c64_sites16",
+  "regime": "latency",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "small_tn_ad_prepare_c64_sites32",
+  "issues": [
+   "#2678"
+  ],
+  "kind": "ad_prepare",
+  "arm": "vjp",
+  "backend": "tenferro-rs",
+  "dtype": "c64",
+  "params": {
+   "graph": "small_tn",
+   "sites": 32,
+   "d": 2,
+   "bond": 2,
+   "kind": "ad_prepare",
+   "arm": "vjp",
+   "dtype": "c64"
+  },
+  "measurement_scope": "issue_workflow_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2678: the energy of a 32-site MPS with physical dimension 2 and bond dimension 2, differentiated over every site. The graph is a left-to-right transfer-matrix sweep whose local operator sits at the middle site; every site is read by both a conjugated and a plain copy, and carries an identity transpose pair plus an identity reshape round trip, the layout aliases and the conj fan-out the simplifier and the conj-sinking pass rewrite. The timed operation is Runtime::prepare of the vjp program; tracing, the AD transform, compile_many, engine/runtime construction and the finite-difference gradient check are outside. The forward arm is the same graph without the AD transform. The contraction is dot_general because tenferro.einsum.v1 has no VJP rule at this revision. Diagnostic, not a steady-state operation row.",
+  "regime": "latency",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "small_tn_ad_prepare_c64_sites32_forward",
+  "issues": [
+   "#2678"
+  ],
+  "kind": "ad_prepare",
+  "arm": "forward",
+  "backend": "tenferro-rs",
+  "dtype": "c64",
+  "params": {
+   "graph": "small_tn",
+   "sites": 32,
+   "d": 2,
+   "bond": 2,
+   "kind": "ad_prepare",
+   "arm": "forward",
+   "dtype": "c64"
+  },
+  "measurement_scope": "issue_workflow_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2678: the energy of a 32-site MPS with physical dimension 2 and bond dimension 2, differentiated over every site. The graph is a left-to-right transfer-matrix sweep whose local operator sits at the middle site; every site is read by both a conjugated and a plain copy, and carries an identity transpose pair plus an identity reshape round trip, the layout aliases and the conj fan-out the simplifier and the conj-sinking pass rewrite. The timed operation is Runtime::prepare of the vjp program; tracing, the AD transform, compile_many, engine/runtime construction and the finite-difference gradient check are outside. The forward arm is the same graph without the AD transform. The contraction is dot_general because tenferro.einsum.v1 has no VJP rule at this revision. Diagnostic, not a steady-state operation row.",
+  "reference_for": "small_tn_ad_prepare_c64_sites32",
+  "regime": "latency",
+  "thread_counts": [
+   1
+  ]
  }
 ]

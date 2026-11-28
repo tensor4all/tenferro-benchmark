@@ -77,8 +77,12 @@ class PerfIssueCoverageTest(unittest.TestCase):
         self.assertEqual(recorded, {row["id"] for row in rows})
 
     def test_ad_prepare_cases_are_diagnostic_and_paired(self):
-        rows = gen.ad_prepare_cases() + gen.deep_reverse_mode_prepare_cases()
-        self.assertEqual(len(rows), 20)
+        rows = (
+            gen.ad_prepare_cases()
+            + gen.deep_reverse_mode_prepare_cases()
+            + gen.small_tn_ad_prepare_cases()
+        )
+        self.assertEqual(len(rows), 28)
         for row in rows:
             self.assertEqual(row["kind"], "ad_prepare")
             self.assertEqual(row["measurement_scope"], "issue_workflow_diagnostic")
@@ -102,9 +106,23 @@ class PerfIssueCoverageTest(unittest.TestCase):
             self.assertEqual(by_id[target]["params"]["hidden"], 50)
             control = by_id[target + "_forward"]
             self.assertEqual(control["reference_for"], target)
+        for sites in (4, 8, 16, 32):
+            target = f"small_tn_ad_prepare_c64_sites{sites}"
+            vjp = by_id[target]
+            self.assertIn("#2678", vjp["issues"])
+            self.assertEqual(vjp["arm"], "vjp")
+            self.assertEqual(vjp["params"]["graph"], "small_tn")
+            self.assertEqual(vjp["params"]["sites"], sites)
+            self.assertEqual(vjp["params"]["d"], 2)
+            self.assertEqual(vjp["params"]["bond"], 2)
+            self.assertIsNone(vjp.get("reference_for"))
+            control = by_id[target + "_forward"]
+            self.assertEqual(control["arm"], "forward")
+            self.assertEqual(control["reference_for"], target)
         cases = entries("data/instances/perf_issues.json")
         for issue, generated in (
-            ("#2678", [row["id"] for row in gen.ad_prepare_cases()]),
+            ("#2678", [row["id"] for row in gen.ad_prepare_cases()]
+             + [row["id"] for row in gen.small_tn_ad_prepare_cases()]),
             ("#2643", [row["id"] for row in gen.deep_reverse_mode_prepare_cases()]),
         ):
             self.assertEqual(
