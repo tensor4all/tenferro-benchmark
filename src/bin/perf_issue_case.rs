@@ -44,6 +44,8 @@ mod binary_shortcut;
 mod ad_prepare;
 #[path = "perf_issue_case/umbrella.rs"]
 mod umbrella;
+#[path = "perf_issue_case/small_batched_matmul.rs"]
+mod small_batched_matmul;
 
 type BoxError = Box<dyn Error + Send + Sync>;
 type Result<T> = std::result::Result<T, BoxError>;
@@ -2946,6 +2948,7 @@ fn main() -> Result<()> {
             binary_shortcut::run(&params, &timing, threads)
         }
         "ad_prepare" => ad_prepare::run(&params, &timing, threads),
+        "small_batched_matmul" => small_batched_matmul::run(&params, &timing, threads),
         "gemm_mm256" => gemm_mm256(&params, &timing),
         "rank1_dot" => rank1_dot(&params, &timing),
         "small_solves" => small_solves(&params, &timing),

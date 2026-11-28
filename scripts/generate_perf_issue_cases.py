@@ -835,6 +835,40 @@ def small_tn_ad_prepare_cases():
     return rows
 
 
+def small_batched_matmul_cases():
+    """#2745 / benchmark #543: many independent small products through the batched contract."""
+    rows = []
+    for dtype in ("c64", "f64"):
+        for n in (1, 2, 3, 4, 5, 8):
+            for batch in (256, 4096, 32769):
+                for mode in ("overwrite", "accumulate"):
+                    target = f"small_batched_matmul_{dtype}_{n}x{n}_b{batch}_{mode}"
+                    for arm, backend in (("tenferro", "tenferro-rs"), ("direct-loop", "rust-loop")):
+                        row = case(
+                            target if arm == "tenferro" else target + "_direct-loop",
+                            ("#2745",), "small_batched_matmul",
+                            {"n": n, "batch": batch, "mode": mode},
+                            arm=arm, backend=backend, dtype=dtype,
+                            reference_for=None if arm == "tenferro" else target,
+                            profiles=("amd-cpu", "zen5-cpu"),
+                            intent=(
+                                f"tenferro-rs #2745 / tenferro-benchmark #543: {batch} independent "
+                                f"{n}x{n} {'complex128' if dtype == 'c64' else 'float64'} products, "
+                                f"C[i,j,b] = sum_k A[i,k,b] B[k,j,b] on column-major [{n}, {n}, {batch}] "
+                                "operands, one dot_general over the batch axis into a preallocated "
+                                + ("output (beta = 0, overwrite)" if mode == "overwrite"
+                                   else "output (beta = 1, accumulate into C)")
+                                + ". The direct-loop arm is a reference cell, not a competitor: a naive "
+                                "fixed-size safe-Rust loop (N is a const generic), one thread, the "
+                                "same preallocated output and update mode, compiled into the same "
+                                "binary and timed by the same policy. Both arms are checked against "
+                                "a size-generic scalar product before timing."),
+                        )
+                        row["thread_counts"] = [1]
+                        rows.append(row)
+    return rows
+
+
 def generate_cases():
     return (binary_shortcut_cases() + thin_complex_cases() + decode_cases() + decode_view_operand_cases() + other_cases() + b1_op_cases()
             + cpu_gap_cases() + metadata_clone_cases()
@@ -842,7 +876,8 @@ def generate_cases():
             + small_grad_cases() + fft_axis_cases() + degenerate_dot_cases()
             + erased_binary_cases() + axpby_strided_source_cases()
             + erased_construct_cases() + eager_small_call_cases() + trace_metadata_cases() + softmax_pool_cases()
-            + ad_prepare_cases() + deep_reverse_mode_prepare_cases() + small_tn_ad_prepare_cases())
+            + ad_prepare_cases() + deep_reverse_mode_prepare_cases() + small_tn_ad_prepare_cases()
+            + small_batched_matmul_cases())
 
 
 def cpu_umbrella_cases():
