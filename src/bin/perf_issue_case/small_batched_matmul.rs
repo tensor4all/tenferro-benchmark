@@ -159,7 +159,7 @@ fn run_typed<T: Elem>(p: &Value, timing: &Timing, threads: usize) -> Result<Case
             let mut backend = tenferro_einsum_benchmark::cpu_engine(Some(threads))?;
             let (error, measurement) =
                 backend.with_backend_session(|s| -> Result<(f64, Measurement)> {
-                    let mut one = |s: &mut dyn Engine, out: &mut Tensor| -> Result<()> {
+                    let one = |s: &mut dyn Engine, out: &mut Tensor| -> Result<()> {
                         Ok(s.dot_general_read_into_accum(
                             TensorRead::from_tensor(&lhs),
                             TensorRead::from_tensor(&rhs),
