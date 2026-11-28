@@ -364,12 +364,18 @@ def declared_cases(
             f"{suite_id}: missing_source {missing!r} is not supported (only skip)"
         )
     source = problems.get("source")
-    include = problems.get("include") or []
+    include = problems.get("include")
+    # A mapping selector requires both halves. Returning zero cases here let the
+    # validator accept `{include: [a]}` (no source) and the dashboard read
+    # `problems == {}`, while the collector refused the same document: the
+    # malformed selector was silent on two paths and fatal on the third (#426).
+    if not isinstance(source, str) or not source:
+        raise RegimeError(f"{suite_id}: problem selector requires a non-empty source")
+    if not isinstance(include, list) or not include:
+        raise RegimeError(
+            f"{suite_id}: problem selector requires a non-empty include list"
+        )
     exclude = set(problems.get("exclude") or [])
-    if not isinstance(source, str) or not source or not isinstance(include, list):
-        # Callers unpack three values on every path; this one used to raise
-        # `ValueError: not enough values to unpack` instead of a diagnostic.
-        return defaults, [], False
     repeated = [entry for index, entry in enumerate(include) if entry in include[:index]]
     if repeated:
         # Repeating an id declared the same case twice; the inline form and the

@@ -974,15 +974,23 @@ class RegimePolicyUnitTests(unittest.TestCase):
         self.assertEqual(len(errors), 1)
         self.assertIn("missing_source", errors[0])
 
-    def test_a_selector_without_a_source_is_not_an_unpacking_crash(self):
-        # `declared_cases()` returns (defaults, cases, skipped) on every path;
-        # this one returned two values, so `check_suite()` and the dashboard
-        # loader raised `ValueError: not enough values to unpack` instead of
-        # reporting the malformed selector.
+    def test_a_selector_without_a_source_is_a_diagnostic(self):
+        # `declared_cases()` discarded a mapping selector with no source, so the
+        # validator accepted it and the dashboard read `problems == {}`, while
+        # the collector (which requires both halves) refused the same document.
+        # Silence is not an option on any of the three paths (#426).
         import generate_dashboard
 
         document = {"suite_id": "gpu/structural", "problems": {"include": ["a"]}}
-        self.assertEqual(regime_policy.check_suite(document, Path(".")), [])
+        errors = regime_policy.check_suite(document, Path("."))
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("non-empty source", errors[0])
+
+        no_include = {"suite_id": "gpu/structural", "problems": {"source": "cases.json"}}
+        errors = regime_policy.check_suite(no_include, Path("."))
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("non-empty include list", errors[0])
+
         with tempfile.TemporaryDirectory() as tmp:
             benchmarks = Path(tmp) / "benchmarks" / "gpu"
             benchmarks.mkdir(parents=True)
@@ -1000,8 +1008,114 @@ class RegimePolicyUnitTests(unittest.TestCase):
                 ),
                 encoding="utf-8",
             )
-            metadata = generate_dashboard.load_suite_metadata(benchmarks)
-        self.assertEqual(metadata["gpu/structural"]["problems"], {})
+            with self.assertRaises(SystemExit) as caught:
+                generate_dashboard.load_suite_metadata(benchmarks)
+        self.assertIn("non-empty source", str(caught.exception))
+
+    def test_a_skipped_nested_source_honours_the_nested_exclude(self):
+        # #426 finding 1: with the nested catalogue present, a wrapper that
+        # selected an id the nested selector excludes was rejected; with the
+        # catalogue absent the same document validated, so a missing catalogue
+        # made an excluded case selectable. The validator and the collector now
+        # agree, and the skip opt-in does not change the selection.
+        import suite_instances
+
+        defaults = {
+            "schema_version": 1,
+            "title": "t",
+            "description": "d",
+            "defaults": {"regime": "latency"},
+            "backends": ["tenferro-cuda-trace"],
+        }
+        leaf = dict(
+            defaults,
+            suite_id="gpu/structural",
+            problems={
+                "source": "cat.json",
+                "include": ["a", "b"],
+                "exclude": ["b"],
+                "missing_source": "skip",
+            },
+        )
+        wrapper = dict(
+            defaults,
+            suite_id="gpu/structural",
+            problems={"source": "leaf.yaml", "include": ["b"]},
+        )
+        allowed = dict(
+            defaults,
+            suite_id="gpu/structural",
+            problems={"source": "leaf.yaml", "include": ["a"]},
+        )
+        for catalogue in (True, False):
+            with self.subTest(catalogue=catalogue):
+                with tempfile.TemporaryDirectory() as tmp:
+                    root = Path(tmp)
+                    (root / "leaf.yaml").write_text(json.dumps(leaf), encoding="utf-8")
+                    if catalogue:
+                        (root / "cat.json").write_text(
+                            json.dumps({"cases": [{"id": "a"}, {"id": "b"}]}),
+                            encoding="utf-8",
+                        )
+                    errors = regime_policy.check_suite(wrapper, root)
+                    self.assertEqual(len(errors), 1, errors)
+                    self.assertIn("is not in the source", errors[0])
+                    with self.assertRaises(ValueError):
+                        suite_instances._resolve_problems(
+                            wrapper["problems"], project_dir=root
+                        )
+                    # The non-excluded id still resolves through both paths.
+                    self.assertEqual(regime_policy.check_suite(allowed, root), [])
+                    self.assertEqual(
+                        suite_instances._resolve_problems(
+                            allowed["problems"], project_dir=root
+                        ),
+                        ["a"],
+                    )
+
+    def test_a_nested_expansion_cannot_repeat_an_id(self):
+        # #426 finding 3: an expansion built from `include` instead of the
+        # source's own ids can repeat a selection. Every producer that can emit
+        # the same id twice is rejected by the validator and the collector.
+        import suite_instances
+
+        defaults = {
+            "schema_version": 1,
+            "title": "t",
+            "description": "d",
+            "defaults": {"regime": "latency"},
+            "backends": ["tenferro-cuda-trace"],
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "cat.json").write_text(
+                json.dumps({"cases": [{"id": "a"}, {"id": "a"}]}), encoding="utf-8"
+            )
+            duplicate_catalogue = dict(
+                defaults,
+                suite_id="gpu/structural",
+                problems={"source": "cat.json", "include": ["a"]},
+            )
+            errors = regime_policy.check_suite(duplicate_catalogue, root)
+            self.assertEqual(len(errors), 1, errors)
+            self.assertIn("duplicate problem id", errors[0])
+            with self.assertRaises(ValueError):
+                suite_instances._resolve_problems(
+                    duplicate_catalogue["problems"], project_dir=root
+                )
+
+            repeated_include = dict(
+                defaults,
+                suite_id="gpu/structural",
+                problems={"source": "cat.json", "include": ["a", "a"]},
+            )
+            errors = regime_policy.check_suite(repeated_include, root)
+            self.assertEqual(len(errors), 1, errors)
+            self.assertIn("include repeats id", errors[0])
+            with self.assertRaises(ValueError):
+                suite_instances._resolve_problems(
+                    repeated_include["problems"], project_dir=root
+                )
 
 
 class GeneratedSuiteTests(unittest.TestCase):
