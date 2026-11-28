@@ -76,6 +76,40 @@ class PerfIssueCoverageTest(unittest.TestCase):
         recorded = {case_id for case_id, case in cases.items() if "#2524" in case["issues"]}
         self.assertEqual(recorded, {row["id"] for row in rows})
 
+    def test_small_batched_matmul_pairs_every_cell_with_a_direct_loop_reference(self):
+        rows = gen.small_batched_matmul_cases()
+        self.assertEqual(len(rows), 6 * 3 * 2 * 2 * 2)
+        by_id = {row["id"]: row for row in rows}
+        self.assertEqual(len(by_id), len(rows))
+        for row in rows:
+            self.assertEqual(row["kind"], "small_batched_matmul")
+            self.assertIn("#2745", row["issues"])
+            self.assertEqual(row["thread_counts"], [1])
+            p = row["params"]
+            # The label alone names scalar type, size, batch and update mode.
+            self.assertIn(f"_{p['dtype']}_{p['n']}x{p['n']}_b{p['batch']}_{p['mode']}", row["id"])
+            if row["arm"] == "direct-loop":
+                self.assertEqual(row["backend"], "rust-loop")
+                self.assertIn(row["reference_for"], by_id)
+                self.assertEqual(by_id[row["reference_for"]]["arm"], "tenferro")
+            else:
+                self.assertEqual(row["backend"], "tenferro-rs")
+                self.assertIsNone(row.get("reference_for"))
+            # Calls under 2**16 scalar multiply-adds are per-call-cost bound; larger are not.
+            self.assertEqual(row["size_elements"], p["n"] * p["n"] * p["batch"])
+            madds = p["n"] ** 3 * p["batch"]
+            self.assertEqual(row["regime"], "throughput" if madds >= 1 << 16 else "latency")
+        self.assertEqual({row["regime"] for row in rows}, {"latency", "throughput"})
+        self.assertEqual({row["params"]["n"] for row in rows}, {1, 2, 3, 4, 5, 8})
+        self.assertEqual({row["params"]["batch"] for row in rows}, {256, 4096, 32769})
+        self.assertEqual({row["params"]["dtype"] for row in rows}, {"c64", "f64"})
+        self.assertEqual({row["params"]["mode"] for row in rows}, {"overwrite", "accumulate"})
+        cases = entries("data/instances/perf_issues.json")
+        self.assertEqual(
+            {case_id for case_id, case in cases.items() if "#2745" in case["issues"]},
+            set(by_id),
+        )
+
     def test_ad_prepare_cases_are_diagnostic_and_paired(self):
         rows = (
             gen.ad_prepare_cases()
