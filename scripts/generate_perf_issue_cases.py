@@ -43,7 +43,7 @@ ROOT = Path(__file__).resolve().parents[1]
 INSTANCES = ROOT / "data/instances/perf_issues.json"
 MANIFEST = ROOT / "benchmarks/cpu/manifests/perf_issues.yaml"
 SUITE = ROOT / "benchmarks/cpu/perf_issues.yaml"
-MANIFEST_VERSION = 25
+MANIFEST_VERSION = 26
 SUITE_ID = "cpu/perf_issues"
 
 GPU_INSTANCES = ROOT / "data/instances/gpu_perf_issues.json"
@@ -803,6 +803,38 @@ def gpu_cholesky_staging_cases(gpu):
     return rows
 
 
+def small_tn_ad_prepare_cases():
+    """#2678: an MPS expectation value, prepared through Runtime::prepare."""
+    rows = []
+    for sites in (4, 8, 16, 32):
+        target = f"small_tn_ad_prepare_c64_sites{sites}"
+        for arm in ("vjp", "forward"):
+            row = case(
+                target if arm == "vjp" else target + "_forward",
+                ("#2678",), "ad_prepare",
+                {"graph": "small_tn", "sites": sites, "d": 2, "bond": 2},
+                arm=arm, dtype="c64", scope="issue_workflow_diagnostic",
+                reference_for=None if arm == "vjp" else target,
+                intent=(
+                    f"tenferro-rs #2678: the energy of a {sites}-site MPS with physical "
+                    "dimension 2 and bond dimension 2, differentiated over every site. The "
+                    "graph is a left-to-right transfer-matrix sweep whose local operator sits "
+                    "at the middle site; every site is read by both a conjugated and a plain "
+                    "copy, and carries an identity transpose pair plus an identity "
+                    "reshape round trip, the layout aliases and the conj fan-out the "
+                    "simplifier and the conj-sinking pass rewrite. The timed operation is "
+                    "Runtime::prepare of the vjp program; tracing, the AD transform, "
+                    "compile_many, engine/runtime construction and the finite-difference "
+                    "gradient check are outside. The forward arm is the same graph without "
+                    "the AD transform. The contraction is dot_general because "
+                    "tenferro.einsum.v1 has no VJP rule at this revision. Diagnostic, not a "
+                    "steady-state operation row."),
+            )
+            row.update(regime="latency", thread_counts=[1])
+            rows.append(row)
+    return rows
+
+
 def generate_cases():
     return (binary_shortcut_cases() + thin_complex_cases() + decode_cases() + decode_view_operand_cases() + other_cases() + b1_op_cases()
             + cpu_gap_cases() + metadata_clone_cases()
@@ -810,7 +842,7 @@ def generate_cases():
             + small_grad_cases() + fft_axis_cases() + degenerate_dot_cases()
             + erased_binary_cases() + axpby_strided_source_cases()
             + erased_construct_cases() + eager_small_call_cases() + trace_metadata_cases() + softmax_pool_cases()
-            + ad_prepare_cases() + deep_reverse_mode_prepare_cases())
+            + ad_prepare_cases() + deep_reverse_mode_prepare_cases() + small_tn_ad_prepare_cases())
 
 
 def cpu_umbrella_cases():

@@ -497,3 +497,11 @@ problems:
   - deep_reverse_mode_prepare_f64_steps3_forward
   - deep_reverse_mode_prepare_f64_steps10
   - deep_reverse_mode_prepare_f64_steps10_forward
+  - small_tn_ad_prepare_c64_sites4
+  - small_tn_ad_prepare_c64_sites4_forward
+  - small_tn_ad_prepare_c64_sites8
+  - small_tn_ad_prepare_c64_sites8_forward
+  - small_tn_ad_prepare_c64_sites16
+  - small_tn_ad_prepare_c64_sites16_forward
+  - small_tn_ad_prepare_c64_sites32
+  - small_tn_ad_prepare_c64_sites32_forward
